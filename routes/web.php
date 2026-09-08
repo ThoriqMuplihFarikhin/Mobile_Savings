@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\MonitoringAbsensiController;
 use App\Http\Controllers\Admin\NasabahController;
 use App\Http\Controllers\Admin\PenarikanController as AdminPenarikanController;
+use App\Http\Controllers\Admin\PengaturanController as AdminPengaturanController;
 use App\Http\Controllers\Admin\ProdukController;
 use App\Http\Controllers\Admin\RegistrasiController;
 use App\Http\Controllers\Admin\RekonsiliasiController;
@@ -48,6 +49,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/bermasalah', [NasabahController::class, 'bermasalah'])->name('bermasalah.index');
         Route::get('/monitoring-setoran', [NasabahController::class, 'monitoringSetoran'])->name('monitoring-setoran.index');
         Route::get('/monitoring-absensi', [MonitoringAbsensiController::class, 'index'])->name('monitoring-absensi.index');
+        Route::get('/pengaturan', [AdminPengaturanController::class, 'index'])->name('pengaturan.index');
     });
 
     // Kolektor Routes

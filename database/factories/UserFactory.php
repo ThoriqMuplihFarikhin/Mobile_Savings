@@ -51,21 +51,27 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'admin',
-        ]);
+        ])->afterCreating(function (User $user) {
+            $user->assignRole('admin');
+        });
     }
 
     public function kolektor(): static
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'kolektor',
-        ]);
+        ])->afterCreating(function (User $user) {
+            $user->assignRole('kolektor');
+        });
     }
 
     public function nasabah(): static
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'nasabah',
-        ]);
+        ])->afterCreating(function (User $user) {
+            $user->assignRole('nasabah');
+        });
     }
 
     /**

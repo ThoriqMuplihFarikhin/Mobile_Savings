@@ -2,35 +2,24 @@
 
 namespace App\Livewire\Nasabah;
 
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
+use App\Livewire\Actions\Logout;
+use App\Livewire\Concerns\HasNotifikasiWaToggle;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Livewire\Features\SupportRedirects\Redirector;
 
 #[Layout('layouts.mobile')]
 class Pengaturan extends Component
 {
-    public $notifikasiWaAktif = true;
+    use HasNotifikasiWaToggle;
 
     public function mount(): void
     {
-        $this->notifikasiWaAktif = Auth::user()->notifikasi_wa_aktif ?? true;
+        $this->mountNotifikasiWaToggle();
     }
 
-    public function toggleNotifikasiWa(): void
+    public function logout(Logout $logout)
     {
-        $this->notifikasiWaAktif = ! $this->notifikasiWaAktif;
-        Auth::user()->update(['notifikasi_wa_aktif' => $this->notifikasiWaAktif]);
-    }
-
-    public function logout(): Redirector|RedirectResponse
-    {
-        Auth::guard('web')->logout();
-        session()->invalidate();
-        session()->regenerateToken();
-
-        return redirect('/');
+        return $logout();
     }
 
     public function render()

@@ -1,121 +1,113 @@
-# Implementation Plan — Perbaikan Sistem Tabungan Digital (Kolektor Keliling)
+# Implementation Plan: Pemisahan Pengaturan (Settings) — Admin / Kolektor / Nasabah
 
-Dokumen ini merangkum rencana perbaikan dari hasil audit kode terhadap 5 temuan prioritas. Disusun berurutan berdasarkan risiko produksi, bukan berdasarkan kemudahan pengerjaan — kerjakan dari atas ke bawah.
+> Proyek: `tabungan-digital` (Laravel + Livewire Flux + Spatie Permission)
+> Tujuan: memisahkan halaman & logic "Pengaturan" secara bersih per role, tanpa duplikasi kode, dan menutup akses lintas-role.
 
----
+## 0. Temuan Audit Awal (baseline)
 
-## Fase 1 — Kritis (kerjakan duluan, risiko produksi nyata)
+| Area | Status saat ini |
+|---|---|
+| Route `/admin/*`, `/kolektor/*`, `/nasabah/*` | ✅ Sudah dikawal `middleware('role:admin')` dst. |
+| `routes/settings.php` (`/settings/profile`, `/security`, `/appearance`) | ❌ Hanya `middleware(['auth'])`, tidak ada pembatasan role — semua role bisa akses & saling "menumpang" di halaman yang sama |
+| `App\Livewire\Kolektor\Pengaturan` vs `App\Livewire\Nasabah\Pengaturan` | ❌ Kode identik (toggle `notifikasi_wa_aktif` + logout) → duplikasi |
+| Admin | ❌ Tidak punya halaman Pengaturan sendiri, otomatis "numpang" ke settings generic lewat `desktop-user-menu.blade.php` |
+| Test | ❌ Belum ada test cross-role untuk halaman settings |
 
-### 1.1 Pindahkan notifikasi keluar dari `DB::transaction()` di `ApprovalPenarikan`
+## 1. Target Arsitektur
 
-**Masalah:** `ActivityLogger::notify(..., 'both')` dipanggil di dalam transaction yang meng-hold lock pada `saldo_produk` dan `transaksi_penarikan`. HTTP call sinkron ke gateway WhatsApp bisa memperpanjang durasi lock atau membatalkan approval yang sebenarnya valid jika API WA gagal.
+```
+/settings/profile     -> shared (semua role boleh, tapi field ditentukan per role)
+/settings/security     -> shared (ganti PIN/password, semua role)
+/settings/appearance   -> shared (tema, semua role)
 
-**File:** `app/Livewire/Admin/ApprovalPenarikan.php`
+/admin/pengaturan       -> khusus admin (setting sistem, bukan cuma profil)
+/kolektor/pengaturan    -> khusus kolektor (WA notif, jam kerja, dst)
+/nasabah/pengaturan     -> khusus nasabah (WA notif, preferensi notifikasi)
+```
 
-**Langkah:**
-1. Refactor `approve()`: pisahkan bagian yang butuh lock (update saldo, update status transaksi) dari bagian notify.
-2. Struktur baru:
+Prinsip:
+- **Shared settings** (profile/security/appearance) tetap satu route, tapi kontennya *role-aware* (field yang tampil beda tergantung `auth()->user()->role`), bukan dihapus/diduplikasi.
+- **Role-specific settings** (pengaturan operasional) tetap terpisah per role, tapi logic yang sama (toggle notifikasi WA) ditarik ke satu trait/service supaya tidak dobel.
+- Setiap grup route wajib middleware `role:<nama_role>` yang eksplisit — no more "unguarded" settings.
+
+## 2. Langkah Implementasi (urutan untuk agent)
+
+### Fase 1 — Kunci celah akses (paling kritis, kerjakan duluan)
+1. Buat middleware group baru di `routes/settings.php`, pisahkan jadi 3 grup:
    ```php
-   public function approve($id): void
-   {
-       $transaksi = DB::transaction(function () use ($id) {
-           // semua lockForUpdate() + update di sini
-           // return $transaksi setelah commit implicit di akhir closure
-       });
+   Route::middleware(['auth', 'active'])->group(function () {
+       Route::redirect('settings', 'settings/profile');
+       Route::livewire('settings/profile', 'pages::settings.profile')->name('profile.edit');
+   });
 
-       // notify di LUAR closure, setelah transaction commit
-       ActivityLogger::notify($transaksi->nasabah_id, ..., 'both');
-       ActivityLogger::log(...);
+   Route::middleware(['auth', 'active', 'verified'])->group(function () {
+       Route::livewire('settings/appearance', 'pages::settings.appearance')->name('appearance.edit');
+       Route::livewire('settings/security', 'pages::settings.security')->name('security.edit');
+   });
+   ```
+   (tambahkan `active` yang sebelumnya juga tidak dipakai di sini — konsisten dengan `web.php`)
+2. Di dalam komponen `⚡profile.blade.php` / `Profile` Livewire, tampilkan field berbeda berdasar `auth()->user()->role` (mis. nasabah lihat "Nomor HP", kolektor lihat "Wilayah tugas", admin lihat field minimal). **Jangan** pecah jadi 3 route berbeda kalau isinya 90% sama — cukup 1 view dengan blok kondisional.
+
+### Fase 2 — Hilangkan duplikasi Kolektor/Nasabah Pengaturan
+3. Buat trait `App\Livewire\Concerns\HasNotifikasiWaToggle`:
+   ```php
+   trait HasNotifikasiWaToggle
+   {
+       public bool $notifikasiWaAktif = true;
+
+       public function mountNotifikasiWaToggle(): void
+       {
+           $this->notifikasiWaAktif = Auth::user()->notifikasi_wa_aktif ?? true;
+       }
+
+       public function toggleNotifikasiWa(): void
+       {
+           $this->notifikasiWaAktif = ! $this->notifikasiWaAktif;
+           Auth::user()->update(['notifikasi_wa_aktif' => $this->notifikasiWaAktif]);
+       }
    }
    ```
-3. Terapkan pola yang sama di `HandoverKolektor::processHandover()` — pindahkan loop `ActivityLogger::notify()` ke setelah `DB::commit()`, walau saat ini jenisnya `in_app` (risiko lebih rendah), demi konsistensi pola di seluruh codebase.
-4. Tambahkan try/catch di sekitar pemanggilan `WhatsAppService` supaya kegagalan kirim WA tidak pernah bisa mempengaruhi status transaksi yang sudah committed (harusnya sudah aman begitu dipindah ke luar transaction, tapi pastikan exception dari WA service tidak menggagalkan response ke user).
+4. Refactor `App\Livewire\Kolektor\Pengaturan` dan `App\Livewire\Nasabah\Pengaturan` supaya `use HasNotifikasiWaToggle;` — hapus method yang duplikat. Method `logout()` bisa juga ditarik ke trait/action `App\Livewire\Actions\Logout` yang sudah ada di project (cek `app/Livewire/Actions/Logout.php`, kemungkinan besar sudah bisa dipakai ulang).
+5. Tambah field spesifik role di masing-masing:
+   - `Kolektor\Pengaturan`: tambahkan setting relevan kolektor, misalnya lihat status handover kas (`hasUnsettledCash()` sudah ada di model `User` — tampilkan sebagai warning di halaman pengaturan kolektor).
+   - `Nasabah\Pengaturan`: tambahkan link ke `profil.index` (data pribadi nasabah) supaya nasabah tidak perlu ke `/settings/profile` yang desktop-oriented.
 
-**Testing:**
-- Test baru: simulasikan `WhatsAppService` melempar exception (mock/fake), pastikan `TransaksiPenarikan` tetap berstatus `disetujui` di DB walau notifikasi gagal.
-- Regression test pada `WithdrawalTest.php` yang sudah ada — pastikan masih hijau.
+### Fase 3 — Buat halaman Pengaturan khusus Admin
+6. Buat `App\Http\Controllers\Admin\PengaturanController` + route:
+   ```php
+   Route::get('/pengaturan', [PengaturanController::class, 'index'])->name('pengaturan.index');
+   ```
+   di dalam grup `prefix('admin')->middleware('role:admin')` yang sudah ada di `routes/web.php`.
+7. Isi minimal halaman admin pengaturan (sesuaikan kebutuhan bisnis, contoh):
+   - Kelola daftar admin lain (jika multi-admin)
+   - Konfigurasi umum (nama koperasi/produk default, threshold rekonsiliasi, dll — cek apakah sudah ada tabel `config`/`settings` di migrations; jika belum ada, buat migration `admin_settings` key-value sederhana)
+   - Link ke `/settings/security` untuk ganti PIN admin sendiri (reuse, jangan duplikasi)
 
-**Estimasi:** 2-3 jam termasuk test.
+### Fase 4 — Konsistenkan navigasi
+8. Update `desktop-user-menu.blade.php`: menu "Settings" tetap ke `profile.edit`, tapi tambahkan menu terpisah "Pengaturan Sistem" → `admin.pengaturan.index` **hanya render jika** `auth()->user()->isAdmin()`.
+9. Pastikan mobile layout (kolektor/nasabah) link "Pengaturan" tetap ke route masing-masing (`kolektor.pengaturan.index` / `nasabah.pengaturan.index`) — tidak berubah, cuma pastikan tidak ada link tersisa ke `/settings/*` yang generic di navigasi mobile (biar UX tidak campur).
 
----
+### Fase 5 — Test & guard
+10. Tambah test baru `tests/Feature/SettingsAccessTest.php`:
+    - Nasabah/kolektor **tidak bisa** GET `/admin/pengaturan` → 403.
+    - Admin **tidak bisa** GET `/kolektor/pengaturan` atau `/nasabah/pengaturan` → 403.
+    - Ketiga role **bisa** GET `/settings/profile`, `/settings/security`, `/settings/appearance` → 200.
+    - Toggle `notifikasi_wa_aktif` lewat masing-masing Livewire component tetap berfungsi (regression test, pola sama seperti test lama di `Kolektor\Pengaturan`/`Nasabah\Pengaturan` sebelum refactor).
+11. Jalankan `php artisan test --filter=Settings` dan `php artisan test --filter=AccessControl` untuk pastikan tidak ada regresi pada test lama.
 
-## Fase 2 — Penting (kesenjangan PRD vs implementasi)
+## 3. File yang Disentuh (checklist ringkas untuk agent)
 
-### 2.1 Implementasi formula tunggakan 2x lipat (FR-17)
+- [ ] `routes/settings.php` — tambah `active` middleware
+- [ ] `routes/web.php` — tambah route `admin.pengaturan.index`
+- [ ] `app/Livewire/Concerns/HasNotifikasiWaToggle.php` — baru
+- [ ] `app/Livewire/Kolektor/Pengaturan.php` — refactor pakai trait
+- [ ] `app/Livewire/Nasabah/Pengaturan.php` — refactor pakai trait
+- [ ] `app/Http/Controllers/Admin/PengaturanController.php` — baru
+- [ ] `resources/views/pages/admin/pengaturan.blade.php` — baru
+- [ ] `resources/views/components/desktop-user-menu.blade.php` — tambah menu conditional admin
+- [ ] `tests/Feature/SettingsAccessTest.php` — baru
 
-**File:** model/lokasi tempat `refreshTunggakan()` didefinisikan (kemungkinan trait/helper yang dipakai `InputSetoran`).
-
-**Langkah:**
-1. Konfirmasi dulu ke pemilik bisnis: apakah "2x lipat" berlaku per-hari-bolong (kumulatif tiap hari terlewat dilipatgandakan) atau flat 2x dari cicilan normal saat pertama kali bayar setelah bolong. ⚠️ **Jangan mulai coding sebelum ini jelas** — ini keputusan bisnis, bukan teknis.
-2. Setelah rule dikonfirmasi, ubah `refreshTunggakan()` dari `max(0, seharusnya - aktual)` menjadi formula yang mengalikan porsi yang di-skip.
-3. Tambahkan kolom/field log jika perlu untuk audit trail (berapa hari bolong, berapa pengali yang diterapkan) — supaya nasabah bisa complain dengan basis yang jelas kalau merasa salah hitung.
-
-**Testing:**
-- Test case: nasabah bolong 1 hari → tunggakan berikutnya 2x cicilan normal.
-- Test case: nasabah bolong 3 hari berturut-turut → verifikasi sesuai formula final yang disepakati (kumulatif atau flat, sesuai poin 1).
-- Test case: nasabah bayar pas → tunggakan tetap 0.
-
-**Estimasi:** 1 jam diskusi bisnis + 2-3 jam implementasi & test (tergantung kompleksitas formula final).
-
-### 2.2 Lengkapi fitur komplain sesuai FR-28 dan FR-30
-
-**File:** `app/Livewire/Nasabah/Komplain.php`, `resources/views/livewire/nasabah/komplain.blade.php`, `app/Livewire/Admin/AntrianKomplain.php`
-
-**Langkah:**
-1. Tambah field opsional di form komplain nasabah untuk memilih transaksi terkait (dropdown dari riwayat transaksi nasabah tsb, 30 hari terakhir misalnya). Simpan ke `transaksi_terkait_id` yang sudah ada di skema.
-2. Tampilkan info transaksi terkait (jika ada) di halaman detail komplain admin (`AntrianKomplain`), biar admin nggak perlu cari manual.
-3. Tambahkan `ActivityLogger::notify()` di method `proses()`, dengan pesan seperti "Komplain Anda sedang diproses oleh tim kami."
-
-**Testing:**
-- Test: submit komplain dengan `transaksi_terkait_id` terisi → tersimpan dengan benar.
-- Test: admin klik "proses" → nasabah menerima 1 notifikasi baru dengan status `diproses`.
-
-**Estimasi:** 3-4 jam termasuk UI.
-
----
-
-## Fase 3 — Konsolidasi (kurangi risiko drift ke depan)
-
-### 3.1 Ekstrak logic penarikan ke satu Action class
-
-**File baru:** `app/Actions/Penarikan/AjukanPenarikanAction.php`
-
-**Langkah:**
-1. Buat class dengan method `execute(User $nasabah, ProdukTabungan $produk, float $nominal, string $jalur): TransaksiPenarikan` yang berisi:
-   - Hitung saldo tersedia (saldo - total pending).
-   - Cek blokir tanggal cair untuk produk paket.
-   - Hitung komisi berdasarkan `persen_komisi` produk saat itu.
-   - Create `TransaksiPenarikan` dengan status `pending`.
-2. Refactor `AjukanPenarikan::submit()` dan `PenarikanOffline::submit()` supaya keduanya cuma memanggil Action ini, lalu handle UI-specific concern (flash message, reset form, redirect) di masing-masing.
-3. Pastikan validasi input (nominal minimum, dsb) tetap dilakukan di layer Livewire masing-masing sebelum manggil Action — Action fokus ke business rule, bukan input validation.
-
-**Testing:**
-- Pindahkan/duplikasi test yang relevan dari `WithdrawalTest.php` supaya jalan lewat kedua jalur (nasabah & kolektor) dan hasilnya identik untuk skenario yang sama.
-- Tambahkan unit test langsung ke `AjukanPenarikanAction` tanpa lewat Livewire, supaya business rule bisa dites terisolasi.
-
-**Estimasi:** 4-5 jam (perubahan struktural, butuh regression test menyeluruh).
-
----
-
-## Fase 4 — Cleanup (boleh dikerjakan kapan saja, low-risk)
-
-| # | Item | File | Estimasi |
-|---|------|------|----------|
-| 4.1 | Hapus duplikasi `orWhereIn` di `loadNasabah()` | `app/Livewire/Kolektor/InputSetoran.php` | 10 menit |
-| 4.2 | Recalculate `totalSeharusnya` di dalam transaction + `lockForUpdate()` saat `submit()` | `app/Livewire/Admin/RekonsiliasiKas.php` | 30-45 menit |
-| 4.3 | Hapus dead code `$statusKas` (selalu `'lunas'`) atau perjelas maksudnya | `app/Livewire/Admin/HandoverKolektor.php` | 15 menit |
-| 4.4 | Klarifikasi ke bisnis: apakah "pindah wilayah" harus menonaktifkan akun kolektor | `app/Livewire/Admin/HandoverKolektor.php` | diskusi dulu, baru kode |
-| 4.5 | Try/catch `QueryException` di `absenMasuk()` untuk pesan error yang ramah | `app/Livewire/Kolektor/Absen.php` | 20 menit |
-| 4.6 | Simpan tanda tangan sebagai file (konsisten dengan selfie), bukan base64 di kolom `text` | `app/Livewire/Kolektor/Absen.php` + migration baru | 1 jam (perlu migration data lama) |
-| 4.7 | Bungkus `DB::transaction()` di `VerifikasiNasabah::approve()`/`reject()` | `app/Livewire/Admin/VerifikasiNasabah.php` | 20 menit |
-
----
-
-## Urutan pengerjaan yang disarankan
-
-1. **Fase 1** dulu (1.1) — ini yang paling berisiko kalau dibiarkan di produksi.
-2. **Fase 2.1** — tapi mulai dari diskusi bisnis dulu, jangan nunggu approval baru mulai riset formula.
-3. **Fase 2.2** dan **Fase 4** bisa dikerjakan paralel/di sela-sela, ukurannya kecil-kecil.
-4. **Fase 3** terakhir karena sifatnya refactor struktural — lebih aman dikerjakan setelah Fase 1 & 2 stabil, supaya nggak nyampur perubahan behavior dengan perubahan struktur di PR yang sama.
-
-Total estimasi kasar: **~2-3 hari kerja** kalau dikerjakan sendiri secara berurutan, atau **1.5-2 hari** kalau Fase 2 dan Fase 4 dikerjakan paralel dengan orang lain.
+## 4. Catatan Penting
+- Jangan hapus kolom `notifikasi_wa_aktif` di tabel `users` — dipakai bersama, cukup akses lewat trait.
+- Semua perubahan route wajib dites terhadap `role:admin|kolektor|nasabah` middleware yang sudah eksis (`Spatie\Permission\Middleware\RoleMiddleware`, alias `role` di `bootstrap/app.php`) — jangan buat middleware baru kalau yang lama sudah cukup.
+- Kerjakan Fase 1 lebih dulu karena itu menutup lubang keamanan (akses settings tanpa batasan role) yang paling berisiko.
