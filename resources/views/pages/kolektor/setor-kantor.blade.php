@@ -1,0 +1,1 @@
+<x-layouts::mobile title="Setor ke Kantor"><livewire:kolektor.setor-kantor /></x-layouts::mobile>

@@ -1,0 +1,1 @@
+<x-layouts::mobile title="Jadwal Kunjungan"><livewire:kolektor.jadwal-kunjungan /></x-layouts::mobile>

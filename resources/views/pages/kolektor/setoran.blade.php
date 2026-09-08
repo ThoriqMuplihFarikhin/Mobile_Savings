@@ -1,0 +1,1 @@
+<x-layouts::mobile title="Input Setoran"><livewire:kolektor.input-setoran /></x-layouts::mobile>

@@ -1,0 +1,1 @@
+<x-layouts::app title="Approval Penarikan"><livewire:admin.approval-penarikan /></x-layouts::app>

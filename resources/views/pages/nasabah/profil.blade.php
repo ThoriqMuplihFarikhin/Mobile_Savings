@@ -1,0 +1,1 @@
+<x-layouts::mobile title="Profil"><livewire:nasabah.profil /></x-layouts::mobile>

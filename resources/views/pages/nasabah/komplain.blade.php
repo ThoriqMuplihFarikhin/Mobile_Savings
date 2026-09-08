@@ -1,0 +1,1 @@
+<x-layouts::mobile title="Komplain"><livewire:nasabah.komplain /></x-layouts::mobile>

@@ -1,0 +1,1 @@
+<x-layouts::mobile title="Nasabah Binaan"><livewire:kolektor.nasabah-binaan /></x-layouts::mobile>

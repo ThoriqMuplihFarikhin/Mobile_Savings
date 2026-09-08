@@ -1,0 +1,1 @@
+<x-layouts::app title="Registrasi Nasabah"><livewire:admin.registrasi-nasabah /></x-layouts::app>

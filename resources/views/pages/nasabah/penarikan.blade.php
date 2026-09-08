@@ -1,0 +1,1 @@
+<x-layouts::mobile title="Ajukan Penarikan"><livewire:nasabah.ajukan-penarikan /></x-layouts::mobile>

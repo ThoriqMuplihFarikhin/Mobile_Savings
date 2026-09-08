@@ -1,0 +1,1 @@
+<x-layouts::app title="Manajemen Produk"><livewire:admin.manajemen-produk /></x-layouts::app>

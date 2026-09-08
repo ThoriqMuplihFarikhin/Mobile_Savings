@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class NasabahProfil extends Model
+{
+    use HasFactory;
+
+    protected $table = 'nasabah_profil';
+
+    protected $fillable = [
+        'user_id',
+        'nama',
+        'alamat',
+        'didaftarkan_oleh',
+        'status_pendaftaran',
+        'diverifikasi_oleh',
+        'tanggal_verifikasi',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'tanggal_verifikasi' => 'datetime',
+        ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function didaftarkanOleh(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'didaftarkan_oleh');
+    }
+
+    public function diverifikasiOleh(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'diverifikasi_oleh');
+    }
+}

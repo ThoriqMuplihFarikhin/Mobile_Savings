@@ -1,0 +1,1 @@
+<x-layouts::mobile title="Notifikasi"><livewire:nasabah.notifikasi /></x-layouts::mobile>

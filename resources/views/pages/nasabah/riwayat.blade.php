@@ -1,0 +1,1 @@
+<x-layouts::mobile title="Riwayat Penarikan"><livewire:nasabah.riwayat-penarikan /></x-layouts::mobile>

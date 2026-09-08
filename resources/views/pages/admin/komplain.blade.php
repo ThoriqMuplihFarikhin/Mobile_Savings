@@ -1,0 +1,1 @@
+<x-layouts::app title="Antrian Komplain"><livewire:admin.antrian-komplain /></x-layouts::app>

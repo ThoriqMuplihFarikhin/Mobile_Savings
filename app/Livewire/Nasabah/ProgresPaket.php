@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Livewire\Nasabah;
+
+use App\Models\KepesertaanPaket;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+
+#[Layout('layouts.mobile')]
+class ProgresPaket extends Component
+{
+    public function render()
+    {
+        $kepesertaan = KepesertaanPaket::with('produk')
+            ->where('nasabah_id', Auth::id())
+            ->latest('tanggal_mulai_ikut')
+            ->get();
+
+        return view('livewire.nasabah.progres-paket', compact('kepesertaan'));
+    }
+}
