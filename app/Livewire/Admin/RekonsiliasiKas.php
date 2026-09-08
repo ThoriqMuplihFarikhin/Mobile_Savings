@@ -158,26 +158,33 @@ class RekonsiliasiKas extends Component
             'totalDiterima' => 'required|numeric|min:0',
         ]);
 
-        $selisih = $this->totalDiterima - $this->totalSeharusnya;
-        $status = match (true) {
-            $selisih == 0 => 'cocok',
-            $selisih > 0 => 'lebih',
-            default => 'kurang',
-        };
-
-        if ($selisih != 0 && empty($this->keterangan)) {
-            session()->flash('error', 'Keterangan wajib diisi jika ada selisih!');
-
-            return;
-        }
-
         DB::beginTransaction();
 
         try {
+            $totalSeharusnya = TransaksiSetoran::where('input_by', $this->kolektorId)
+                ->where('sudah_disetor_ke_kantor', false)
+                ->where('status', 'tercatat')
+                ->lockForUpdate()
+                ->sum('nominal');
+
+            $selisih = $this->totalDiterima - $totalSeharusnya;
+            $status = match (true) {
+                $selisih == 0 => 'cocok',
+                $selisih > 0 => 'lebih',
+                default => 'kurang',
+            };
+
+            if ($selisih != 0 && empty($this->keterangan)) {
+                DB::rollBack();
+                session()->flash('error', 'Keterangan wajib diisi jika ada selisih!');
+
+                return;
+            }
+
             $setoran = SetoranKolektorKantor::create([
                 'kolektor_id' => $this->kolektorId,
                 'tanggal_setor' => now()->toDateString(),
-                'total_seharusnya' => $this->totalSeharusnya,
+                'total_seharusnya' => $totalSeharusnya,
                 'total_diterima' => $this->totalDiterima,
                 'selisih' => $selisih,
                 'keterangan_selisih' => $this->keterangan ?: null,
@@ -197,7 +204,7 @@ class RekonsiliasiKas extends Component
 
             ActivityLogger::log('rekon', 'setoran_kolektor_kantor', $setoran->id, [
                 'kolektor_id' => $this->kolektorId,
-                'total_seharusnya' => $this->totalSeharusnya,
+                'total_seharusnya' => $totalSeharusnya,
                 'total_diterima' => $this->totalDiterima,
                 'selisih' => $selisih,
                 'status' => $status,

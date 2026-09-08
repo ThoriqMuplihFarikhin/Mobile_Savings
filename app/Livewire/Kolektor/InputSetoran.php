@@ -56,12 +56,6 @@ class InputSetoran extends Component
                     ->where('kolektor_id', $kolektorId)
                     ->where('status', 'aktif');
             })
-            ->orWhereIn('user_id', function ($query) use ($kolektorId) {
-                $query->select('nasabah_id')
-                    ->from('kolektor_nasabah')
-                    ->where('kolektor_id', $kolektorId)
-                    ->where('status', 'aktif');
-            })
             ->with('user')
             ->get();
     }

@@ -121,7 +121,7 @@ class HandoverKolektor extends Component
                 ]);
             }
 
-            $statusKas = $this->hasUnsettledCash ? 'masih_tunggakan' : 'lunas';
+            $statusKas = 'lunas';
 
             LogHandoverKolektor::create([
                 'kolektor_lama_id' => $this->kolektorLamaId,

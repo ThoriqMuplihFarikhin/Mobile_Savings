@@ -2,11 +2,11 @@
 
 namespace App\Livewire\Kolektor;
 
+use App\Actions\Penarikan\AjukanPenarikanAction;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
-use App\Models\SaldoProduk;
-use App\Models\TransaksiPenarikan;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -89,7 +89,7 @@ class PenarikanOffline extends Component
         }
     }
 
-    public function submit()
+    public function submit(AjukanPenarikanAction $action)
     {
         $this->validate([
             'nasabahId' => 'required|exists:users,id',
@@ -109,49 +109,28 @@ class PenarikanOffline extends Component
             return;
         }
 
-        $saldo = SaldoProduk::where('nasabah_id', $this->nasabahId)
-            ->where('produk_id', $this->produkId)
-            ->first();
+        $nasabah = User::findOrFail($this->nasabahId);
+        $produk = ProdukTabungan::findOrFail($this->produkId);
 
-        $totalPending = TransaksiPenarikan::where('nasabah_id', $this->nasabahId)
-            ->where('produk_id', $this->produkId)
-            ->where('status', 'pending')
-            ->sum('nominal_diminta');
+        try {
+            $action->execute(
+                $nasabah,
+                $produk,
+                (float) $this->nominal,
+                'offline',
+                $this->lokasi
+            );
 
-        $available = ($saldo->saldo ?? 0) - $totalPending;
+            $this->reset(['nasabahId', 'produkId', 'nominal', 'lokasi']);
+            $this->selectedNasabah = null;
+            $this->persenKomisi = 0;
+            $this->nominalKomisi = 0;
+            $this->nominalDiterima = 0;
 
-        if ($available < $this->nominal) {
-            session()->flash('error', 'Saldo nasabah tidak mencukupi! Sisa saldo tersedia: Rp '.number_format($available, 0, ',', '.'));
-
-            return;
+            session()->flash('success', 'Penarikan offline berhasil diajukan! Menunggu persetujuan admin.');
+        } catch (\Exception $e) {
+            session()->flash('error', $e->getMessage());
         }
-
-        $produk = ProdukTabungan::find($this->produkId);
-        if ($produk && $produk->isPaket() && $produk->tanggal_boleh_cair && now()->lt($produk->tanggal_boleh_cair)) {
-            session()->flash('error', 'Penarikan paket belum bisa dilakukan sebelum tanggal '.$produk->tanggal_boleh_cair->translatedFormat('d M Y'));
-
-            return;
-        }
-
-        TransaksiPenarikan::create([
-            'nasabah_id' => $this->nasabahId,
-            'produk_id' => $this->produkId,
-            'nominal_diminta' => $this->nominal,
-            'persen_komisi_terpakai' => $this->persenKomisi,
-            'nominal_komisi' => $this->nominalKomisi,
-            'nominal_diterima' => $this->nominalDiterima,
-            'jalur_pengajuan' => 'offline',
-            'lokasi_pengambilan' => $this->lokasi,
-            'status' => 'pending',
-        ]);
-
-        $this->reset(['nasabahId', 'produkId', 'nominal', 'lokasi']);
-        $this->selectedNasabah = null;
-        $this->persenKomisi = 0;
-        $this->nominalKomisi = 0;
-        $this->nominalDiterima = 0;
-
-        session()->flash('success', 'Penarikan offline berhasil diajukan! Menunggu persetujuan admin.');
     }
 
     public function render()

@@ -3,6 +3,7 @@
 namespace App\Livewire\Kolektor;
 
 use App\Models\AbsensiKolektor;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
@@ -91,19 +92,33 @@ class Absen extends Component
             $fotoSelfiePath = $filename;
         }
 
-        AbsensiKolektor::create([
-            'kolektor_id' => Auth::id(),
-            'tanggal' => now()->toDateString(),
-            'waktu_masuk' => now()->toTimeString(),
-            'latitude' => $this->latitude,
-            'longitude' => $this->longitude,
-            'foto_selfie_path' => $fotoSelfiePath,
-            'tanda_tangan_base64' => $this->tandaTanganBase64,
-        ]);
+        $tandaTanganPath = null;
+        if ($this->tandaTanganBase64) {
+            $data = str_replace('data:image/png;base64,', '', $this->tandaTanganBase64);
+            $data = str_replace('data:image/jpeg;base64,', '', $data);
+            $data = base64_decode($data);
+            $filename = 'tanda_tangan/'.Auth::id().'_'.now()->timestamp.'.png';
+            Storage::disk('public')->put($filename, $data);
+            $tandaTanganPath = $filename;
+        }
 
-        $this->sudahAbsenHariIni = true;
-        $this->waktuAbsenHariIni = now()->toTimeString();
-        session()->flash('success', 'Absen berhasil dicatat!');
+        try {
+            AbsensiKolektor::create([
+                'kolektor_id' => Auth::id(),
+                'tanggal' => now()->toDateString(),
+                'waktu_masuk' => now()->toTimeString(),
+                'latitude' => $this->latitude,
+                'longitude' => $this->longitude,
+                'foto_selfie_path' => $fotoSelfiePath,
+                'tanda_tangan_path' => $tandaTanganPath,
+            ]);
+
+            $this->sudahAbsenHariIni = true;
+            $this->waktuAbsenHariIni = now()->toTimeString();
+            session()->flash('success', 'Absen berhasil dicatat!');
+        } catch (QueryException $e) {
+            session()->flash('error', 'Gagal mencatat absen: Anda sudah absen hari ini atau terjadi kesalahan database.');
+        }
     }
 
     public function render()
