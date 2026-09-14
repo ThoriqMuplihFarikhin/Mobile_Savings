@@ -52,12 +52,15 @@ class RegistrasiNasabah extends Component
             'pekerjaan' => 'nullable|string',
         ]);
 
+        $pinDefault = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
         $user = User::create([
             'name' => $this->nama,
             'no_hp' => $this->noHp,
-            'pin_hash' => Hash::make('123456'),
+            'pin_hash' => Hash::make($pinDefault),
             'role' => 'nasabah',
             'status_akun' => 'aktif',
+            'harus_ganti_pin' => true,
         ]);
 
         $user->assignRole('nasabah');
@@ -81,6 +84,6 @@ class RegistrasiNasabah extends Component
 
         $this->showForm = false;
         $this->reset(['nama', 'noHp', 'alamat', 'tanggalLahir', 'jenisKelamin', 'pekerjaan']);
-        session()->flash('success', 'Nasabah berhasil didaftarkan! PIN default: 123456');
+        session()->flash('success', "Nasabah berhasil didaftarkan! PIN awal: {$pinDefault} — sampaikan ke nasabah secara langsung/aman.");
     }
 }

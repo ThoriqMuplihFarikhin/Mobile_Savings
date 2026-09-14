@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\PengaturanController as AdminPengaturanController
 use App\Http\Controllers\Admin\ProdukController;
 use App\Http\Controllers\Admin\RegistrasiController;
 use App\Http\Controllers\Admin\RekonsiliasiController;
+use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\VerifikasiController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Kolektor\AbsenController;
@@ -18,14 +19,15 @@ use App\Http\Controllers\Kolektor\DaftarNasabahController;
 use App\Http\Controllers\Kolektor\JadwalController;
 use App\Http\Controllers\Kolektor\NasabahBinaanController;
 use App\Http\Controllers\Kolektor\PengaturanController as KolektorPengaturanController;
+use App\Http\Controllers\Kolektor\RiwayatAbsensiController;
 use App\Http\Controllers\Kolektor\SetoranController;
 use App\Http\Controllers\Kolektor\SetorKantorController;
 use App\Http\Controllers\Nasabah\NotifikasiController;
 use App\Http\Controllers\Nasabah\PenarikanController;
 use App\Http\Controllers\Nasabah\PengaturanController as NasabahPengaturanController;
-use App\Http\Controllers\Nasabah\ProfilController;
 use App\Http\Controllers\Nasabah\RiwayatController;
 use App\Http\Controllers\Nasabah\SaldoController;
+use App\Livewire\Admin\DetailNasabah;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -36,6 +38,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     // Admin Routes
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         Route::get('/nasabah', [NasabahController::class, 'index'])->name('nasabah.index');
+        Route::get('/nasabah/{user}', DetailNasabah::class)->name('nasabah.detail');
         Route::get('/registrasi', [RegistrasiController::class, 'index'])->name('registrasi.index');
         Route::get('/verifikasi', [VerifikasiController::class, 'index'])->name('verifikasi.index');
         Route::get('/produk', [ProdukController::class, 'index'])->name('produk.index');
@@ -50,6 +53,13 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/monitoring-setoran', [NasabahController::class, 'monitoringSetoran'])->name('monitoring-setoran.index');
         Route::get('/monitoring-absensi', [MonitoringAbsensiController::class, 'index'])->name('monitoring-absensi.index');
         Route::get('/pengaturan', [AdminPengaturanController::class, 'index'])->name('pengaturan.index');
+
+        // Settings khusus admin
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/profile', [AdminSettingsController::class, 'profile'])->name('profile');
+            Route::get('/security', [AdminSettingsController::class, 'security'])->name('security');
+            Route::get('/appearance', [AdminSettingsController::class, 'appearance'])->name('appearance');
+        });
     });
 
     // Kolektor Routes
@@ -61,6 +71,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/setor-kantor', [SetorKantorController::class, 'index'])->name('setor-kantor.index');
         Route::get('/penarikan-offline', [SetoranController::class, 'penarikanOffline'])->name('penarikan-offline.index');
         Route::get('/absen', [AbsenController::class, 'index'])->name('absen.index');
+        Route::get('/izin', fn () => view('pages.kolektor.izin'))->name('izin.index');
+        Route::get('/riwayat-absensi', [RiwayatAbsensiController::class, 'index'])->name('riwayat-absensi.index');
         Route::get('/pengaturan', [KolektorPengaturanController::class, 'index'])->name('pengaturan.index');
     });
 
@@ -73,7 +85,6 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/komplain', [RiwayatController::class, 'komplain'])->name('komplain.index');
         Route::get('/saldo', [SaldoController::class, 'index'])->name('saldo.index');
         Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
-        Route::get('/profil', [ProfilController::class, 'index'])->name('profil.index');
         Route::get('/pengaturan', [NasabahPengaturanController::class, 'index'])->name('pengaturan.index');
     });
 });

@@ -7,7 +7,7 @@ new #[Title('Appearance settings')] class extends Component {
     public function render()
     {
         return view('pages.settings.⚡appearance')
-            ->layout(auth()->user()->isAdmin() ? 'layouts.app' : 'layouts.mobile');
+            ->layout('layouts.mobile');
     }
 }; ?>
 

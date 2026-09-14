@@ -59,6 +59,9 @@
                         <flux:sidebar.item icon="megaphone" href="/admin/bermasalah" :current="request()->routeIs('admin.bermasalah.*')" wire:navigate>
                             {{ __('Nasabah Bermasalah') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="settings" href="/admin/pengaturan" :current="request()->routeIs('admin.pengaturan.*')" wire:navigate>
+                            {{ __('Pengaturan') }}
+                        </flux:sidebar.item>
                     </flux:sidebar.group>
                 @elseif(auth()->user()->isKolektor())
                     <flux:sidebar.group :heading="__('Kolektor')" class="grid">
@@ -118,8 +121,8 @@
                                 <span class="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#ee0000] px-1 font-mono text-[10px] font-medium text-white">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
                             @endif
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="user" href="/nasabah/profil" :current="request()->routeIs('nasabah.profil.*')" wire:navigate>
-                            {{ __('Profil') }}
+                        <flux:sidebar.item icon="cog-6-tooth" href="/nasabah/pengaturan" :current="request()->routeIs('nasabah.pengaturan.*')" wire:navigate>
+                            {{ __('Pengaturan') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
                 @endif
@@ -128,9 +131,14 @@
             <flux:spacer />
 
             <flux:sidebar.nav>
-                <flux:sidebar.item href="{{ route('logout') }}" wire:navigate>
-                    {{ __('Logout') }}
-                </flux:sidebar.item>
+                <form method="POST" action="{{ route('logout') }}" class="w-full">
+                    @csrf
+                    <button type="submit"
+                        class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm w-full
+                               text-sidebar-text hover:text-navy-900 dark:hover:text-white transition-colors cursor-pointer">
+                        {{ __('Logout') }}
+                    </button>
+                </form>
             </flux:sidebar.nav>
 
             <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />

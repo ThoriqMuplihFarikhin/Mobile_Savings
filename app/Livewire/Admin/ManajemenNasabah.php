@@ -93,6 +93,7 @@ class ManajemenNasabah extends Component
                 'pin_hash' => Hash::make($this->pin),
                 'role' => 'nasabah',
                 'status_akun' => 'aktif',
+                'harus_ganti_pin' => false,
             ]);
 
             $user->assignRole('nasabah');

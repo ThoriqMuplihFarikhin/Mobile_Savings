@@ -22,10 +22,11 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $role
  * @property string $status_akun
  * @property int $percobaan_gagal
+ * @property bool $harus_ganti_pin
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'no_hp', 'pin_hash', 'role', 'status_akun', 'percobaan_gagal', 'notifikasi_wa_aktif', 'foto_profil_path', 'banner_path'])]
+#[Fillable(['name', 'no_hp', 'pin_hash', 'role', 'status_akun', 'percobaan_gagal', 'harus_ganti_pin', 'notifikasi_wa_aktif', 'foto_profil_path', 'banner_path'])]
 #[Hidden(['pin_hash', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -34,10 +35,20 @@ class User extends Authenticatable
 
     protected $guard_name = 'web';
 
+    protected static function booted(): void
+    {
+        static::saved(function (User $user) {
+            if ($user->wasChanged('role') && $user->role) {
+                $user->syncRoles([$user->role]);
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
             'percobaan_gagal' => 'integer',
+            'harus_ganti_pin' => 'boolean',
             'notifikasi_wa_aktif' => 'boolean',
         ];
     }

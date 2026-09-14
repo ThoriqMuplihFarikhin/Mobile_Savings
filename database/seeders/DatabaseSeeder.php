@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\KolektorNasabah;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -55,6 +56,14 @@ class DatabaseSeeder extends Seeder
             'status_pendaftaran' => 'aktif',
             'diverifikasi_oleh' => $admin->id,
             'tanggal_verifikasi' => now(),
+        ]);
+
+        // Assign nasabah to kolektor
+        KolektorNasabah::create([
+            'kolektor_id' => $kolektor->id,
+            'nasabah_id' => $nasabah->id,
+            'tanggal_mulai_ditangani' => now()->toDateString(),
+            'status' => 'aktif',
         ]);
     }
 }

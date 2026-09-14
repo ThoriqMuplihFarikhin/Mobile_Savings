@@ -10,6 +10,7 @@
 
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-serif: 'Source Serif 4', 'Georgia', serif;
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
@@ -23,6 +24,33 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
+    --color-navy-950: #0A1626;
+    --color-navy-900: #0F2340;
+    --color-navy-850: #123056;
+    --color-navy-800: #16345C;
+
+    --color-gold: #B8862E;
+    --color-gold-soft: #F3E7D0;
+
+    --color-success: #1F7A54;
+    --color-success-soft: #E4F2EA;
+
+    --color-danger: #B23A2E;
+    --color-danger-soft: #F6E5E2;
+
+    --color-surface: #FFFFFF;
+    --color-surface-alt: #F3F5F8;
+    --color-border: #DEE4EA;
+    --color-text: #16202E;
+    --color-text-muted: #5D6B7E;
+    --color-gold-bright: #D6A445;
+
+    --color-sidebar: #FFFFFF;
+    --color-sidebar-active: #EEF2F8;
+    --color-sidebar-text: #4E6076;
+    --color-sidebar-text-active: #0F2340;
+    --color-sidebar-border: #DEE4EA;
+
     --color-accent: var(--color-neutral-800);
     --color-accent-content: var(--color-neutral-800);
     --color-accent-foreground: var(--color-white);
@@ -30,6 +58,19 @@
 
 @layer theme {
     .dark {
+        --color-surface: #131C2E;
+        --color-surface-alt: #0B1220;
+        --color-border: #233047;
+        --color-text: #E7ECF3;
+        --color-text-muted: #8A98AC;
+        --color-gold-bright: #D6A445;
+
+        --color-sidebar: #0A1626;
+        --color-sidebar-active: #123056;
+        --color-sidebar-text: #8A98AC;
+        --color-sidebar-text-active: #E7ECF3;
+        --color-sidebar-border: transparent;
+
         --color-accent: var(--color-white);
         --color-accent-content: var(--color-white);
         --color-accent-foreground: var(--color-neutral-800);
@@ -64,3 +105,12 @@ select:focus[data-flux-control] {
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */
+
+@layer components {
+  .card {
+    @apply rounded-3xl bg-white dark:bg-zinc-800 shadow-lg p-6;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+}

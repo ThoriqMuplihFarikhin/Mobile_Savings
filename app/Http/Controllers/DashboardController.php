@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AbsensiKolektor;
 use App\Models\KepesertaanPaket;
 use App\Models\LogNotifikasi;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -26,43 +28,70 @@ class DashboardController extends Controller
 
     private function adminDashboard($user)
     {
-        $stats = [
-            'total_nasabah' => DB::table('users')->where('role', 'nasabah')->count(),
-            'total_kolektor' => DB::table('users')->where('role', 'kolektor')->count(),
-            'nasabah_pending' => DB::table('nasabah_profil')->where('status_pendaftaran', 'pending_verifikasi')->count(),
-            'penarikan_pending' => DB::table('transaksi_penarikan')->where('status', 'pending')->count(),
-            'total_setoran_hari' => DB::table('transaksi_setoran')
-                ->where('tanggal_transaksi', today())
+        $totalNasabah = DB::table('users')->where('role', 'nasabah')->count();
+        $totalKolektor = DB::table('users')->where('role', 'kolektor')->count();
+        $totalSaldo = DB::table('saldo_produk')->sum('saldo');
+        $setoranHariIni = DB::table('transaksi_setoran')
+            ->where('tanggal_transaksi', today())
+            ->where('status', 'tercatat')
+            ->sum('nominal');
+
+        $trenSetoran = collect(range(29, 0))->map(fn ($i) => [
+            'tanggal' => Carbon::today()->subDays($i)->format('d M'),
+            'nominal' => (float) DB::table('transaksi_setoran')
+                ->where('tanggal_transaksi', Carbon::today()->subDays($i))
                 ->where('status', 'tercatat')
                 ->sum('nominal'),
-            'total_saldo_semua' => DB::table('saldo_produk')->sum('saldo'),
-        ];
+        ])->values();
 
-        return view('dashboard', compact('user', 'stats'));
+        $komposisiProduk = DB::table('saldo_produk')
+            ->join('produk_tabungan', 'saldo_produk.produk_id', '=', 'produk_tabungan.id')
+            ->select('produk_tabungan.tipe', DB::raw('SUM(saldo_produk.saldo) as total'))
+            ->groupBy('produk_tabungan.tipe')
+            ->get();
+
+        $transaksiTerbaru = DB::table('transaksi_setoran')
+            ->join('users', 'transaksi_setoran.nasabah_id', '=', 'users.id')
+            ->leftJoin('produk_tabungan', 'transaksi_setoran.produk_id', '=', 'produk_tabungan.id')
+            ->select(
+                'transaksi_setoran.*',
+                'users.name as nasabah_name',
+                'produk_tabungan.nama as produk_name'
+            )
+            ->where('transaksi_setoran.status', 'tercatat')
+            ->orderByDesc('transaksi_setoran.tanggal_transaksi')
+            ->limit(5)
+            ->get();
+
+        $kolektorTeratas = DB::table('transaksi_setoran')
+            ->join('users', 'transaksi_setoran.input_by', '=', 'users.id')
+            ->select('users.name', DB::raw('COUNT(*) as jumlah_setoran'), DB::raw('SUM(transaksi_setoran.nominal) as total_nominal'))
+            ->where('transaksi_setoran.status', 'tercatat')
+            ->where('transaksi_setoran.tanggal_transaksi', '>=', Carbon::now()->subDays(30))
+            ->groupBy('users.id', 'users.name')
+            ->orderByDesc('total_nominal')
+            ->limit(4)
+            ->get();
+
+        return view('dashboard', compact(
+            'user',
+            'totalNasabah',
+            'totalKolektor',
+            'totalSaldo',
+            'setoranHariIni',
+            'trenSetoran',
+            'komposisiProduk',
+            'transaksiTerbaru',
+            'kolektorTeratas',
+        ));
     }
 
     private function kolektorDashboard($user)
     {
-        $stats = [
-            'nasabah_ditangani' => DB::table('kolektor_nasabah')
-                ->where('kolektor_id', $user->id)
-                ->where('status', 'aktif')
-                ->count(),
-            'setoran_hari' => DB::table('transaksi_setoran')
-                ->where('input_by', $user->id)
-                ->where('tanggal_transaksi', today())
-                ->where('status', 'tercatat')
-                ->sum('nominal'),
-            'setoran_belum_disetor' => DB::table('transaksi_setoran')
-                ->where('input_by', $user->id)
-                ->where('sudah_disetor_ke_kantor', false)
-                ->where('status', 'tercatat')
-                ->sum('nominal'),
-            'jadwal_hari' => DB::table('jadwal_kunjungan')
-                ->where('kolektor_id', $user->id)
-                ->where('tanggal_jadwal', today())
-                ->count(),
-        ];
+        $sudahAbsenHariIni = AbsensiKolektor::where('kolektor_id', $user->id)
+            ->where('tanggal', today())
+            ->whereNotNull('waktu_masuk')
+            ->exists();
 
         $jadwalHariIni = DB::table('jadwal_kunjungan')
             ->where('kolektor_id', $user->id)
@@ -80,24 +109,45 @@ class DashboardController extends Controller
                 'kepesertaan_paket.status_alert',
                 'produk_tabungan.nama as produk_name'
             )
+            ->orderBy('jadwal_kunjungan.id')
             ->get();
+
+        $jadwalTotal = $jadwalHariIni->count();
+        $jadwalSelesai = $jadwalHariIni->where('status_kunjungan', 'dikunjungi')->count();
+
+        $stats = [
+            'setoran_belum_disetor' => DB::table('transaksi_setoran')
+                ->where('input_by', $user->id)
+                ->where('sudah_disetor_ke_kantor', false)
+                ->where('status', 'tercatat')
+                ->sum('nominal'),
+            'kunjungan_selesai' => $jadwalSelesai,
+            'kunjungan_total' => $jadwalTotal,
+        ];
 
         $nasabahIds = DB::table('kolektor_nasabah')
             ->where('kolektor_id', $user->id)
             ->where('status', 'aktif')
             ->pluck('nasabah_id');
 
-        $nasabahTunggak = KepesertaanPaket::whereIn('nasabah_id', $nasabahIds)
+        $nasabahTunggakParah = KepesertaanPaket::whereIn('nasabah_id', $nasabahIds)
             ->whereIn('status_alert', ['peringatan', 'perlu_review'])
             ->count();
 
-        return view('dashboard', compact('user', 'stats', 'jadwalHariIni', 'nasabahTunggak'));
+        $totalNasabahBinaan = DB::table('kolektor_nasabah')
+            ->where('kolektor_id', $user->id)
+            ->where('status', 'aktif')
+            ->count();
+
+        return view('dashboard', compact('user', 'stats', 'jadwalHariIni', 'sudahAbsenHariIni', 'nasabahTunggakParah', 'totalNasabahBinaan'));
     }
 
     private function nasabahDashboard($user)
     {
-        $saldo = SaldoProduk::where('nasabah_id', $user->id)->get();
-        $totalSaldo = $saldo->sum('saldo');
+        $saldoPerProduk = SaldoProduk::where('nasabah_id', $user->id)
+            ->with('produk')
+            ->get();
+        $totalSaldo = $saldoPerProduk->sum('saldo');
 
         $riwayatSetoran = TransaksiSetoran::where('nasabah_id', $user->id)
             ->where('status', 'tercatat')
@@ -127,13 +177,48 @@ class DashboardController extends Controller
 
         $unreadNotifikasi = LogNotifikasi::where('nasabah_id', $user->id)
             ->where('is_read', false)
-            ->count();
+            ->exists();
 
-        $kepesertaanPaket = KepesertaanPaket::where('nasabah_id', $user->id)
+        $kepesertaanAktif = KepesertaanPaket::where('nasabah_id', $user->id)
             ->whereNull('keputusan_akhir')
             ->with('produk')
             ->first();
 
-        return view('dashboard', compact('user', 'saldo', 'totalSaldo', 'riwayatGabungan', 'unreadNotifikasi', 'kepesertaanPaket'));
+        $streak = $this->hitungStreak($user->id);
+
+        return view('dashboard', compact(
+            'user',
+            'saldoPerProduk',
+            'totalSaldo',
+            'riwayatGabungan',
+            'unreadNotifikasi',
+            'kepesertaanAktif',
+            'streak',
+        ));
+    }
+
+    private function hitungStreak(int $nasabahId): int
+    {
+        $tanggalSetor = TransaksiSetoran::where('nasabah_id', $nasabahId)
+            ->where('status', 'tercatat')
+            ->orderByDesc('tanggal_transaksi')
+            ->pluck('tanggal_transaksi')
+            ->map(fn ($t) => Carbon::parse($t)->toDateString())
+            ->unique()
+            ->values();
+
+        $streak = 0;
+        $cursor = now()->toDateString();
+
+        foreach ($tanggalSetor as $tanggal) {
+            if ($tanggal === $cursor || $tanggal === Carbon::parse($cursor)->subDay()->toDateString()) {
+                $streak++;
+                $cursor = $tanggal;
+            } else {
+                break;
+            }
+        }
+
+        return $streak;
     }
 }

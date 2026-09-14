@@ -30,6 +30,7 @@ class UserFactory extends Factory
             'pin_hash' => Hash::make('123456'),
             'role' => 'nasabah',
             'status_akun' => 'aktif',
+            'harus_ganti_pin' => false,
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),

@@ -1,8 +1,13 @@
-<div>
+<div class="space-y-6">
     {{-- Page Header --}}
-    <div class="mb-8">
-        <h1 class="text-2xl font-semibold tracking-tight text-[#171717]">Progres Paket</h1>
-        <p class="mt-1 text-sm text-[#888888]">Detail kepesertaan paket tabungan Anda.</p>
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Progres Paket</h1>
+            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Pantau perkembangan kepesertaan paket tabungan Anda.</p>
+        </div>
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 shadow-2xs border border-indigo-100 dark:border-indigo-900/50">
+            <flux:icon.shopping-bag class="size-5" />
+        </div>
     </div>
 
     <div class="space-y-4">
@@ -12,72 +17,84 @@
                     ? round(($item->total_aktual_terkumpul / $item->total_seharusnya_terkumpul) * 100)
                     : 0;
                 $persentase = min($persentase, 100);
-                $barColor = match($item->status_alert) {
-                    'normal'     => 'bg-[#0070f3]',
-                    'peringatan' => 'bg-[#f5a623]',
-                    default      => 'bg-[#ee0000]',
+                $alertStatus = $item->status_alert ?? 'normal';
+                $barGradient = match($alertStatus) {
+                    'normal'     => 'from-emerald-500 to-teal-400',
+                    'peringatan' => 'from-amber-400 to-orange-500',
+                    default      => 'from-rose-500 to-red-600',
+                };
+                $statusBadge = match($alertStatus) {
+                    'normal'     => ['label' => 'On Track', 'class' => 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60'],
+                    'peringatan' => ['label' => 'Peringatan', 'class' => 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60'],
+                    default      => ['label' => 'Perlu Review', 'class' => 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60'],
                 };
             @endphp
-            <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
-                {{-- Header --}}
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <h3 class="text-base font-semibold text-[#171717]">{{ $item->produk->nama ?? '-' }}</h3>
-                        <p class="mt-0.5 font-mono text-xs text-[#888888]">Mulai: {{ $item->tanggal_mulai_ikut->translatedFormat('d M Y') }}</p>
+            <div class="rounded-3xl bg-white dark:bg-zinc-800 overflow-hidden shadow-xs border border-zinc-200/80 dark:border-zinc-700/80">
+                {{-- Card Top Hero --}}
+                <div class="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-indigo-800 to-zinc-900 p-5 text-white dark:from-zinc-950 dark:to-zinc-900">
+                    <div class="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-indigo-500/20 blur-2xl pointer-events-none"></div>
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h3 class="text-base font-bold text-white leading-tight">{{ $item->produk->nama ?? '-' }}</h3>
+                            <p class="mt-0.5 text-[11px] text-indigo-200/80 font-mono">Mulai: {{ $item->tanggal_mulai_ikut->translatedFormat('d M Y') }}</p>
+                        </div>
+                        <span class="shrink-0 rounded-full px-3 py-1 text-[10px] font-bold {{ $statusBadge['class'] }}">
+                            {{ $statusBadge['label'] }}
+                        </span>
                     </div>
-                    <div class="shrink-0">
-                        @if($item->status_alert === 'normal')
-                            <span class="inline-flex items-center rounded-full bg-[#d3e5ff] px-2.5 py-0.5 font-mono text-xs text-[#0761d1]">Normal</span>
-                        @elseif($item->status_alert === 'peringatan')
-                            <span class="inline-flex items-center rounded-full bg-[#ffefcf] px-2.5 py-0.5 font-mono text-xs text-[#ab570a]">Peringatan</span>
-                        @else
-                            <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 font-mono text-xs text-[#c50000]">Perlu Review</span>
-                        @endif
+
+                    {{-- Progress Bar --}}
+                    <div class="mt-5">
+                        <div class="flex items-end justify-between mb-2">
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 mb-0.5">Terkumpul</p>
+                                <p class="font-mono text-xl font-bold text-white">Rp {{ number_format($item->total_aktual_terkumpul, 0, ',', '.') }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 mb-0.5">Target</p>
+                                <p class="font-mono text-xs font-semibold text-indigo-100">Rp {{ number_format($item->total_seharusnya_terkumpul, 0, ',', '.') }}</p>
+                            </div>
+                        </div>
+                        <div class="h-2 w-full overflow-hidden rounded-full bg-white/20">
+                            <div class="h-full rounded-full bg-gradient-to-r {{ $barGradient }} transition-all duration-700 ease-out shadow-[0_0_10px_rgba(16,185,129,0.4)]"
+                                style="width: {{ $persentase }}%"></div>
+                        </div>
+                        <div class="mt-2 flex items-center justify-between">
+                            <span class="text-[11px] text-indigo-200">Progres Capaian</span>
+                            <span class="text-xs font-bold {{ $persentase >= 100 ? 'text-emerald-400' : 'text-white' }}">{{ $persentase }}%</span>
+                        </div>
                     </div>
                 </div>
 
-                {{-- Progress Bar --}}
-                <div class="mt-5">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-[#4d4d4d]">Progres terkumpul</span>
-                        <span class="font-mono text-sm font-medium text-[#171717]">{{ $persentase }}%</span>
-                    </div>
-                    <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-[#f5f5f5]">
-                        <div class="h-full rounded-full transition-all duration-500 {{ $barColor }}"
-                            style="width: {{ $persentase }}%"></div>
-                    </div>
-                    <div class="mt-1.5 flex items-center justify-between font-mono text-xs text-[#888888]">
-                        <span>Rp {{ number_format($item->total_aktual_terkumpul, 0, ',', '.') }}</span>
-                        <span>Rp {{ number_format($item->total_seharusnya_terkumpul, 0, ',', '.') }}</span>
-                    </div>
-                </div>
-
-                {{-- Tunggakan Alert --}}
+                {{-- Tunggakan Warning --}}
                 @if($item->tunggakan > 0)
-                    <div class="mt-4 flex items-center gap-2.5 rounded-lg bg-[#f7d4d6] px-4 py-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 text-[#ee0000]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
-                        <p class="text-sm font-medium text-[#c50000]">
-                            Tunggakan: Rp {{ number_format($item->tunggakan, 0, ',', '.') }}
-                        </p>
+                    <div class="mx-5 mt-4 flex items-center gap-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 p-3.5 border border-rose-200/60 dark:border-rose-800/40">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400">
+                            <flux:icon.exclamation-triangle class="size-4" />
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-rose-700 dark:text-rose-400">Tunggakan Setoran</p>
+                            <p class="text-xs font-mono font-bold text-rose-600 dark:text-rose-300 mt-0.5">Rp {{ number_format($item->tunggakan, 0, ',', '.') }}</p>
+                        </div>
                     </div>
                 @endif
 
-                {{-- Detail Grid --}}
+                {{-- Detail Info --}}
                 @if($item->produk && $item->produk->isPaket())
                     @php
                         $details = array_filter([
-                            $item->produk->tanggal_boleh_cair ? ['label' => 'Tanggal Boleh Cair', 'value' => \Carbon\Carbon::parse($item->produk->tanggal_boleh_cair)->translatedFormat('d M Y')] : null,
-                            $item->keputusan_akhir           ? ['label' => 'Keputusan Akhir', 'value' => ucfirst(str_replace('_', ' ', $item->keputusan_akhir))] : null,
-                            $item->metode_pengambilan        ? ['label' => 'Metode Pengambilan', 'value' => $item->metode_pengambilan === 'ambil_sendiri' ? 'Ambil Sendiri' : 'Diantar Kolektor'] : null,
+                            $item->produk->tanggal_boleh_cair ? ['label' => 'Boleh Cair', 'value' => \Carbon\Carbon::parse($item->produk->tanggal_boleh_cair)->translatedFormat('d M Y')] : null,
+                            $item->keputusan_akhir           ? ['label' => 'Keputusan', 'value' => ucfirst(str_replace('_', ' ', $item->keputusan_akhir))] : null,
+                            $item->metode_pengambilan        ? ['label' => 'Pengambilan', 'value' => $item->metode_pengambilan === 'ambil_sendiri' ? 'Ambil Sendiri' : 'Diantar Kolektor'] : null,
                             $item->status_serah_terima       ? ['label' => 'Serah Terima', 'value' => $item->status_serah_terima === 'sudah_diterima' ? 'Sudah Diterima' : 'Belum'] : null,
                         ]);
                     @endphp
                     @if(count($details) > 0)
-                        <div class="mt-4 grid grid-cols-2 gap-3 border-t border-[#ebebeb] pt-4">
+                        <div class="grid grid-cols-2 gap-2 border-t border-zinc-100 dark:border-zinc-700/60 mx-5 mt-4 pt-4 pb-2">
                             @foreach($details as $detail)
-                                <div class="rounded-lg bg-[#fafafa] px-3 py-2.5">
-                                    <p class="font-mono text-xs text-[#888888]">{{ $detail['label'] }}</p>
-                                    <p class="mt-1 text-sm font-medium text-[#171717]">{{ $detail['value'] }}</p>
+                                <div class="rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 p-3 border border-zinc-200/60 dark:border-zinc-700/40">
+                                    <p class="text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500">{{ $detail['label'] }}</p>
+                                    <p class="mt-0.5 text-xs font-bold text-zinc-900 dark:text-white truncate">{{ $detail['value'] }}</p>
                                 </div>
                             @endforeach
                         </div>
@@ -86,24 +103,24 @@
 
                 {{-- Admin Note --}}
                 @if($item->catatan_admin)
-                    <div class="mt-4 rounded-lg bg-[#ffefcf] px-4 py-3">
-                        <p class="font-mono text-xs text-[#ab570a]">Catatan Admin</p>
-                        <p class="mt-1 text-sm text-[#ab570a]">{{ $item->catatan_admin }}</p>
+                    <div class="mx-5 mb-5 mt-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 p-3.5 border border-amber-200/60 dark:border-amber-800/40">
+                        <p class="text-[10px] font-bold uppercase text-amber-700 dark:text-amber-400 mb-0.5">Catatan Admin</p>
+                        <p class="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">{{ $item->catatan_admin }}</p>
                     </div>
+                @else
+                    <div class="pb-5"></div>
                 @endif
             </div>
         @empty
-            <div class="rounded-xl bg-[#fafafa] p-12 shadow-[inset_0_0_0_1px_#ebebeb]">
-                <div class="flex flex-col items-center gap-3 text-center">
-                    <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-white shadow-[inset_0_0_0_1px_#ebebeb]">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-[#a1a1a1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-[#171717]">Belum ada kepesertaan paket</p>
-                        <p class="mt-1 text-sm text-[#888888]">Tanya kolektor Anda tentang pilihan paket tabungan.</p>
-                    </div>
+            <div class="rounded-3xl bg-white dark:bg-zinc-800 p-10 text-center border border-zinc-200/80 dark:border-zinc-700/80 shadow-xs">
+                <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-700/60 text-zinc-400">
+                    <flux:icon.shopping-bag class="size-7 text-zinc-400" />
                 </div>
+                <h3 class="mt-4 text-sm font-bold text-zinc-900 dark:text-white">Belum Ada Kepesertaan Paket</h3>
+                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Tanya kolektor Anda tentang pilihan paket tabungan.</p>
             </div>
         @endforelse
     </div>
 </div>
+
+

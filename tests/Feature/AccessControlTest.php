@@ -44,12 +44,8 @@ it('rejects kolektor input setoran for nasabah not assigned to them', function (
 
     Livewire::test(InputSetoran::class)
         ->set('nasabahId', $nasabah->id)
-        ->set('produkId', $produk->id)
-        ->set('nominal', 50000)
-        ->set('tanggal_transaksi', now()->format('Y-m-d'))
-        ->set('sumber_input', 'real_time')
-        ->call('submit')
-        ->assertHasNoErrors();
+        ->assertSet('nasabahId', '')
+        ->assertSet('selectedNasabah', null);
 
     $this->assertDatabaseMissing('transaksi_setoran', [
         'nasabah_id' => $nasabah->id,

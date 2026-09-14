@@ -1,1 +1,1 @@
-<x-layouts::app title="Manajemen Nasabah"><livewire:admin.manajemen-nasabah /></x-layouts::app>
+<x-layouts::admin title="Manajemen Nasabah"><livewire:admin.manajemen-nasabah /></x-layouts::app>

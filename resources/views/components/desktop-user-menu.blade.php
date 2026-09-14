@@ -19,14 +19,12 @@
         </div>
         <flux:menu.separator />
         <flux:menu.radio.group>
-            <flux:menu.item :href="route('profile.edit')"             icon="settings" wire:navigate>
+            <flux:menu.item :href="route('admin.settings.profile')"    icon="settings" wire:navigate>
                 {{ __('Settings') }}
             </flux:menu.item>
-            @if(auth()->user()->isAdmin())
-                <flux:menu.item :href="route('admin.pengaturan.index')" icon="cog" wire:navigate>
-                    {{ __('Pengaturan Sistem') }}
-                </flux:menu.item>
-            @endif
+            <flux:menu.item :href="route('admin.pengaturan.index')" icon="cog" wire:navigate>
+                {{ __('Pengaturan Sistem') }}
+            </flux:menu.item>
             <form method="POST" action="{{ route('logout') }}" class="w-full">
                 @csrf
                 <flux:menu.item

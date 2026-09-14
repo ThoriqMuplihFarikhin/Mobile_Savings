@@ -1,62 +1,60 @@
-<div>
+<div class="mx-auto max-w-3xl space-y-6">
     {{-- Page Header --}}
-    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-[#171717]">Notifikasi</h1>
-            <p class="mt-1 text-sm text-[#888888]">Pesan dan informasi terbaru untuk Anda.</p>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Notifikasi</h1>
+            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Pesan dan informasi terbaru untuk Anda.</p>
         </div>
         <button wire:click="markAllRead"
-            class="shrink-0 text-sm text-[#0070f3] underline-offset-2 hover:underline">
-            Tandai semua dibaca
+            class="flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-700 active:scale-95">
+            <flux:icon.check class="size-4 text-indigo-600" />
+            <span>Tandai Semua Dibaca</span>
         </button>
     </div>
 
     {{-- Notification List --}}
-    <div class="overflow-hidden rounded-xl bg-white shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+    <div class="space-y-2">
         @forelse($notifikasi as $item)
             <div wire:click="markAsRead({{ $item->id }})"
-                class="group flex cursor-pointer items-start gap-4 px-5 py-4 transition hover:bg-[#fafafa]
-                    {{ !$loop->last ? 'border-b border-[#ebebeb]' : '' }}">
+                class="group flex cursor-pointer items-start gap-4 rounded-3xl p-4 transition {{ $item->is_read ? 'bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-100 dark:border-zinc-700/40' : 'bg-white dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700/60 shadow-sm hover:shadow-md' }}">
                 {{-- Icon --}}
-                <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg
-                    {{ $item->is_read ? 'bg-[#fafafa] text-[#888888]' : 'bg-[#d3e5ff] text-[#0070f3]' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl {{ $item->is_read ? 'bg-zinc-100 dark:bg-zinc-700 text-zinc-400 dark:text-zinc-500' : 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400' }}">
+                    @if($item->is_read)
+                        <flux:icon.bell-slash class="size-5" />
+                    @else
+                        <flux:icon.bell class="size-5" />
+                    @endif
                 </div>
 
                 {{-- Content --}}
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-[#171717] {{ $item->is_read ? 'opacity-70' : '' }}">
+                    <p class="text-sm font-bold {{ $item->is_read ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-900 dark:text-white' }}">
                         {{ $item->judul }}
                     </p>
-                    <p class="mt-0.5 text-sm text-[#4d4d4d] {{ $item->is_read ? 'opacity-60' : '' }}">
+                    <p class="mt-0.5 text-xs leading-relaxed {{ $item->is_read ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-600 dark:text-zinc-300' }}">
                         {{ $item->pesan }}
                     </p>
-                    <p class="mt-1.5 font-mono text-xs text-[#888888]">
+                    <p class="mt-1.5 text-xs text-zinc-400 dark:text-zinc-500">
                         {{ $item->created_at->diffForHumans() }}
                     </p>
                 </div>
 
-                {{-- Unread dot --}}
+                {{-- Unread Indicator --}}
                 @if(!$item->is_read)
-                    <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#0070f3]"></span>
+                    <span class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-indigo-500 shadow-[0_0_6px_rgba(99,102,241,0.5)]"></span>
                 @endif
             </div>
         @empty
-            <div class="px-5 py-16">
-                <div class="flex flex-col items-center gap-3 text-center">
-                    <div class="flex h-14 w-14 items-center justify-center rounded-xl bg-[#fafafa] shadow-[inset_0_0_0_1px_#ebebeb]">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-[#a1a1a1]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-[#171717]">Tidak ada notifikasi</p>
-                        <p class="mt-1 text-sm text-[#888888]">Anda akan mendapat notifikasi untuk setiap aktivitas tabungan.</p>
-                    </div>
+            <div class="rounded-3xl bg-white dark:bg-zinc-800 p-10 text-center border border-zinc-200/80 dark:border-zinc-700/80 shadow-xs">
+                <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-700/60 text-zinc-400">
+                    <flux:icon.bell class="size-7" />
                 </div>
+                <h3 class="mt-4 text-sm font-bold text-zinc-900 dark:text-white">Tidak Ada Notifikasi</h3>
+                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Anda akan mendapat notifikasi untuk setiap aktivitas tabungan.</p>
             </div>
         @endforelse
     </div>
 
-    {{-- Pagination --}}
     @if($notifikasi->hasPages())
         <div class="mt-4">{{ $notifikasi->links() }}</div>
     @endif

@@ -2,14 +2,15 @@
 
 namespace App\Livewire\Kolektor;
 
+use App\Actions\Tabungan\HitungTunggakanAction;
 use App\Helpers\ActivityLogger;
+use App\Livewire\Concerns\ValidatesKolektorNasabah;
 use App\Models\KepesertaanPaket;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiSetoran;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -18,6 +19,8 @@ use Livewire\Component;
 #[Layout('layouts.mobile')]
 class InputSetoran extends Component
 {
+    use ValidatesKolektorNasabah;
+
     public $nasabahId = '';
 
     public $produkId = '';
@@ -38,6 +41,12 @@ class InputSetoran extends Component
 
     public $showSuccess = false;
 
+    public $searchNasabah = '';
+
+    public $showPickerNasabah = true;
+
+    public $tunggakanInfo = null;
+
     public function mount()
     {
         $this->tanggal_transaksi = now()->format('Y-m-d');
@@ -49,15 +58,20 @@ class InputSetoran extends Component
     {
         $kolektorId = Auth::id();
 
-        $this->nasabahList = NasabahProfil::where('status_pendaftaran', 'aktif')
-            ->whereIn('user_id', function ($query) use ($kolektorId) {
-                $query->select('nasabah_id')
+        $query = NasabahProfil::where('status_pendaftaran', 'aktif')
+            ->whereIn('user_id', function ($q) use ($kolektorId) {
+                $q->select('nasabah_id')
                     ->from('kolektor_nasabah')
                     ->where('kolektor_id', $kolektorId)
                     ->where('status', 'aktif');
             })
-            ->with('user')
-            ->get();
+            ->with('user');
+
+        if ($this->searchNasabah) {
+            $query->whereHas('user', fn ($q) => $q->where('name', 'like', '%'.$this->searchNasabah.'%'));
+        }
+
+        $this->nasabahList = $query->get();
     }
 
     public function loadProduk()
@@ -65,8 +79,43 @@ class InputSetoran extends Component
         $this->produkList = ProdukTabungan::where('status', 'aktif')->get();
     }
 
+    public function updatedSearchNasabah()
+    {
+        $this->loadNasabah();
+    }
+
+    public function pilihNasabah($nasabahId)
+    {
+        if (! $this->isNasabahBinaan((int) $nasabahId)) {
+            session()->flash('error', 'Nasabah tidak valid.');
+
+            return;
+        }
+
+        $this->nasabahId = $nasabahId;
+        $this->updatedNasabahId();
+        $this->showPickerNasabah = false;
+        $this->searchNasabah = '';
+
+        $this->loadNasabah();
+
+        $produkAktif = SaldoProduk::where('nasabah_id', $nasabahId)->pluck('produk_id');
+        if ($produkAktif->count() === 1) {
+            $this->produkId = $produkAktif->first();
+            $this->hitungTunggakan();
+        }
+    }
+
     public function updatedNasabahId()
     {
+        if ($this->nasabahId && ! $this->isNasabahBinaan((int) $this->nasabahId)) {
+            $this->nasabahId = '';
+            $this->selectedNasabah = null;
+            session()->flash('error', 'Nasabah tidak valid.');
+
+            return;
+        }
+
         if ($this->nasabahId) {
             $this->selectedNasabah = NasabahProfil::where('user_id', $this->nasabahId)
                 ->with(['user', 'user.saldoProduks.produk'])
@@ -74,6 +123,34 @@ class InputSetoran extends Component
         } else {
             $this->selectedNasabah = null;
         }
+
+        $this->hitungTunggakan();
+    }
+
+    public function updatedProdukId()
+    {
+        $this->hitungTunggakan();
+    }
+
+    public function tambahNominal($jumlah)
+    {
+        $this->nominal = ($this->nominal ?: 0) + $jumlah;
+    }
+
+    public function hitungTunggakan()
+    {
+        $this->tunggakanInfo = null;
+
+        if (! $this->nasabahId || ! $this->produkId) {
+            return;
+        }
+
+        if (! $this->isNasabahBinaan((int) $this->nasabahId)) {
+            return;
+        }
+
+        $this->tunggakanInfo = app(HitungTunggakanAction::class)
+            ->execute((int) $this->nasabahId, (int) $this->produkId, simpan: false);
     }
 
     public function submit()
@@ -142,7 +219,8 @@ class InputSetoran extends Component
             $saldo->increment('saldo', $this->nominal);
 
             if ($produk && $produk->tipe === 'paket') {
-                $this->refreshTunggakan($this->nasabahId, $this->produkId);
+                app(HitungTunggakanAction::class)
+                    ->execute((int) $this->nasabahId, (int) $this->produkId, simpan: true);
             }
 
             DB::commit();
@@ -163,6 +241,7 @@ class InputSetoran extends Component
             $this->showSuccess = true;
             $this->reset(['nasabahId', 'produkId', 'nominal', 'catatan']);
             $this->selectedNasabah = null;
+            $this->tunggakanInfo = null;
 
             session()->flash('success', 'Setoran berhasil dicatat!');
 
@@ -173,58 +252,42 @@ class InputSetoran extends Component
         }
     }
 
-    public function render()
+    public function resetNominal()
     {
-        return view('livewire.kolektor.input-setoran');
+        $this->nominal = '';
     }
 
-    protected function refreshTunggakan(int $nasabahId, int $produkId): void
+    public function setNominalTunggakan()
     {
-        $produk = ProdukTabungan::find($produkId);
-        if (! $produk || ! $produk->harga_per_hari) {
-            return;
+        if ($this->tunggakanInfo && isset($this->tunggakanInfo['tunggakan'])) {
+            $this->nominal = (int) $this->tunggakanInfo['tunggakan'];
         }
+    }
 
-        $kepesertaan = KepesertaanPaket::where('nasabah_id', $nasabahId)
-            ->where('produk_id', $produkId)
-            ->whereNull('keputusan_akhir')
-            ->first();
+    public function setTanggalToday()
+    {
+        $this->tanggal_transaksi = now()->format('Y-m-d');
+    }
 
-        if (! $kepesertaan) {
-            $kepesertaan = KepesertaanPaket::create([
-                'nasabah_id' => $nasabahId,
-                'produk_id' => $produkId,
-                'tanggal_mulai_ikut' => now()->toDateString(),
-                'total_seharusnya_terkumpul' => 0,
-                'total_aktual_terkumpul' => 0,
-                'tunggakan' => 0,
-                'status_alert' => 'normal',
-            ]);
-        }
+    public function setTanggalYesterday()
+    {
+        $this->tanggal_transaksi = now()->subDay()->format('Y-m-d');
+    }
 
-        $hariBerjalan = Carbon::parse($kepesertaan->tanggal_mulai_ikut)->diffInDays(now());
-        $seharusnya = $hariBerjalan * $produk->harga_per_hari;
+    public function render()
+    {
+        $riwayatHariIni = TransaksiSetoran::where('input_by', Auth::id())
+            ->whereDate('tanggal_input_sistem', today())
+            ->with(['nasabah', 'produk'])
+            ->latest('id')
+            ->take(5)
+            ->get();
 
-        $aktual = TransaksiSetoran::where('nasabah_id', $nasabahId)
-            ->where('produk_id', $produkId)
-            ->where('status', '!=', 'dibatalkan')
+        $totalBelumDisetor = TransaksiSetoran::where('input_by', Auth::id())
+            ->where('sudah_disetor_ke_kantor', false)
+            ->where('status', 'tercatat')
             ->sum('nominal');
 
-        $tunggakan = max(0, $seharusnya - $aktual);
-
-        $statusAlert = 'normal';
-        if ($tunggakan > 0) {
-            $statusAlert = 'peringatan';
-            if ($produk->batas_toleransi_tunggakan_hari && $hariBerjalan >= $produk->batas_toleransi_tunggakan_hari) {
-                $statusAlert = 'perlu_review';
-            }
-        }
-
-        $kepesertaan->update([
-            'total_seharusnya_terkumpul' => $seharusnya,
-            'total_aktual_terkumpul' => $aktual,
-            'tunggakan' => $tunggakan,
-            'status_alert' => $statusAlert,
-        ]);
+        return view('livewire.kolektor.input-setoran', compact('riwayatHariIni', 'totalBelumDisetor'));
     }
 }

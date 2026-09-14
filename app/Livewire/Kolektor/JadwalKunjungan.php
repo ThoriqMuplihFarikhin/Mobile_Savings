@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Kolektor;
 
-use App\Models\JadwalKunjungan;
+use App\Models\JadwalKunjungan as JadwalKunjunganModel;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
 use Illuminate\Support\Facades\Auth;
@@ -16,9 +16,46 @@ class JadwalKunjungan extends Component
 
     public $tanggal = '';
 
+    public $search = '';
+
+    public $filterStatus = 'semua';
+
     public function mount()
     {
         $this->tanggal = now()->format('Y-m-d');
+        $this->loadJadwal();
+    }
+
+    public function updatedTanggal()
+    {
+        $this->loadJadwal();
+    }
+
+    public function updatedSearch()
+    {
+        $this->loadJadwal();
+    }
+
+    public function updatedFilterStatus()
+    {
+        $this->loadJadwal();
+    }
+
+    public function setTanggalToday()
+    {
+        $this->tanggal = now()->format('Y-m-d');
+        $this->loadJadwal();
+    }
+
+    public function setTanggalTomorrow()
+    {
+        $this->tanggal = now()->addDay()->format('Y-m-d');
+        $this->loadJadwal();
+    }
+
+    public function setTanggalYesterday()
+    {
+        $this->tanggal = now()->subDay()->format('Y-m-d');
         $this->loadJadwal();
     }
 
@@ -26,30 +63,47 @@ class JadwalKunjungan extends Component
     {
         $kolektorId = Auth::id();
 
-        $nasabahIds = KolektorNasabah::where('kolektor_id', $kolektorId)
-            ->where('status', 'aktif')
-            ->pluck('nasabah_id');
+        $nasabahQuery = NasabahProfil::whereIn('user_id', function ($q) use ($kolektorId) {
+            $q->select('nasabah_id')
+                ->from('kolektor_nasabah')
+                ->where('kolektor_id', $kolektorId)
+                ->where('status', 'aktif');
+        })->with('user');
 
-        $this->jadwalHari = NasabahProfil::whereIn('user_id', $nasabahIds)
-            ->with('user')
-            ->get()
-            ->map(function ($profil) {
-                $jadwal = JadwalKunjungan::where('kolektor_id', Auth::id())
-                    ->where('nasabah_id', $profil->user_id)
-                    ->where('tanggal_jadwal', $this->tanggal)
-                    ->first();
-
-                return [
-                    'profil' => $profil,
-                    'jadwal' => $jadwal,
-                    'status' => $jadwal->status_kunjungan ?? null,
-                ];
+        if ($this->search) {
+            $nasabahQuery->where(function ($q) {
+                $q->whereHas('user', fn ($u) => $u->where('name', 'like', '%'.$this->search.'%'))
+                    ->orWhere('alamat', 'like', '%'.$this->search.'%');
             });
+        }
+
+        $allNasabah = $nasabahQuery->get();
+
+        $list = $allNasabah->map(function ($profil) {
+            $jadwal = JadwalKunjunganModel::where('kolektor_id', Auth::id())
+                ->where('nasabah_id', $profil->user_id)
+                ->where('tanggal_jadwal', $this->tanggal)
+                ->first();
+
+            $status = $jadwal->status_kunjungan ?? 'belum';
+
+            return [
+                'profil' => $profil,
+                'jadwal' => $jadwal,
+                'status' => $status,
+            ];
+        });
+
+        if ($this->filterStatus !== 'semua') {
+            $list = $list->filter(fn ($item) => $item['status'] === $this->filterStatus);
+        }
+
+        $this->jadwalHari = $list->values()->toArray();
     }
 
     public function updateStatus($nasabahId, $status)
     {
-        JadwalKunjungan::updateOrCreate(
+        JadwalKunjunganModel::updateOrCreate(
             [
                 'kolektor_id' => Auth::id(),
                 'nasabah_id' => $nasabahId,
@@ -64,6 +118,27 @@ class JadwalKunjungan extends Component
 
     public function render()
     {
-        return view('livewire.kolektor.jadwal-kunjungan');
+        $kolektorId = Auth::id();
+        $totalNasabahCount = KolektorNasabah::where('kolektor_id', $kolektorId)->where('status', 'aktif')->count();
+
+        $jadwalsToday = JadwalKunjunganModel::where('kolektor_id', $kolektorId)
+            ->where('tanggal_jadwal', $this->tanggal)
+            ->get();
+
+        $dikunjungiCount = $jadwalsToday->where('status_kunjungan', 'dikunjungi')->count();
+        $dilewatiCount = $jadwalsToday->where('status_kunjungan', 'dilewati')->count();
+        $tidakAdaCount = $jadwalsToday->where('status_kunjungan', 'tidak_ada')->count();
+        $belumCount = max(0, $totalNasabahCount - ($dikunjungiCount + $dilewatiCount + $tidakAdaCount));
+
+        $progressPct = $totalNasabahCount > 0 ? round(($dikunjungiCount / $totalNasabahCount) * 100) : 0;
+
+        return view('livewire.kolektor.jadwal-kunjungan', compact(
+            'totalNasabahCount',
+            'dikunjungiCount',
+            'dilewatiCount',
+            'tidakAdaCount',
+            'belumCount',
+            'progressPct'
+        ));
     }
 }

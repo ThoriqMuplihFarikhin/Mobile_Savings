@@ -3,6 +3,7 @@
 namespace App\Livewire\Kolektor;
 
 use App\Actions\Penarikan\AjukanPenarikanAction;
+use App\Livewire\Concerns\ValidatesKolektorNasabah;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
@@ -14,6 +15,8 @@ use Livewire\Component;
 #[Layout('layouts.mobile')]
 class PenarikanOffline extends Component
 {
+    use ValidatesKolektorNasabah;
+
     public $nasabahId = '';
 
     public $produkId = '';
@@ -53,6 +56,14 @@ class PenarikanOffline extends Component
 
     public function updatedNasabahId()
     {
+        if ($this->nasabahId && ! $this->isNasabahBinaan((int) $this->nasabahId)) {
+            $this->nasabahId = '';
+            $this->selectedNasabah = null;
+            session()->flash('error', 'Nasabah tidak valid.');
+
+            return;
+        }
+
         if ($this->nasabahId) {
             $this->selectedNasabah = NasabahProfil::where('user_id', $this->nasabahId)
                 ->with(['user', 'user.saldoProduks.produk'])
@@ -64,6 +75,10 @@ class PenarikanOffline extends Component
 
     public function updatedProdukId()
     {
+        if ($this->nasabahId && ! $this->isNasabahBinaan((int) $this->nasabahId)) {
+            return;
+        }
+
         if ($this->produkId) {
             $produk = ProdukTabungan::find($this->produkId);
             $this->persenKomisi = $produk->persen_komisi ?? 0;

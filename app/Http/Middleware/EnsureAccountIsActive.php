@@ -18,6 +18,15 @@ class EnsureAccountIsActive
             return redirect()->route('login')->with('locked', true);
         }
 
+        if ($request->user() && $request->user()->harus_ganti_pin) {
+            $excludedRoutes = ['security.edit', 'logout', 'login'];
+            $currentRouteName = $request->route()?->getName();
+
+            if (! in_array($currentRouteName, $excludedRoutes, true)) {
+                return redirect()->route('security.edit')->with('force_pin_change', true);
+            }
+        }
+
         return $next($request);
     }
 }

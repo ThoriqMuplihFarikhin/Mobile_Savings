@@ -1,46 +1,49 @@
-<div>
+<div class="mx-auto max-w-3xl space-y-6">
     {{-- Page Header --}}
-    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-[#171717]">Komplain</h1>
-            <p class="mt-1 text-sm text-[#888888]">Ajukan keluhan atau pertanyaan terkait tabungan Anda.</p>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Pusat Bantuan & Komplain</h1>
+            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Ajukan keluhan atau pertanyaan terkait layanan tabungan Anda.</p>
         </div>
         <button wire:click="toggleForm"
-            class="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#171717] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-            Ajukan Komplain
+            class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-indigo-500/20 transition shrink-0">
+            <flux:icon.plus class="size-4 text-white" />
+            <span>Buat Tiket</span>
         </button>
     </div>
 
-    {{-- Flash --}}
+    {{-- Flash Message --}}
     @if (session('success'))
-        <div class="mb-4 flex items-center gap-2.5 rounded-lg bg-[#d3e5ff] px-4 py-3 text-sm text-[#0761d1]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-            {{ session('success') }}
+        <div class="flex items-center gap-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 p-4 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40">
+            <flux:icon.check-circle class="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span>{{ session('success') }}</span>
         </div>
     @endif
 
-    {{-- Form --}}
+    {{-- Form Tiket Komplain --}}
     @if($showForm)
-        <div class="mb-6 rounded-xl bg-[#fafafa] shadow-[inset_0_0_0_1px_#ebebeb]">
-            <div class="border-b border-[#ebebeb] px-6 py-4">
-                <h3 class="text-sm font-semibold text-[#171717]">Form Komplain</h3>
+        <div class="rounded-3xl bg-white dark:bg-zinc-800 p-6 shadow-xs border border-zinc-200/80 dark:border-zinc-700/80 transition-all">
+            <div class="mb-4 flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-700/60">
+                <h3 class="text-sm font-bold text-zinc-900 dark:text-white">Form Pengajuan Tiket</h3>
+                <button type="button" wire:click="toggleForm" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xs font-semibold">Tutup</button>
             </div>
-            <form wire:submit="submit" class="space-y-4 p-6">
+
+            <form wire:submit="submit" class="space-y-4">
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-[#171717]">Kategori</label>
+                    <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Kategori Kendala</label>
                     <select wire:model="kategori"
-                        class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-[#171717] focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10">
-                        <option value="saldo">Saldo</option>
-                        <option value="barang_paket">Barang Paket</option>
-                        <option value="penarikan">Penarikan</option>
+                        class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-xs font-bold text-zinc-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                        <option value="saldo">Permasalahan Saldo</option>
+                        <option value="barang_paket">Pencairan Paket / Barang</option>
+                        <option value="penarikan">Penarikan Tabungan</option>
                         <option value="lainnya">Lainnya</option>
                     </select>
                 </div>
+
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-[#171717]">Transaksi Terkait <span class="text-[#888888]">(opsional)</span></label>
+                    <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Transaksi Terkait <span class="text-zinc-400 font-normal lowercase">(opsional)</span></label>
                     <select wire:model="transaksiTerkaitId"
-                        class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-[#171717] focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10">
+                        class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-xs font-bold text-zinc-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
                         <option value="">Tidak ada transaksi terkait</option>
                         @foreach($riwayatTransaksi as $trx)
                             <option value="{{ $trx->id }}">
@@ -49,88 +52,90 @@
                         @endforeach
                     </select>
                 </div>
+
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-[#171717]">Deskripsi</label>
+                    <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Deskripsi Detail</label>
                     <textarea wire:model="deskripsi" rows="4"
-                        class="w-full rounded-md border border-[#ebebeb] bg-white px-3 py-2.5 text-sm text-[#171717] focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
-                        placeholder="Jelaskan keluhan Anda secara detail..."></textarea>
-                    @error('deskripsi') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                        class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 p-4 text-xs font-semibold text-zinc-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        placeholder="Jelaskan kendala Anda secara rinci..."></textarea>
+                    @error('deskripsi') <p class="mt-1 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
                 </div>
-                <div class="flex gap-3">
-                    <button type="submit"
-                        class="rounded-full bg-[#171717] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
-                        Kirim Komplain
-                    </button>
+
+                <div class="flex items-center gap-3 pt-2">
                     <button type="button" wire:click="toggleForm"
-                        class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-[#171717] transition hover:bg-[#fafafa]">
+                        class="w-1/3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 py-3 text-center text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition">
                         Batal
+                    </button>
+                    <button type="submit"
+                        class="w-2/3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 py-3 text-center text-xs font-bold text-white shadow-lg shadow-indigo-500/20 transition">
+                        Kirim Tiket
                     </button>
                 </div>
             </form>
         </div>
     @endif
 
-    {{-- Table --}}
-    <div class="overflow-hidden rounded-xl bg-white shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="border-b border-[#ebebeb] bg-[#fafafa]">
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-[#888888]">Tanggal</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-[#888888]">Kategori</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-[#888888]">Deskripsi</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-[#888888]">Status</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-[#888888]">Penyelesaian</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-[#ebebeb]">
-                    @forelse($komplains as $item)
-                        @php
-                            $kategoriLabel = match($item->kategori) {
-                                'saldo'       => 'Saldo',
-                                'barang_paket'=> 'Barang Paket',
-                                'penarikan'   => 'Penarikan',
-                                default       => 'Lainnya'
-                            };
-                            $kategoriColor = match($item->kategori) {
-                                'saldo'       => 'bg-[#d3e5ff] text-[#0761d1]',
-                                'barang_paket'=> 'bg-[#d8ccf1] text-[#4c2889]',
-                                'penarikan'   => 'bg-[#ffefcf] text-[#ab570a]',
-                                default       => 'bg-[#fafafa] text-[#4d4d4d]'
-                            };
-                        @endphp
-                        <tr class="transition hover:bg-[#fafafa]">
-                            <td class="px-4 py-3 text-sm text-[#4d4d4d]">{{ $item->tanggal_dibuat->translatedFormat('d M Y') }}</td>
-                            <td class="px-4 py-3">
-                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 font-mono text-xs {{ $kategoriColor }}">
-                                    {{ $kategoriLabel }}
-                                </span>
-                            </td>
-                            <td class="max-w-[240px] truncate px-4 py-3 text-sm text-[#4d4d4d]">{{ $item->deskripsi }}</td>
-                            <td class="px-4 py-3">
-                                @if($item->status === 'baru')
-                                    <span class="inline-flex items-center rounded-full bg-[#d3e5ff] px-2.5 py-0.5 font-mono text-xs text-[#0761d1]">Baru</span>
-                                @elseif($item->status === 'diproses')
-                                    <span class="inline-flex items-center rounded-full bg-[#ffefcf] px-2.5 py-0.5 font-mono text-xs text-[#ab570a]">Diproses</span>
-                                @else
-                                    <span class="inline-flex items-center rounded-full bg-[#d3e5ff] px-2.5 py-0.5 font-mono text-xs text-[#0070f3]">Selesai</span>
-                                @endif
-                            </td>
-                            <td class="max-w-[200px] truncate px-4 py-3 text-xs text-[#888888]">{{ $item->catatan_penyelesaian ?? '—' }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-4 py-16 text-center">
-                                <div class="flex flex-col items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[#ebebeb]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                                    <p class="text-sm text-[#888888]">Belum ada komplain yang diajukan.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        <div class="border-t border-[#ebebeb] px-4 py-3">{{ $komplains->links() }}</div>
+    {{-- Lista Tiket Cards --}}
+    <div class="space-y-3">
+        @forelse($komplains as $item)
+            @php
+                $kategoriLabel = match($item->kategori) {
+                    'saldo'       => 'Saldo',
+                    'barang_paket'=> 'Barang Paket',
+                    'penarikan'   => 'Penarikan',
+                    default       => 'Lainnya'
+                };
+                $statusBadge = match($item->status) {
+                    'baru'     => ['label' => 'Baru', 'class' => 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/60'],
+                    'diproses' => ['label' => 'Diproses', 'class' => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/60'],
+                    default    => ['label' => 'Selesai', 'class' => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60'],
+                };
+            @endphp
+            <div class="rounded-3xl bg-white dark:bg-zinc-800/90 p-5 shadow-xs border border-zinc-200/80 dark:border-zinc-700/80 transition">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-zinc-700/60 px-2.5 py-0.5 text-[10px] font-bold text-zinc-700 dark:text-zinc-300">
+                                {{ $kategoriLabel }}
+                            </span>
+                            <span class="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">
+                                {{ $item->tanggal_dibuat->translatedFormat('d M Y, H:i') }}
+                            </span>
+                        </div>
+                        <p class="text-xs font-semibold text-zinc-800 dark:text-zinc-200 pt-1 leading-relaxed">
+                            {{ $item->deskripsi }}
+                        </p>
+                    </div>
+                    <span class="shrink-0 rounded-full px-3 py-1 text-[10px] font-bold border {{ $statusBadge['class'] }}">
+                        {{ $statusBadge['label'] }}
+                    </span>
+                </div>
+
+                @if($item->catatan_penyelesaian)
+                    <div class="mt-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 p-3.5 border border-zinc-200/60 dark:border-zinc-700/40">
+                        <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                            <flux:icon.check-circle class="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <span>Tanggapan Admin:</span>
+                        </div>
+                        <p class="mt-1 text-xs text-zinc-600 dark:text-zinc-300 pl-5 leading-relaxed">
+                            {{ $item->catatan_penyelesaian }}
+                        </p>
+                    </div>
+                @endif
+            </div>
+        @empty
+            <div class="rounded-3xl bg-white dark:bg-zinc-800 p-10 text-center border border-zinc-200/80 dark:border-zinc-700/80 shadow-xs">
+                <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-700/60 text-zinc-400">
+                    <flux:icon.chat-bubble-left-right class="size-7 text-zinc-400" />
+                </div>
+                <h3 class="mt-4 text-sm font-bold text-zinc-900 dark:text-white">Belum Ada Tiket Komplain</h3>
+                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Jika Anda memiliki kendala, jangan ragu untuk mengajukan tiket di sini.</p>
+            </div>
+        @endforelse
     </div>
+
+    @if($komplains->hasPages())
+        <div class="mt-4">{{ $komplains->links() }}</div>
+    @endif
 </div>
+

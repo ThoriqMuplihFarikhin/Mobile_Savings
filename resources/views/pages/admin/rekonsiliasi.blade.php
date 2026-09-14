@@ -1,1 +1,1 @@
-<x-layouts::app title="Rekonsiliasi Kas"><livewire:admin.rekonsiliasi-kas /></x-layouts::app>
+<x-layouts::admin title="Rekonsiliasi Kas"><livewire:admin.rekonsiliasi-kas /></x-layouts::app>

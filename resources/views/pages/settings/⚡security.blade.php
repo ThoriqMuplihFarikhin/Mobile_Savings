@@ -45,7 +45,7 @@ new #[Title('Security settings')] class extends Component {
     public function render()
     {
         return view('pages.settings.⚡security')
-            ->layout(auth()->user()->isAdmin() ? 'layouts.app' : 'layouts.mobile');
+            ->layout('layouts.mobile');
     }
 }; ?>
 

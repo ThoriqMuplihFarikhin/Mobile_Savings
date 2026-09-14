@@ -1,113 +1,134 @@
-<div class="mx-auto max-w-2xl">
-    {{-- Page Header --}}
-    <div class="mb-8">
-        <h1 class="text-2xl font-semibold tracking-tight text-[#171717]">Ajukan Penarikan</h1>
-        <p class="mt-1 text-sm text-[#888888]">Tarik saldo tabungan Anda. Setiap penarikan memerlukan persetujuan admin.</p>
+<div class="mx-auto max-w-2xl space-y-6">
+    {{-- Header Page --}}
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Ajukan Penarikan</h1>
+            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Tarik saldo tabungan Anda dengan mudah dan fleksibel.</p>
+        </div>
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 shadow-2xs border border-indigo-100 dark:border-indigo-900/50">
+            <flux:icon.arrow-up-tray class="size-5" />
+        </div>
     </div>
 
     {{-- Flash Messages --}}
     @if (session('success'))
-        <div class="mb-4 flex items-center gap-2.5 rounded-lg bg-[#d3e5ff] px-4 py-3 text-sm text-[#0761d1]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-            {{ session('success') }}
+        <div class="flex items-center gap-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 p-4 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40">
+            <flux:icon.check-circle class="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span>{{ session('success') }}</span>
         </div>
     @endif
     @if (session('error'))
-        <div class="mb-4 flex items-center gap-2.5 rounded-lg bg-[#f7d4d6] px-4 py-3 text-sm text-[#c50000]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            {{ session('error') }}
+        <div class="flex items-center gap-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 p-4 text-xs font-semibold text-rose-700 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800/40">
+            <flux:icon.exclamation-triangle class="size-5 shrink-0 text-rose-600 dark:text-rose-400" />
+            <span>{{ session('error') }}</span>
         </div>
     @endif
 
     {{-- Form Card --}}
-    <div class="rounded-xl bg-[#fafafa] shadow-[inset_0_0_0_1px_#ebebeb]">
-        {{-- Saldo Tersedia (ex-cart-drawer style) --}}
-        <div class="border-b border-[#ebebeb] px-6 py-4">
-            <p class="font-mono text-xs uppercase tracking-wider text-[#888888]">Saldo Tersedia</p>
-            <div class="mt-3 space-y-2">
+    <div class="rounded-3xl bg-white dark:bg-zinc-800 shadow-xs border border-zinc-200/80 dark:border-zinc-700/80 overflow-hidden">
+        {{-- Saldo Tersedia Card Header --}}
+        <div class="relative overflow-hidden bg-gradient-to-br from-indigo-900 via-indigo-800 to-zinc-900 p-6 text-white dark:from-zinc-950 dark:to-zinc-900">
+            <div class="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-indigo-500/20 blur-2xl pointer-events-none"></div>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-indigo-200">Saldo Tersedia</span>
+            <div class="mt-3 divide-y divide-white/10">
                 @forelse($saldoList as $s)
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-[#4d4d4d]">{{ $s->produk->nama }}</span>
-                        <span class="font-mono text-sm font-medium text-[#171717]">Rp {{ number_format($s->saldo, 0, ',', '.') }}</span>
+                    <div class="flex items-center justify-between py-2 first:pt-0 last:pb-0">
+                        <span class="text-xs font-medium text-indigo-100">{{ $s->produk->nama }}</span>
+                        <span class="font-mono text-base font-bold text-white">Rp {{ number_format($s->saldo, 0, ',', '.') }}</span>
                     </div>
                 @empty
-                    <p class="text-sm text-[#888888]">Belum ada saldo tersedia.</p>
+                    <p class="text-xs text-indigo-200/70 py-1">Belum ada saldo yang tersedia.</p>
                 @endforelse
             </div>
         </div>
 
         {{-- Form Body --}}
         <form wire:submit="submit" class="space-y-5 p-6">
-            {{-- Produk --}}
+            {{-- Pilih Produk --}}
             <div>
-                <label class="mb-1.5 block text-sm font-medium text-[#171717]">Produk Tabungan</label>
-                <select wire:model="produkId"
-                    class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-[#171717] focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10">
-                    <option value="">Pilih Produk</option>
+                <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Produk Tabungan</label>
+                <select wire:model.live="produkId"
+                    class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-xs font-bold text-zinc-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition">
+                    <option value="">-- Pilih Produk Tabungan --</option>
                     @foreach($produkList as $produk)
                         <option value="{{ $produk->id }}">{{ $produk->nama }}</option>
                     @endforeach
                 </select>
-                @error('produk_id') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                @error('produk_id') <p class="mt-1 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
             </div>
 
-            {{-- Nominal --}}
+            {{-- Nominal Penarikan --}}
             <div>
-                <label class="mb-1.5 block text-sm font-medium text-[#171717]">Nominal Penarikan</label>
+                <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Nominal Penarikan</label>
+                    <span class="text-[11px] text-zinc-400 font-medium">Min: Rp 10.000</span>
+                </div>
                 <div class="relative">
-                    <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-mono text-sm text-[#888888]">Rp</span>
-                    <input type="number" wire:model="nominal" min="10000"
-                        class="h-10 w-full rounded-md border border-[#ebebeb] bg-white py-0 pl-10 pr-3 text-sm text-[#171717] focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+                    <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-mono text-sm font-bold text-zinc-400">Rp</span>
+                    <input type="number" wire:model.live="nominal" min="10000" step="5000"
+                        class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 py-3 pl-12 pr-4 text-base font-mono font-bold text-zinc-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
                         placeholder="0" />
                 </div>
-                @error('nominal') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                @error('nominal') <p class="mt-1 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
             </div>
 
-            {{-- Komisi Preview (ex-cart-drawer) --}}
+            {{-- Komisi Preview --}}
             @if($selectedProduk && $nominal > 0)
-                <div class="rounded-lg bg-white shadow-[inset_0_0_0_1px_#ebebeb]">
-                    <div class="px-4 py-3">
-                        <p class="font-mono text-xs uppercase tracking-wider text-[#888888]">Rincian Penarikan</p>
+                <div class="rounded-2xl bg-zinc-50 dark:bg-zinc-900/80 p-4 border border-zinc-200/80 dark:border-zinc-700/80 space-y-2.5">
+                    <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                        <span>Rincian Transaksi</span>
+                        <span class="text-indigo-600 dark:text-indigo-400">Estimasi Pencairan</span>
                     </div>
-                    <div class="space-y-2 border-t border-[#ebebeb] px-4 py-3">
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-[#4d4d4d]">Nominal diminta</span>
-                            <span class="font-mono text-[#171717]">Rp {{ number_format($nominal, 0, ',', '.') }}</span>
+                    <div class="space-y-1.5 pt-1 border-t border-zinc-200/80 dark:border-zinc-800">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-zinc-600 dark:text-zinc-400">Nominal ditarik</span>
+                            <span class="font-mono font-bold text-zinc-900 dark:text-white">Rp {{ number_format($nominal, 0, ',', '.') }}</span>
                         </div>
-                        <div class="flex items-center justify-between text-sm">
-                            <span class="text-[#4d4d4d]">Komisi ({{ $persenKomisi }}%)</span>
-                            <span class="font-mono text-[#ee0000]">− Rp {{ number_format($nominalKomisi, 0, ',', '.') }}</span>
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-zinc-600 dark:text-zinc-400">Biaya Admin ({{ $persenKomisi }}%)</span>
+                            <span class="font-mono text-rose-500 font-bold">− Rp {{ number_format($nominalKomisi, 0, ',', '.') }}</span>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between border-t border-[#ebebeb] px-4 py-3">
-                        <span class="text-sm font-medium text-[#171717]">Anda terima</span>
-                        <span class="font-mono text-sm font-semibold text-[#0070f3]">Rp {{ number_format($nominalDiterima, 0, ',', '.') }}</span>
+                    <div class="flex items-center justify-between border-t border-zinc-200/80 dark:border-zinc-800 pt-2.5">
+                        <span class="text-xs font-bold text-zinc-900 dark:text-white">Total Diterima</span>
+                        <span class="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">Rp {{ number_format($nominalDiterima, 0, ',', '.') }}</span>
                     </div>
                 </div>
             @endif
 
-            {{-- Lokasi --}}
+            {{-- Lokasi Pengambilan --}}
             <div>
-                <label class="mb-1.5 block text-sm font-medium text-[#171717]">Lokasi Pengambilan</label>
-                <select wire:model="lokasi_pengambilan"
-                    class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-[#171717] focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10">
-                    <option value="kantor">Kantor</option>
-                    <option value="rumah_kolektor">Rumah Kolektor</option>
-                </select>
+                <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Lokasi Pengambilan Cash</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="relative flex flex-col items-center justify-center p-3.5 rounded-2xl border cursor-pointer transition text-center
+                        {{ $lokasi_pengambilan === 'kantor' ? 'border-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold' : 'border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400' }}">
+                        <input type="radio" wire:model.live="lokasi_pengambilan" value="kantor" class="sr-only">
+                        <span class="text-xs font-bold">Kantor Utama</span>
+                        <span class="text-[11px] text-zinc-400 mt-0.5 font-normal">Ambil langsung</span>
+                    </label>
+
+                    <label class="relative flex flex-col items-center justify-center p-3.5 rounded-2xl border cursor-pointer transition text-center
+                        {{ $lokasi_pengambilan === 'rumah_kolektor' ? 'border-indigo-600 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold' : 'border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400' }}">
+                        <input type="radio" wire:model.live="lokasi_pengambilan" value="rumah_kolektor" class="sr-only">
+                        <span class="text-xs font-bold">Rumah Kolektor</span>
+                        <span class="text-[11px] text-zinc-400 mt-0.5 font-normal">Via petugas</span>
+                    </label>
+                </div>
             </div>
 
-            {{-- Actions --}}
-            <div class="flex gap-3 pt-1">
-                <button type="submit" wire:loading.attr="disabled"
-                    class="flex-1 rounded-full bg-[#171717] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
-                    <span wire:loading.remove wire:target="submit">Ajukan Penarikan</span>
-                    <span wire:loading wire:target="submit">Mengirim...</span>
-                </button>
-                <a href="{{ route('dashboard') }}"
-                    class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-[#171717] transition hover:bg-[#fafafa]">
+            {{-- Action Buttons --}}
+            <div class="flex items-center gap-3 pt-2">
+                <a href="{{ route('dashboard') }}" wire:navigate
+                    class="w-1/3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 py-3 text-center text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition">
                     Batal
                 </a>
+                <button type="submit" wire:loading.attr="disabled"
+                    class="w-2/3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 py-3 text-center text-xs font-bold text-white shadow-lg shadow-indigo-500/20 transition disabled:opacity-50">
+                    <span wire:loading.remove wire:target="submit">Kirim Pengajuan</span>
+                    <span wire:loading wire:target="submit">Memproses...</span>
+                </button>
             </div>
         </form>
     </div>
 </div>
+

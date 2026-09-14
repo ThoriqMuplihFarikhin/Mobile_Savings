@@ -19,7 +19,7 @@ class AbsensiKolektor extends Model
         'latitude',
         'longitude',
         'foto_selfie_path',
-        'tanda_tangan_base64',
+        'tanda_tangan_path',
     ];
 
     protected function casts(): array

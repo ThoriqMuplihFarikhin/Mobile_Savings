@@ -1,1 +1,1 @@
-<x-layouts::app title="Verifikasi Nasabah"><livewire:admin.verifikasi-nasabah /></x-layouts::app>
+<x-layouts::admin title="Verifikasi Nasabah"><livewire:admin.verifikasi-nasabah /></x-layouts::app>

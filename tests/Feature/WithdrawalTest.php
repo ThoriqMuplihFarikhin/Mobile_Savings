@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Penarikan\AjukanPenarikanAction;
 use App\Livewire\Admin\ApprovalPenarikan;
 use App\Livewire\Nasabah\AjukanPenarikan;
 use App\Models\NasabahProfil;
@@ -384,4 +385,53 @@ it('rejects withdrawal even when WhatsApp notification fails', function () {
         ->where('produk_id', $produk->id)
         ->first();
     expect($saldo->saldo)->toBe('100000.00');
+});
+
+it('prevents double withdrawal when two requests race on limited saldo', function () {
+    $nasabah = User::factory()->nasabah()->create();
+    $admin = User::factory()->admin()->create();
+
+    NasabahProfil::create([
+        'user_id' => $nasabah->id,
+        'nama' => 'Nasabah Test',
+        'alamat' => 'Jl. Test No. 1',
+        'jenis_kelamin' => 'laki-laki',
+        'didaftarkan_oleh' => $admin->id,
+        'status_pendaftaran' => 'aktif',
+    ]);
+
+    $produk = ProdukTabungan::create([
+        'nama' => 'Tabungan Bebas',
+        'tipe' => 'bebas',
+        'persen_komisi' => 0,
+        'minimal_setor' => 10000,
+        'status' => 'aktif',
+    ]);
+
+    SaldoProduk::create([
+        'nasabah_id' => $nasabah->id,
+        'produk_id' => $produk->id,
+        'saldo' => 100000,
+    ]);
+
+    $action = new AjukanPenarikanAction;
+
+    $penarikan1 = $action->execute($nasabah, $produk, 80000, 'online', 'kantor');
+    expect($penarikan1->status)->toBe('pending');
+
+    $thrown = false;
+    try {
+        $action->execute($nasabah, $produk, 80000, 'online', 'kantor');
+    } catch (Exception $e) {
+        $thrown = true;
+        expect($e->getMessage())->toContain('Saldo tidak mencukupi');
+    }
+
+    expect($thrown)->toBeTrue();
+
+    $pendingCount = TransaksiPenarikan::where('nasabah_id', $nasabah->id)
+        ->where('produk_id', $produk->id)
+        ->where('status', 'pending')
+        ->count();
+    expect($pendingCount)->toBe(1);
 });

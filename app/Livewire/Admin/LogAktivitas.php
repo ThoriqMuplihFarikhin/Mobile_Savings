@@ -2,13 +2,13 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\LogAktivitas;
+use App\Models\LogAktivitas as LogAktivitasModel;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 #[Layout('layouts.app')]
-class LogAktivitasPage extends Component
+class LogAktivitas extends Component
 {
     use WithPagination;
 
@@ -18,7 +18,7 @@ class LogAktivitasPage extends Component
 
     public function render()
     {
-        $query = LogAktivitas::with('user');
+        $query = LogAktivitasModel::with('user');
 
         if ($this->search) {
             $query->where('aksi', 'like', "%{$this->search}%")
