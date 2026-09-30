@@ -3,6 +3,7 @@
 namespace App\Livewire\Nasabah;
 
 use App\Actions\Penarikan\AjukanPenarikanAction;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,13 @@ use Livewire\Component;
 #[Layout('layouts.mobile')]
 class AjukanPenarikan extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'nasabah';
+    }
+
     public $produkId = '';
 
     public $nominal = '';

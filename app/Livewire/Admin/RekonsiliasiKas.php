@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Helpers\ActivityLogger;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
@@ -14,7 +15,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class RekonsiliasiKas extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
 
     public $kolektorId = '';
 

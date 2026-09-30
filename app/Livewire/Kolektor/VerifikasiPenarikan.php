@@ -3,6 +3,7 @@
 namespace App\Livewire\Kolektor;
 
 use App\Actions\Penarikan\VerifikasiPenarikanOfflineAction;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\TransaksiPenarikan;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -12,7 +13,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.mobile')]
 class VerifikasiPenarikan extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'kolektor';
+    }
 
     public $penarikanId = null;
 

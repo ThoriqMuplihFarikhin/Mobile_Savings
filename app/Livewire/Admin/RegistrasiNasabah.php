@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Helpers\ActivityLogger;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
@@ -11,6 +12,13 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class RegistrasiNasabah extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
+
     public $showForm = false;
 
     public $nama = '';

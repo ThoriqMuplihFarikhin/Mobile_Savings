@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use Carbon\Carbon;
@@ -13,6 +14,13 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class Laporan extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
+
     public $periode = 'harian';
 
     public $tanggal = '';

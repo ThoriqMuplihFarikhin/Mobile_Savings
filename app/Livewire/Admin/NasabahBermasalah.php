@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KepesertaanPaket;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -10,7 +11,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class NasabahBermasalah extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
 
     public $search = '';
 

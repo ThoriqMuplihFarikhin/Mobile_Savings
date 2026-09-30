@@ -2,11 +2,14 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\EnsureAccountIsActive;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Livewire\Livewire;
+use Spatie\Permission\Middleware\RoleMiddleware;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +27,19 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureLivewire();
+    }
+
+    /**
+     * Jalankan middleware active & role terhadap route halaman asal
+     * setiap request /livewire/update (bukan hanya saat muat halaman).
+     */
+    protected function configureLivewire(): void
+    {
+        Livewire::addPersistentMiddleware([
+            EnsureAccountIsActive::class,
+            RoleMiddleware::class,
+        ]);
     }
 
     /**

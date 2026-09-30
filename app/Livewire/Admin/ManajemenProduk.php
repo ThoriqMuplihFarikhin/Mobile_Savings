@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\ProdukTabungan;
 use Illuminate\Database\QueryException;
 use Livewire\Attributes\Layout;
@@ -11,7 +12,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class ManajemenProduk extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
 
     public $showForm = false;
 

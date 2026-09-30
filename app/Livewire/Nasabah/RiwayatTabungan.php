@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Nasabah;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\ProdukTabungan;
 use App\Models\TransaksiSetoran;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +13,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.mobile')]
 class RiwayatTabungan extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'nasabah';
+    }
 
     public $produkFilter = '';
 

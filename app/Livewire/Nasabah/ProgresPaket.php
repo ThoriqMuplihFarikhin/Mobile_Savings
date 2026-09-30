@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Nasabah;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KepesertaanPaket;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -10,6 +11,13 @@ use Livewire\Component;
 #[Layout('layouts.mobile')]
 class ProgresPaket extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'nasabah';
+    }
+
     public function render()
     {
         $kepesertaan = KepesertaanPaket::with('produk')

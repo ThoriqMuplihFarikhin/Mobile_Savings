@@ -3,6 +3,7 @@
 namespace App\Livewire\Kolektor;
 
 use App\Actions\Penarikan\AjukanPenarikanAction;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Livewire\Concerns\ValidatesKolektorNasabah;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
@@ -16,7 +17,13 @@ use Livewire\Component;
 #[Layout('layouts.mobile')]
 class PenarikanOffline extends Component
 {
+    use AuthorizesRole;
     use ValidatesKolektorNasabah;
+
+    protected function requiredRole(): string
+    {
+        return 'kolektor';
+    }
 
     public $nasabahId = '';
 

@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Helpers\ActivityLogger;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\LogHandoverKolektor;
 use App\Models\TransaksiSetoran;
@@ -16,6 +17,13 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class HandoverKolektor extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
+
     public $kolektorLamaId = '';
 
     public $kolektorBaruId = '';

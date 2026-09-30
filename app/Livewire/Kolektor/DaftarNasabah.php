@@ -3,6 +3,7 @@
 namespace App\Livewire\Kolektor;
 
 use App\Helpers\ActivityLogger;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\NasabahProfil;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,13 @@ use Livewire\Component;
 #[Layout('layouts.mobile')]
 class DaftarNasabah extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'kolektor';
+    }
+
     public $showForm = false;
 
     public $nama = '';

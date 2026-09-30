@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
@@ -12,6 +13,13 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class DetailNasabah extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
+
     public User $user;
 
     public string $periode = '30hari';

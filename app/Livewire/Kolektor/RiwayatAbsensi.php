@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Kolektor;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AbsensiKolektor;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -12,7 +13,13 @@ use Livewire\WithPagination;
 #[Title('Riwayat Absensi')]
 class RiwayatAbsensi extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'kolektor';
+    }
 
     public ?int $selectedAbsenId = null;
 

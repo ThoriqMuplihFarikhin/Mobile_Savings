@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\ProdukTabungan;
 use App\Models\TransaksiPenarikan;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class Komisi extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
 
     public $dariTanggal = '';
 

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Kolektor;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiSetoran;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,13 @@ use Livewire\Component;
 #[Layout('layouts.mobile')]
 class SetorKantor extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'kolektor';
+    }
+
     #[Locked]
     public $totalBelumDisetor = 0;
 

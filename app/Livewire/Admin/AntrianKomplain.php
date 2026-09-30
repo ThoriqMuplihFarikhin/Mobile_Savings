@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Helpers\ActivityLogger;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\Komplain;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -12,7 +13,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class AntrianKomplain extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
 
     public $statusFilter = 'baru';
 

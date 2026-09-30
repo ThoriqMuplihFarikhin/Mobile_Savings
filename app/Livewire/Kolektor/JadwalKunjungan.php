@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Kolektor;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\JadwalKunjungan as JadwalKunjunganModel;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
@@ -12,6 +13,13 @@ use Livewire\Component;
 #[Layout('layouts.mobile')]
 class JadwalKunjungan extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'kolektor';
+    }
+
     public $jadwalHari = [];
 
     public $tanggal = '';

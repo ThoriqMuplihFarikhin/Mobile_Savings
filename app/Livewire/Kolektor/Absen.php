@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Kolektor;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AbsensiKolektor;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,13 @@ use Livewire\Component;
 #[Layout('layouts.mobile')]
 class Absen extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'kolektor';
+    }
+
     public $sudahAbsenHariIni = false;
 
     public $waktuAbsenHariIni = null;

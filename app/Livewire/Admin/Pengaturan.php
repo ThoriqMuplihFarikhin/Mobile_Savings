@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Livewire\Actions\Logout;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AdminSetting;
 use App\Models\User;
 use App\Services\WhatsAppService;
@@ -14,6 +15,13 @@ use Livewire\Features\SupportRedirects\Redirector;
 #[Layout('layouts.app')]
 class Pengaturan extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
+
     public string $activeTab = 'umum';
 
     // Tab 1: Umum

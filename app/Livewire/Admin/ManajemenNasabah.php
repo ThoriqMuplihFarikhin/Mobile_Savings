@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\NasabahProfil;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -12,7 +13,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class ManajemenNasabah extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
 
     public $search = '';
 

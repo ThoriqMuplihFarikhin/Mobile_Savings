@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Helpers\ActivityLogger;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class ApprovalPenarikan extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
 
     public $statusFilter = 'pending';
 

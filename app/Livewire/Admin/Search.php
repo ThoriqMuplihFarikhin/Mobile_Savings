@@ -2,11 +2,19 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\User;
 use Livewire\Component;
 
 class Search extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
+
     public $search = '';
 
     public $results = [];

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
 use App\Models\User;
@@ -13,7 +14,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class KelolaKolektor extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
 
     public $search = '';
 
