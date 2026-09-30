@@ -25,6 +25,7 @@ class TransaksiSetoran extends Model
         'nominal_asli',
         'dikoreksi_oleh',
         'alasan_koreksi',
+        'catatan',
         'sudah_disetor_ke_kantor',
         'setoran_kolektor_id',
     ];

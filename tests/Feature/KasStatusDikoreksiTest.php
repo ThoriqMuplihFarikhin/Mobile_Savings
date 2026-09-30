@@ -9,6 +9,7 @@ use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
+use App\Services\WhatsAppService;
 use Livewire\Livewire;
 
 function seedKasDikoreksi(): array
@@ -164,4 +165,63 @@ it('menghitung setoran dikoreksi pada rekap rekonsiliasi admin', function () {
         ->set('kolektorId', $kolektor->id);
 
     expect(round((float) $component->get('totalSeharusnya'), 2))->toBe(60000.00);
+});
+
+it('koreksi tetap tersimpan walau notifikasi gagal', function () {
+    ['admin' => $admin, 'kolektor' => $kolektor, 'nasabah' => $nasabah, 'produk' => $produk] = seedKasDikoreksi();
+
+    $dikoreksi = buatSetoranKas($kolektor, $nasabah, $produk, 50000);
+
+    app()->instance(WhatsAppService::class, new class
+    {
+        public function sendNotification(string $phone, string $message): bool
+        {
+            throw new RuntimeException('Gateway WhatsApp sedang down.');
+        }
+    });
+
+    $this->actingAs($admin);
+    Livewire::test(MonitoringSetoran::class)
+        ->call('toggleKoreksi', $dikoreksi->id)
+        ->set('nominalBaru', 60000)
+        ->set('alasanKoreksi', 'Salah ketik nominal')
+        ->call('koreksi')
+        ->assertHasNoErrors();
+
+    $dikoreksi->refresh();
+    expect($dikoreksi->status)->toBe('dikoreksi')
+        ->and((float) $dikoreksi->nominal)->toBe(60000.00);
+
+    $saldo = SaldoProduk::where('nasabah_id', $nasabah->id)
+        ->where('produk_id', $produk->id)
+        ->first();
+    expect((float) $saldo->saldo)->toBe(60000.00);
+});
+
+it('pembatalan tetap tersimpan walau notifikasi gagal', function () {
+    ['admin' => $admin, 'kolektor' => $kolektor, 'nasabah' => $nasabah, 'produk' => $produk] = seedKasDikoreksi();
+
+    $dibatalkan = buatSetoranKas($kolektor, $nasabah, $produk, 30000);
+
+    app()->instance(WhatsAppService::class, new class
+    {
+        public function sendNotification(string $phone, string $message): bool
+        {
+            throw new RuntimeException('Gateway WhatsApp sedang down.');
+        }
+    });
+
+    $this->actingAs($admin);
+    Livewire::test(MonitoringSetoran::class)
+        ->call('toggleBatal', $dibatalkan->id)
+        ->set('alasanBatal', 'Duplikat input')
+        ->call('batal')
+        ->assertHasNoErrors();
+
+    expect($dibatalkan->refresh()->status)->toBe('dibatalkan');
+
+    $saldo = SaldoProduk::where('nasabah_id', $nasabah->id)
+        ->where('produk_id', $produk->id)
+        ->first();
+    expect((float) $saldo->saldo)->toBe(0.0);
 });

@@ -122,19 +122,23 @@ class MonitoringSetoran extends Component
 
             DB::commit();
 
-            ActivityLogger::log('koreksi_setoran', 'transaksi_setoran', $setoran->id, [
-                'nasabah_id' => $setoran->nasabah_id,
-                'nominal_lama' => $nominalLama,
-                'nominal_baru' => $nominalBaruVal,
-                'alasan' => $this->alasanKoreksi,
-            ]);
+            try {
+                ActivityLogger::log('koreksi_setoran', 'transaksi_setoran', $setoran->id, [
+                    'nasabah_id' => $setoran->nasabah_id,
+                    'nominal_lama' => $nominalLama,
+                    'nominal_baru' => $nominalBaruVal,
+                    'alasan' => $this->alasanKoreksi,
+                ]);
 
-            ActivityLogger::notify(
-                $setoran->nasabah_id,
-                'Setoran Dikoreksi',
-                'Setoran Rp '.number_format($nominalLama, 0, ',', '.').' telah dikoreksi menjadi Rp '.number_format($nominalBaruVal, 0, ',', '.').'.',
-                'both'
-            );
+                ActivityLogger::notify(
+                    $setoran->nasabah_id,
+                    'Setoran Dikoreksi',
+                    'Setoran Rp '.number_format($nominalLama, 0, ',', '.').' telah dikoreksi menjadi Rp '.number_format($nominalBaruVal, 0, ',', '.').'.',
+                    'both'
+                );
+            } catch (\Throwable $e) {
+                report($e);
+            }
 
             $this->showKoreksi = false;
             $this->selectedId = null;
@@ -144,7 +148,8 @@ class MonitoringSetoran extends Component
             session()->flash('success', 'Setoran berhasil dikoreksi!');
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'Gagal mengoreksi setoran: '.$e->getMessage());
+            report($e);
+            session()->flash('error', 'Gagal mengoreksi setoran. Silakan coba lagi.');
         }
     }
 
@@ -188,18 +193,22 @@ class MonitoringSetoran extends Component
 
             DB::commit();
 
-            ActivityLogger::log('batal_setoran', 'transaksi_setoran', $setoran->id, [
-                'nasabah_id' => $setoran->nasabah_id,
-                'nominal' => $setoran->nominal,
-                'alasan' => $this->alasanBatal,
-            ]);
+            try {
+                ActivityLogger::log('batal_setoran', 'transaksi_setoran', $setoran->id, [
+                    'nasabah_id' => $setoran->nasabah_id,
+                    'nominal' => $setoran->nominal,
+                    'alasan' => $this->alasanBatal,
+                ]);
 
-            ActivityLogger::notify(
-                $setoran->nasabah_id,
-                'Setoran Dibatalkan',
-                'Setoran Rp '.number_format($setoran->nominal, 0, ',', '.').' telah dibatalkan oleh admin.',
-                'both'
-            );
+                ActivityLogger::notify(
+                    $setoran->nasabah_id,
+                    'Setoran Dibatalkan',
+                    'Setoran Rp '.number_format($setoran->nominal, 0, ',', '.').' telah dibatalkan oleh admin.',
+                    'both'
+                );
+            } catch (\Throwable $e) {
+                report($e);
+            }
 
             $this->showBatal = false;
             $this->selectedBatalId = null;
@@ -208,7 +217,8 @@ class MonitoringSetoran extends Component
             session()->flash('success', 'Setoran berhasil dibatalkan!');
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'Gagal membatalkan setoran: '.$e->getMessage());
+            report($e);
+            session()->flash('error', 'Gagal membatalkan setoran. Silakan coba lagi.');
         }
     }
 }
