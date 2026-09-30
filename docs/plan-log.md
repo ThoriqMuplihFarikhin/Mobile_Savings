@@ -13,6 +13,7 @@ Status: `berjalan` · `selesai` · `tidak reproduksi` · `ditunda` · `dibatalka
 | T1.3 Setor kantor & rekon | selesai | `#[Locked]` total di `SetorKantor`, total dihitung ulang dari DB (`lockForUpdate`) di `submit`, notice "menunggu verifikasi". `RekonsiliasiKas::submit()` & `processSubmission()` dibungkus transaksi: tolak pengajuan pending ganda, rekap `total_seharusnya` dihitung ulang dari transaksi terikat, `selisih` di-`round(...,2)`, status lewat `match`, `DomainException` → flash generik. Tes `SetorKantorTest` (5). Catatan: `TestResponse::assertSessionHas` tidak reliabel untuk respons Livewire → asersi berbasis DB/state. | `016fc9c` |
 | T1.5 Hitung tunggakan paket | selesai | `hitungUlangKepesertaan()` kini: hari berjalan = `(int) diffInDays(now()->startOfDay()) + 1` dari `tanggal_mulai_ikut` mulai awal hari (bilangan bulat, jam berapa pun), di-clamp `min(hariBerjalan, totalHariPaket())`, mulai ikut masa depan → 0 (tanpa `total_seharusnya` negatif), `hariTerbayar = floor(aktual/harga)` float, `tunggakan` & `tunggakan_rupiah` di-`round(...,2)`. `totalHariPaket()` di-`(int)` + `max(0,…)`. 6 tes baru (dataset jam, nabung lebih, cap periode, mulai masa depan). | `499978b` |
 | T2.4 Zona waktu | selesai | `config/app.timezone` dari `UTC` → `Asia/Jakarta`. Dampak: `now()->toDateString()` untuk absen, setor, rekon, tunggakan, dan filter dashboard kini mengikuti tanggal Jakarta (sebelumnya 7 jam tiap hari memakai tanggal UTC yang salah). Tidak ada pemakaian `UTC` eksplisit lain di kode aplikasi. Tes `ZonaWaktuTest` (3). | `5bd67f9` |
+| T2.1 Setoran ganda & validasi | selesai | Kolom `transaksi_setoran.catatan` (migrasi baru `2026_09_30_000100`) + `$fillable`. `InputSetoran::submit()`: idempotency key (`Cache::add`, reset setelah sukses), `DB::transaction` (saldo di-`lockForUpdate` via `firstOrCreate`), log & notify **pasca-commit** dibungkus `try/catch` + `report()` (kegagalan notifikasi tidak lagi menghapus hasil setoran — sebelumnya `DB::rollBack()` di catch justru membalik seluruh transaksi tes), pesan error generik (tanpa `$e->getMessage()`). Validasi: `minimal_setor` produk (K5, `min:max(1000,minimal_setor)`), `max:1000000000`, `real_time` wajib `date_equals:today`, `susulan` `before_or_equal:today` tanpa batas mundur (K4), `catatan` max 1000. Blade submit: `wire:loading.attr="disabled" wire:target="submit"`. `MonitoringSetoran::koreksi/batal`: log+notify keluar dari blok transaksi (pola sama). Temuan tambahan: `DB::rollBack()` manual setelah `DB::commit()` membalik transaksi pembungkus tes (RefreshDatabase) sehingga kegagalan notifikasi terlihat "menghapus" data — alasan refactor ke `DB::transaction`. Tes baru `DepositIdempotencyTest` (7) + 2 tes notifikasi gagal di `KasStatusDikoreksiTest`. | `7720e79` |
 
 
 ## Keputusan owner
@@ -20,9 +21,13 @@ Status: `berjalan` · `selesai` · `tidak reproduksi` · `ditunda` · `dibatalka
 | # | Pertanyaan | Jawaban | Dampak |
 |---|-----------|---------|--------|
 | K1 | Database produksi MySQL atau SQLite? | **MySQL** (pdo_sqlite tidak tersedia di mesin dev; phpunit.xml tetap MySQL) | T5.1, T3.7 |
-| K2 | Sudah ada data produksi? | (belum dijawab) | T2.4, T3.4 |
-| K3 | Otorisasi pencairan offline: PIN atau OTP? | (belum dijawab) | T3.3 |
-| K4 | Batas backdate setoran `susulan` (hari)? | (belum dijawab) | T2.1 |
-| K5 | `produk.minimal_setor` wajib ditegakkan? | (belum dijawab) | T2.1 |
-| K6 | Koreksi/batal setelah kas disetor ke kantor? | (belum dijawab) | T1.4 |
+| K2 | Sudah ada data produksi? | **Belum ada** | T2.4 (tanpa migrasi data), T3.4 (tanpa command pindah file) |
+| K3 | Otorisasi pencairan offline: PIN atau OTP? | **Tetap PIN + throttle** | T3.3 (dokumentasikan risiko), T2.3 |
+| K4 | Batas backdate setoran `susulan` (hari)? | **Tanpa batas** (hanya dilarang di masa depan) | T2.1 |
+| K5 | `produk.minimal_setor` wajib ditegakkan? | **Ya, wajib** | T2.1 |
+| K6 | Koreksi/batal setelah kas disetor ke kantor? | **Hanya catat log**, rekon lama tidak diubah | T1.4 |
 | K7 | Kolektor lama saat handover: `terkunci` atau status baru? | **`terkunci`** (dipakai pada T1.1) | T1.1 |
+
+## Catatan teknis
+
+- **PHPStan (level 7) gagal sejak baseline**: `vendor/bin/phpstan analyse` melaporkan ±628 error pra-ada (mayoritas `missingType.*` di controller & Livewire yang tidak disentuh audit ini). Tidak ada error baru dari file yang diubah tiap task. Perbaikan menyeluruh agar `composer ci:check` hijau masuk lingkup **T5.x**, bukan task individual.
