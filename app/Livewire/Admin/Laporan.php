@@ -5,6 +5,8 @@ namespace App\Livewire\Admin;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -28,17 +30,22 @@ class Laporan extends Component
 
     public function render()
     {
-        $data = match ($this->periode) {
-            'harian' => $this->getHarian(),
-            'bulanan' => $this->getBulanan(),
-        };
+        $data = $this->filterValid()
+            ? match ($this->periode) {
+                'bulanan' => $this->getBulanan(),
+                default => $this->getHarian(),
+            }
+        : $this->laporanKosong();
 
         return view('livewire.admin.laporan', $data);
     }
 
     public function exportCsv()
     {
-        $filename = 'laporan-'.$this->periode.'-'.$this->tanggal.'.csv';
+        $this->validate($this->filterRules());
+
+        $periodeValue = $this->periode === 'bulanan' ? $this->bulan : $this->tanggal;
+        $filename = 'laporan-'.$this->periode.'-'.$periodeValue.'.csv';
         $headers = [
             'Content-type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
@@ -47,17 +54,20 @@ class Laporan extends Component
             'Expires' => '0',
         ];
 
-        $callback = function () {
+        /** Sanitasi sel teks agar formula tidak dieksekusi spreadsheet. */
+        $safe = fn ($value): string => is_string($value) && preg_match('/^[=+\-@\t\r]/', $value) ? "'".$value : $value;
+
+        $callback = function () use ($safe) {
             $file = fopen('php://output', 'w');
 
             // Header
-            fputcsv($file, ['Laporan Keuangan - '.ucfirst($this->periode)]);
-            fputcsv($file, ['Periode', $this->periode === 'harian' ? $this->tanggal : $this->bulan]);
+            fputcsv($file, [$safe('Laporan Keuangan - '.ucfirst($this->periode))]);
+            fputcsv($file, [$safe('Periode'), $safe($this->periode === 'harian' ? $this->tanggal : $this->bulan)]);
             fputcsv($file, []);
 
             // Summary
             fputcsv($file, ['RINGKASAN']);
-            $data = $this->periode === 'harian' ? $this->getHarian() : $this->getBulanan();
+            $data = $this->periode === 'bulanan' ? $this->getBulanan() : $this->getHarian();
             fputcsv($file, ['Total Setoran', $data['totalSetoran']]);
             fputcsv($file, ['Total Penarikan', $data['totalPenarikan']]);
             fputcsv($file, ['Total Komisi', $data['totalKomisi']]);
@@ -70,12 +80,12 @@ class Laporan extends Component
             fputcsv($file, ['Tanggal', 'Nasabah', 'Produk', 'Nominal', 'Sumber', 'Status']);
             foreach ($data['setoranDetails'] as $item) {
                 fputcsv($file, [
-                    $item->tanggal_transaksi->format('d/m/Y'),
-                    $item->nasabah->name ?? '-',
-                    $item->produk->nama ?? '-',
+                    Carbon::parse($item->tanggal_transaksi)->format('d/m/Y'),
+                    $safe($item->nasabah->name ?? '-'),
+                    $safe($item->produk->nama ?? '-'),
                     $item->nominal,
-                    $item->sumber_input,
-                    $item->status,
+                    $safe($item->sumber_input),
+                    $safe($item->status),
                 ]);
             }
             fputcsv($file, []);
@@ -85,13 +95,13 @@ class Laporan extends Component
             fputcsv($file, ['Tanggal', 'Nasabah', 'Produk', 'Diminta', 'Komisi', 'Diterima', 'Status']);
             foreach ($data['penarikanDetails'] as $item) {
                 fputcsv($file, [
-                    $item->waktu_approval?->format('d/m/Y') ?? '-',
-                    $item->nasabah->name ?? '-',
-                    $item->produk->nama ?? '-',
+                    $item->waktu_approval !== null ? Carbon::parse($item->waktu_approval)->format('d/m/Y') : '-',
+                    $safe($item->nasabah->name ?? '-'),
+                    $safe($item->produk->nama ?? '-'),
                     $item->nominal_diminta,
                     $item->nominal_komisi,
                     $item->nominal_diterima,
-                    $item->status,
+                    $safe($item->status),
                 ]);
             }
 
@@ -101,12 +111,83 @@ class Laporan extends Component
         return response()->stream($callback, 200, $headers);
     }
 
+    /**
+     * @return array{periode: string, tanggal: string, bulan: string}
+     */
+    private function filterRules(): array
+    {
+        return [
+            'periode' => 'required|in:harian,bulanan',
+            'tanggal' => 'required|date_format:Y-m-d',
+            'bulan' => 'required|date_format:Y-m',
+        ];
+    }
+
+    private function filterValid(): bool
+    {
+        try {
+            $this->validate($this->filterRules());
+        } catch (ValidationException $e) {
+            foreach ($e->validator->errors()->messages() as $field => $messages) {
+                $this->addError($field, $messages[0]);
+            }
+
+            session()->flash('error', 'Filter laporan tidak valid. Silakan periksa periode, tanggal, atau bulan yang dipilih.');
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @return array{
+     *     totalSetoran: int,
+     *     totalPenarikan: int,
+     *     totalKomisi: int,
+     *     jumlahTransaksiSetoran: int,
+     *     jumlahTransaksiPenarikan: int,
+     *     dailySetoran: Collection<int, Collection<int, TransaksiSetoran>>,
+     *     dailyPenarikan: Collection<int, Collection<int, TransaksiPenarikan>>,
+     *     days: int,
+     *     setoranDetails: Collection<int, TransaksiSetoran>,
+     *     penarikanDetails: Collection<int, TransaksiPenarikan>
+     * }
+     */
+    private function laporanKosong(): array
+    {
+        return [
+            'totalSetoran' => 0,
+            'totalPenarikan' => 0,
+            'totalKomisi' => 0,
+            'jumlahTransaksiSetoran' => 0,
+            'jumlahTransaksiPenarikan' => 0,
+            'dailySetoran' => collect(),
+            'dailyPenarikan' => collect(),
+            'days' => 0,
+            'setoranDetails' => collect(),
+            'penarikanDetails' => collect(),
+        ];
+    }
+
+    /**
+     * @return array{
+     *     totalSetoran: float|int,
+     *     totalPenarikan: float|int,
+     *     totalKomisi: float|int,
+     *     jumlahTransaksiSetoran: int,
+     *     jumlahTransaksiPenarikan: int,
+     *     setoranDetails: \Illuminate\Database\Eloquent\Collection<int, TransaksiSetoran>,
+     *     penarikanDetails: \Illuminate\Database\Eloquent\Collection<int, TransaksiPenarikan>
+     * }
+     */
     private function getHarian(): array
     {
         $date = Carbon::parse($this->tanggal);
 
         $setoran = TransaksiSetoran::with(['nasabah', 'produk'])
-            ->whereDate('created_at', $date)
+            ->masihAktif()
+            ->whereDate('tanggal_transaksi', $date)
             ->get();
         $penarikan = TransaksiPenarikan::with(['nasabah', 'produk'])
             ->whereIn('status', ['approved', 'selesai'])
@@ -124,20 +205,35 @@ class Laporan extends Component
         ];
     }
 
+    /**
+     * @return array{
+     *     totalSetoran: float|int,
+     *     totalPenarikan: float|int,
+     *     totalKomisi: float|int,
+     *     jumlahTransaksiSetoran: int,
+     *     jumlahTransaksiPenarikan: int,
+     *     dailySetoran: Collection<(int|string), \Illuminate\Database\Eloquent\Collection<int, TransaksiSetoran>>,
+     *     dailyPenarikan: Collection<(int|string), \Illuminate\Database\Eloquent\Collection<int, TransaksiPenarikan>>,
+     *     days: int,
+     *     setoranDetails: \Illuminate\Database\Eloquent\Collection<int, TransaksiSetoran>,
+     *     penarikanDetails: \Illuminate\Database\Eloquent\Collection<int, TransaksiPenarikan>
+     * }
+     */
     private function getBulanan(): array
     {
         $start = Carbon::parse($this->bulan)->startOfMonth();
         $end = $start->copy()->endOfMonth();
 
         $setoran = TransaksiSetoran::with(['nasabah', 'produk'])
-            ->whereBetween('created_at', [$start, $end])
+            ->masihAktif()
+            ->whereBetween('tanggal_transaksi', [$start->toDateString(), $end->toDateString()])
             ->get();
         $penarikan = TransaksiPenarikan::with(['nasabah', 'produk'])
             ->whereIn('status', ['approved', 'selesai'])
             ->whereBetween('waktu_approval', [$start, $end])
             ->get();
 
-        $dailySetoran = $setoran->groupBy(fn ($t) => Carbon::parse($t->created_at)->format('d'));
+        $dailySetoran = $setoran->groupBy(fn ($t) => Carbon::parse($t->tanggal_transaksi)->format('d'));
         $dailyPenarikan = $penarikan->groupBy(fn ($t) => Carbon::parse($t->waktu_approval)->format('d'));
 
         return [
