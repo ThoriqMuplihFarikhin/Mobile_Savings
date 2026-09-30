@@ -49,9 +49,8 @@ class HandoverKolektor extends Component
         if ($this->kolektorLamaId) {
             $this->selectedKolektorLama = User::find($this->kolektorLamaId);
 
-            $this->unsettledCash = TransaksiSetoran::where('input_by', $this->kolektorLamaId)
-                ->where('sudah_disetor_ke_kantor', false)
-                ->where('status', 'tercatat')
+            $this->unsettledCash = TransaksiSetoran::belumDisetor()
+                ->where('input_by', $this->kolektorLamaId)
                 ->sum('nominal');
 
             $this->hasUnsettledCash = $this->unsettledCash > 0;

@@ -24,14 +24,12 @@ class SetorKantor extends Component
 
     public function loadData()
     {
-        $this->totalBelumDisetor = TransaksiSetoran::where('input_by', Auth::id())
-            ->where('sudah_disetor_ke_kantor', false)
-            ->where('status', 'tercatat')
+        $this->totalBelumDisetor = TransaksiSetoran::belumDisetor()
+            ->where('input_by', Auth::id())
             ->sum('nominal');
 
-        $this->jumlahTransaksi = TransaksiSetoran::where('input_by', Auth::id())
-            ->where('sudah_disetor_ke_kantor', false)
-            ->where('status', 'tercatat')
+        $this->jumlahTransaksi = TransaksiSetoran::belumDisetor()
+            ->where('input_by', Auth::id())
             ->count();
     }
 
@@ -61,9 +59,8 @@ class SetorKantor extends Component
             'keterangan_selisih' => $this->catatan ?: null,
         ]);
 
-        TransaksiSetoran::where('input_by', Auth::id())
-            ->where('sudah_disetor_ke_kantor', false)
-            ->where('status', 'tercatat')
+        TransaksiSetoran::belumDisetor()
+            ->where('input_by', Auth::id())
             ->update(['setoran_kolektor_id' => $setoran->id]);
 
         $this->catatan = '';

@@ -283,9 +283,8 @@ class InputSetoran extends Component
             ->take(5)
             ->get();
 
-        $totalBelumDisetor = TransaksiSetoran::where('input_by', Auth::id())
-            ->where('sudah_disetor_ke_kantor', false)
-            ->where('status', 'tercatat')
+        $totalBelumDisetor = TransaksiSetoran::belumDisetor()
+            ->where('input_by', Auth::id())
             ->sum('nominal');
 
         return view('livewire.kolektor.input-setoran', compact('riwayatHariIni', 'totalBelumDisetor'));

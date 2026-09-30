@@ -132,14 +132,12 @@ class RekonsiliasiKas extends Component
     public function updatedKolektorId()
     {
         if ($this->kolektorId) {
-            $this->totalSeharusnya = TransaksiSetoran::where('input_by', $this->kolektorId)
-                ->where('sudah_disetor_ke_kantor', false)
-                ->where('status', 'tercatat')
+            $this->totalSeharusnya = TransaksiSetoran::belumDisetor()
+                ->where('input_by', $this->kolektorId)
                 ->sum('nominal');
 
-            $this->detailTransaksi = TransaksiSetoran::where('input_by', $this->kolektorId)
-                ->where('sudah_disetor_ke_kantor', false)
-                ->where('status', 'tercatat')
+            $this->detailTransaksi = TransaksiSetoran::belumDisetor()
+                ->where('input_by', $this->kolektorId)
                 ->with(['nasabah', 'produk'])
                 ->get();
 
@@ -161,9 +159,8 @@ class RekonsiliasiKas extends Component
         DB::beginTransaction();
 
         try {
-            $totalSeharusnya = TransaksiSetoran::where('input_by', $this->kolektorId)
-                ->where('sudah_disetor_ke_kantor', false)
-                ->where('status', 'tercatat')
+            $totalSeharusnya = TransaksiSetoran::belumDisetor()
+                ->where('input_by', $this->kolektorId)
                 ->lockForUpdate()
                 ->sum('nominal');
 
@@ -192,9 +189,8 @@ class RekonsiliasiKas extends Component
                 'status' => $status,
             ]);
 
-            TransaksiSetoran::where('input_by', $this->kolektorId)
-                ->where('sudah_disetor_ke_kantor', false)
-                ->where('status', 'tercatat')
+            TransaksiSetoran::belumDisetor()
+                ->where('input_by', $this->kolektorId)
                 ->update(['setoran_kolektor_id' => $setoran->id]);
 
             TransaksiSetoran::where('setoran_kolektor_id', $setoran->id)

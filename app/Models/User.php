@@ -143,8 +143,8 @@ class User extends Authenticatable
             return false;
         }
 
-        return TransaksiSetoran::where('input_by', $this->id)
-            ->where('sudah_disetor_ke_kantor', false)
+        return TransaksiSetoran::belumDisetor()
+            ->where('input_by', $this->id)
             ->exists();
     }
 }

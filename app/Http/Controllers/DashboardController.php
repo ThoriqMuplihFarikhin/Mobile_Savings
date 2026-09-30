@@ -33,7 +33,7 @@ class DashboardController extends Controller
         $totalSaldo = DB::table('saldo_produk')->sum('saldo');
         $setoranHariIni = DB::table('transaksi_setoran')
             ->where('tanggal_transaksi', today())
-            ->where('status', 'tercatat')
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
             ->sum('nominal');
 
         $totalKomisi = DB::table('transaksi_penarikan')
@@ -44,7 +44,7 @@ class DashboardController extends Controller
             'tanggal' => Carbon::today()->subDays($i)->format('d M'),
             'nominal' => (float) DB::table('transaksi_setoran')
                 ->where('tanggal_transaksi', Carbon::today()->subDays($i))
-                ->where('status', 'tercatat')
+                ->whereIn('status', ['tercatat', 'dikoreksi'])
                 ->sum('nominal'),
         ])->values();
 
@@ -62,7 +62,7 @@ class DashboardController extends Controller
                 'users.name as nasabah_name',
                 'produk_tabungan.nama as produk_name'
             )
-            ->where('transaksi_setoran.status', 'tercatat')
+            ->whereIn('transaksi_setoran.status', ['tercatat', 'dikoreksi'])
             ->orderByDesc('transaksi_setoran.tanggal_transaksi')
             ->limit(5)
             ->get();
@@ -70,7 +70,7 @@ class DashboardController extends Controller
         $kolektorTeratas = DB::table('transaksi_setoran')
             ->join('users', 'transaksi_setoran.input_by', '=', 'users.id')
             ->select('users.name', DB::raw('COUNT(*) as jumlah_setoran'), DB::raw('SUM(transaksi_setoran.nominal) as total_nominal'))
-            ->where('transaksi_setoran.status', 'tercatat')
+            ->whereIn('transaksi_setoran.status', ['tercatat', 'dikoreksi'])
             ->where('transaksi_setoran.tanggal_transaksi', '>=', Carbon::now()->subDays(30))
             ->groupBy('users.id', 'users.name')
             ->orderByDesc('total_nominal')
@@ -124,7 +124,7 @@ class DashboardController extends Controller
             'setoran_belum_disetor' => DB::table('transaksi_setoran')
                 ->where('input_by', $user->id)
                 ->where('sudah_disetor_ke_kantor', false)
-                ->where('status', 'tercatat')
+                ->whereIn('status', ['tercatat', 'dikoreksi'])
                 ->sum('nominal'),
             'kunjungan_selesai' => $jadwalSelesai,
             'kunjungan_total' => $jadwalTotal,
@@ -155,7 +155,7 @@ class DashboardController extends Controller
         $totalSaldo = $saldoPerProduk->sum('saldo');
 
         $riwayatSetoran = TransaksiSetoran::where('nasabah_id', $user->id)
-            ->where('status', 'tercatat')
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
             ->with('produk')
             ->latest('tanggal_transaksi')
             ->limit(5)
@@ -205,7 +205,7 @@ class DashboardController extends Controller
     private function hitungStreak(int $nasabahId): int
     {
         $tanggalSetor = TransaksiSetoran::where('nasabah_id', $nasabahId)
-            ->where('status', 'tercatat')
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
             ->orderByDesc('tanggal_transaksi')
             ->pluck('tanggal_transaksi')
             ->map(fn ($t) => Carbon::parse($t)->toDateString())
