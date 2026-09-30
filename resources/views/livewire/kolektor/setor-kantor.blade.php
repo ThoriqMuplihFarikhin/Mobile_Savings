@@ -21,6 +21,12 @@
     </div>
 
     {{-- Flash Notifications --}}
+    @if($menungguVerifikasi)
+        <div class="mb-5 flex items-center gap-3 rounded-2xl bg-amber-50 px-4 py-3.5 text-xs font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 shadow-xs">
+            <flux:icon.clock class="size-5 shrink-0 text-amber-600 dark:text-amber-400" />
+            <span class="flex-1">Pengajuan setoran kas Anda sedang menunggu verifikasi admin.</span>
+        </div>
+    @endif
     @if (session('success'))
         <div class="mb-5 flex items-center gap-3 rounded-2xl bg-emerald-50 px-4 py-3.5 text-xs font-medium text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-xs">
             <flux:icon.check-circle class="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />

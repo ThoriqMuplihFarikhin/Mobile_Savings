@@ -46,10 +46,11 @@ function seedKasDikoreksi(): array
 
 function buatSetoranKas(User $kolektor, User $nasabah, ProdukTabungan $produk, float $nominal, string $status = 'tercatat'): TransaksiSetoran
 {
-    SaldoProduk::firstOrCreate(
+    $saldo = SaldoProduk::firstOrCreate(
         ['nasabah_id' => $nasabah->id, 'produk_id' => $produk->id],
         ['saldo' => 0]
     );
+    $saldo->increment('saldo', $nominal);
 
     return TransaksiSetoran::create([
         'nasabah_id' => $nasabah->id,
