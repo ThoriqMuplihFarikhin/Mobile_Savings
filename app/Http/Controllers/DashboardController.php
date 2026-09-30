@@ -102,20 +102,28 @@ class DashboardController extends Controller
             ->where('kolektor_id', $user->id)
             ->where('tanggal_jadwal', today())
             ->join('users', 'jadwal_kunjungan.nasabah_id', '=', 'users.id')
-            ->leftJoin('kepesertaan_paket', function ($join) {
-                $join->on('kepesertaan_paket.nasabah_id', '=', 'jadwal_kunjungan.nasabah_id')
-                    ->where('kepesertaan_paket.status_alert', '!=', 'aman');
-            })
-            ->leftJoin('produk_tabungan', 'kepesertaan_paket.produk_id', '=', 'produk_tabungan.id')
             ->select(
                 'jadwal_kunjungan.*',
-                'users.name as nasabah_name',
-                'kepesertaan_paket.tunggakan',
-                'kepesertaan_paket.status_alert',
-                'produk_tabungan.nama as produk_name'
+                'users.name as nasabah_name'
             )
             ->orderBy('jadwal_kunjungan.id')
             ->get();
+
+        $kepesertaanTerpilih = KepesertaanPaket::with('produk')
+            ->whereIn('nasabah_id', $jadwalHariIni->pluck('nasabah_id')->unique()->values())
+            ->whereNull('keputusan_akhir')
+            ->orderByDesc('tunggakan')
+            ->get()
+            ->groupBy('nasabah_id')
+            ->map(fn ($rows) => $rows->first());
+
+        $jadwalHariIni->each(function ($jadwal) use ($kepesertaanTerpilih) {
+            $kepesertaan = $kepesertaanTerpilih->get($jadwal->nasabah_id);
+
+            $jadwal->tunggakan = $kepesertaan?->tunggakan;
+            $jadwal->status_alert = $kepesertaan?->status_alert;
+            $jadwal->produk_name = $kepesertaan?->produk->nama ?? null;
+        });
 
         $jadwalTotal = $jadwalHariIni->count();
         $jadwalSelesai = $jadwalHariIni->where('status_kunjungan', 'dikunjungi')->count();
@@ -137,6 +145,7 @@ class DashboardController extends Controller
 
         $nasabahTunggakParah = KepesertaanPaket::whereIn('nasabah_id', $nasabahIds)
             ->whereIn('status_alert', ['peringatan', 'perlu_review'])
+            ->whereNull('keputusan_akhir')
             ->count();
 
         $totalNasabahBinaan = DB::table('kolektor_nasabah')
