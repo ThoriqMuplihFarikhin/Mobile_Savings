@@ -5,7 +5,6 @@ namespace App\Livewire\Kolektor;
 use App\Actions\Tabungan\HitungTunggakanAction;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\ValidatesKolektorNasabah;
-use App\Models\KepesertaanPaket;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
@@ -175,19 +174,6 @@ class InputSetoran extends Component
         }
 
         $produk = ProdukTabungan::find($this->produkId);
-
-        if ($produk && $produk->tipe === 'paket') {
-            $existingActive = KepesertaanPaket::where('nasabah_id', $this->nasabahId)
-                ->where('produk_id', $this->produkId)
-                ->whereNull('keputusan_akhir')
-                ->exists();
-
-            if ($existingActive) {
-                session()->flash('error', 'Nasabah ini sudah memiliki kepesertaan aktif untuk produk paket tersebut. Tidak bisa didaftarkan ulang sampai kepesertaan sebelumnya selesai.');
-
-                return;
-            }
-        }
 
         DB::beginTransaction();
 
