@@ -8,7 +8,9 @@ use App\Models\LogHandoverKolektor;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 #[Layout('layouts.app')]
@@ -24,8 +26,10 @@ class HandoverKolektor extends Component
 
     public $nasabahList = [];
 
+    #[Locked]
     public $unsettledCash = 0;
 
+    #[Locked]
     public $hasUnsettledCash = false;
 
     public $showConfirmation = false;
@@ -94,7 +98,8 @@ class HandoverKolektor extends Component
         }
 
         $this->validate([
-            'kolektorBaruId' => 'required|exists:users,id',
+            'kolektorLamaId' => ['required', Rule::exists('users', 'id')->where('role', 'kolektor')],
+            'kolektorBaruId' => ['required', Rule::exists('users', 'id')->where('role', 'kolektor')->where('status_akun', 'aktif')],
         ]);
 
         $nasabahToNotify = collect();
@@ -104,6 +109,34 @@ class HandoverKolektor extends Component
         try {
             $today = now()->toDateString();
 
+            $adaKas = TransaksiSetoran::belumDisetor()
+                ->where('input_by', $this->kolektorLamaId)
+                ->lockForUpdate()
+                ->exists();
+
+            $nasabahIds = KolektorNasabah::where('kolektor_id', $this->kolektorLamaId)
+                ->where('status', 'aktif')
+                ->lockForUpdate()
+                ->pluck('nasabah_id');
+
+            if ($adaKas) {
+                DB::rollBack();
+                $this->hasUnsettledCash = true;
+                $this->unsettledCash = (float) TransaksiSetoran::belumDisetor()
+                    ->where('input_by', $this->kolektorLamaId)
+                    ->sum('nominal');
+                session()->flash('error', 'Handover diblokir! Kolektor masih memiliki kas yang belum disetor ke kantor.');
+
+                return;
+            }
+
+            if ($nasabahIds->isEmpty()) {
+                DB::rollBack();
+                session()->flash('error', 'Tidak ada nasabah yang perlu dipindahkan!');
+
+                return;
+            }
+
             KolektorNasabah::where('kolektor_id', $this->kolektorLamaId)
                 ->where('status', 'aktif')
                 ->update([
@@ -111,10 +144,10 @@ class HandoverKolektor extends Component
                     'status' => 'nonaktif',
                 ]);
 
-            foreach ($this->nasabahList as $item) {
+            foreach ($nasabahIds as $nasabahId) {
                 KolektorNasabah::create([
                     'kolektor_id' => $this->kolektorBaruId,
-                    'nasabah_id' => $item->nasabah_id,
+                    'nasabah_id' => $nasabahId,
                     'tanggal_mulai_ditangani' => $today,
                     'status' => 'aktif',
                 ]);
@@ -122,39 +155,40 @@ class HandoverKolektor extends Component
 
             $statusKas = 'lunas';
 
-            LogHandoverKolektor::create([
+            $log = LogHandoverKolektor::create([
                 'kolektor_lama_id' => $this->kolektorLamaId,
                 'kolektor_baru_id' => $this->kolektorBaruId,
                 'tanggal_handover' => $today,
-                'jumlah_nasabah_dipindah' => $this->nasabahList->count(),
+                'jumlah_nasabah_dipindah' => $nasabahIds->count(),
                 'status_kas_saat_handover' => $statusKas,
                 'diproses_oleh' => auth()->id(),
             ]);
 
-            User::where('id', $this->kolektorLamaId)->update(['status_akun' => 'nonaktif']);
+            User::where('id', $this->kolektorLamaId)->update(['status_akun' => 'terkunci']);
 
             $kolektorBaru = User::find($this->kolektorBaruId);
 
-            $nasabahToNotify = $this->nasabahList->filter(fn ($item) => $item->nasabah)
-                ->map(fn ($item) => [
-                    'nasabah_id' => $item->nasabah_id,
-                    'name' => $item->nasabah->name,
+            $nasabahToNotify = User::whereIn('id', $nasabahIds)->get()
+                ->map(fn (User $nasabah) => [
+                    'nasabah_id' => $nasabah->id,
+                    'name' => $nasabah->name,
                 ])
                 ->values();
 
-            ActivityLogger::log('handover_kolektor', 'log_handover_kolektor', LogHandoverKolektor::latest()->first()->id, [
+            ActivityLogger::log('handover_kolektor', 'log_handover_kolektor', $log->id, [
                 'kolektor_lama_id' => $this->kolektorLamaId,
                 'kolektor_baru_id' => $this->kolektorBaruId,
-                'jumlah_nasabah_dipindah' => $this->nasabahList->count(),
+                'jumlah_nasabah_dipindah' => $nasabahIds->count(),
                 'status_kas' => $statusKas,
             ]);
 
-            $jumlahNasabah = $this->nasabahList->count();
+            $jumlahNasabah = $nasabahIds->count();
 
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            session()->flash('error', 'Gagal memproses handover: '.$e->getMessage());
+            report($e);
+            session()->flash('error', 'Gagal memproses handover. Silakan coba lagi.');
 
             return;
         }
