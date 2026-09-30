@@ -154,4 +154,26 @@ class ManajemenNasabah extends Component
         }
         session()->flash('success', 'Status nasabah berhasil diubah!');
     }
+
+    public function bukaKunci(int $id): void
+    {
+        $profil = NasabahProfil::find($id);
+        if (! $profil) {
+            return;
+        }
+
+        if ($profil->status_pendaftaran !== 'aktif') {
+            session()->flash('error', 'Nasabah belum diverifikasi. Selesaikan verifikasi terlebih dahulu sebelum membuka kunci.');
+
+            return;
+        }
+
+        $profil->user->update([
+            'status_akun' => 'aktif',
+            'percobaan_gagal' => 0,
+            'login_terkunci_hingga' => null,
+        ]);
+
+        session()->flash('success', 'Kunci akun nasabah berhasil dibuka!');
+    }
 }

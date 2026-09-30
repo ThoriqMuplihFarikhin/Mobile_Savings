@@ -128,6 +128,22 @@ class KelolaKolektor extends Component
         session()->flash('success', 'Status kolektor berhasil diubah!');
     }
 
+    public function bukaKunci(int $id): void
+    {
+        $user = User::find($id);
+        if (! $user || $user->role !== 'kolektor') {
+            return;
+        }
+
+        $user->update([
+            'status_akun' => 'aktif',
+            'percobaan_gagal' => 0,
+            'login_terkunci_hingga' => null,
+        ]);
+
+        session()->flash('success', 'Kunci akun kolektor berhasil dibuka!');
+    }
+
     public function toggleAssign($id)
     {
         $this->showAssign = true;

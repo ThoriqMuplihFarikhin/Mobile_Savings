@@ -14,6 +14,11 @@ use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
 {
+    /**
+     * Hash palsu untuk menyamakan waktu respons ketika nomor tidak terdaftar.
+     */
+    private const DUMMY_HASH = '$2y$10$Y0Xe2V.kSpRMChxXQefPC.5TNb3vBMnrpPFsTZf4B.hGcE3Z1mfRa';
+
     public function register(): void
     {
         //
@@ -34,6 +39,8 @@ class FortifyServiceProvider extends ServiceProvider
             $user = User::where('no_hp', $request->no_hp)->first();
 
             if (! $user) {
+                Hash::check($request->password, self::DUMMY_HASH);
+
                 return null;
             }
 
@@ -41,17 +48,24 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
+            if ($user->login_terkunci_hingga?->isFuture()) {
+                return null;
+            }
+
             if (! Hash::check($request->password, $user->pin_hash)) {
                 $user->increment('percobaan_gagal');
 
                 if ($user->percobaan_gagal >= 5) {
-                    $user->update(['status_akun' => 'terkunci']);
+                    $user->update([
+                        'login_terkunci_hingga' => now()->addMinutes(15),
+                        'percobaan_gagal' => 0,
+                    ]);
                 }
 
                 return null;
             }
 
-            $user->update(['percobaan_gagal' => 0]);
+            $user->update(['percobaan_gagal' => 0, 'login_terkunci_hingga' => null]);
 
             return $user;
         });
