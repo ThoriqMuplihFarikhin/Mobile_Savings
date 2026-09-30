@@ -67,16 +67,17 @@ class KepesertaanPaket extends Model
             return ['tunggakan_hari' => 0, 'tunggakan_rupiah' => 0];
         }
 
-        $hariBerjalan = Carbon::parse($this->tanggal_mulai_ikut)->diffInDays(now()) + 1;
+        $hargaPerHari = (float) $produk->harga_per_hari;
+        $hariBerjalan = $this->hitungHariBerjalan($produk);
 
         $totalAktual = TransaksiSetoran::where('nasabah_id', $this->nasabah_id)
             ->where('produk_id', $this->produk_id)
             ->where('status', '!=', 'dibatalkan')
             ->sum('nominal');
 
-        $hariTerbayar = intdiv((int) $totalAktual, (int) $produk->harga_per_hari);
+        $hariTerbayar = (int) floor(((float) $totalAktual) / $hargaPerHari);
         $tunggakanHari = max(0, $hariBerjalan - $hariTerbayar);
-        $seharusnyaSampaiHariIni = $hariBerjalan * $produk->harga_per_hari;
+        $seharusnyaSampaiHariIni = round($hariBerjalan * $hargaPerHari, 2);
 
         $statusAlert = 'normal';
         if ($tunggakanHari > 0) {
@@ -97,7 +98,27 @@ class KepesertaanPaket extends Model
 
         return [
             'tunggakan_hari' => $tunggakanHari,
-            'tunggakan_rupiah' => $tunggakanHari * $produk->harga_per_hari,
+            'tunggakan_rupiah' => round($tunggakanHari * $hargaPerHari, 2),
         ];
+    }
+
+    /**
+     * Hari ke berapa kepesertaan ini berjalan hari ini, dalam bilangan bulat.
+     *
+     * - hari pertama ikut paket dihitung hari ke-1,
+     * - tanggal mulai ikut di masa depan dihitung 0,
+     * - tidak pernah melebihi total hari periode paket.
+     */
+    protected function hitungHariBerjalan(ProdukTabungan $produk): int
+    {
+        $mulai = Carbon::parse($this->tanggal_mulai_ikut)->startOfDay();
+        $hariBerjalan = max(0, (int) $mulai->diffInDays(now()->startOfDay()) + 1);
+
+        $totalHariPaket = $produk->totalHariPaket();
+        if ($totalHariPaket !== null) {
+            $hariBerjalan = min($hariBerjalan, $totalHariPaket);
+        }
+
+        return $hariBerjalan;
     }
 }

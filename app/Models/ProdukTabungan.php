@@ -74,7 +74,7 @@ class ProdukTabungan extends Model
     public function totalHariPaket(): ?int
     {
         if ($this->periode_mulai && $this->periode_selesai) {
-            return $this->periode_mulai->diffInDays($this->periode_selesai) + 1;
+            return max(0, (int) $this->periode_mulai->diffInDays($this->periode_selesai) + 1);
         }
 
         return null;
