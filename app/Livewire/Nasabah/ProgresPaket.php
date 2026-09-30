@@ -17,6 +17,10 @@ class ProgresPaket extends Component
             ->latest('tanggal_mulai_ikut')
             ->get();
 
+        foreach ($kepesertaan as $item) {
+            $item->hitungUlangKepesertaan();
+        }
+
         return view('livewire.nasabah.progres-paket', compact('kepesertaan'));
     }
 }

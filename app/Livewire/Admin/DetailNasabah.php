@@ -75,7 +75,7 @@ class DetailNasabah extends Component
         $perHari = [];
         $cursor = $start->copy();
         $runningSaldo = (float) $saldoAwal;
-        $totalDays = (int) $start->diffInDays($end);
+        $totalDays = (int) $start->startOfDay()->diffInDays($end->startOfDay());
 
         $setoranByDate = $setoran->groupBy(fn ($s) => substr($s->tanggal_transaksi, 0, 10));
         $penarikanByDate = $penarikan->groupBy(fn ($p) => substr($p->waktu_pencairan, 0, 10));

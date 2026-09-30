@@ -85,7 +85,7 @@ class Laporan extends Component
             fputcsv($file, ['Tanggal', 'Nasabah', 'Produk', 'Diminta', 'Komisi', 'Diterima', 'Status']);
             foreach ($data['penarikanDetails'] as $item) {
                 fputcsv($file, [
-                    $item->created_at->format('d/m/Y'),
+                    $item->waktu_approval?->format('d/m/Y') ?? '-',
                     $item->nasabah->name ?? '-',
                     $item->produk->nama ?? '-',
                     $item->nominal_diminta,
@@ -109,7 +109,8 @@ class Laporan extends Component
             ->whereDate('created_at', $date)
             ->get();
         $penarikan = TransaksiPenarikan::with(['nasabah', 'produk'])
-            ->whereDate('created_at', $date)
+            ->whereIn('status', ['approved', 'selesai'])
+            ->whereDate('waktu_approval', $date)
             ->get();
 
         return [
@@ -132,11 +133,12 @@ class Laporan extends Component
             ->whereBetween('created_at', [$start, $end])
             ->get();
         $penarikan = TransaksiPenarikan::with(['nasabah', 'produk'])
-            ->whereBetween('created_at', [$start, $end])
+            ->whereIn('status', ['approved', 'selesai'])
+            ->whereBetween('waktu_approval', [$start, $end])
             ->get();
 
         $dailySetoran = $setoran->groupBy(fn ($t) => Carbon::parse($t->created_at)->format('d'));
-        $dailyPenarikan = $penarikan->groupBy(fn ($t) => Carbon::parse($t->created_at)->format('d'));
+        $dailyPenarikan = $penarikan->groupBy(fn ($t) => Carbon::parse($t->waktu_approval)->format('d'));
 
         return [
             'totalSetoran' => $setoran->sum('nominal'),
@@ -146,7 +148,7 @@ class Laporan extends Component
             'jumlahTransaksiPenarikan' => $penarikan->count(),
             'dailySetoran' => $dailySetoran,
             'dailyPenarikan' => $dailyPenarikan,
-            'days' => $start->diffInDays($end) + 1,
+            'days' => (int) $start->diffInDays($end) + 1,
             'setoranDetails' => $setoran,
             'penarikanDetails' => $penarikan,
         ];

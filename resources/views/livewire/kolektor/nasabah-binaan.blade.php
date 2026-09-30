@@ -117,7 +117,7 @@
                                     ⚠️ Tunggakan {{ $tunggakanActive->produk->nama ?? 'Paket' }}
                                 </span>
                                 <span class="font-mono text-xs font-bold text-amber-700 dark:text-amber-300">
-                                    Rp {{ number_format($tunggakanActive->tunggakan, 0, ',', '.') }}
+                                    {{ $tunggakanActive->tunggakan }} hari
                                 </span>
                             </div>
                         @endif

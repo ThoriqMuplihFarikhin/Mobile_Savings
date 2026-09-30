@@ -13,10 +13,8 @@
     <div class="space-y-4">
         @forelse($kepesertaan as $item)
             @php
-                $persentase = $item->total_seharusnya_terkumpul > 0
-                    ? round(($item->total_aktual_terkumpul / $item->total_seharusnya_terkumpul) * 100)
-                    : 0;
-                $persentase = min($persentase, 100);
+                $targetAkhir = $item->produk->targetAkhir();
+                $persentase = $targetAkhir ? min(100, round(($item->total_aktual_terkumpul / $targetAkhir) * 100)) : 0;
                 $alertStatus = $item->status_alert ?? 'normal';
                 $barGradient = match($alertStatus) {
                     'normal'     => 'from-emerald-500 to-teal-400',
@@ -52,7 +50,9 @@
                             </div>
                             <div class="text-right">
                                 <p class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 mb-0.5">Target</p>
-                                <p class="font-mono text-xs font-semibold text-indigo-100">Rp {{ number_format($item->total_seharusnya_terkumpul, 0, ',', '.') }}</p>
+                                <p class="font-mono text-xs font-semibold text-indigo-100">
+                                    {{ $targetAkhir ? 'Rp '.number_format($targetAkhir, 0, ',', '.') : 'Belum diatur admin' }}
+                                </p>
                             </div>
                         </div>
                         <div class="h-2 w-full overflow-hidden rounded-full bg-white/20">
@@ -74,8 +74,37 @@
                         </div>
                         <div>
                             <p class="text-xs font-bold text-rose-700 dark:text-rose-400">Tunggakan Setoran</p>
-                            <p class="text-xs font-mono font-bold text-rose-600 dark:text-rose-300 mt-0.5">Rp {{ number_format($item->tunggakan, 0, ',', '.') }}</p>
+                            <p class="text-xs font-mono font-bold text-rose-600 dark:text-rose-300 mt-0.5">{{ $item->tunggakan }} hari</p>
                         </div>
+                    </div>
+                @endif
+
+                {{-- Isi Paket & Bonus Tunai --}}
+                @if($item->produk && $item->produk->isPaket() && ($item->produk->isi_paket || $item->produk->uang_tunai))
+                    <div class="mx-5 mt-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 p-4 border border-zinc-200/60 dark:border-zinc-700/40">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">Isi Paket</p>
+
+                        @if($item->produk->isi_paket)
+                            <ul class="space-y-1.5">
+                                @foreach($item->produk->isi_paket as $barang)
+                                    <li class="flex items-center justify-between text-xs">
+                                        <span class="text-zinc-700 dark:text-zinc-300">{{ $barang['nama'] }}</span>
+                                        <span class="font-mono font-semibold text-zinc-900 dark:text-white">
+                                            {{ $barang['jumlah'] }}
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+
+                        @if($item->produk->uang_tunai)
+                            <div class="mt-2.5 flex items-center justify-between border-t border-zinc-200/60 dark:border-zinc-700/40 pt-2.5">
+                                <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400">+ Bonus Uang Tunai</span>
+                                <span class="font-mono text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                                    Rp {{ number_format($item->produk->uang_tunai, 0, ',', '.') }}
+                                </span>
+                            </div>
+                        @endif
                     </div>
                 @endif
 

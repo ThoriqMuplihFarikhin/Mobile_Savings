@@ -69,7 +69,13 @@
                                         <button wire:click="reject({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Tolak</button>
                                     </div>
                                 @elseif($item->status === 'approved')
-                                    <button wire:click="selesai({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Tandai Selesai</button>
+                                    @if($item->jalur_pengajuan === 'offline' && $item->lokasi_pengambilan === 'rumah_kolektor')
+                                        <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 font-mono text-xs text-[#ab570a]">Menunggu verifikasi kolektor</span>
+                                    @else
+                                        <button wire:click="selesai({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Tandai Selesai</button>
+                                    @endif
+                                @elseif($item->status === 'selesai' && $item->metode_verifikasi === 'pin_nasabah')
+                                    <span class="text-xs text-emerald-600 font-medium">Diverifikasi PIN nasabah</span>
                                 @else
                                     <span class="text-xs text-gray-500">-</span>
                                 @endif

@@ -19,6 +19,7 @@ class ProdukTabungan extends Model
         'minimal_setor',
         'harga_per_hari',
         'isi_paket',
+        'uang_tunai',
         'periode_mulai',
         'periode_selesai',
         'tanggal_boleh_cair',
@@ -33,6 +34,7 @@ class ProdukTabungan extends Model
             'minimal_setor' => 'decimal:2',
             'harga_per_hari' => 'decimal:2',
             'isi_paket' => 'array',
+            'uang_tunai' => 'decimal:2',
             'periode_mulai' => 'date',
             'periode_selesai' => 'date',
             'tanggal_boleh_cair' => 'date',
@@ -67,5 +69,24 @@ class ProdukTabungan extends Model
     public function kepesertaanPakets(): HasMany
     {
         return $this->hasMany(KepesertaanPaket::class, 'produk_id');
+    }
+
+    public function totalHariPaket(): ?int
+    {
+        if ($this->periode_mulai && $this->periode_selesai) {
+            return $this->periode_mulai->diffInDays($this->periode_selesai) + 1;
+        }
+
+        return null;
+    }
+
+    public function targetAkhir(): ?float
+    {
+        $totalHari = $this->totalHariPaket();
+        if (! $totalHari || ! $this->harga_per_hari) {
+            return null;
+        }
+
+        return $totalHari * $this->harga_per_hari;
     }
 }

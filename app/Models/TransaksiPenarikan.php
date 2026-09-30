@@ -25,6 +25,10 @@ class TransaksiPenarikan extends Model
         'disetujui_oleh',
         'waktu_approval',
         'waktu_pencairan',
+        'diverifikasi_oleh',
+        'metode_verifikasi',
+        'percobaan_verifikasi_gagal',
+        'terkunci_hingga',
     ];
 
     protected function casts(): array
@@ -36,6 +40,7 @@ class TransaksiPenarikan extends Model
             'nominal_diterima' => 'decimal:2',
             'waktu_approval' => 'datetime',
             'waktu_pencairan' => 'datetime',
+            'terkunci_hingga' => 'datetime',
         ];
     }
 
@@ -52,5 +57,15 @@ class TransaksiPenarikan extends Model
     public function disetujuiOleh(): BelongsTo
     {
         return $this->belongsTo(User::class, 'disetujui_oleh');
+    }
+
+    public function diverifikasiOleh(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'diverifikasi_oleh');
+    }
+
+    public function sedangTerkunci(): bool
+    {
+        return $this->terkunci_hingga !== null && now()->lt($this->terkunci_hingga);
     }
 }

@@ -5,29 +5,53 @@ use App\Models\User;
 // --- Settings umum (shared): profile / security / appearance ---
 // Semua role boleh akses, karena ini pengaturan akun pribadi masing-masing.
 
-it('allows every role to access shared profile settings', function (string $role) {
+it('allows kolektor and nasabah to access shared profile settings', function (string $role) {
     $user = User::factory()->{$role}()->create();
 
     $this->actingAs($user)
         ->get(route('profile.edit'))
         ->assertOk();
-})->with(['admin', 'kolektor', 'nasabah']);
+})->with(['kolektor', 'nasabah']);
 
-it('allows every role to access shared security settings', function (string $role) {
+it('blocks admin from shared profile settings', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)
+        ->get(route('profile.edit'))
+        ->assertForbidden();
+});
+
+it('allows kolektor and nasabah to access shared security settings', function (string $role) {
     $user = User::factory()->{$role}()->create();
 
     $this->actingAs($user)
         ->get(route('security.edit'))
         ->assertOk();
-})->with(['admin', 'kolektor', 'nasabah']);
+})->with(['kolektor', 'nasabah']);
 
-it('allows every role to access shared appearance settings', function (string $role) {
+it('blocks admin from shared security settings', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)
+        ->get(route('security.edit'))
+        ->assertForbidden();
+});
+
+it('allows kolektor and nasabah to access shared appearance settings', function (string $role) {
     $user = User::factory()->{$role}()->create();
 
     $this->actingAs($user)
         ->get(route('appearance.edit'))
         ->assertOk();
-})->with(['admin', 'kolektor', 'nasabah']);
+})->with(['kolektor', 'nasabah']);
+
+it('blocks admin from shared appearance settings', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)
+        ->get(route('appearance.edit'))
+        ->assertForbidden();
+});
 
 it('blocks a locked account from accessing shared settings', function () {
     $user = User::factory()->nasabah()->create(['status_akun' => 'terkunci']);

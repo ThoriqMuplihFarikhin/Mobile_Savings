@@ -36,6 +36,10 @@ class DashboardController extends Controller
             ->where('status', 'tercatat')
             ->sum('nominal');
 
+        $totalKomisi = DB::table('transaksi_penarikan')
+            ->whereIn('status', ['approved', 'selesai'])
+            ->sum('nominal_komisi');
+
         $trenSetoran = collect(range(29, 0))->map(fn ($i) => [
             'tanggal' => Carbon::today()->subDays($i)->format('d M'),
             'nominal' => (float) DB::table('transaksi_setoran')
@@ -79,6 +83,7 @@ class DashboardController extends Controller
             'totalKolektor',
             'totalSaldo',
             'setoranHariIni',
+            'totalKomisi',
             'trenSetoran',
             'komposisiProduk',
             'transaksiTerbaru',
@@ -168,7 +173,7 @@ class DashboardController extends Controller
             'nama' => $t->produk->nama,
             'tanggal' => $t->tanggal_transaksi,
             'nominal' => $t->nominal,
-        ])->concat($riwayatPenarikan->map(fn ($t) => [
+        ])->concat($riwayatPenarikan->filter(fn ($t) => $t->waktu_pencairan)->map(fn ($t) => [
             'type' => 'penarikan',
             'nama' => $t->produk->nama,
             'tanggal' => $t->waktu_pencairan,

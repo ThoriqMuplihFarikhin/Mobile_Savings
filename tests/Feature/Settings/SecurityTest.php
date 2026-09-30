@@ -3,7 +3,7 @@
 use App\Models\User;
 
 test('security settings page can be rendered', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->nasabah()->create();
 
     $response = $this->actingAs($user)
         ->get(route('security.edit'));

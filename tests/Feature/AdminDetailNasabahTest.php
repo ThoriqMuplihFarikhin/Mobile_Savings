@@ -25,6 +25,25 @@ it('allows admin to access detail nasabah via Livewire', function () {
         ->assertSet('user.id', $nasabah->id);
 });
 
+it('allows admin to access detail nasabah via route', function () {
+    $admin = User::factory()->admin()->create();
+    $nasabah = User::factory()->nasabah()->create();
+
+    NasabahProfil::create([
+        'user_id' => $nasabah->id,
+        'nama' => 'Nasabah Test',
+        'alamat' => 'Jl. Test No. 1',
+        'jenis_kelamin' => 'laki-laki',
+        'didaftarkan_oleh' => $admin->id,
+        'status_pendaftaran' => 'aktif',
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.nasabah.detail', $nasabah->id))
+        ->assertOk()
+        ->assertSee('Detail Nasabah');
+});
+
 it('blocks kolektor from accessing detail nasabah via route', function () {
     $kolektor = User::factory()->kolektor()->create();
     $nasabah = User::factory()->nasabah()->create();

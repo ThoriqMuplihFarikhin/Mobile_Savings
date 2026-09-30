@@ -55,8 +55,9 @@ it('calculates tunggakan correctly with simpan false', function () {
 
     $result = app(HitungTunggakanAction::class)->execute($nasabah->id, $produk->id, simpan: false);
     expect($result)->not->toBeNull();
-    expect($result['hari'])->toBeGreaterThanOrEqual(5);
-    expect($result['tunggakan'])->toBeGreaterThan(0);
+    expect($result['hari'])->toBeGreaterThanOrEqual(6);
+    expect($result['tunggakan_hari'])->toBeGreaterThanOrEqual(6);
+    expect($result['tunggakan'])->toBeGreaterThanOrEqual(120000);
 });
 
 it('creates kepesertaan and saves when simpan is true and no kepesertaan exists', function () {
@@ -102,4 +103,5 @@ it('updates kepesertaan when simpan is true', function () {
     $kepesertaan->refresh();
     expect($kepesertaan->total_seharusnya_terkumpul)->toBeGreaterThan(0);
     expect($kepesertaan->status_alert)->toBe('peringatan');
+    expect($kepesertaan->tunggakan)->toBeGreaterThanOrEqual(6);
 });

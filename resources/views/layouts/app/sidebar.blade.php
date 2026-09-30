@@ -38,6 +38,9 @@
                         <flux:sidebar.item icon="arrow-up-from-line" href="/admin/penarikan" :current="request()->routeIs('admin.penarikan.*')" wire:navigate>
                             {{ __('Penarikan') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="banknote" href="/admin/komisi" :current="request()->routeIs('admin.komisi.*')" wire:navigate>
+                            {{ __('Komisi') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="megaphone" href="/admin/komplain" :current="request()->routeIs('admin.komplain.*')" wire:navigate>
                             {{ __('Komplain') }}
                         </flux:sidebar.item>
@@ -85,6 +88,9 @@
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="arrow-up-from-line" href="/kolektor/penarikan-offline" :current="request()->routeIs('kolektor.penarikan-offline.*')" wire:navigate>
                             {{ __('Penarikan Offline') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="shield-check" href="/kolektor/verifikasi-penarikan" :current="request()->routeIs('kolektor.verifikasi-penarikan.*')" wire:navigate>
+                            {{ __('Verifikasi Penarikan') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
                 @else

@@ -49,6 +49,8 @@ class NasabahBermasalah extends Component
     public function selectKepesertaan($id)
     {
         $this->selectedKepesertaan = KepesertaanPaket::with(['nasabah', 'produk'])->find($id);
+        $this->selectedKepesertaan->hitungUlangKepesertaan();
+        $this->selectedKepesertaan->refresh();
         $this->keputusan_akhir = $this->selectedKepesertaan->keputusan_akhir ?? '';
         $this->catatan_admin = $this->selectedKepesertaan->catatan_admin ?? '';
         $this->metode_pengambilan = $this->selectedKepesertaan->metode_pengambilan ?? '';

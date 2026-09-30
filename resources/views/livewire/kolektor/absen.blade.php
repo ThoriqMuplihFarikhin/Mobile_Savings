@@ -66,8 +66,7 @@
         this.signaturePad = new SignaturePad(canvas);
     }
 }" x-init="
-    if (!@js($sudahAbsenHariIni)) { mintaLokasi() }
-    $nextTick(() => { if (!@js($sudahAbsenHariIni)) initTtd() })
+    if (!@js($sudahAbsenHariIni)) { mintaLokasi(); $nextTick(() => initTtd()); }
 " class="mx-auto max-w-2xl">
     {{-- Flash Messages --}}
     @if (session('success'))
@@ -144,16 +143,30 @@
     <div class="mb-6 relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 p-6 text-center shadow-xl dark:from-zinc-950 dark:to-zinc-900 border border-zinc-800">
         <div class="absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none"></div>
 
-        @if($sudahAbsenHariIni)
+        @if($sudahAbsenHariIni && $sudahAbsenKeluarHariIni)
+            {{-- Kondisi 3: Sudah masuk & keluar --}}
             <div class="relative flex flex-col items-center">
                 <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-400 ring-4 ring-emerald-500/10 shadow-lg shadow-emerald-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Status Kehadiran Hari Ini</p>
-                <p class="mt-1 text-2xl font-bold text-white">Sudah Absen Masuk</p>
-                <p class="mt-1 text-sm font-mono text-zinc-400">Pukul {{ \Carbon\Carbon::parse($waktuAbsenHariIni)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB</p>
+                <p class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Absensi Hari Ini Selesai</p>
+                <p class="mt-1 text-lg font-bold text-white">Masuk {{ \Carbon\Carbon::parse($waktuAbsenHariIni)->setTimezone('Asia/Jakarta')->format('H:i') }} - Keluar {{ \Carbon\Carbon::parse($waktuKeluarHariIni)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB</p>
+                <p class="mt-1 text-xs text-zinc-400">Semua data absensi hari ini sudah tercatat.</p>
             </div>
+
+        @elseif($sudahAbsenHariIni && !$sudahAbsenKeluarHariIni)
+            {{-- Kondisi 2: Sudah masuk, belum keluar --}}
+            <div class="relative flex flex-col items-center">
+                <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 ring-4 ring-amber-500/10 shadow-lg shadow-amber-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-amber-400">Sudah Absen Masuk</p>
+                <p class="mt-1 text-2xl font-bold text-white">Pukul {{ \Carbon\Carbon::parse($waktuAbsenHariIni)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB</p>
+                <p class="mt-1 text-xs text-zinc-400 font-medium">Silakan lakukan Absen Keluar saat jam kerja selesai.</p>
+            </div>
+
         @else
+            {{-- Kondisi 1: Belum absen --}}
             <div class="relative">
                 <p class="text-xs font-bold uppercase tracking-wider text-zinc-400">Waktu Operasional Sekarang</p>
                 <p class="mt-2 text-4xl font-bold tracking-tight text-white font-mono" x-data="{ time: '' }" x-init="setInterval(() => time = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, timeZone: 'Asia/Jakarta'}), 1000)">
@@ -164,6 +177,7 @@
         @endif
     </div>
 
+    {{-- Kondisi 1: Form Absen Masuk --}}
     @if(!$sudahAbsenHariIni)
         {{-- Peta Lokasi --}}
         @if($latitude && $longitude)
@@ -230,7 +244,7 @@
                     class="rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900"></canvas>
         </div>
 
-        {{-- Tombol Absen --}}
+        {{-- Tombol Absen Masuk --}}
         <button type="button"
                 x-on:click="if (kirimTandaTangan()) $wire.absenMasuk()"
                 @disabled(!$latitude || !$selfieBase64)
@@ -267,6 +281,24 @@
         </div>
     @endif
 
+    {{-- Kondisi 2: Checkout --}}
+    @if($sudahAbsenHariIni && !$sudahAbsenKeluarHariIni)
+        <div class="mb-6 rounded-3xl bg-white dark:bg-zinc-800 p-6 shadow-sm border border-zinc-100 dark:border-zinc-700/60 text-center">
+            <div class="mb-4 flex justify-center">
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
+                </div>
+            </div>
+            <h3 class="text-base font-bold text-zinc-900 dark:text-white">Siap untuk Checkout?</h3>
+            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Jam kerja hari ini akan dicatat sebagai waktu keluar Anda.</p>
+            <button type="button"
+                    x-on:click="$wire.absenKeluar()"
+                    class="mt-5 w-full rounded-2xl bg-amber-600 dark:bg-amber-500 py-4 text-base font-bold text-white transition hover:bg-amber-700 dark:hover:bg-amber-600 shadow-lg shadow-amber-500/20 active:scale-95">
+                Checkout / Absen Keluar
+            </button>
+        </div>
+    @endif
+
     {{-- Riwayat Absensi Terakhir --}}
     <div class="space-y-3">
         <h2 class="text-sm font-bold text-zinc-900 dark:text-white">Riwayat Absensi 7 Hari Terakhir</h2>
@@ -274,12 +306,21 @@
             @forelse($riwayat as $item)
                 <div class="flex items-center justify-between gap-3 rounded-2xl bg-white dark:bg-zinc-800 p-4 shadow-sm border border-zinc-100 dark:border-zinc-700/60">
                     <div class="flex items-center gap-3.5">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl {{ $item->waktu_keluar ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400' }}">
+                            @if($item->waktu_keluar)
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            @else
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                            @endif
                         </div>
                         <div>
                             <p class="text-sm font-bold text-zinc-900 dark:text-white">{{ $item->tanggal->translatedFormat('d M Y') }}</p>
-                            <p class="text-xs font-mono text-zinc-500 dark:text-zinc-400">Jam Masuk: {{ \Carbon\Carbon::parse($item->waktu_masuk)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB</p>
+                            <p class="text-xs font-mono text-zinc-500 dark:text-zinc-400">
+                                Masuk {{ \Carbon\Carbon::parse($item->waktu_masuk)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB
+                                @if($item->waktu_keluar)
+                                    - Keluar {{ \Carbon\Carbon::parse($item->waktu_keluar)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB
+                                @endif
+                            </p>
                         </div>
                     </div>
                     @if($item->latitude && $item->longitude)

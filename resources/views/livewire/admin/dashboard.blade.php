@@ -35,7 +35,7 @@
         <a href="{{ route('admin.registrasi.index') }}" class="btn-primary">Tambah Nasabah</a>
     </div>
     {{-- KPI Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3.5">
         <x-kpi-card label="Total Nasabah" :value="number_format($totalNasabah, 0, ',', '.')">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
         </x-kpi-card>
@@ -48,6 +48,11 @@
         <x-kpi-card label="Setoran Hari Ini" :value="'Rp ' . number_format($setoranHariIni, 0, ',', '.')">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" /></svg>
         </x-kpi-card>
+        <a href="{{ route('admin.komisi.index') }}" wire:navigate class="block transition hover:opacity-80">
+            <x-kpi-card label="Total Komisi" :value="'Rp ' . number_format($totalKomisi, 0, ',', '.')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 10v-2m0-8a9 9 0 100 18 9 9 0 000-18z" /></svg>
+            </x-kpi-card>
+        </a>
     </div>
 
     {{-- Charts Row --}}

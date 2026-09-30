@@ -101,7 +101,7 @@
             {{-- 4. Menu Shortcuts --}}
             <div class="rounded-2xl bg-white p-4 shadow-xs border border-zinc-200/80 dark:bg-zinc-800/90 dark:border-zinc-700/80">
                 <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 block mb-3">Menu Utama</span>
-                <div class="grid grid-cols-4 gap-2 text-center">
+                <div class="grid grid-cols-5 gap-1.5 text-center">
                     <a href="{{ route('kolektor.setoran.index') }}" wire:navigate class="flex flex-col items-center group">
                         <div class="h-11 w-11 rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition shadow-2xs border border-blue-100 dark:border-blue-900/50">
                             <flux:icon.arrow-down-tray class="size-5" />
@@ -114,8 +114,14 @@
                         </div>
                         <span class="mt-1.5 text-[11px] font-medium text-zinc-700 dark:text-zinc-300">Kantor</span>
                     </a>
-                    <a href="{{ route('kolektor.jadwal.index') }}" wire:navigate class="flex flex-col items-center group">
+                    <a href="{{ route('kolektor.verifikasi-penarikan.index') }}" wire:navigate class="flex flex-col items-center group">
                         <div class="h-11 w-11 rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition shadow-2xs border border-emerald-100 dark:border-emerald-900/50">
+                            <flux:icon.check-badge class="size-5" />
+                        </div>
+                        <span class="mt-1.5 text-[11px] font-medium text-zinc-700 dark:text-zinc-300">Verifikasi</span>
+                    </a>
+                    <a href="{{ route('kolektor.jadwal.index') }}" wire:navigate class="flex flex-col items-center group">
+                        <div class="h-11 w-11 rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 flex items-center justify-center group-hover:scale-105 transition shadow-2xs border border-indigo-100 dark:border-indigo-900/50">
                             <flux:icon.calendar-days class="size-5" />
                         </div>
                         <span class="mt-1.5 text-[11px] font-medium text-zinc-700 dark:text-zinc-300">Jadwal</span>
@@ -245,13 +251,21 @@
 
                 {{-- Countdown Paket Lebaran --}}
                 @if($kepesertaanAktif)
+                    @php
+                        $tanggalCair = \Carbon\Carbon::parse($kepesertaanAktif->produk->tanggal_boleh_cair)->startOfDay();
+                        $hariLagi = (int) now()->startOfDay()->diffInDays($tanggalCair, false);
+                    @endphp
                     <a href="{{ route('nasabah.progres-paket.index') }}" wire:navigate
                        class="rounded-2xl bg-amber-50 dark:bg-amber-950/40 p-4 border border-amber-200 dark:border-amber-800/60 block hover:border-amber-300 transition">
                         <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 block truncate">
                             {{ $kepesertaanAktif->produk->nama }}
                         </span>
                         <p class="text-sm font-bold text-amber-900 dark:text-amber-200 mt-0.5">
-                            {{ \Carbon\Carbon::parse($kepesertaanAktif->produk->tanggal_boleh_cair)->diffInDays(now()) }} Hari Lagi
+                            @if($hariLagi > 0)
+                                {{ $hariLagi }} Hari Lagi
+                            @else
+                                Sudah Bisa Dicairkan
+                            @endif
                         </p>
                     </a>
                 @else

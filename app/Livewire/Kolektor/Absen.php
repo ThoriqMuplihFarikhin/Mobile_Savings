@@ -16,6 +16,10 @@ class Absen extends Component
 
     public $waktuAbsenHariIni = null;
 
+    public $sudahAbsenKeluarHariIni = false;
+
+    public $waktuKeluarHariIni = null;
+
     public $latitude;
 
     public $longitude;
@@ -37,6 +41,11 @@ class Absen extends Component
         if ($absen) {
             $this->sudahAbsenHariIni = true;
             $this->waktuAbsenHariIni = $absen->waktu_masuk;
+
+            if ($absen->waktu_keluar) {
+                $this->sudahAbsenKeluarHariIni = true;
+                $this->waktuKeluarHariIni = $absen->waktu_keluar;
+            }
         }
     }
 
@@ -66,6 +75,16 @@ class Absen extends Component
     public function setTandaTanganBase64($base64): void
     {
         $this->tandaTanganBase64 = $base64;
+    }
+
+    public function resetFormCheckout(): void
+    {
+        $this->latitude = null;
+        $this->longitude = null;
+        $this->selfieBase64 = null;
+        $this->tandaTanganBase64 = null;
+        $this->lokasiError = null;
+        $this->lokasiDitolak = false;
     }
 
     public function absenMasuk(): void
@@ -115,10 +134,37 @@ class Absen extends Component
 
             $this->sudahAbsenHariIni = true;
             $this->waktuAbsenHariIni = now()->toTimeString();
-            session()->flash('success', 'Absen berhasil dicatat!');
+            $this->resetFormCheckout();
+            session()->flash('success', 'Absen Masuk berhasil dicatat!');
         } catch (QueryException $e) {
             session()->flash('error', 'Gagal mencatat absen: Anda sudah absen hari ini atau terjadi kesalahan database.');
         }
+    }
+
+    public function absenKeluar(): void
+    {
+        $absenHariIni = AbsensiKolektor::where('kolektor_id', Auth::id())
+            ->where('tanggal', now()->toDateString())->first();
+
+        if (! $absenHariIni) {
+            session()->flash('error', 'Anda belum melakukan Absen Masuk hari ini.');
+
+            return;
+        }
+
+        if ($absenHariIni->waktu_keluar) {
+            session()->flash('error', 'Anda sudah melakukan Absen Keluar hari ini.');
+
+            return;
+        }
+
+        $absenHariIni->update([
+            'waktu_keluar' => now()->toTimeString(),
+        ]);
+
+        $this->sudahAbsenKeluarHariIni = true;
+        $this->waktuKeluarHariIni = now()->toTimeString();
+        session()->flash('success', 'Absen Keluar berhasil dicatat!');
     }
 
     public function render()

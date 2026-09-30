@@ -126,10 +126,18 @@ class ApprovalPenarikan extends Component
     public function selesai($id)
     {
         $penarikan = TransaksiPenarikan::find($id);
+
+        if ($penarikan && $penarikan->jalur_pengajuan === 'offline' && $penarikan->lokasi_pengambilan === 'rumah_kolektor') {
+            session()->flash('error', 'Penarikan ini diserahkan oleh kolektor di rumah nasabah — harus diselesaikan lewat verifikasi PIN oleh kolektor, bukan admin.');
+
+            return;
+        }
+
         if ($penarikan && $penarikan->status === 'approved') {
             $penarikan->update([
                 'status' => 'selesai',
                 'waktu_pencairan' => now(),
+                'metode_verifikasi' => 'manual_admin',
             ]);
 
             ActivityLogger::log('selesai_penarikan', 'transaksi_penarikan', $id, [
