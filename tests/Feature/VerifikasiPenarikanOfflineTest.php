@@ -3,10 +3,12 @@
 use App\Actions\Penarikan\VerifikasiPenarikanOfflineAction;
 use App\Livewire\Admin\ApprovalPenarikan;
 use App\Models\KolektorNasabah;
+use App\Models\LogAktivitas;
 use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
 use App\Models\TransaksiPenarikan;
 use App\Models\User;
+use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Livewire;
@@ -412,4 +414,97 @@ it('allows admin to mark kantor offline withdrawal as complete', function () {
         'status' => 'selesai',
         'metode_verifikasi' => 'manual_admin',
     ]);
+});
+
+it('membatasi percobaan PIN yang salah lintas penarikan per nasabah', function () {
+    $kolektor = User::factory()->kolektor()->create();
+    $nasabah = User::factory()->nasabah()->create();
+
+    $penarikanA = createOfflineApprovedPenarikan($kolektor, $nasabah);
+    $penarikanB = TransaksiPenarikan::create([
+        'nasabah_id' => $nasabah->id,
+        'produk_id' => $penarikanA->produk_id,
+        'nominal_diminta' => 30000,
+        'persen_komisi_terpakai' => 5.00,
+        'nominal_komisi' => 1500,
+        'nominal_diterima' => 28500,
+        'jalur_pengajuan' => 'offline',
+        'lokasi_pengambilan' => 'rumah_kolektor',
+        'status' => 'approved',
+    ]);
+
+    Auth::login($kolektor);
+    $action = new VerifikasiPenarikanOfflineAction;
+
+    for ($i = 0; $i < 3; $i++) {
+        try {
+            $action->execute($penarikanA, '000000', $kolektor);
+        } catch (Exception $e) {
+            // percobaan gagal pada penarikan A
+        }
+    }
+
+    for ($i = 0; $i < 2; $i++) {
+        try {
+            $action->execute($penarikanB, '000000', $kolektor);
+        } catch (Exception $e) {
+            // percobaan gagal pada penarikan B
+        }
+    }
+
+    $thrown = false;
+    try {
+        $action->execute($penarikanB, '123456', $kolektor);
+    } catch (Exception $e) {
+        $thrown = true;
+        expect($e->getMessage())->toContain('Terlalu banyak percobaan PIN');
+    }
+
+    expect($thrown)->toBeTrue()
+        ->and($penarikanB->fresh()->status)->toBe('approved');
+});
+
+it('verifikasi tetap selesai walau notifikasi whatsapp gagal', function () {
+    $kolektor = User::factory()->kolektor()->create();
+    $nasabah = User::factory()->nasabah()->create();
+
+    $penarikan = createOfflineApprovedPenarikan($kolektor, $nasabah);
+
+    app()->instance(WhatsAppService::class, new class
+    {
+        public function sendNotification(string $phone, string $message): bool
+        {
+            throw new RuntimeException('Gateway WhatsApp sedang down.');
+        }
+    });
+
+    Auth::login($kolektor);
+    $action = new VerifikasiPenarikanOfflineAction;
+    $result = $action->execute($penarikan, '123456', $kolektor);
+
+    expect($result->status)->toBe('selesai')
+        ->and($penarikan->fresh()->status)->toBe('selesai');
+});
+
+it('verifikasi dua kali pada penarikan yang sama hanya sukses sekali', function () {
+    $kolektor = User::factory()->kolektor()->create();
+    $nasabah = User::factory()->nasabah()->create();
+
+    $penarikan = createOfflineApprovedPenarikan($kolektor, $nasabah);
+
+    Auth::login($kolektor);
+    $action = new VerifikasiPenarikanOfflineAction;
+    $action->execute($penarikan, '123456', $kolektor);
+
+    $thrown = false;
+    try {
+        $action->execute($penarikan, '123456', $kolektor);
+    } catch (Exception $e) {
+        $thrown = true;
+        expect($e->getMessage())->toContain('belum disetujui admin');
+    }
+
+    expect($thrown)->toBeTrue()
+        ->and(LogAktivitas::where('aksi', 'verifikasi_penarikan_offline')
+            ->where('entitas_id', $penarikan->id)->count())->toBe(1);
 });
