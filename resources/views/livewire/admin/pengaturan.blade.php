@@ -92,7 +92,7 @@
 
     {{-- Tab 3: Integrasi WhatsApp --}}
     @if ($activeTab === 'whatsapp')
-        @if (empty($waApiKey))
+        @if (! $waApiKeyTersimpan)
             <flux:callout variant="danger" class="mb-6" icon="exclamation-triangle">
                 <strong>Belum terhubung</strong> — notifikasi WhatsApp ke nasabah/kolektor belum aktif.
             </flux:callout>
@@ -116,7 +116,7 @@
                 <flux:input
                     wire:model="waApiKey"
                     label="API Key"
-                    placeholder="Masukkan API Key dari provider Anda"
+                    placeholder="{{ $waApiKeyTersimpan ? '•••••••• — isi untuk mengganti' : 'Masukkan API Key dari provider Anda' }}"
                     type="password"
                 />
 

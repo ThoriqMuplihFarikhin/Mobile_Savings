@@ -41,6 +41,8 @@ class Pengaturan extends Component
 
     public string $waApiKey = '';
 
+    public bool $waApiKeyTersimpan = false;
+
     public string $waTestNumber = '';
 
     // Tab 4: Backup & Keamanan
@@ -60,7 +62,8 @@ class Pengaturan extends Component
 
         // Tab 3: WhatsApp
         $this->waProvider = AdminSetting::get('wa_provider', '');
-        $this->waApiKey = AdminSetting::get('wa_api_key', '');
+        $this->waApiKey = '';
+        $this->waApiKeyTersimpan = (bool) AdminSetting::get('wa_api_key');
 
         // Tab 4: Backup & Keamanan
         $this->backupTerakhir = AdminSetting::get('backup_terakhir');
@@ -97,7 +100,13 @@ class Pengaturan extends Component
         ]);
 
         AdminSetting::set('wa_provider', $this->waProvider);
-        AdminSetting::set('wa_api_key', $this->waApiKey);
+
+        if ($this->waApiKey !== '') {
+            AdminSetting::set('wa_api_key', $this->waApiKey);
+        }
+
+        $this->waApiKey = '';
+        $this->waApiKeyTersimpan = (bool) AdminSetting::get('wa_api_key');
 
         session()->flash('status', 'Konfigurasi WhatsApp berhasil disimpan.');
     }
@@ -106,7 +115,7 @@ class Pengaturan extends Component
     {
         $this->validate(['waTestNumber' => 'required|string']);
 
-        if (empty($this->waApiKey)) {
+        if (! AdminSetting::get('wa_api_key')) {
             session()->flash('error', 'Isi dan simpan API Key terlebih dahulu sebelum uji coba.');
 
             return;
