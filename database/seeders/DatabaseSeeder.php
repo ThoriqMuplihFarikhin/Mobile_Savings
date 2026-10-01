@@ -18,15 +18,28 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
         ]);
 
+        // Admin PIN: ambil dari env SEED_ADMIN_PIN; jika tidak ada, generate acak.
+        $pinAdmin = $_ENV['SEED_ADMIN_PIN'] ?? $_SERVER['SEED_ADMIN_PIN'] ?? '';
+        $pinDariEnv = is_string($pinAdmin) && $pinAdmin !== '';
+
+        if (! is_string($pinAdmin) || $pinAdmin === '') {
+            $pinAdmin = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        }
+
         // Create admin user
         $admin = User::create([
             'name' => 'Admin Utama',
             'no_hp' => '081234567890',
-            'pin_hash' => Hash::make('123456'),
+            'pin_hash' => Hash::make($pinAdmin),
             'role' => 'admin',
             'status_akun' => 'aktif',
+            'harus_ganti_pin' => true,
         ]);
         $admin->assignRole('admin');
+
+        if (! $pinDariEnv) {
+            $this->command->info("PIN admin hasil generate: {$pinAdmin} — tampil sekali, wajib diganti setelah login pertama.");
+        }
 
         // Create kolektor user
         $kolektor = User::create([
