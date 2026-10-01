@@ -7,6 +7,7 @@ use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\Komplain as KomplainModel;
 use App\Models\TransaksiSetoran;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -58,7 +59,11 @@ class Komplain extends Component
         $this->validate([
             'kategori' => 'required|in:saldo,barang_paket,penarikan,lainnya',
             'deskripsi' => 'required|string|min:10',
-            'transaksiTerkaitId' => 'nullable|exists:transaksi_setoran,id',
+            'transaksiTerkaitId' => [
+                'nullable',
+                Rule::exists('transaksi_setoran', 'id')
+                    ->where('nasabah_id', Auth::id()),
+            ],
         ]);
 
         $komplain = KomplainModel::create([
