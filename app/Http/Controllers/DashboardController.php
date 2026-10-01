@@ -179,12 +179,12 @@ class DashboardController extends Controller
 
         $riwayatGabungan = $riwayatSetoran->map(fn ($t) => [
             'type' => 'setoran',
-            'nama' => $t->produk->nama,
+            'nama' => $t->produk->nama ?? '-',
             'tanggal' => $t->tanggal_transaksi,
             'nominal' => $t->nominal,
         ])->concat($riwayatPenarikan->filter(fn ($t) => $t->waktu_pencairan)->map(fn ($t) => [
             'type' => 'penarikan',
-            'nama' => $t->produk->nama,
+            'nama' => $t->produk->nama ?? '-',
             'tanggal' => $t->waktu_pencairan,
             'nominal' => $t->nominal_diterima,
         ]))->sortByDesc('tanggal')->take(5)->values();

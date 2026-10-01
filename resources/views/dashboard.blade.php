@@ -226,7 +226,7 @@
                         <div class="flex flex-wrap gap-1.5 pt-1">
                             @foreach($saldoPerProduk as $sp)
                                 <span class="rounded-lg bg-white/15 backdrop-blur-md px-2.5 py-1 text-[11px] font-medium text-white border border-white/15">
-                                    {{ $sp->produk->nama }} &middot; <strong>Rp {{ number_format($sp->saldo, 0, ',', '.') }}</strong>
+                                    {{ $sp->produk?->nama ?? '-' }} &middot; <strong>Rp {{ number_format($sp->saldo, 0, ',', '.') }}</strong>
                                 </span>
                             @endforeach
                         </div>
@@ -250,7 +250,7 @@
                 </div>
 
                 {{-- Countdown Paket Lebaran --}}
-                @if($kepesertaanAktif)
+                @if($kepesertaanAktif?->produk)
                     @php
                         $tanggalCair = \Carbon\Carbon::parse($kepesertaanAktif->produk->tanggal_boleh_cair)->startOfDay();
                         $hariLagi = (int) now()->startOfDay()->diffInDays($tanggalCair, false);

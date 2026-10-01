@@ -13,7 +13,7 @@
     <div class="space-y-4">
         @forelse($kepesertaan as $item)
             @php
-                $targetAkhir = $item->produk->targetAkhir();
+                $targetAkhir = $item->produk?->targetAkhir();
                 $persentase = $targetAkhir ? min(100, round(($item->total_aktual_terkumpul / $targetAkhir) * 100)) : 0;
                 $alertStatus = $item->status_alert ?? 'normal';
                 $barGradient = match($alertStatus) {
