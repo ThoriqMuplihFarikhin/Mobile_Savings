@@ -45,9 +45,9 @@ class DetailNasabah extends Component
             ->get();
 
         $penarikan = TransaksiPenarikan::where('nasabah_id', $this->user->id)
-            ->where('status', 'selesai')
-            ->whereBetween('waktu_pencairan', [$start, $end])
-            ->orderBy('waktu_pencairan')
+            ->whereIn('status', ['approved', 'selesai'])
+            ->whereBetween('waktu_approval', [$start, $end])
+            ->orderBy('waktu_approval')
             ->get();
 
         $chartData = $this->buildChartData($setoran, $penarikan, $start, $end);
@@ -86,14 +86,14 @@ class DetailNasabah extends Component
         $totalDays = (int) $start->startOfDay()->diffInDays($end->startOfDay());
 
         $setoranByDate = $setoran->groupBy(fn ($s) => substr($s->tanggal_transaksi, 0, 10));
-        $penarikanByDate = $penarikan->groupBy(fn ($p) => substr($p->waktu_pencairan, 0, 10));
+        $penarikanByDate = $penarikan->groupBy(fn ($p) => substr($p->waktu_approval, 0, 10));
 
         for ($i = 0; $i <= $totalDays; $i++) {
             $tanggalKey = $cursor->format('Y-m-d');
             $runningSaldo += (float) ($setoranByDate[$tanggalKey] ?? collect())->sum('nominal');
             $runningSaldo -= (float) ($penarikanByDate[$tanggalKey] ?? collect())->sum('nominal_diminta');
             $perHari[] = ['tanggal' => $tanggalKey, 'saldo' => $runningSaldo];
-            $cursor->addDay();
+            $cursor = $cursor->addDay();
         }
 
         $maxSaldo = count($perHari) > 0 ? max(collect($perHari)->pluck('saldo')->max(), 1) : 1;
@@ -115,12 +115,13 @@ class DetailNasabah extends Component
             return ($i === 0 ? 'M' : 'L').round($p['x'], 1).','.round($p['y'], 1);
         })->implode(' ');
 
-        $areaD = $pathD.' L'.round($points->last()['x'] ?? 0, 1).','.$graphHeight.' L'.round($points->first()['x'] ?? 0, 1).','.$graphHeight.' Z';
+        $areaD = $pathD.' L'.round($points->last()['x'] ?? 0, 1).','.($padding + $graphHeight).' L'.round($points->first()['x'] ?? 0, 1).','.($padding + $graphHeight).' Z';
 
         return [
             'hasData' => $count > 0,
             'pathD' => $pathD,
             'areaD' => $areaD,
+            'saldoAkhir' => $count > 0 ? (float) $perHari[$count - 1]['saldo'] : 0.0,
             'lastPoint' => $points->last(),
             'chartWidth' => $chartWidth,
             'chartHeight' => $chartHeight,
@@ -139,7 +140,7 @@ class DetailNasabah extends Component
         ]);
 
         $riwayatPenarikan = $penarikan->map(fn ($p) => [
-            'tanggal' => $p->created_at->format('Y-m-d'),
+            'tanggal' => $p->waktu_approval->format('Y-m-d'),
             'tipe' => 'Penarikan',
             'nominal' => $p->nominal_diminta,
             'status' => $p->status,
