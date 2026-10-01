@@ -65,8 +65,8 @@
                             <td class="px-4 py-3">
                                 @if($item->status === 'pending')
                                     <div class="flex items-center gap-2">
-                                        <button wire:click="approve({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Setuju</button>
-                                        <button wire:click="reject({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Tolak</button>
+                                        <button wire:click="approve({{ $item->id }})" wire:confirm="Yakin menyetujui penarikan ini? Saldo nasabah akan dikurangi dan penarikan diproses." class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Setuju</button>
+                                        <button wire:click="reject({{ $item->id }})" wire:confirm="Yakin menolak pengajuan penarikan ini?" class="inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Tolak</button>
                                     </div>
                                 @elseif($item->status === 'approved')
                                     @if($item->jalur_pengajuan === 'offline' && $item->lokasi_pengambilan === 'rumah_kolektor')
