@@ -31,13 +31,12 @@ class Search extends Component
         }
 
         $this->results = User::where('role', 'nasabah')
-            ->where('name', 'like', "%{$this->search}%")
+            ->where('name', 'like', '%'.addcslashes($this->search, '%_\\').'%')
             ->limit(8)
             ->get()
             ->map(fn ($user) => [
                 'id' => $user->id,
                 'name' => $user->name,
-                'no_hp' => $user->no_hp,
             ])
             ->toArray();
 
