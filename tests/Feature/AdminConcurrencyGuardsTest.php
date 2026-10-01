@@ -230,8 +230,8 @@ it('penyelesaian manual penarikan dua kali hanya mencatat satu log', function ()
     ]);
 
     $this->actingAs($admin);
-    Livewire::test(ApprovalPenarikan::class)->call('selesai', $penarikan->id);
-    Livewire::test(ApprovalPenarikan::class)->call('selesai', $penarikan->id);
+    Livewire::test(ApprovalPenarikan::class)->set('alasan', 'Pencairan dikonfirmasi di kantor')->call('selesai', $penarikan->id);
+    Livewire::test(ApprovalPenarikan::class)->set('alasan', 'Pencairan dikonfirmasi di kantor')->call('selesai', $penarikan->id);
 
     expect($penarikan->refresh()->status)->toBe('selesai')
         ->and(LogAktivitas::where('aksi', 'selesai_penarikan')

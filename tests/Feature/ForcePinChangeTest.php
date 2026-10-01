@@ -27,7 +27,7 @@ it('redirects admin with harus_ganti_pin to security page', function () {
 
     $this->actingAs($admin)
         ->get(route('admin.pengaturan.index'))
-        ->assertRedirect(route('security.edit'));
+        ->assertRedirect(route('admin.settings.security'));
 });
 
 it('allows access to security page when harus_ganti_pin is true', function () {

@@ -406,6 +406,7 @@ it('allows admin to mark kantor offline withdrawal as complete', function () {
     $this->actingAs($admin);
 
     Livewire::test(ApprovalPenarikan::class)
+        ->set('alasan', 'Pencairan manual di kantor')
         ->call('selesai', $penarikan->id)
         ->assertHasNoErrors();
 

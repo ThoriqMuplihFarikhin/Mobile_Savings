@@ -24,6 +24,19 @@ class ApprovalPenarikan extends Component
 
     public $statusFilter = 'pending';
 
+    public string $alasan = '';
+
+    public bool $showSelesai = false;
+
+    public ?int $selesaiId = null;
+
+    public function toggleSelesai(int $id): void
+    {
+        $this->selesaiId = $id;
+        $this->alasan = '';
+        $this->showSelesai = true;
+    }
+
     public function render()
     {
         $penarikan = TransaksiPenarikan::with(['nasabah', 'produk'])
@@ -132,6 +145,10 @@ class ApprovalPenarikan extends Component
 
     public function selesai($id)
     {
+        $this->validate([
+            'alasan' => 'required|string|max:500',
+        ]);
+
         $penarikan = TransaksiPenarikan::find($id);
 
         if ($penarikan && $penarikan->jalur_pengajuan === 'offline' && $penarikan->lokasi_pengambilan === 'rumah_kolektor') {
@@ -149,7 +166,11 @@ class ApprovalPenarikan extends Component
 
             ActivityLogger::log('selesai_penarikan', 'transaksi_penarikan', $id, [
                 'nasabah_id' => $penarikan->nasabah_id,
+                'alasan' => $this->alasan,
             ]);
+
+            $this->reset('alasan', 'selesaiId');
+            $this->showSelesai = false;
 
             session()->flash('success', 'Penarikan ditandai selesai!');
         }

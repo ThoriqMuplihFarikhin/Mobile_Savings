@@ -88,7 +88,12 @@ class KelolaKolektor extends Component
             ]);
 
             if ($this->pin) {
-                $user->update(['pin_hash' => Hash::make($this->pin)]);
+                $user->update([
+                    'pin_hash' => Hash::make($this->pin),
+                    'harus_ganti_pin' => true,
+                    'percobaan_gagal' => 0,
+                    'login_terkunci_hingga' => null,
+                ]);
             }
         } else {
             $user = User::create([
@@ -97,6 +102,7 @@ class KelolaKolektor extends Component
                 'pin_hash' => Hash::make($this->pin),
                 'role' => 'kolektor',
                 'status_akun' => 'aktif',
+                'harus_ganti_pin' => true,
             ]);
 
             $user->assignRole('kolektor');
