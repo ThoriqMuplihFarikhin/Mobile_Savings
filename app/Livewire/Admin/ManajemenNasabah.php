@@ -3,8 +3,18 @@
 namespace App\Livewire\Admin;
 
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\JadwalKunjungan;
+use App\Models\KepesertaanPaket;
+use App\Models\KolektorNasabah;
+use App\Models\Komplain;
+use App\Models\LogAktivitas;
+use App\Models\LogNotifikasi;
 use App\Models\NasabahProfil;
+use App\Models\SaldoProduk;
+use App\Models\TransaksiPenarikan;
+use App\Models\TransaksiSetoran;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -141,12 +151,46 @@ class ManajemenNasabah extends Component
         $this->confirmDelete = true;
     }
 
-    public function delete()
+    public function delete(): void
     {
-        $profil = NasabahProfil::find($this->deleteId);
-        if ($profil) {
-            $profil->user->delete();
+        $profilId = $this->deleteId;
+        $nasabahId = DB::table('nasabah_profil')->where('id', $profilId)->value('user_id');
+
+        if ($nasabahId === null) {
+            $this->confirmDelete = false;
+            $this->deleteId = null;
+
+            return;
         }
+
+        $nasabahId = (int) $nasabahId;
+
+        $punyaRiwayatKeuangan = SaldoProduk::where('nasabah_id', $nasabahId)->where('saldo', '!=', 0)->exists()
+            || TransaksiSetoran::where('nasabah_id', $nasabahId)->exists()
+            || TransaksiPenarikan::where('nasabah_id', $nasabahId)->exists();
+
+        if ($punyaRiwayatKeuangan) {
+            session()->flash('error', 'Nasabah tidak dapat dihapus karena masih memiliki saldo, setoran, atau penarikan. Nonaktifkan akun ini saja.');
+
+            return;
+        }
+
+        DB::transaction(function () use ($nasabahId, $profilId): void {
+            KolektorNasabah::where('nasabah_id', $nasabahId)->delete();
+            JadwalKunjungan::where('nasabah_id', $nasabahId)->delete();
+            Komplain::where('nasabah_id', $nasabahId)->delete();
+            KepesertaanPaket::where('nasabah_id', $nasabahId)->delete();
+            LogNotifikasi::where('nasabah_id', $nasabahId)->delete();
+            LogAktivitas::where('user_id', $nasabahId)->delete();
+            SaldoProduk::where('nasabah_id', $nasabahId)->delete();
+            NasabahProfil::where('id', $profilId)->delete();
+            DB::table('model_has_roles')
+                ->where('model_id', $nasabahId)
+                ->where('model_type', User::class)
+                ->delete();
+            User::where('id', $nasabahId)->delete();
+        });
+
         $this->confirmDelete = false;
         $this->deleteId = null;
         session()->flash('success', 'Nasabah berhasil dihapus!');
