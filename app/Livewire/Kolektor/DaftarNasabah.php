@@ -78,6 +78,9 @@ class DaftarNasabah extends Component
         $user->nasabahProfil()->create([
             'nama' => $this->nama,
             'alamat' => $this->alamat,
+            'tanggal_lahir' => $this->tanggalLahir,
+            'jenis_kelamin' => $this->jenisKelamin,
+            'pekerjaan' => $this->pekerjaan ?: null,
             'didaftarkan_oleh' => Auth::id(),
             'status_pendaftaran' => 'pending_verifikasi',
         ]);
