@@ -9,6 +9,7 @@ use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
 use App\Models\TransaksiPenarikan;
 use App\Models\User;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 
@@ -72,6 +73,42 @@ it('admin mengubah pin kolektor menandai harus ganti pin dan mereset kunci perco
         ->and($kolektor->harus_ganti_pin)->toBeTrue()
         ->and($kolektor->percobaan_gagal)->toBe(0)
         ->and($kolektor->login_terkunci_hingga)->toBeNull();
+});
+
+it('setelah admin mereset pin nasabah terkunci, login kembali berhasil dengan pin baru', function () {
+    $admin = User::factory()->admin()->create();
+    $nasabah = User::factory()->nasabah()->create([
+        'pin_hash' => bcrypt('111111'),
+        'harus_ganti_pin' => false,
+        'percobaan_gagal' => 4,
+        'login_terkunci_hingga' => now()->addMinutes(5),
+    ]);
+    $profil = NasabahProfil::create([
+        'user_id' => $nasabah->id,
+        'nama' => $nasabah->name,
+        'alamat' => 'Jalan Contoh',
+        'didaftarkan_oleh' => $admin->id,
+        'status_pendaftaran' => 'aktif',
+    ]);
+
+    $this->withoutMiddleware(PreventRequestForgery::class)
+        ->post(route('login.store'), ['no_hp' => $nasabah->no_hp, 'password' => '111111']);
+    $this->assertGuest();
+
+    Livewire::actingAs($admin)
+        ->test(ManajemenNasabah::class)
+        ->call('edit', $profil->id)
+        ->set('pin', '222222')
+        ->call('save');
+
+    $this->app['auth']->guard('web')->logout();
+
+    $this->withoutMiddleware(PreventRequestForgery::class)
+        ->post(route('login.store'), ['no_hp' => $nasabah->no_hp, 'password' => '222222'])
+        ->assertRedirect(route('dashboard', absolute: false));
+
+    $this->assertAuthenticated();
+    expect($this->app['auth']->id())->toBe($nasabah->id);
 });
 
 it('kolektor baru dibuat admin wajib ganti pin', function () {
