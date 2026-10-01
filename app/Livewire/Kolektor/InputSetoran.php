@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -110,7 +111,9 @@ class InputSetoran extends Component
 
         $this->loadNasabah();
 
-        $produkAktif = SaldoProduk::where('nasabah_id', $nasabahId)->pluck('produk_id');
+        $produkAktif = SaldoProduk::where('nasabah_id', $nasabahId)
+            ->whereHas('produk', fn ($q) => $q->where('status', 'aktif'))
+            ->pluck('produk_id');
         if ($produkAktif->count() === 1) {
             $this->produkId = $produkAktif->first();
             $this->hitungTunggakan();
@@ -171,7 +174,7 @@ class InputSetoran extends Component
 
         $this->validate([
             'nasabahId' => 'required|exists:users,id',
-            'produkId' => 'required|exists:produk_tabungan,id',
+            'produkId' => ['required', Rule::exists('produk_tabungan', 'id')->where('status', 'aktif')],
             'nominal' => ['required', 'numeric', 'min:'.$minimalSetor, 'max:1000000000'],
             'tanggal_transaksi' => [
                 'required',
