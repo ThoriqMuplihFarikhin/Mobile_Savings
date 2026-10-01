@@ -11,6 +11,8 @@ use Illuminate\Http\RedirectResponse;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Features\SupportRedirects\Redirector;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\Process\Process;
 
 #[Layout('layouts.app')]
 class Pengaturan extends Component
@@ -121,38 +123,78 @@ class Pengaturan extends Component
     }
 
     // Tab 4: Backup & Keamanan
-    public function backupSekarang()
+    public function backupSekarang(): ?BinaryFileResponse
     {
-        if (! function_exists('exec')) {
-            session()->flash('error', 'Fitur backup tidak tersedia di server ini (exec dinonaktifkan).');
+        if (config('database.default') !== 'mysql') {
+            session()->flash('error', 'Backup otomatis hanya mendukung database MySQL. Untuk SQLite, salin file database secara manual.');
 
-            return;
+            return null;
+        }
+
+        if (! function_exists('proc_open')) {
+            session()->flash('error', 'Fitur backup tidak tersedia di server ini (proc_open dinonaktifkan).');
+
+            return null;
         }
 
         $filename = 'backup_'.now()->format('Y-m-d_His').'.sql';
-        $path = storage_path('app/backups/'.$filename);
-
-        if (! is_dir(storage_path('app/backups'))) {
-            mkdir(storage_path('app/backups'), 0755, true);
+        $directory = storage_path('app/private/backups');
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
         }
+        $path = $directory.DIRECTORY_SEPARATOR.$filename;
 
-        $host = config('database.connections.mysql.host');
-        $db = config('database.connections.mysql.database');
-        $user = config('database.connections.mysql.username');
-        $pass = config('database.connections.mysql.password');
+        $process = $this->buildMysqldumpProcess($path);
+        $process->setTimeout(120);
+        $process->run();
 
-        $command = "mysqldump --host={$host} --user={$user} --password={$pass} {$db} > {$path}";
-        exec($command, $output, $resultCode);
+        if (! $process->isSuccessful()) {
+            if (is_file($path)) {
+                unlink($path);
+            }
+            report(new \RuntimeException('mysqldump gagal: '.trim($process->getErrorOutput())));
 
-        if ($resultCode === 0) {
-            AdminSetting::set('backup_terakhir', now()->toDateTimeString());
-            $this->backupTerakhir = now()->toDateTimeString();
-            session()->flash('success', 'Backup berhasil dibuat!');
-
-            return response()->download($path)->deleteFileAfterSend(false);
-        } else {
             session()->flash('error', 'Backup gagal. Pastikan mysqldump tersedia di server.');
+
+            return null;
         }
+
+        AdminSetting::set('backup_terakhir', now()->toDateTimeString());
+        $this->backupTerakhir = now()->toDateTimeString();
+        session()->flash('success', 'Backup berhasil dibuat!');
+
+        return response()->download($path, $filename)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Susun argumen mysqldump tanpa password — kata sandi hanya lewat env MYSQL_PWD.
+     *
+     * @return list<string>
+     */
+    protected function mysqldumpArguments(string $resultPath): array
+    {
+        $connection = (array) config('database.connections.mysql', []);
+
+        return [
+            'mysqldump',
+            '--host='.($connection['host'] ?? '127.0.0.1'),
+            '--port='.($connection['port'] ?? 3306),
+            '--user='.($connection['username'] ?? ''),
+            '--single-transaction',
+            '--result-file='.$resultPath,
+            (string) ($connection['database'] ?? ''),
+        ];
+    }
+
+    protected function buildMysqldumpProcess(string $resultPath): Process
+    {
+        $connection = (array) config('database.connections.mysql', []);
+
+        return new Process(
+            $this->mysqldumpArguments($resultPath),
+            null,
+            ['MYSQL_PWD' => (string) ($connection['password'] ?? '')]
+        );
     }
 
     public function simpanRetensiLog(): void
