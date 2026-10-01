@@ -221,10 +221,15 @@ class DashboardController extends Controller
             ->unique()
             ->values();
 
+        $hariIni = now()->toDateString();
         $streak = 0;
-        $cursor = now()->toDateString();
+        $cursor = $hariIni;
 
         foreach ($tanggalSetor as $tanggal) {
+            if ($tanggal > $hariIni) {
+                continue;
+            }
+
             if ($tanggal === $cursor || $tanggal === Carbon::parse($cursor)->subDay()->toDateString()) {
                 $streak++;
                 $cursor = $tanggal;
