@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AbsensiFotoController;
 use App\Http\Controllers\Admin\DetailNasabahController;
 use App\Http\Controllers\Admin\HandoverController;
 use App\Http\Controllers\Admin\KomisiController;
@@ -35,6 +36,10 @@ Route::view('/', 'welcome')->name('home');
 
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+    Route::get('/absensi/{absensi}/{jenis}', [AbsensiFotoController::class, 'show'])
+        ->where('jenis', 'selfie|tanda-tangan')
+        ->name('absensi.foto');
 
     // Admin Routes
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {

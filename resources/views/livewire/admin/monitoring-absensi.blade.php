@@ -88,7 +88,7 @@
                                     <div>
                                         <p class="mb-2 text-xs font-semibold text-gray-900">Foto Selfie</p>
                                         @if($selectedAbsen->foto_selfie_path)
-                                            <img src="{{ Storage::url($selectedAbsen->foto_selfie_path) }}"
+                                            <img src="{{ route('absensi.foto', [$selectedAbsen, 'selfie']) }}"
                                                  alt="Selfie {{ $kolektor->name }}"
                                                  class="h-40 w-40 rounded-xl object-cover shadow-[inset_0_0_0_1px_#ebebeb]" />
                                         @else
@@ -102,7 +102,7 @@
                                     <div>
                                         <p class="mb-2 text-xs font-semibold text-gray-900">Tanda Tangan</p>
                                         @if($selectedAbsen->tanda_tangan_path)
-                                            <img src="{{ Storage::url($selectedAbsen->tanda_tangan_path) }}"
+                                            <img src="{{ route('absensi.foto', [$selectedAbsen, 'tanda-tangan']) }}"
                                                  alt="Tanda Tangan {{ $kolektor->name }}"
                                                  class="h-40 w-40 rounded-xl bg-white object-contain p-2 shadow-[inset_0_0_0_1px_#ebebeb]" />
                                         @else

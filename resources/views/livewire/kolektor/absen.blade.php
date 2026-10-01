@@ -4,7 +4,7 @@
         $wire.resetLokasiError();
         navigator.geolocation.getCurrentPosition(
             async (pos) => {
-                await $wire.setLokasi(pos.coords.latitude, pos.coords.longitude);
+                await $wire.setLokasi(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy ?? null);
                 $nextTick(() => tampilkanPeta(pos.coords.latitude, pos.coords.longitude));
             },
             (err) => $wire.setLokasiError(err.message, err.code)
