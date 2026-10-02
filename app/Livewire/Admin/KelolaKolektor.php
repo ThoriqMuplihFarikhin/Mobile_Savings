@@ -6,6 +6,7 @@ use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
 use App\Models\User;
+use App\Support\NomorHp;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -30,7 +31,7 @@ class KelolaKolektor extends Component
 
     public $name = '';
 
-    public $noHp = '';
+    public string $noHp = '';
 
     public $pin = '';
 
@@ -74,9 +75,11 @@ class KelolaKolektor extends Component
 
     public function save()
     {
+        $this->noHp = NomorHp::normalize($this->noHp);
+
         $this->validate([
             'name' => 'required|string|max:255',
-            'noHp' => 'required|string|max:20|unique:users,no_hp,'.($this->editId ?? ''),
+            'noHp' => 'required|string|max:20|unique:users,no_hp,'.($this->editId ?? '').'|regex:'.NomorHp::PATTERN,
             'pin' => $this->editId ? 'nullable|string|digits:6' : 'required|string|digits:6',
         ]);
 

@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Support\NomorHp;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -53,6 +55,14 @@ class User extends Authenticatable
             'notifikasi_wa_aktif' => 'boolean',
             'login_terkunci_hingga' => 'datetime',
         ];
+    }
+
+    /**
+     * @return Attribute<string, string>
+     */
+    protected function noHp(): Attribute
+    {
+        return Attribute::set(fn (string $value) => NomorHp::normalize($value));
     }
 
     public function initials(): string

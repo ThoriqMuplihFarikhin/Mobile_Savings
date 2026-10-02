@@ -14,6 +14,7 @@ use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
+use App\Support\NomorHp;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
@@ -39,7 +40,7 @@ class ManajemenNasabah extends Component
 
     public $nama = '';
 
-    public $no_hp = '';
+    public string $no_hp = '';
 
     public $alamat = '';
 
@@ -81,9 +82,11 @@ class ManajemenNasabah extends Component
 
     public function save()
     {
+        $this->no_hp = NomorHp::normalize($this->no_hp);
+
         $this->validate([
             'nama' => 'required|string|max:255',
-            'no_hp' => 'required|string|max:20|unique:users,no_hp,'.$this->editId,
+            'no_hp' => 'required|string|max:20|unique:users,no_hp,'.$this->editId.'|regex:'.NomorHp::PATTERN,
             'alamat' => 'required|string',
             'pin' => $this->editId ? 'nullable|string|digits:6' : 'required|string|digits:6',
         ]);

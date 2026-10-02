@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Helpers\ActivityLogger;
 use App\Models\User;
+use App\Support\NomorHp;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -46,7 +47,7 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
-            $user = User::where('no_hp', $request->no_hp)->first();
+            $user = User::where('no_hp', NomorHp::normalize((string) $request->no_hp))->first();
 
             if (! $user) {
                 Hash::check($password, self::DUMMY_HASH);
@@ -111,7 +112,8 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+            $identity = NomorHp::normalize((string) $request->input(Fortify::username()));
+            $throttleKey = Str::transliterate(Str::lower($identity).'|'.$request->ip());
 
             return [
                 Limit::perMinute(5)->by($throttleKey),
