@@ -41,6 +41,11 @@ class DatabaseSeeder extends Seeder
             $this->command->info("PIN admin hasil generate: {$pinAdmin} — tampil sekali, wajib diganti setelah login pertama.");
         }
 
+        // Produksi: hanya roles + admin. Akun demo tidak pernah dibuat di produksi.
+        if (app()->isProduction()) {
+            return;
+        }
+
         // Create kolektor user
         $kolektor = User::create([
             'name' => 'Kolektor Satu',
@@ -48,6 +53,7 @@ class DatabaseSeeder extends Seeder
             'pin_hash' => Hash::make('123456'),
             'role' => 'kolektor',
             'status_akun' => 'aktif',
+            'harus_ganti_pin' => true,
         ]);
         $kolektor->assignRole('kolektor');
 
@@ -58,6 +64,7 @@ class DatabaseSeeder extends Seeder
             'pin_hash' => Hash::make('123456'),
             'role' => 'nasabah',
             'status_akun' => 'aktif',
+            'harus_ganti_pin' => true,
         ]);
         $nasabah->assignRole('nasabah');
 

@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 
 it('memiliki konfigurasi aman pada env example', function () {
@@ -42,6 +43,27 @@ it('database test berada pada skema berakhiran _test', function () {
     $db = config('database.connections.mysql.database');
 
     expect($db)->toMatch('/_test$/');
+});
+
+it('seeder tidak membuat akun demo pada environment produksi', function () {
+    $this->app->detectEnvironment(fn () => 'production');
+
+    Artisan::call('db:seed', ['--class' => DatabaseSeeder::class, '--force' => true]);
+
+    expect(User::where('role', 'admin')->exists())->toBeTrue()
+        ->and(User::whereIn('role', ['kolektor', 'nasabah'])->exists())->toBeFalse();
+});
+
+it('seeder menandai semua akun demo wajib ganti pin', function () {
+    $this->seed(DatabaseSeeder::class);
+
+    $demo = User::whereIn('role', ['kolektor', 'nasabah'])->get();
+
+    expect($demo)->toHaveCount(2);
+
+    foreach ($demo as $akun) {
+        expect($akun->harus_ganti_pin)->toBeTrue();
+    }
 });
 
 beforeEach(function () {
