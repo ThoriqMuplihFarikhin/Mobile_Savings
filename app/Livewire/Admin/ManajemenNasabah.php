@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Actions\Pin\ResetPinOlehAdminAction;
+use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\JadwalKunjungan;
 use App\Models\KepesertaanPaket;
@@ -232,16 +233,57 @@ class ManajemenNasabah extends Component
 
     public function toggleStatus($id)
     {
-        $profil = NasabahProfil::find($id);
-        if ($profil) {
-            $newStatus = $profil->status_pendaftaran === 'aktif' ? 'ditolak' : 'aktif';
+        $hasil = DB::transaction(function () use ($id) {
+            $profil = NasabahProfil::whereKey($id)->lockForUpdate()->first();
+
+            if (! $profil) {
+                return ['error' => 'Nasabah tidak ditemukan.'];
+            }
+
+            if ($profil->status_pendaftaran === 'pending_verifikasi') {
+                return ['error' => 'Nasabah belum diverifikasi. Selesaikan verifikasi terlebih dahulu.'];
+            }
+
+            $statusLama = $profil->status_pendaftaran;
+            $statusBaru = $statusLama === 'aktif' ? 'ditolak' : 'aktif';
+
+            if ($statusBaru === 'ditolak') {
+                $adaPenarikanBerjalan = TransaksiPenarikan::where('nasabah_id', $profil->user_id)
+                    ->whereIn('status', ['pending', 'approved'])
+                    ->lockForUpdate()
+                    ->exists();
+
+                if ($adaPenarikanBerjalan) {
+                    return ['error' => 'Nasabah tidak dapat dinonaktifkan karena masih ada penarikan menunggu proses.'];
+                }
+            }
+
             $profil->update([
-                'status_pendaftaran' => $newStatus,
+                'status_pendaftaran' => $statusBaru,
                 'diverifikasi_oleh' => auth()->id(),
                 'tanggal_verifikasi' => now(),
             ]);
-            $profil->user->update(['status_akun' => $newStatus === 'aktif' ? 'aktif' : 'terkunci']);
+            $profil->user->update(['status_akun' => $statusBaru === 'aktif' ? 'aktif' : 'terkunci']);
+
+            return [
+                'status_lama' => $statusLama,
+                'status_baru' => $statusBaru,
+                'user_id' => $profil->user_id,
+            ];
+        });
+
+        if (isset($hasil['error'])) {
+            session()->flash('error', $hasil['error']);
+
+            return;
         }
+
+        ActivityLogger::log('ubah_status_nasabah', 'nasabah_profil', (int) $id, [
+            'status_lama' => $hasil['status_lama'],
+            'status_baru' => $hasil['status_baru'],
+            'user_id' => $hasil['user_id'],
+        ]);
+
         session()->flash('success', 'Status nasabah berhasil diubah!');
     }
 
