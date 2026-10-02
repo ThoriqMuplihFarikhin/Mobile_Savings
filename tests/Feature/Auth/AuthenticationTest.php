@@ -33,7 +33,7 @@ test('users can not authenticate with invalid pin', function () {
     $response = $this->withoutMiddleware(PreventRequestForgery::class)
         ->post(route('login.store'), [
             'no_hp' => $user->no_hp,
-            'password' => 'wrong-pin',
+            'password' => '999999',
         ]);
 
     $response->assertSessionHasErrorsIn('no_hp');
@@ -51,7 +51,7 @@ test('users can logout', function () {
     $this->assertGuest();
 });
 
-test('account gets locked after 5 failed attempts', function () {
+test('account gets temporarily locked after 5 failed attempts', function () {
     $user = User::factory()->create([
         'no_hp' => '081234567890',
         'pin_hash' => bcrypt('123456'),
@@ -62,10 +62,12 @@ test('account gets locked after 5 failed attempts', function () {
         $this->withoutMiddleware(PreventRequestForgery::class)
             ->post(route('login.store'), [
                 'no_hp' => $user->no_hp,
-                'password' => 'wrong-pin',
+                'password' => '999999',
             ]);
     }
 
     $user->refresh();
-    expect($user->status_akun)->toEqual('terkunci');
+    expect($user->status_akun)->toEqual('aktif')
+        ->and($user->login_terkunci_hingga->isFuture())->toBeTrue()
+        ->and($user->percobaan_gagal)->toBe(0);
 });

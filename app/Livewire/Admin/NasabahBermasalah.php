@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KepesertaanPaket;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -10,7 +11,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class NasabahBermasalah extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
 
     public $search = '';
 
@@ -49,6 +56,8 @@ class NasabahBermasalah extends Component
     public function selectKepesertaan($id)
     {
         $this->selectedKepesertaan = KepesertaanPaket::with(['nasabah', 'produk'])->find($id);
+        $this->selectedKepesertaan->hitungUlangKepesertaan();
+        $this->selectedKepesertaan->refresh();
         $this->keputusan_akhir = $this->selectedKepesertaan->keputusan_akhir ?? '';
         $this->catatan_admin = $this->selectedKepesertaan->catatan_admin ?? '';
         $this->metode_pengambilan = $this->selectedKepesertaan->metode_pengambilan ?? '';

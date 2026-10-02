@@ -5,7 +5,7 @@
             <div>
                 <h1 class="text-xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">Jadwal Kunjungan</h1>
                 <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                    {{ \Carbon\Carbon::parse($tanggal)->translatedFormat('l, d F Y') }}
+                    {{ \Illuminate\Support\Carbon::hasFormat($tanggal, 'Y-m-d') ? \Carbon\Carbon::parse($tanggal)->translatedFormat('l, d F Y') : 'Tanggal tidak valid' }}
                 </p>
             </div>
             

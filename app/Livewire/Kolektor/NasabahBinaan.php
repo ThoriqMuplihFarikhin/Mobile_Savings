@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Kolektor;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KepesertaanPaket;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
@@ -14,7 +15,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.mobile')]
 class NasabahBinaan extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'kolektor';
+    }
 
     public $search = '';
 

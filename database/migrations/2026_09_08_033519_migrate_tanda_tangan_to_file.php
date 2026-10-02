@@ -27,8 +27,8 @@ return new class extends Migration
             $base64 = str_replace('data:image/jpeg;base64,', '', $base64);
             $data = base64_decode($base64);
 
-            $filename = 'tanda_tangan/'.$item->kolektor_id.'_'.$item->id.'.png';
-            Storage::disk('public')->put($filename, $data);
+            $filename = 'absensi/tanda-tangan-'.$item->kolektor_id.'_'.$item->id.'.png';
+            Storage::disk('local')->put($filename, $data);
 
             DB::table('absensi_kolektor')
                 ->where('id', $item->id)
@@ -54,8 +54,10 @@ return new class extends Migration
             ->get();
 
         foreach ($absensi as $item) {
-            if (Storage::disk('public')->exists($item->tanda_tangan_path)) {
-                $data = Storage::disk('public')->get($item->tanda_tangan_path);
+            $disk = Storage::disk('local');
+
+            if ($disk->exists($item->tanda_tangan_path)) {
+                $data = $disk->get($item->tanda_tangan_path);
                 $base64 = base64_encode($data);
                 $base64 = 'data:image/png;base64,'.$base64;
 
@@ -63,7 +65,7 @@ return new class extends Migration
                     ->where('id', $item->id)
                     ->update(['tanda_tangan_base64' => $base64]);
 
-                Storage::disk('public')->delete($item->tanda_tangan_path);
+                $disk->delete($item->tanda_tangan_path);
             }
         }
 

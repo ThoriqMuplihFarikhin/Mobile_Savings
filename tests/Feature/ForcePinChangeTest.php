@@ -27,7 +27,7 @@ it('redirects admin with harus_ganti_pin to security page', function () {
 
     $this->actingAs($admin)
         ->get(route('admin.pengaturan.index'))
-        ->assertRedirect(route('security.edit'));
+        ->assertRedirect(route('admin.settings.security'));
 });
 
 it('allows access to security page when harus_ganti_pin is true', function () {
@@ -48,8 +48,8 @@ it('clears harus_ganti_pin after successful PIN change', function () {
 
     Livewire::test(Security::class)
         ->set('current_pin', '111111')
-        ->set('pin', '222222')
-        ->set('pin_confirmation', '222222')
+        ->set('pin', '428193')
+        ->set('pin_confirmation', '428193')
         ->call('updatePin')
         ->assertHasNoErrors();
 

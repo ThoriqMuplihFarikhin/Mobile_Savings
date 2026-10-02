@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Helpers\ActivityLogger;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiSetoran;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class MonitoringSetoran extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
 
     public $search = '';
 
@@ -81,71 +88,86 @@ class MonitoringSetoran extends Component
     public function koreksi()
     {
         $this->validate([
-            'nominalBaru' => 'required|numeric|min:0',
+            'nominalBaru' => 'required|numeric|min:1|max:1000000000',
             'alasanKoreksi' => 'required|string|max:500',
         ]);
 
-        $setoran = TransaksiSetoran::find($this->selectedId);
-        if (! $setoran || $setoran->status !== 'tercatat') {
-            session()->flash('error', 'Setoran tidak valid atau sudah dikoreksi/dibatalkan.');
+        try {
+            $hasil = DB::transaction(function () {
+                $setoran = TransaksiSetoran::whereKey($this->selectedId)->lockForUpdate()->first();
+
+                if (! $setoran || $setoran->status !== 'tercatat') {
+                    throw new \DomainException('Setoran tidak valid atau sudah dikoreksi/dibatalkan.');
+                }
+
+                $nominalLama = (float) $setoran->nominal;
+                $nominalBaruVal = round((float) $this->nominalBaru, 2);
+                $selisih = round($nominalBaruVal - $nominalLama, 2);
+
+                $saldo = SaldoProduk::where('nasabah_id', $setoran->nasabah_id)
+                    ->where('produk_id', $setoran->produk_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($selisih < 0 && ($saldo === null || bccomp((string) $saldo->saldo, (string) abs($selisih), 2) < 0)) {
+                    throw new \DomainException('Saldo nasabah tidak mencukupi untuk koreksi ini.');
+                }
+
+                $setoran->update([
+                    'status' => 'dikoreksi',
+                    'nominal_asli' => $nominalLama,
+                    'nominal' => $nominalBaruVal,
+                    'dikoreksi_oleh' => auth()->id(),
+                    'alasan_koreksi' => $this->alasanKoreksi,
+                ]);
+
+                if ($saldo && $selisih > 0) {
+                    $saldo->increment('saldo', $selisih);
+                } elseif ($saldo && $selisih < 0) {
+                    $saldo->decrement('saldo', abs($selisih));
+                }
+
+                return [
+                    'setoran' => $setoran,
+                    'nominalLama' => $nominalLama,
+                    'nominalBaru' => $nominalBaruVal,
+                ];
+            });
+        } catch (\DomainException $e) {
+            session()->flash('error', $e->getMessage());
+
+            return;
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', 'Gagal mengoreksi setoran. Silakan coba lagi.');
 
             return;
         }
 
-        $nominalLama = (float) $setoran->nominal;
-        $nominalBaruVal = (float) $this->nominalBaru;
-        $selisih = $nominalBaruVal - $nominalLama;
-
-        DB::beginTransaction();
-
         try {
-            $setoran->update([
-                'status' => 'dikoreksi',
-                'nominal_asli' => $nominalLama,
-                'nominal' => $nominalBaruVal,
-                'dikoreksi_oleh' => auth()->id(),
-                'alasan_koreksi' => $this->alasanKoreksi,
-            ]);
-
-            $saldo = SaldoProduk::where('nasabah_id', $setoran->nasabah_id)
-                ->where('produk_id', $setoran->produk_id)
-                ->lockForUpdate()
-                ->first();
-
-            if ($saldo) {
-                if ($selisih > 0) {
-                    $saldo->increment('saldo', $selisih);
-                } elseif ($selisih < 0) {
-                    $saldo->decrement('saldo', abs($selisih));
-                }
-            }
-
-            DB::commit();
-
-            ActivityLogger::log('koreksi_setoran', 'transaksi_setoran', $setoran->id, [
-                'nasabah_id' => $setoran->nasabah_id,
-                'nominal_lama' => $nominalLama,
-                'nominal_baru' => $nominalBaruVal,
+            ActivityLogger::log('koreksi_setoran', 'transaksi_setoran', $hasil['setoran']->id, [
+                'nasabah_id' => $hasil['setoran']->nasabah_id,
+                'nominal_lama' => $hasil['nominalLama'],
+                'nominal_baru' => $hasil['nominalBaru'],
                 'alasan' => $this->alasanKoreksi,
             ]);
 
             ActivityLogger::notify(
-                $setoran->nasabah_id,
+                $hasil['setoran']->nasabah_id,
                 'Setoran Dikoreksi',
-                'Setoran Rp '.number_format($nominalLama, 0, ',', '.').' telah dikoreksi menjadi Rp '.number_format($nominalBaruVal, 0, ',', '.').'.',
+                'Setoran Rp '.number_format($hasil['nominalLama'], 0, ',', '.').' telah dikoreksi menjadi Rp '.number_format($hasil['nominalBaru'], 0, ',', '.').'.',
                 'both'
             );
-
-            $this->showKoreksi = false;
-            $this->selectedId = null;
-            $this->nominalBaru = '';
-            $this->alasanKoreksi = '';
-
-            session()->flash('success', 'Setoran berhasil dikoreksi!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            session()->flash('error', 'Gagal mengoreksi setoran: '.$e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
         }
+
+        $this->showKoreksi = false;
+        $this->selectedId = null;
+        $this->nominalBaru = '';
+        $this->alasanKoreksi = '';
+
+        session()->flash('success', 'Setoran berhasil dikoreksi!');
     }
 
     public function toggleBatal($id)
@@ -161,33 +183,45 @@ class MonitoringSetoran extends Component
             'alasanBatal' => 'required|string|max:500',
         ]);
 
-        $setoran = TransaksiSetoran::find($this->selectedBatalId);
-        if (! $setoran || $setoran->status !== 'tercatat') {
-            session()->flash('error', 'Setoran tidak valid atau sudah diproses.');
+        try {
+            $setoran = DB::transaction(function () {
+                $setoran = TransaksiSetoran::whereKey($this->selectedBatalId)->lockForUpdate()->first();
+
+                if (! $setoran || $setoran->status !== 'tercatat') {
+                    throw new \DomainException('Setoran tidak valid atau sudah diproses.');
+                }
+
+                $saldo = SaldoProduk::where('nasabah_id', $setoran->nasabah_id)
+                    ->where('produk_id', $setoran->produk_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($saldo === null || bccomp((string) $saldo->saldo, (string) $setoran->nominal, 2) < 0) {
+                    throw new \DomainException('Saldo nasabah tidak mencukupi untuk membatalkan setoran ini.');
+                }
+
+                $setoran->update([
+                    'status' => 'dibatalkan',
+                    'alasan_koreksi' => $this->alasanBatal,
+                    'dikoreksi_oleh' => auth()->id(),
+                ]);
+
+                $saldo->decrement('saldo', $setoran->nominal);
+
+                return $setoran;
+            });
+        } catch (\DomainException $e) {
+            session()->flash('error', $e->getMessage());
+
+            return;
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', 'Gagal membatalkan setoran. Silakan coba lagi.');
 
             return;
         }
 
-        DB::beginTransaction();
-
         try {
-            $setoran->update([
-                'status' => 'dibatalkan',
-                'alasan_koreksi' => $this->alasanBatal,
-                'dikoreksi_oleh' => auth()->id(),
-            ]);
-
-            $saldo = SaldoProduk::where('nasabah_id', $setoran->nasabah_id)
-                ->where('produk_id', $setoran->produk_id)
-                ->lockForUpdate()
-                ->first();
-
-            if ($saldo) {
-                $saldo->decrement('saldo', $setoran->nominal);
-            }
-
-            DB::commit();
-
             ActivityLogger::log('batal_setoran', 'transaksi_setoran', $setoran->id, [
                 'nasabah_id' => $setoran->nasabah_id,
                 'nominal' => $setoran->nominal,
@@ -200,15 +234,14 @@ class MonitoringSetoran extends Component
                 'Setoran Rp '.number_format($setoran->nominal, 0, ',', '.').' telah dibatalkan oleh admin.',
                 'both'
             );
-
-            $this->showBatal = false;
-            $this->selectedBatalId = null;
-            $this->alasanBatal = '';
-
-            session()->flash('success', 'Setoran berhasil dibatalkan!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            session()->flash('error', 'Gagal membatalkan setoran: '.$e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
         }
+
+        $this->showBatal = false;
+        $this->selectedBatalId = null;
+        $this->alasanBatal = '';
+
+        session()->flash('success', 'Setoran berhasil dibatalkan!');
     }
 }

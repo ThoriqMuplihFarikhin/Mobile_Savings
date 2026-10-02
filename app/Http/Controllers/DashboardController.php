@@ -33,14 +33,18 @@ class DashboardController extends Controller
         $totalSaldo = DB::table('saldo_produk')->sum('saldo');
         $setoranHariIni = DB::table('transaksi_setoran')
             ->where('tanggal_transaksi', today())
-            ->where('status', 'tercatat')
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
             ->sum('nominal');
+
+        $totalKomisi = DB::table('transaksi_penarikan')
+            ->whereIn('status', ['approved', 'selesai'])
+            ->sum('nominal_komisi');
 
         $trenSetoran = collect(range(29, 0))->map(fn ($i) => [
             'tanggal' => Carbon::today()->subDays($i)->format('d M'),
             'nominal' => (float) DB::table('transaksi_setoran')
                 ->where('tanggal_transaksi', Carbon::today()->subDays($i))
-                ->where('status', 'tercatat')
+                ->whereIn('status', ['tercatat', 'dikoreksi'])
                 ->sum('nominal'),
         ])->values();
 
@@ -58,7 +62,7 @@ class DashboardController extends Controller
                 'users.name as nasabah_name',
                 'produk_tabungan.nama as produk_name'
             )
-            ->where('transaksi_setoran.status', 'tercatat')
+            ->whereIn('transaksi_setoran.status', ['tercatat', 'dikoreksi'])
             ->orderByDesc('transaksi_setoran.tanggal_transaksi')
             ->limit(5)
             ->get();
@@ -66,7 +70,7 @@ class DashboardController extends Controller
         $kolektorTeratas = DB::table('transaksi_setoran')
             ->join('users', 'transaksi_setoran.input_by', '=', 'users.id')
             ->select('users.name', DB::raw('COUNT(*) as jumlah_setoran'), DB::raw('SUM(transaksi_setoran.nominal) as total_nominal'))
-            ->where('transaksi_setoran.status', 'tercatat')
+            ->whereIn('transaksi_setoran.status', ['tercatat', 'dikoreksi'])
             ->where('transaksi_setoran.tanggal_transaksi', '>=', Carbon::now()->subDays(30))
             ->groupBy('users.id', 'users.name')
             ->orderByDesc('total_nominal')
@@ -79,6 +83,7 @@ class DashboardController extends Controller
             'totalKolektor',
             'totalSaldo',
             'setoranHariIni',
+            'totalKomisi',
             'trenSetoran',
             'komposisiProduk',
             'transaksiTerbaru',
@@ -97,20 +102,28 @@ class DashboardController extends Controller
             ->where('kolektor_id', $user->id)
             ->where('tanggal_jadwal', today())
             ->join('users', 'jadwal_kunjungan.nasabah_id', '=', 'users.id')
-            ->leftJoin('kepesertaan_paket', function ($join) {
-                $join->on('kepesertaan_paket.nasabah_id', '=', 'jadwal_kunjungan.nasabah_id')
-                    ->where('kepesertaan_paket.status_alert', '!=', 'aman');
-            })
-            ->leftJoin('produk_tabungan', 'kepesertaan_paket.produk_id', '=', 'produk_tabungan.id')
             ->select(
                 'jadwal_kunjungan.*',
-                'users.name as nasabah_name',
-                'kepesertaan_paket.tunggakan',
-                'kepesertaan_paket.status_alert',
-                'produk_tabungan.nama as produk_name'
+                'users.name as nasabah_name'
             )
             ->orderBy('jadwal_kunjungan.id')
             ->get();
+
+        $kepesertaanTerpilih = KepesertaanPaket::with('produk')
+            ->whereIn('nasabah_id', $jadwalHariIni->pluck('nasabah_id')->unique()->values())
+            ->whereNull('keputusan_akhir')
+            ->orderByDesc('tunggakan')
+            ->get()
+            ->groupBy('nasabah_id')
+            ->map(fn ($rows) => $rows->first());
+
+        $jadwalHariIni->each(function ($jadwal) use ($kepesertaanTerpilih) {
+            $kepesertaan = $kepesertaanTerpilih->get($jadwal->nasabah_id);
+
+            $jadwal->tunggakan = $kepesertaan?->tunggakan;
+            $jadwal->status_alert = $kepesertaan?->status_alert;
+            $jadwal->produk_name = $kepesertaan?->produk->nama ?? null;
+        });
 
         $jadwalTotal = $jadwalHariIni->count();
         $jadwalSelesai = $jadwalHariIni->where('status_kunjungan', 'dikunjungi')->count();
@@ -119,7 +132,7 @@ class DashboardController extends Controller
             'setoran_belum_disetor' => DB::table('transaksi_setoran')
                 ->where('input_by', $user->id)
                 ->where('sudah_disetor_ke_kantor', false)
-                ->where('status', 'tercatat')
+                ->whereIn('status', ['tercatat', 'dikoreksi'])
                 ->sum('nominal'),
             'kunjungan_selesai' => $jadwalSelesai,
             'kunjungan_total' => $jadwalTotal,
@@ -132,6 +145,7 @@ class DashboardController extends Controller
 
         $nasabahTunggakParah = KepesertaanPaket::whereIn('nasabah_id', $nasabahIds)
             ->whereIn('status_alert', ['peringatan', 'perlu_review'])
+            ->whereNull('keputusan_akhir')
             ->count();
 
         $totalNasabahBinaan = DB::table('kolektor_nasabah')
@@ -150,7 +164,7 @@ class DashboardController extends Controller
         $totalSaldo = $saldoPerProduk->sum('saldo');
 
         $riwayatSetoran = TransaksiSetoran::where('nasabah_id', $user->id)
-            ->where('status', 'tercatat')
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
             ->with('produk')
             ->latest('tanggal_transaksi')
             ->limit(5)
@@ -165,12 +179,12 @@ class DashboardController extends Controller
 
         $riwayatGabungan = $riwayatSetoran->map(fn ($t) => [
             'type' => 'setoran',
-            'nama' => $t->produk->nama,
+            'nama' => $t->produk->nama ?? '-',
             'tanggal' => $t->tanggal_transaksi,
             'nominal' => $t->nominal,
-        ])->concat($riwayatPenarikan->map(fn ($t) => [
+        ])->concat($riwayatPenarikan->filter(fn ($t) => $t->waktu_pencairan)->map(fn ($t) => [
             'type' => 'penarikan',
-            'nama' => $t->produk->nama,
+            'nama' => $t->produk->nama ?? '-',
             'tanggal' => $t->waktu_pencairan,
             'nominal' => $t->nominal_diterima,
         ]))->sortByDesc('tanggal')->take(5)->values();
@@ -200,17 +214,22 @@ class DashboardController extends Controller
     private function hitungStreak(int $nasabahId): int
     {
         $tanggalSetor = TransaksiSetoran::where('nasabah_id', $nasabahId)
-            ->where('status', 'tercatat')
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
             ->orderByDesc('tanggal_transaksi')
             ->pluck('tanggal_transaksi')
             ->map(fn ($t) => Carbon::parse($t)->toDateString())
             ->unique()
             ->values();
 
+        $hariIni = now()->toDateString();
         $streak = 0;
-        $cursor = now()->toDateString();
+        $cursor = $hariIni;
 
         foreach ($tanggalSetor as $tanggal) {
+            if ($tanggal > $hariIni) {
+                continue;
+            }
+
             if ($tanggal === $cursor || $tanggal === Carbon::parse($cursor)->subDay()->toDateString()) {
                 $streak++;
                 $cursor = $tanggal;

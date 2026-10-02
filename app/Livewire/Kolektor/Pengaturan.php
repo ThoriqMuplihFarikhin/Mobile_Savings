@@ -3,6 +3,7 @@
 namespace App\Livewire\Kolektor;
 
 use App\Livewire\Actions\Logout;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Livewire\Concerns\HasNotifikasiWaToggle;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,13 @@ use Livewire\Features\SupportRedirects\Redirector;
 #[Layout('layouts.mobile')]
 class Pengaturan extends Component
 {
+    use AuthorizesRole;
     use HasNotifikasiWaToggle;
+
+    protected function requiredRole(): string
+    {
+        return 'kolektor';
+    }
 
     /**
      * Info khusus kolektor: apakah masih ada setoran yang belum

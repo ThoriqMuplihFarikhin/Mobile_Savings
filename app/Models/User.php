@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Support\NomorHp;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -23,10 +25,11 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $status_akun
  * @property int $percobaan_gagal
  * @property bool $harus_ganti_pin
+ * @property Carbon|null $login_terkunci_hingga
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'no_hp', 'pin_hash', 'role', 'status_akun', 'percobaan_gagal', 'harus_ganti_pin', 'notifikasi_wa_aktif', 'foto_profil_path', 'banner_path'])]
+#[Fillable(['name', 'no_hp', 'pin_hash', 'role', 'status_akun', 'percobaan_gagal', 'harus_ganti_pin', 'notifikasi_wa_aktif', 'foto_profil_path', 'banner_path', 'login_terkunci_hingga'])]
 #[Hidden(['pin_hash', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -50,7 +53,16 @@ class User extends Authenticatable
             'percobaan_gagal' => 'integer',
             'harus_ganti_pin' => 'boolean',
             'notifikasi_wa_aktif' => 'boolean',
+            'login_terkunci_hingga' => 'datetime',
         ];
+    }
+
+    /**
+     * @return Attribute<string, string>
+     */
+    protected function noHp(): Attribute
+    {
+        return Attribute::set(fn (string $value) => NomorHp::normalize($value));
     }
 
     public function initials(): string
@@ -143,8 +155,8 @@ class User extends Authenticatable
             return false;
         }
 
-        return TransaksiSetoran::where('input_by', $this->id)
-            ->where('sudah_disetor_ke_kantor', false)
+        return TransaksiSetoran::belumDisetor()
+            ->where('input_by', $this->id)
             ->exists();
     }
 }

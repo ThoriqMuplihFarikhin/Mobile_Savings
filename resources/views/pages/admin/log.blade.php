@@ -1,1 +1,1 @@
-<x-layouts::admin title="Log Aktivitas"><livewire:admin.log-aktivitas /></x-layouts::app>
+<x-layouts::app title="Log Aktivitas"><livewire:admin.log-aktivitas /></x-layouts::app>

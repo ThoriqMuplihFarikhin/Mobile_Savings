@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\AbsensiFotoController;
+use App\Http\Controllers\Admin\DetailNasabahController;
 use App\Http\Controllers\Admin\HandoverController;
+use App\Http\Controllers\Admin\KomisiController;
 use App\Http\Controllers\Admin\KomplainController;
 use App\Http\Controllers\Admin\LaporanController;
 use App\Http\Controllers\Admin\LogController;
@@ -27,7 +30,6 @@ use App\Http\Controllers\Nasabah\PenarikanController;
 use App\Http\Controllers\Nasabah\PengaturanController as NasabahPengaturanController;
 use App\Http\Controllers\Nasabah\RiwayatController;
 use App\Http\Controllers\Nasabah\SaldoController;
-use App\Livewire\Admin\DetailNasabah;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -35,14 +37,19 @@ Route::view('/', 'welcome')->name('home');
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
+    Route::get('/absensi/{absensi}/{jenis}', [AbsensiFotoController::class, 'show'])
+        ->where('jenis', 'selfie|tanda-tangan')
+        ->name('absensi.foto');
+
     // Admin Routes
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         Route::get('/nasabah', [NasabahController::class, 'index'])->name('nasabah.index');
-        Route::get('/nasabah/{user}', DetailNasabah::class)->name('nasabah.detail');
+        Route::get('/nasabah/{user}', [DetailNasabahController::class, 'index'])->name('nasabah.detail');
         Route::get('/registrasi', [RegistrasiController::class, 'index'])->name('registrasi.index');
         Route::get('/verifikasi', [VerifikasiController::class, 'index'])->name('verifikasi.index');
         Route::get('/produk', [ProdukController::class, 'index'])->name('produk.index');
         Route::get('/penarikan', [AdminPenarikanController::class, 'index'])->name('penarikan.index');
+        Route::get('/komisi', [KomisiController::class, 'index'])->name('komisi.index');
         Route::get('/rekonsiliasi', [RekonsiliasiController::class, 'index'])->name('rekonsiliasi.index');
         Route::get('/komplain', [KomplainController::class, 'index'])->name('komplain.index');
         Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
@@ -70,6 +77,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/daftar-nasabah', [DaftarNasabahController::class, 'index'])->name('daftar-nasabah.index');
         Route::get('/setor-kantor', [SetorKantorController::class, 'index'])->name('setor-kantor.index');
         Route::get('/penarikan-offline', [SetoranController::class, 'penarikanOffline'])->name('penarikan-offline.index');
+        Route::get('/verifikasi-penarikan', [SetoranController::class, 'verifikasiPenarikan'])->name('verifikasi-penarikan.index');
         Route::get('/absen', [AbsenController::class, 'index'])->name('absen.index');
         Route::get('/izin', fn () => view('pages.kolektor.izin'))->name('izin.index');
         Route::get('/riwayat-absensi', [RiwayatAbsensiController::class, 'index'])->name('riwayat-absensi.index');

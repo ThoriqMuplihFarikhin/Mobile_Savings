@@ -18,6 +18,13 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="mb-4 flex items-center gap-2.5 rounded-lg bg-[#f7d4d6] px-4 py-3 text-sm text-[#c50000]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            {{ session('error') }}
+        </div>
+    @endif
+
     @if($showForm)
         <div class="mb-6 rounded-xl bg-gray-50 shadow-[inset_0_0_0_1px_#ebebeb]">
             <div class="border-b border-[#ebebeb] px-6 py-4">
@@ -118,6 +125,14 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                         @endif
                                     </button>
+                                    @if($item->status_pendaftaran === 'aktif' && ($item->user->status_akun === 'terkunci' || ($item->user->login_terkunci_hingga && $item->user->login_terkunci_hingga->isFuture())))
+                                        <button wire:click="bukaKunci({{ $item->id }})" class="rounded-full p-1.5 text-emerald-600 transition hover:bg-emerald-100" title="Buka Kunci">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+                                        </button>
+                                    @endif
+                                    <button wire:click="confirmResetPin({{ $item->user_id }})" class="rounded-full p-1.5 text-[#ab570a] transition hover:bg-amber-100" title="Reset PIN">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159-.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
+                                    </button>
                                     <button wire:click="confirmDelete({{ $item->id }})" class="rounded-full p-1.5 text-[#ee0000] transition hover:bg-[#f7d4d6]">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     </button>
@@ -148,6 +163,20 @@
                 <div class="mt-6 flex justify-end gap-3">
                     <button wire:click="$set('confirmDelete', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
                     <button wire:click="delete" class="rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Hapus</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if($confirmResetPin)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+                <h3 class="text-lg font-semibold text-gray-900">Reset PIN?</h3>
+                <p class="mt-2 text-sm text-gray-500">PIN pengguna akan diganti menjadi PIN acak baru dan seluruh sesi aktifnya dihentikan. Pengguna wajib mengganti PIN setelah login berikutnya.</p>
+                @error('reset_pin') <p class="mt-2 text-sm text-[#ee0000]">{{ $message }}</p> @enderror
+                <div class="mt-6 flex justify-end gap-3">
+                    <button wire:click="$set('confirmResetPin', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
+                    <button wire:click="resetPin" class="rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Reset PIN</button>
                 </div>
             </div>
         </div>

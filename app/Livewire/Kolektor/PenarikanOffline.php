@@ -3,10 +3,12 @@
 namespace App\Livewire\Kolektor;
 
 use App\Actions\Penarikan\AjukanPenarikanAction;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Livewire\Concerns\ValidatesKolektorNasabah;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
+use App\Models\TransaksiPenarikan;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -15,7 +17,13 @@ use Livewire\Component;
 #[Layout('layouts.mobile')]
 class PenarikanOffline extends Component
 {
+    use AuthorizesRole;
     use ValidatesKolektorNasabah;
+
+    protected function requiredRole(): string
+    {
+        return 'kolektor';
+    }
 
     public $nasabahId = '';
 
@@ -37,6 +45,8 @@ class PenarikanOffline extends Component
 
     public $nominalDiterima = 0;
 
+    public $jumlahMenungguVerifikasi = 0;
+
     public function mount()
     {
         $kolektorId = Auth::id();
@@ -52,6 +62,16 @@ class PenarikanOffline extends Component
             ->get();
 
         $this->produkList = ProdukTabungan::where('status', 'aktif')->get();
+
+        $this->jumlahMenungguVerifikasi = TransaksiPenarikan::where('jalur_pengajuan', 'offline')
+            ->where('status', 'approved')
+            ->whereIn('nasabah_id', function ($query) use ($kolektorId) {
+                $query->select('nasabah_id')
+                    ->from('kolektor_nasabah')
+                    ->where('kolektor_id', $kolektorId)
+                    ->where('status', 'aktif');
+            })
+            ->count();
     }
 
     public function updatedNasabahId()

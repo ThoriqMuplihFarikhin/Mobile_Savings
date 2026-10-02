@@ -15,4 +15,9 @@ class SetoranController extends Controller
     {
         return view('pages.kolektor.penarikan-offline');
     }
+
+    public function verifikasiPenarikan()
+    {
+        return view('pages.kolektor.verifikasi-penarikan');
+    }
 }

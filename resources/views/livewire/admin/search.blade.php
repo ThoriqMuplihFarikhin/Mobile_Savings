@@ -21,7 +21,6 @@
                     </div>
                     <div class="min-w-0 flex-1">
                         <p class="truncate font-medium text-text dark:text-white">{{ $result['name'] }}</p>
-                        <p class="truncate text-xs text-text-muted dark:text-slate-400">{{ $result['no_hp'] }}</p>
                     </div>
                 </a>
             @endforeach

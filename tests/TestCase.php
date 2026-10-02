@@ -10,7 +10,17 @@ abstract class TestCase extends BaseTestCase
 {
     protected function setUp(): void
     {
+        $envDb = $_ENV['DB_DATABASE'] ?? $_SERVER['DB_DATABASE'] ?? getenv('DB_DATABASE');
+        if (is_string($envDb) && $envDb !== '' && ! str_ends_with($envDb, '_test') && $envDb !== ':memory:') {
+            throw new \RuntimeException("Test menolak berjalan pada database '{$envDb}'.");
+        }
+
         parent::setUp();
+
+        $db = config('database.connections.'.config('database.default').'.database');
+        if (! app()->environment('testing') || ! (str_ends_with((string) $db, '_test') || $db === ':memory:')) {
+            throw new \RuntimeException("Test menolak berjalan pada database '{$db}'.");
+        }
 
         // Seed roles for testing
         Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);

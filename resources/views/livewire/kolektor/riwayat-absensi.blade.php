@@ -43,7 +43,7 @@
                             <div>
                                 <p class="mb-2 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Foto Selfie</p>
                                 @if($selectedAbsen->foto_selfie_path)
-                                    <img src="{{ Storage::url($selectedAbsen->foto_selfie_path) }}"
+                                    <img src="{{ route('absensi.foto', [$selectedAbsen, 'selfie']) }}"
                                          alt="Selfie"
                                          class="h-36 w-36 rounded-2xl object-cover border border-zinc-200 dark:border-zinc-700" />
                                 @else
@@ -57,7 +57,7 @@
                             <div>
                                 <p class="mb-2 text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Tanda Tangan</p>
                                 @if($selectedAbsen->tanda_tangan_path)
-                                    <img src="{{ Storage::url($selectedAbsen->tanda_tangan_path) }}"
+                                    <img src="{{ route('absensi.foto', [$selectedAbsen, 'tanda-tangan']) }}"
                                          alt="Tanda Tangan"
                                          class="h-36 w-36 rounded-2xl bg-white dark:bg-zinc-700 object-contain p-2 border border-zinc-200 dark:border-zinc-700" />
                                 @else

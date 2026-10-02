@@ -102,7 +102,7 @@
             <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
                 <h3 class="text-lg font-semibold text-gray-900">Koreksi Setoran</h3>
                 <p class="mt-1 text-sm text-gray-500">Ubah nominal setoran yang sudah tercatat.</p>
-                <form wire:submit="koreksi" class="mt-4 space-y-4">
+                <form wire:submit="koreksi" wire:confirm="Yakin menyimpan koreksi setoran ini?" class="mt-4 space-y-4">
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-gray-900">Nominal Baru</label>
                         <div class="relative">
@@ -139,7 +139,7 @@
             <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
                 <h3 class="text-lg font-semibold text-gray-900">Batalkan Setoran</h3>
                 <p class="mt-1 text-sm text-gray-500">Setoran yang dibatalkan akan dikurangi dari saldo nasabah.</p>
-                <form wire:submit="batal" class="mt-4 space-y-4">
+                <form wire:submit="batal" wire:confirm="Yakin membatalkan setoran ini? Saldo nasabah akan dikurangi." class="mt-4 space-y-4">
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-gray-900">Alasan Pembatalan</label>
                         <textarea wire:model="alasanBatal" rows="3"

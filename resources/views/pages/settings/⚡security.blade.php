@@ -1,8 +1,8 @@
 <?php
 
+use App\Actions\Pin\UbahPinAction;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -20,22 +20,20 @@ new #[Title('Security settings')] class extends Component {
     {
         try {
             $validated = $this->validate([
-                'current_pin' => ['required', 'string', function ($attribute, $value, $fail) {
-                    if (! Hash::check($value, Auth::user()->pin_hash)) {
-                        $fail(__('The provided PIN does not match your current PIN.'));
-                    }
-                }],
+                'current_pin' => ['required', 'string', 'digits:6'],
                 'pin' => ['required', 'string', 'digits:6', 'confirmed'],
             ]);
+
+            app(UbahPinAction::class)->execute(
+                Auth::user(),
+                $validated['current_pin'],
+                $validated['pin'],
+            );
         } catch (ValidationException $e) {
             $this->reset('current_pin', 'pin', 'pin_confirmation');
 
             throw $e;
         }
-
-        Auth::user()->update([
-            'pin_hash' => Hash::make($validated['pin']),
-        ]);
 
         $this->reset('current_pin', 'pin', 'pin_confirmation');
 

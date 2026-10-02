@@ -65,11 +65,17 @@
                             <td class="px-4 py-3">
                                 @if($item->status === 'pending')
                                     <div class="flex items-center gap-2">
-                                        <button wire:click="approve({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Setuju</button>
-                                        <button wire:click="reject({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Tolak</button>
+                                        <button wire:click="approve({{ $item->id }})" wire:confirm="Yakin menyetujui penarikan ini? Saldo nasabah akan dikurangi dan penarikan diproses." class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Setuju</button>
+                                        <button wire:click="reject({{ $item->id }})" wire:confirm="Yakin menolak pengajuan penarikan ini?" class="inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Tolak</button>
                                     </div>
                                 @elseif($item->status === 'approved')
-                                    <button wire:click="selesai({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Tandai Selesai</button>
+                                    @if($item->jalur_pengajuan === 'offline' && $item->lokasi_pengambilan === 'rumah_kolektor')
+                                        <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 font-mono text-xs text-[#ab570a]">Menunggu verifikasi kolektor</span>
+                                    @else
+                                        <button wire:click="toggleSelesai({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Tandai Selesai</button>
+                                    @endif
+                                @elseif($item->status === 'selesai' && $item->metode_verifikasi === 'pin_nasabah')
+                                    <span class="text-xs text-emerald-600 font-medium">Diverifikasi PIN nasabah</span>
                                 @else
                                     <span class="text-xs text-gray-500">-</span>
                                 @endif
@@ -90,4 +96,32 @@
         </div>
         <div class="border-t border-[#ebebeb] px-4 py-3">{{ $penarikan->links() }}</div>
     </div>
+
+    @if($showSelesai)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+                <h3 class="text-lg font-semibold text-gray-900">Tandai Penarikan Selesai</h3>
+                <p class="mt-1 text-sm text-gray-500">Pencairan manual admin wajib mencatat alasan.</p>
+                <form wire:submit="selesai({{ $selesaiId }})" class="mt-4 space-y-4">
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-900">Alasan</label>
+                        <textarea wire:model="alasan" rows="3"
+                            class="w-full rounded-md border border-[#ebebeb] bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+                            placeholder="Alasan pencairan manual..."></textarea>
+                        @error('alasan') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                    </div>
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button type="button" wire:click="$set('showSelesai', false)"
+                            class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
+                            Batal
+                        </button>
+                        <button type="submit" wire:loading.attr="disabled" wire:target="selesai"
+                            class="rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50">
+                            Tandai Selesai
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 </div>

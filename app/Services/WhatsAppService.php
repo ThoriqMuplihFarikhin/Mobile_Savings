@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Models\AdminSetting;
+use App\Support\NomorHp;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class WhatsAppService
 {
@@ -31,14 +33,16 @@ class WhatsAppService
         }
 
         try {
+            $phone = NomorHp::normalize($phone);
+
             $response = match ($this->provider) {
                 'fonnte' => $this->sendFonnte($phone, $message),
-                'wablas' => $this->sendWablas($phone, $message),
-                default => $this->sendGeneric($phone, $message),
+                'wablas' => $this->sendWablas($this->keFormatInternasional($phone), $message),
+                default => $this->sendGeneric($this->keFormatInternasional($phone), $message),
             };
 
             if ($response->successful()) {
-                Log::info('WhatsApp message sent', ['phone' => $phone, 'provider' => $this->provider]);
+                Log::info('WhatsApp message sent', ['phone' => Str::mask($phone, '*', 4, -3), 'provider' => $this->provider]);
 
                 return true;
             }
@@ -93,6 +97,11 @@ class WhatsAppService
             'phone' => $phone,
             'message' => $message,
         ]);
+    }
+
+    private function keFormatInternasional(string $phone): string
+    {
+        return str_starts_with($phone, '0') ? '62'.substr($phone, 1) : $phone;
     }
 
     public function isConnected(): bool

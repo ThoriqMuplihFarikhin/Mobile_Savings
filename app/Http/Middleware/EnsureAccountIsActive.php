@@ -19,11 +19,13 @@ class EnsureAccountIsActive
         }
 
         if ($request->user() && $request->user()->harus_ganti_pin) {
-            $excludedRoutes = ['security.edit', 'logout', 'login'];
+            $excludedRoutes = ['security.edit', 'admin.settings.security', 'logout', 'login'];
             $currentRouteName = $request->route()?->getName();
 
             if (! in_array($currentRouteName, $excludedRoutes, true)) {
-                return redirect()->route('security.edit')->with('force_pin_change', true);
+                $targetRoute = $request->user()->isAdmin() ? 'admin.settings.security' : 'security.edit';
+
+                return redirect()->route($targetRoute)->with('force_pin_change', true);
             }
         }
 

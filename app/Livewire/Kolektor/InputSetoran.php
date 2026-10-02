@@ -4,22 +4,31 @@ namespace App\Livewire\Kolektor;
 
 use App\Actions\Tabungan\HitungTunggakanAction;
 use App\Helpers\ActivityLogger;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Livewire\Concerns\ValidatesKolektorNasabah;
-use App\Models\KepesertaanPaket;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiSetoran;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 #[Layout('layouts.mobile')]
 class InputSetoran extends Component
 {
+    use AuthorizesRole;
     use ValidatesKolektorNasabah;
+
+    protected function requiredRole(): string
+    {
+        return 'kolektor';
+    }
 
     public $nasabahId = '';
 
@@ -32,6 +41,8 @@ class InputSetoran extends Component
     public $sumber_input = 'real_time';
 
     public $catatan = '';
+
+    public string $idempotencyKey = '';
 
     public $nasabahList = [];
 
@@ -49,6 +60,7 @@ class InputSetoran extends Component
 
     public function mount()
     {
+        $this->idempotencyKey = (string) Str::uuid();
         $this->tanggal_transaksi = now()->format('Y-m-d');
         $this->loadNasabah();
         $this->loadProduk();
@@ -99,7 +111,9 @@ class InputSetoran extends Component
 
         $this->loadNasabah();
 
-        $produkAktif = SaldoProduk::where('nasabah_id', $nasabahId)->pluck('produk_id');
+        $produkAktif = SaldoProduk::where('nasabah_id', $nasabahId)
+            ->whereHas('produk', fn ($q) => $q->where('status', 'aktif'))
+            ->pluck('produk_id');
         if ($produkAktif->count() === 1) {
             $this->produkId = $produkAktif->first();
             $this->hitungTunggakan();
@@ -155,12 +169,22 @@ class InputSetoran extends Component
 
     public function submit()
     {
+        $produk = ProdukTabungan::find($this->produkId);
+        $minimalSetor = max(1000, (int) ($produk->minimal_setor ?? 0));
+
         $this->validate([
             'nasabahId' => 'required|exists:users,id',
-            'produkId' => 'required|exists:produk_tabungan,id',
-            'nominal' => 'required|numeric|min:1000',
-            'tanggal_transaksi' => 'required|date',
+            'produkId' => ['required', Rule::exists('produk_tabungan', 'id')->where('status', 'aktif')],
+            'nominal' => ['required', 'numeric', 'min:'.$minimalSetor, 'max:1000000000'],
+            'tanggal_transaksi' => [
+                'required',
+                'date',
+                $this->sumber_input === 'real_time'
+                    ? 'date_equals:'.now()->toDateString()
+                    : 'before_or_equal:today',
+            ],
             'sumber_input' => 'required|in:real_time,susulan',
+            'catatan' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $isTanggungJawab = KolektorNasabah::where('kolektor_id', Auth::id())
@@ -174,57 +198,51 @@ class InputSetoran extends Component
             return;
         }
 
-        $produk = ProdukTabungan::find($this->produkId);
+        $cacheKey = 'setoran-submit:'.Auth::id().':'.$this->idempotencyKey;
+        if (! Cache::add($cacheKey, true, now()->addMinutes(10))) {
+            session()->flash('error', 'Setoran ini sudah diproses. Muat ulang halaman untuk setoran baru.');
 
-        if ($produk && $produk->tipe === 'paket') {
-            $existingActive = KepesertaanPaket::where('nasabah_id', $this->nasabahId)
-                ->where('produk_id', $this->produkId)
-                ->whereNull('keputusan_akhir')
-                ->exists();
-
-            if ($existingActive) {
-                session()->flash('error', 'Nasabah ini sudah memiliki kepesertaan aktif untuk produk paket tersebut. Tidak bisa didaftarkan ulang sampai kepesertaan sebelumnya selesai.');
-
-                return;
-            }
+            return;
         }
 
-        DB::beginTransaction();
-
         try {
-            $transaksi = TransaksiSetoran::create([
-                'nasabah_id' => $this->nasabahId,
-                'produk_id' => $this->produkId,
-                'nominal' => $this->nominal,
-                'tanggal_transaksi' => $this->tanggal_transaksi,
-                'tanggal_input_sistem' => now(),
-                'input_by' => Auth::id(),
-                'sumber_input' => $this->sumber_input,
-                'status' => 'tercatat',
-            ]);
+            $transaksi = DB::transaction(function () use ($produk) {
+                $saldo = SaldoProduk::firstOrCreate(
+                    ['nasabah_id' => $this->nasabahId, 'produk_id' => $this->produkId],
+                    ['saldo' => 0]
+                );
+                $saldo = SaldoProduk::whereKey($saldo->id)->lockForUpdate()->first();
 
-            $saldo = SaldoProduk::where('nasabah_id', $this->nasabahId)
-                ->where('produk_id', $this->produkId)
-                ->lockForUpdate()
-                ->first();
-
-            if (! $saldo) {
-                $saldo = SaldoProduk::create([
+                $transaksi = TransaksiSetoran::create([
                     'nasabah_id' => $this->nasabahId,
                     'produk_id' => $this->produkId,
-                    'saldo' => 0,
+                    'nominal' => $this->nominal,
+                    'tanggal_transaksi' => $this->tanggal_transaksi,
+                    'tanggal_input_sistem' => now(),
+                    'input_by' => Auth::id(),
+                    'sumber_input' => $this->sumber_input,
+                    'status' => 'tercatat',
+                    'catatan' => $this->catatan ?: null,
                 ]);
-            }
 
-            $saldo->increment('saldo', $this->nominal);
+                $saldo->increment('saldo', $this->nominal);
 
-            if ($produk && $produk->tipe === 'paket') {
-                app(HitungTunggakanAction::class)
-                    ->execute((int) $this->nasabahId, (int) $this->produkId, simpan: true);
-            }
+                if ($produk && $produk->tipe === 'paket') {
+                    app(HitungTunggakanAction::class)
+                        ->execute((int) $this->nasabahId, (int) $this->produkId, simpan: true);
+                }
 
-            DB::commit();
+                return $transaksi;
+            });
+        } catch (\Throwable $e) {
+            Cache::forget($cacheKey);
+            report($e);
+            session()->flash('error', 'Gagal mencatat setoran. Silakan coba lagi.');
 
+            return;
+        }
+
+        try {
             ActivityLogger::log('setor', 'transaksi_setoran', $transaksi->id, [
                 'nasabah_id' => $this->nasabahId,
                 'nominal' => $this->nominal,
@@ -237,19 +255,19 @@ class InputSetoran extends Component
                 'Setoran Rp '.number_format($this->nominal, 0, ',', '.').' ke produk '.($produk->nama ?? '-').' telah dicatat.',
                 'both'
             );
-
-            $this->showSuccess = true;
-            $this->reset(['nasabahId', 'produkId', 'nominal', 'catatan']);
-            $this->selectedNasabah = null;
-            $this->tunggakanInfo = null;
-
-            session()->flash('success', 'Setoran berhasil dicatat!');
-
-            $this->dispatch('setoranCreated');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            session()->flash('error', 'Gagal mencatat setoran: '.$e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
         }
+
+        $this->idempotencyKey = (string) Str::uuid();
+        $this->showSuccess = true;
+        $this->reset(['nasabahId', 'produkId', 'nominal', 'catatan']);
+        $this->selectedNasabah = null;
+        $this->tunggakanInfo = null;
+
+        session()->flash('success', 'Setoran berhasil dicatat!');
+
+        $this->dispatch('setoranCreated');
     }
 
     public function resetNominal()
@@ -283,9 +301,8 @@ class InputSetoran extends Component
             ->take(5)
             ->get();
 
-        $totalBelumDisetor = TransaksiSetoran::where('input_by', Auth::id())
-            ->where('sudah_disetor_ke_kantor', false)
-            ->where('status', 'tercatat')
+        $totalBelumDisetor = TransaksiSetoran::belumDisetor()
+            ->where('input_by', Auth::id())
             ->sum('nominal');
 
         return view('livewire.kolektor.input-setoran', compact('riwayatHariIni', 'totalBelumDisetor'));

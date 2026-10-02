@@ -93,6 +93,46 @@
         </div>
     </div>
 
+    {{-- Section: Penarikan Offline --}}
+    <div>
+        <p class="mb-2.5 px-1 text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Penarikan Offline</p>
+        <div class="overflow-hidden rounded-3xl bg-white dark:bg-zinc-800 shadow-sm border border-zinc-100 dark:border-zinc-700/60 divide-y divide-zinc-100 dark:divide-zinc-700/60">
+            {{-- Verifikasi Penarikan --}}
+            <a href="{{ route('kolektor.verifikasi-penarikan.index') }}" wire:navigate
+               class="group flex items-center gap-3.5 px-5 py-4 transition hover:bg-zinc-50 dark:hover:bg-zinc-700/40">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 group-hover:scale-105 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-zinc-900 dark:text-white">Verifikasi Penarikan</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Serahkan uang &amp; verifikasi PIN nasabah</p>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+            </a>
+
+            {{-- Penarikan Offline --}}
+            <a href="{{ route('kolektor.penarikan-offline.index') }}" wire:navigate
+               class="group flex items-center gap-3.5 px-5 py-4 transition hover:bg-zinc-50 dark:hover:bg-zinc-700/40">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 group-hover:scale-105 transition-transform">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-zinc-900 dark:text-white">Form Penarikan Offline</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Pengajuan penarikan baru untuk nasabah</p>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+            </a>
+        </div>
+    </div>
+
     {{-- Section: Tugas & Kehadiran --}}
     <div>
         <p class="mb-2.5 px-1 text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Tugas & Kehadiran</p>

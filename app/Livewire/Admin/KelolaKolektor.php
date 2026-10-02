@@ -2,9 +2,14 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Kolektor\TugaskanNasabahAction;
+use App\Actions\Pin\ResetPinOlehAdminAction;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
 use App\Models\User;
+use App\Support\NomorHp;
+use DomainException;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -13,7 +18,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class KelolaKolektor extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
 
     public $search = '';
 
@@ -23,7 +34,7 @@ class KelolaKolektor extends Component
 
     public $name = '';
 
-    public $noHp = '';
+    public string $noHp = '';
 
     public $pin = '';
 
@@ -34,6 +45,10 @@ class KelolaKolektor extends Component
     public $availableNasabah = [];
 
     public $assignNasabahId = '';
+
+    public bool $confirmResetPin = false;
+
+    public ?int $resetPinId = null;
 
     public function render()
     {
@@ -67,9 +82,11 @@ class KelolaKolektor extends Component
 
     public function save()
     {
+        $this->noHp = NomorHp::normalize($this->noHp);
+
         $this->validate([
             'name' => 'required|string|max:255',
-            'noHp' => 'required|string|max:20|unique:users,no_hp,'.($this->editId ?? ''),
+            'noHp' => 'required|string|max:20|unique:users,no_hp,'.($this->editId ?? '').'|regex:'.NomorHp::PATTERN,
             'pin' => $this->editId ? 'nullable|string|digits:6' : 'required|string|digits:6',
         ]);
 
@@ -81,7 +98,12 @@ class KelolaKolektor extends Component
             ]);
 
             if ($this->pin) {
-                $user->update(['pin_hash' => Hash::make($this->pin)]);
+                $user->update([
+                    'pin_hash' => Hash::make($this->pin),
+                    'harus_ganti_pin' => true,
+                    'percobaan_gagal' => 0,
+                    'login_terkunci_hingga' => null,
+                ]);
             }
         } else {
             $user = User::create([
@@ -90,6 +112,7 @@ class KelolaKolektor extends Component
                 'pin_hash' => Hash::make($this->pin),
                 'role' => 'kolektor',
                 'status_akun' => 'aktif',
+                'harus_ganti_pin' => true,
             ]);
 
             $user->assignRole('kolektor');
@@ -128,6 +151,48 @@ class KelolaKolektor extends Component
         session()->flash('success', 'Status kolektor berhasil diubah!');
     }
 
+    public function bukaKunci(int $id): void
+    {
+        $user = User::find($id);
+        if (! $user || $user->role !== 'kolektor') {
+            return;
+        }
+
+        $user->update([
+            'status_akun' => 'aktif',
+            'percobaan_gagal' => 0,
+            'login_terkunci_hingga' => null,
+        ]);
+
+        session()->flash('success', 'Kunci akun kolektor berhasil dibuka!');
+    }
+
+    public function confirmResetPin(int $userId): void
+    {
+        $this->resetPinId = $userId;
+        $this->confirmResetPin = true;
+    }
+
+    public function resetPin(): void
+    {
+        $target = User::find($this->resetPinId);
+
+        if (! $target) {
+            $this->confirmResetPin = false;
+            $this->resetPinId = null;
+            session()->flash('error', 'Pengguna tidak ditemukan.');
+
+            return;
+        }
+
+        $pinBaru = app(ResetPinOlehAdminAction::class)->execute($target);
+
+        $this->confirmResetPin = false;
+        $this->resetPinId = null;
+
+        session()->flash('success', "PIN berhasil direset. PIN baru: {$pinBaru}. Catat sekarang karena hanya ditampilkan sekali. Pengguna wajib mengganti PIN setelah login.");
+    }
+
     public function toggleAssign($id)
     {
         $this->showAssign = true;
@@ -155,12 +220,16 @@ class KelolaKolektor extends Component
             'assignNasabahId' => 'required|exists:users,id',
         ]);
 
-        KolektorNasabah::create([
-            'kolektor_id' => $this->selectedKolektor->id,
-            'nasabah_id' => $this->assignNasabahId,
-            'tanggal_mulai_ditangani' => now()->toDateString(),
-            'status' => 'aktif',
-        ]);
+        try {
+            app(TugaskanNasabahAction::class)->execute(
+                (int) $this->selectedKolektor->id,
+                (int) $this->assignNasabahId,
+            );
+        } catch (DomainException $e) {
+            session()->flash('error', $e->getMessage());
+
+            return;
+        }
 
         $this->assignNasabahId = '';
         $this->searchNasabah();
@@ -174,6 +243,7 @@ class KelolaKolektor extends Component
         if ($assign) {
             $assign->update([
                 'status' => 'nonaktif',
+                'aktif_unik' => null,
                 'tanggal_selesai_ditangani' => now()->toDateString(),
             ]);
         }

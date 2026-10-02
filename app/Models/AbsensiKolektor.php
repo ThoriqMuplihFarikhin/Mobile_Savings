@@ -18,6 +18,7 @@ class AbsensiKolektor extends Model
         'waktu_masuk',
         'latitude',
         'longitude',
+        'akurasi',
         'foto_selfie_path',
         'tanda_tangan_path',
     ];

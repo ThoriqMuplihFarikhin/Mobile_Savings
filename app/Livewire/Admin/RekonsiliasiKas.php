@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Helpers\ActivityLogger;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
@@ -14,7 +15,13 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class RekonsiliasiKas extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
 
     public $kolektorId = '';
 
@@ -72,54 +79,69 @@ class RekonsiliasiKas extends Component
             'processTotalDiterima' => 'required|numeric|min:0',
         ]);
 
-        $setoran = SetoranKolektorKantor::findOrFail($id);
+        try {
+            $hasil = DB::transaction(function () use ($id) {
+                $setoran = SetoranKolektorKantor::whereKey($id)->lockForUpdate()->first();
 
-        $selisih = $this->processTotalDiterima - $setoran->total_seharusnya;
-        $status = match (true) {
-            $selisih == 0 => 'cocok',
-            $selisih > 0 => 'lebih',
-            default => 'kurang',
-        };
+                if (! $setoran || $setoran->status !== 'pending') {
+                    throw new \DomainException('Pengajuan setoran ini sudah diproses atau tidak valid.');
+                }
 
-        if ($selisih != 0 && empty($this->processKeterangan)) {
-            session()->flash('error', 'Keterangan wajib diisi jika ada selisih!');
+                $totalSeharusnya = (float) TransaksiSetoran::where('setoran_kolektor_id', $setoran->id)
+                    ->where('status', '!=', 'dibatalkan')
+                    ->lockForUpdate()
+                    ->sum('nominal');
+
+                $selisih = round((float) $this->processTotalDiterima - $totalSeharusnya, 2);
+
+                $status = match (true) {
+                    $selisih > 0 => 'lebih',
+                    $selisih < 0 => 'kurang',
+                    default => 'cocok',
+                };
+
+                if ($selisih != 0 && empty($this->processKeterangan)) {
+                    throw new \DomainException('Keterangan wajib diisi jika ada selisih!');
+                }
+
+                $setoran->update([
+                    'total_seharusnya' => $totalSeharusnya,
+                    'total_diterima' => $this->processTotalDiterima,
+                    'selisih' => $selisih,
+                    'keterangan_selisih' => $this->processKeterangan ?: $setoran->keterangan_selisih,
+                    'diterima_oleh' => auth()->id(),
+                    'status' => $status,
+                ]);
+
+                TransaksiSetoran::where('setoran_kolektor_id', $setoran->id)
+                    ->update(['sudah_disetor_ke_kantor' => true]);
+
+                return $setoran->refresh();
+            });
+        } catch (\DomainException $e) {
+            session()->flash('error', $e->getMessage());
+
+            return;
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', 'Gagal memproses rekonsiliasi. Silakan coba lagi.');
 
             return;
         }
 
-        DB::beginTransaction();
+        ActivityLogger::log('rekon', 'setoran_kolektor_kantor', $hasil->id, [
+            'kolektor_id' => $hasil->kolektor_id,
+            'total_seharusnya' => $hasil->total_seharusnya,
+            'total_diterima' => $hasil->total_diterima,
+            'selisih' => $hasil->selisih,
+            'status' => $hasil->status,
+        ]);
 
-        try {
-            $setoran->update([
-                'total_diterima' => $this->processTotalDiterima,
-                'selisih' => $selisih,
-                'keterangan_selisih' => $this->processKeterangan ?: $setoran->keterangan_selisih,
-                'diterima_oleh' => auth()->id(),
-                'status' => $status,
-            ]);
-
-            TransaksiSetoran::where('setoran_kolektor_id', $setoran->id)
-                ->update(['sudah_disetor_ke_kantor' => true]);
-
-            DB::commit();
-
-            ActivityLogger::log('rekon', 'setoran_kolektor_kantor', $setoran->id, [
-                'kolektor_id' => $setoran->kolektor_id,
-                'total_seharusnya' => $setoran->total_seharusnya,
-                'total_diterima' => $this->processTotalDiterima,
-                'selisih' => $selisih,
-                'status' => $status,
-            ]);
-
-            $this->processingId = null;
-            $this->processTotalDiterima = '';
-            $this->processKeterangan = '';
-            $this->loadPendingSubmissions();
-            session()->flash('success', 'Rekonsiliasi kas berhasil diproses!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            session()->flash('error', 'Gagal memproses: '.$e->getMessage());
-        }
+        $this->processingId = null;
+        $this->processTotalDiterima = '';
+        $this->processKeterangan = '';
+        $this->loadPendingSubmissions();
+        session()->flash('success', 'Rekonsiliasi kas berhasil diproses!');
     }
 
     public function render()
@@ -132,14 +154,14 @@ class RekonsiliasiKas extends Component
     public function updatedKolektorId()
     {
         if ($this->kolektorId) {
-            $this->totalSeharusnya = TransaksiSetoran::where('input_by', $this->kolektorId)
-                ->where('sudah_disetor_ke_kantor', false)
-                ->where('status', 'tercatat')
+            $this->totalSeharusnya = TransaksiSetoran::belumDisetor()
+                ->where('input_by', $this->kolektorId)
+                ->whereNull('setoran_kolektor_id')
                 ->sum('nominal');
 
-            $this->detailTransaksi = TransaksiSetoran::where('input_by', $this->kolektorId)
-                ->where('sudah_disetor_ke_kantor', false)
-                ->where('status', 'tercatat')
+            $this->detailTransaksi = TransaksiSetoran::belumDisetor()
+                ->where('input_by', $this->kolektorId)
+                ->whereNull('setoran_kolektor_id')
                 ->with(['nasabah', 'produk'])
                 ->get();
 
@@ -158,65 +180,84 @@ class RekonsiliasiKas extends Component
             'totalDiterima' => 'required|numeric|min:0',
         ]);
 
-        DB::beginTransaction();
+        $kolektorId = $this->kolektorId;
 
         try {
-            $totalSeharusnya = TransaksiSetoran::where('input_by', $this->kolektorId)
-                ->where('sudah_disetor_ke_kantor', false)
-                ->where('status', 'tercatat')
-                ->lockForUpdate()
-                ->sum('nominal');
+            $hasil = DB::transaction(function () use ($kolektorId) {
+                $adaPengajuan = SetoranKolektorKantor::where('kolektor_id', $kolektorId)
+                    ->where('status', 'pending')
+                    ->lockForUpdate()
+                    ->exists();
 
-            $selisih = $this->totalDiterima - $totalSeharusnya;
-            $status = match (true) {
-                $selisih == 0 => 'cocok',
-                $selisih > 0 => 'lebih',
-                default => 'kurang',
-            };
+                if ($adaPengajuan) {
+                    throw new \DomainException('Kolektor ini sudah memiliki pengajuan setoran yang masih menunggu proses admin. Proses pengajuan tersebut terlebih dahulu.');
+                }
 
-            if ($selisih != 0 && empty($this->keterangan)) {
-                DB::rollBack();
-                session()->flash('error', 'Keterangan wajib diisi jika ada selisih!');
+                $totalSeharusnya = (float) TransaksiSetoran::belumDisetor()
+                    ->where('input_by', $kolektorId)
+                    ->whereNull('setoran_kolektor_id')
+                    ->lockForUpdate()
+                    ->sum('nominal');
 
-                return;
-            }
+                if ($totalSeharusnya <= 0) {
+                    throw new \DomainException('Tidak ada setoran yang perlu direkonsiliasi.');
+                }
 
-            $setoran = SetoranKolektorKantor::create([
-                'kolektor_id' => $this->kolektorId,
-                'tanggal_setor' => now()->toDateString(),
-                'total_seharusnya' => $totalSeharusnya,
-                'total_diterima' => $this->totalDiterima,
-                'selisih' => $selisih,
-                'keterangan_selisih' => $this->keterangan ?: null,
-                'diterima_oleh' => auth()->id(),
-                'status' => $status,
-            ]);
+                $selisih = round((float) $this->totalDiterima - $totalSeharusnya, 2);
 
-            TransaksiSetoran::where('input_by', $this->kolektorId)
-                ->where('sudah_disetor_ke_kantor', false)
-                ->where('status', 'tercatat')
-                ->update(['setoran_kolektor_id' => $setoran->id]);
+                $status = match (true) {
+                    $selisih > 0 => 'lebih',
+                    $selisih < 0 => 'kurang',
+                    default => 'cocok',
+                };
 
-            TransaksiSetoran::where('setoran_kolektor_id', $setoran->id)
-                ->update(['sudah_disetor_ke_kantor' => true]);
+                if ($selisih != 0 && empty($this->keterangan)) {
+                    throw new \DomainException('Keterangan wajib diisi jika ada selisih!');
+                }
 
-            DB::commit();
+                $setoran = SetoranKolektorKantor::create([
+                    'kolektor_id' => $kolektorId,
+                    'tanggal_setor' => now()->toDateString(),
+                    'total_seharusnya' => $totalSeharusnya,
+                    'total_diterima' => $this->totalDiterima,
+                    'selisih' => $selisih,
+                    'keterangan_selisih' => $this->keterangan ?: null,
+                    'diterima_oleh' => auth()->id(),
+                    'status' => $status,
+                ]);
 
-            ActivityLogger::log('rekon', 'setoran_kolektor_kantor', $setoran->id, [
-                'kolektor_id' => $this->kolektorId,
-                'total_seharusnya' => $totalSeharusnya,
-                'total_diterima' => $this->totalDiterima,
-                'selisih' => $selisih,
-                'status' => $status,
-            ]);
+                TransaksiSetoran::belumDisetor()
+                    ->where('input_by', $kolektorId)
+                    ->whereNull('setoran_kolektor_id')
+                    ->update(['setoran_kolektor_id' => $setoran->id]);
 
-            $this->reset(['kolektorId', 'totalDiterima', 'keterangan', 'showForm', 'totalSeharusnya']);
-            $this->detailTransaksi = [];
-            $this->loadPendingSubmissions();
-            session()->flash('success', 'Rekonsiliasi kas berhasil disimpan!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            session()->flash('error', 'Gagal menyimpan: '.$e->getMessage());
+                TransaksiSetoran::where('setoran_kolektor_id', $setoran->id)
+                    ->update(['sudah_disetor_ke_kantor' => true]);
+
+                return $setoran->refresh();
+            });
+        } catch (\DomainException $e) {
+            session()->flash('error', $e->getMessage());
+
+            return;
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', 'Gagal menyimpan rekonsiliasi. Silakan coba lagi.');
+
+            return;
         }
+
+        ActivityLogger::log('rekon', 'setoran_kolektor_kantor', $hasil->id, [
+            'kolektor_id' => $hasil->kolektor_id,
+            'total_seharusnya' => $hasil->total_seharusnya,
+            'total_diterima' => $hasil->total_diterima,
+            'selisih' => $hasil->selisih,
+            'status' => $hasil->status,
+        ]);
+
+        $this->reset(['kolektorId', 'totalDiterima', 'keterangan', 'showForm', 'totalSeharusnya']);
+        $this->detailTransaksi = [];
+        $this->loadPendingSubmissions();
+        session()->flash('success', 'Rekonsiliasi kas berhasil disimpan!');
     }
 }

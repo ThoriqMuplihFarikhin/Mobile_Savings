@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\AntrianKomplain;
 use App\Models\Komplain;
+use App\Models\LogAktivitas;
 use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
 use App\Models\TransaksiSetoran;
@@ -250,4 +251,71 @@ it('sends notification to nasabah when admin processes complaint', function () {
         'judul' => 'Komplain Diproses',
         'channel' => 'in_app',
     ]);
+});
+
+it('rejects complaint referencing another nasabah transaction', function () {
+    $nasabah = User::factory()->nasabah()->create();
+    $nasabahLain = User::factory()->nasabah()->create();
+    $admin = User::factory()->admin()->create();
+
+    $produk = ProdukTabungan::create([
+        'nama' => 'Tabungan Bebas',
+        'tipe' => 'bebas',
+        'persen_komisi' => 5.00,
+        'minimal_setor' => 10000,
+        'status' => 'aktif',
+    ]);
+
+    $transaksiLain = TransaksiSetoran::create([
+        'nasabah_id' => $nasabahLain->id,
+        'produk_id' => $produk->id,
+        'nominal' => 50000,
+        'tanggal_transaksi' => now()->subDays(2),
+        'tanggal_input_sistem' => now()->subDays(2),
+        'input_by' => $nasabahLain->id,
+        'sumber_input' => 'real_time',
+        'status' => 'tercatat',
+    ]);
+
+    $this->actingAs($nasabah);
+
+    Livewire::test(App\Livewire\Nasabah\Komplain::class)
+        ->call('toggleForm')
+        ->set('kategori', 'saldo')
+        ->set('transaksiTerkaitId', $transaksiLain->id)
+        ->set('deskripsi', 'Saya ingin komplain terkait transaksi yang bukan milik saya')
+        ->call('submit')
+        ->assertHasErrors(['transaksiTerkaitId']);
+
+    $this->assertDatabaseMissing('komplain', [
+        'nasabah_id' => $nasabah->id,
+        'transaksi_terkait_id' => $transaksiLain->id,
+    ]);
+});
+
+it('does not store full complaint description in activity log when completed', function () {
+    $admin = User::factory()->admin()->create();
+    $nasabah = User::factory()->nasabah()->create();
+
+    $deskripsi = 'Deskripsi lengkap komplain yang bersifat sensitif dan tidak boleh masuk log aktivitas';
+
+    $komplain = Komplain::create([
+        'nasabah_id' => $nasabah->id,
+        'kategori' => 'saldo',
+        'deskripsi' => $deskripsi,
+        'status' => 'diproses',
+        'tanggal_dibuat' => now(),
+    ]);
+
+    $this->actingAs($admin);
+
+    Livewire::test(AntrianKomplain::class)
+        ->set('catatan', 'Sudah ditindaklanjuti')
+        ->call('selesai', $komplain->id);
+
+    $log = LogAktivitas::where('aksi', 'selesai_komplain')
+        ->where('entitas_id', $komplain->id)->first();
+
+    expect($log)->not->toBeNull()
+        ->and(json_encode($log->detail))->not->toContain('Deskripsi lengkap komplain');
 });

@@ -16,6 +16,9 @@ class NasabahProfil extends Model
         'user_id',
         'nama',
         'alamat',
+        'tanggal_lahir',
+        'jenis_kelamin',
+        'pekerjaan',
         'didaftarkan_oleh',
         'status_pendaftaran',
         'diverifikasi_oleh',
@@ -25,6 +28,7 @@ class NasabahProfil extends Model
     protected function casts(): array
     {
         return [
+            'tanggal_lahir' => 'date',
             'tanggal_verifikasi' => 'datetime',
         ];
     }

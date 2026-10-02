@@ -19,10 +19,14 @@ class AdminSetting extends Model
 
     public static function get(string $key, ?string $default = null): ?string
     {
-        return Cache::rememberForever("admin_setting:{$key}", function () use ($key, $default) {
-            $raw = static::where('key', $key)->value('value') ?? $default;
+        if (in_array($key, static::$encryptedKeys, true)) {
+            // Entri cache skema lama menyimpan nilai terdecrypt (plaintext) — buang saat dibaca.
+            Cache::forget("admin_setting:{$key}");
 
-            if ($raw && in_array($key, static::$encryptedKeys, true)) {
+            $value = static::where('key', $key)->value('value');
+            $raw = is_string($value) ? $value : $default;
+
+            if ($raw) {
                 try {
                     return Crypt::decryptString($raw);
                 } catch (DecryptException) {
@@ -31,6 +35,10 @@ class AdminSetting extends Model
             }
 
             return $raw;
+        }
+
+        return Cache::rememberForever("admin_setting:{$key}", function () use ($key, $default) {
+            return static::where('key', $key)->value('value') ?? $default;
         });
     }
 

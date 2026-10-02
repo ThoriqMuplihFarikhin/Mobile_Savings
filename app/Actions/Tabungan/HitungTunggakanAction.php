@@ -4,8 +4,6 @@ namespace App\Actions\Tabungan;
 
 use App\Models\KepesertaanPaket;
 use App\Models\ProdukTabungan;
-use App\Models\TransaksiSetoran;
-use Carbon\Carbon;
 
 class HitungTunggakanAction
 {
@@ -37,39 +35,15 @@ class HitungTunggakanAction
             ]);
         }
 
-        $hariBerjalan = Carbon::parse($kepesertaan->tanggal_mulai_ikut)->diffInDays(now());
-        $seharusnya = $hariBerjalan * $produk->harga_per_hari;
-
-        $aktual = TransaksiSetoran::where('nasabah_id', $nasabahId)
-            ->where('produk_id', $produkId)
-            ->where('status', '!=', 'dibatalkan')
-            ->sum('nominal');
-
-        $tunggakan = max(0, $seharusnya - $aktual);
-
-        $statusAlert = 'normal';
-        if ($tunggakan > 0) {
-            $statusAlert = 'peringatan';
-            if ($produk->batas_toleransi_tunggakan_hari && $hariBerjalan >= $produk->batas_toleransi_tunggakan_hari) {
-                $statusAlert = 'perlu_review';
-            }
-        }
+        $hasil = $kepesertaan->hitungUlangKepesertaan($simpan);
 
         $result = [
-            'tunggakan' => $tunggakan,
-            'hari' => $hariBerjalan,
-            'seharusnya_hari_ini' => $seharusnya,
+            'tunggakan' => $hasil['tunggakan_rupiah'],
+            'tunggakan_hari' => $hasil['tunggakan_hari'],
+            'hari' => $hasil['tunggakan_hari'],
+            'seharusnya_hari_ini' => $kepesertaan->total_seharusnya_terkumpul,
         ];
 
-        if ($simpan) {
-            $kepesertaan->update([
-                'total_seharusnya_terkumpul' => $seharusnya,
-                'total_aktual_terkumpul' => $aktual,
-                'tunggakan' => $tunggakan,
-                'status_alert' => $statusAlert,
-            ]);
-        }
-
-        return $tunggakan > 0 ? $result : null;
+        return $hasil['tunggakan_hari'] > 0 ? $result : null;
     }
 }

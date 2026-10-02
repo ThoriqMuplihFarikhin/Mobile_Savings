@@ -10,6 +10,12 @@
             {{ session('success') }}
         </div>
     @endif
+    @if (session('error'))
+        <div class="mb-4 flex items-center gap-2.5 rounded-lg bg-[#f7d4d6] px-4 py-3 text-sm text-[#c50000]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            {{ session('error') }}
+        </div>
+    @endif
 
     <div class="overflow-hidden rounded-xl bg-white shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
         <div class="overflow-x-auto">
@@ -19,6 +25,7 @@
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Nama</th>
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">No. HP</th>
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Alamat</th>
+                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Profil</th>
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Didaftarkan Oleh</th>
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Aksi</th>
                     </tr>
@@ -29,6 +36,12 @@
                             <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $item->nama }}</td>
                             <td class="px-4 py-3 text-sm text-gray-600">{{ $item->user->no_hp }}</td>
                             <td class="max-w-[200px] truncate px-4 py-3 text-sm text-gray-600">{{ $item->alamat }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600">
+                                @if ($item->tanggal_lahir)
+                                    <div>Lahir: {{ $item->tanggal_lahir->format('d/m/Y') }}</div>
+                                @endif
+                                <div>{{ $item->jenis_kelamin }} · {{ $item->pekerjaan ?? '-' }}</div>
+                            </td>
                             <td class="px-4 py-3 text-sm text-gray-600">{{ $item->didaftarkanOleh->name ?? '-' }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
@@ -44,7 +57,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-16 text-center">
+                            <td colspan="6" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[#ebebeb]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     <p class="text-sm text-gray-500">Tidak ada nasabah yang perlu diverifikasi.</p>

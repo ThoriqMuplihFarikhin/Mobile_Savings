@@ -40,13 +40,23 @@
                             <option value="paket">Paket</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="mb-1.5 block text-sm font-medium text-gray-900">Komisi (%)</label>
-                        <input type="number" wire:model="persen_komisi" step="0.01"
-                            class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
-                            placeholder="5" />
-                        @error('persen_komisi') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
-                    </div>
+
+                    @if($tipe === 'paket')
+                        <div class="sm:col-span-2">
+                            <div class="rounded-lg bg-purple-50 px-4 py-3 text-xs text-purple-700">
+                                Paket tidak pakai komisi persentase — nilainya sudah tetap sesuai harga/hari &amp; isi barang di bawah.
+                            </div>
+                        </div>
+                    @else
+                        <div>
+                            <label class="mb-1.5 block text-sm font-medium text-gray-900">Komisi (%)</label>
+                            <input type="number" wire:model="persen_komisi" step="0.01"
+                                class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+                                placeholder="5" />
+                            @error('persen_komisi') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                        </div>
+                    @endif
+
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-gray-900">Minimal Setor</label>
                         <input type="number" wire:model="minimal_setor"
@@ -59,7 +69,7 @@
                             <label class="mb-1.5 block text-sm font-medium text-gray-900">Harga Per Hari</label>
                             <input type="number" wire:model="harga_per_hari"
                                 class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
-                                placeholder="10000" />
+                                placeholder="5500" />
                             @error('harga_per_hari') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
                         </div>
                         <div>
@@ -83,11 +93,43 @@
                             <input type="date" wire:model="tanggal_boleh_cair"
                                 class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                         </div>
+                        <div>
+                            <label class="mb-1.5 block text-sm font-medium text-gray-900">Uang Tunai (opsional)</label>
+                            <input type="number" wire:model="uang_tunai"
+                                class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+                                placeholder="500000" />
+                            @error('uang_tunai') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- Isi Paket Repeater --}}
                         <div class="sm:col-span-2">
-                            <label class="mb-1.5 block text-sm font-medium text-gray-900">Isi Paket (JSON)</label>
-                            <textarea wire:model="isi_paket" rows="2"
-                                class="w-full rounded-md border border-[#ebebeb] bg-white px-3 py-2.5 font-mono text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
-                                placeholder='[{"nama":"Beras","jumlah":"5kg"}]'></textarea>
+                            <label class="mb-1.5 block text-sm font-medium text-gray-900">Isi Barang Paket</label>
+                            <div class="space-y-2">
+                                @foreach($isiPaketItems as $index => $item)
+                                    <div class="flex items-end gap-2">
+                                        <div class="flex-1">
+                                            <input type="text" wire:model="isiPaketItems.{{ $index }}.nama"
+                                                class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+                                                placeholder="contoh: Beras" />
+                                        </div>
+                                        <div class="flex-1">
+                                            <input type="text" wire:model="isiPaketItems.{{ $index }}.jumlah"
+                                                class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+                                                placeholder="contoh: 5 kg" />
+                                        </div>
+                                        <button type="button" wire:click="hapusItemPaket({{ $index }})"
+                                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[#ebebeb] text-[#ee0000] transition hover:bg-[#f7d4d6]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <button type="button" wire:click="tambahItemPaket"
+                                class="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                                Tambah Barang
+                            </button>
+                            <p class="mt-1.5 text-xs text-gray-500">Isi sesuai yang tertulis di brosur, misalnya Beras 5 kg, Ayam 2 kg, Gula 1 kg.</p>
                         </div>
                     @endif
                 </div>
@@ -128,7 +170,9 @@
                                     {{ ucfirst($item->tipe) }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-sm text-gray-600">{{ $item->persen_komisi }}%</td>
+                            <td class="px-4 py-3 text-sm text-gray-600">
+                                {{ $item->isPaket() ? 'Tanpa komisi' : $item->persen_komisi.'%' }}
+                            </td>
                             <td class="px-4 py-3 font-mono text-sm text-gray-600">{{ $item->harga_per_hari ? 'Rp ' . number_format($item->harga_per_hari, 0, ',', '.') : '-' }}</td>
                             <td class="px-4 py-3">
                                 @if($item->status === 'aktif')
@@ -176,6 +220,7 @@
             <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
                 <h3 class="text-lg font-semibold text-gray-900">Hapus Produk?</h3>
                 <p class="mt-2 text-sm text-gray-500">Produk akan dihapus permanen.</p>
+                <p class="mt-1 text-xs text-gray-400">Jika produk ini sudah pernah digunakan nasabah, penghapusan akan gagal - gunakan tombol Nonaktifkan sebagai gantinya.</p>
                 <div class="mt-6 flex justify-end gap-3">
                     <button wire:click="$set('confirmDelete', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
                     <button wire:click="delete" class="rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Hapus</button>

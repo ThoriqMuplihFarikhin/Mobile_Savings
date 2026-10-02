@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AbsensiKolektor;
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -11,6 +12,13 @@ use Livewire\Component;
 #[Title('Monitoring Absensi')]
 class MonitoringAbsensi extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
+
     public string $tanggal;
 
     public ?int $selectedKolektorId = null;

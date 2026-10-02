@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,6 +25,7 @@ class TransaksiSetoran extends Model
         'nominal_asli',
         'dikoreksi_oleh',
         'alasan_koreksi',
+        'catatan',
         'sudah_disetor_ke_kantor',
         'setoran_kolektor_id',
     ];
@@ -62,5 +64,19 @@ class TransaksiSetoran extends Model
     public function setoranKolektor(): BelongsTo
     {
         return $this->belongsTo(SetoranKolektorKantor::class, 'setoran_kolektor_id');
+    }
+
+    /**
+     * Setoran yang masih ikut menggerakkan uang: tercatat maupun dikoreksi.
+     * Setoran dibatalkan dikeluarkan dari seluruh perhitungan kas.
+     */
+    public function scopeMasihAktif(Builder $query): Builder
+    {
+        return $query->whereIn('status', ['tercatat', 'dikoreksi']);
+    }
+
+    public function scopeBelumDisetor(Builder $query): Builder
+    {
+        return $query->masihAktif()->where('sudah_disetor_ke_kantor', false);
     }
 }

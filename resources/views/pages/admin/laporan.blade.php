@@ -1,1 +1,1 @@
-<x-layouts::admin title="Laporan"><livewire:admin.laporan /></x-layouts::app>
+<x-layouts::admin title="Laporan"><livewire:admin.laporan /></x-layouts::admin>

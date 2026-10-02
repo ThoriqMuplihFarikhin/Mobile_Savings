@@ -44,7 +44,7 @@
                                 <div class="text-xs text-gray-500">{{ $item->nasabah->no_hp ?? '-' }}</div>
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-600">{{ $item->produk->nama ?? '-' }}</td>
-                            <td class="px-4 py-3 font-mono text-sm font-medium text-[#ee0000]">Rp {{ number_format($item->tunggakan, 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 font-mono text-sm font-medium text-[#ee0000]">{{ $item->tunggakan }} hari</td>
                             <td class="px-4 py-3 font-mono text-sm text-gray-600">Rp {{ number_format($item->total_seharusnya_terkumpul, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 font-mono text-sm text-gray-600">Rp {{ number_format($item->total_aktual_terkumpul, 0, ',', '.') }}</td>
                             <td class="px-4 py-3">
@@ -101,7 +101,7 @@
                     </div>
                     <div class="flex justify-between border-t border-[#ebebeb] pt-3 text-sm font-medium">
                         <span class="text-gray-500">Tunggakan</span>
-                        <span class="font-mono text-[#ee0000]">Rp {{ number_format($selectedKepesertaan->tunggakan, 0, ',', '.') }}</span>
+                        <span class="font-mono text-[#ee0000]">{{ $selectedKepesertaan->tunggakan }} hari</span>
                     </div>
                 </div>
 

@@ -254,7 +254,7 @@
 
         {{-- Submit Action Bar --}}
         <div class="pt-2">
-            <button type="submit" wire:loading.attr="disabled"
+            <button type="submit" wire:loading.attr="disabled" wire:target="submit"
                 class="w-full rounded-2xl bg-zinc-900 dark:bg-white py-3.5 text-xs font-bold text-white dark:text-zinc-900 shadow-md hover:bg-zinc-800 dark:hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2">
                 <span wire:loading.remove wire:target="submit" class="flex items-center gap-2">
                     <flux:icon.check class="size-4" />

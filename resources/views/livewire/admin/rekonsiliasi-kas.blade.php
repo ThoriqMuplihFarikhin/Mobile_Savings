@@ -79,8 +79,9 @@
                                 @endif
 
                                 <button wire:click="processSubmission({{ $item->id }})" wire:loading.attr="disabled"
+                                    wire:confirm="Yakin mengonfirmasi dan menyimpan hasil rekonsiliasi kas ini?"
                                     class="btn-primary">
-                                    Konfirmasi & Simpan
+                                    Konfirmasi &amp; Simpan
                                 </button>
                             </div>
                         @endif

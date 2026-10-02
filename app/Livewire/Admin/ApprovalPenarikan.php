@@ -3,8 +3,10 @@
 namespace App\Livewire\Admin;
 
 use App\Helpers\ActivityLogger;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -13,9 +15,28 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class ApprovalPenarikan extends Component
 {
+    use AuthorizesRole;
     use WithPagination;
 
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
+
     public $statusFilter = 'pending';
+
+    public string $alasan = '';
+
+    public bool $showSelesai = false;
+
+    public ?int $selesaiId = null;
+
+    public function toggleSelesai(int $id): void
+    {
+        $this->selesaiId = $id;
+        $this->alasan = '';
+        $this->showSelesai = true;
+    }
 
     public function render()
     {
@@ -125,16 +146,61 @@ class ApprovalPenarikan extends Component
 
     public function selesai($id)
     {
-        $penarikan = TransaksiPenarikan::find($id);
-        if ($penarikan && $penarikan->status === 'approved') {
+        $this->validate([
+            'alasan' => 'required|string|max:500',
+        ]);
+
+        $hasil = DB::transaction(function () use ($id) {
+            $penarikan = TransaksiPenarikan::whereKey($id)->lockForUpdate()->first();
+
+            if (! $penarikan || $penarikan->status !== 'approved') {
+                return null;
+            }
+
+            $isOverrideRumah = $penarikan->jalur_pengajuan === 'offline'
+                && $penarikan->lokasi_pengambilan === 'rumah_kolektor';
+
+            $nasabah = $penarikan->nasabah;
+            $belumGantiPin = $nasabah instanceof User && $nasabah->harus_ganti_pin;
+
+            if ($isOverrideRumah && ! $belumGantiPin) {
+                return ['error' => 'Penarikan ini diserahkan oleh kolektor di rumah nasabah — harus diselesaikan lewat verifikasi PIN oleh kolektor, bukan admin.'];
+            }
+
             $penarikan->update([
                 'status' => 'selesai',
                 'waktu_pencairan' => now(),
+                'metode_verifikasi' => 'manual_admin',
             ]);
 
-            ActivityLogger::log('selesai_penarikan', 'transaksi_penarikan', $id, [
+            $detail = [
                 'nasabah_id' => $penarikan->nasabah_id,
-            ]);
+                'alasan' => $this->alasan,
+            ];
+
+            if ($isOverrideRumah) {
+                $detail['risiko_tinggi'] = true;
+            }
+
+            ActivityLogger::log(
+                $isOverrideRumah ? 'selesai_penarikan_override' : 'selesai_penarikan',
+                'transaksi_penarikan',
+                $id,
+                $detail,
+            );
+
+            return $penarikan;
+        });
+
+        if (is_array($hasil)) {
+            session()->flash('error', $hasil['error']);
+
+            return;
+        }
+
+        if ($hasil) {
+            $this->reset('alasan', 'selesaiId');
+            $this->showSelesai = false;
 
             session()->flash('success', 'Penarikan ditandai selesai!');
         }

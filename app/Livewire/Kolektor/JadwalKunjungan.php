@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Kolektor;
 
+use App\Livewire\Concerns\AuthorizesRole;
+use App\Livewire\Concerns\ValidatesKolektorNasabah;
 use App\Models\JadwalKunjungan as JadwalKunjunganModel;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
@@ -12,6 +14,14 @@ use Livewire\Component;
 #[Layout('layouts.mobile')]
 class JadwalKunjungan extends Component
 {
+    use AuthorizesRole;
+    use ValidatesKolektorNasabah;
+
+    protected function requiredRole(): string
+    {
+        return 'kolektor';
+    }
+
     public $jadwalHari = [];
 
     public $tanggal = '';
@@ -61,6 +71,12 @@ class JadwalKunjungan extends Component
 
     public function loadJadwal()
     {
+        if (! $this->tanggalValid()) {
+            $this->jadwalHari = [];
+
+            return;
+        }
+
         $kolektorId = Auth::id();
 
         $nasabahQuery = NasabahProfil::whereIn('user_id', function ($q) use ($kolektorId) {
@@ -103,17 +119,42 @@ class JadwalKunjungan extends Component
 
     public function updateStatus($nasabahId, $status)
     {
+        if (! is_numeric($nasabahId) || ! in_array($status, ['dikunjungi', 'dilewati', 'tidak_ada', 'belum'], true)) {
+            session()->flash('error', 'Data kunjungan tidak valid.');
+
+            return;
+        }
+
+        if (! $this->tanggalValid()) {
+            session()->flash('error', 'Tanggal tidak valid.');
+
+            return;
+        }
+
+        if (! $this->isNasabahBinaan((int) $nasabahId)) {
+            session()->flash('error', 'Nasabah ini bukan binaan Anda.');
+
+            return;
+        }
+
         JadwalKunjunganModel::updateOrCreate(
             [
                 'kolektor_id' => Auth::id(),
                 'nasabah_id' => $nasabahId,
                 'tanggal_jadwal' => $this->tanggal,
             ],
-            ['status_kunjungan' => $status]
+            ['status_kunjungan' => $status === 'belum' ? null : $status]
         );
 
         $this->loadJadwal();
         session()->flash('success', 'Status kunjungan berhasil diupdate!');
+    }
+
+    protected function tanggalValid(): bool
+    {
+        $tanggal = \DateTimeImmutable::createFromFormat('!Y-m-d', (string) $this->tanggal);
+
+        return $tanggal !== false && $tanggal->format('Y-m-d') === $this->tanggal;
     }
 
     public function render()
@@ -121,9 +162,11 @@ class JadwalKunjungan extends Component
         $kolektorId = Auth::id();
         $totalNasabahCount = KolektorNasabah::where('kolektor_id', $kolektorId)->where('status', 'aktif')->count();
 
-        $jadwalsToday = JadwalKunjunganModel::where('kolektor_id', $kolektorId)
-            ->where('tanggal_jadwal', $this->tanggal)
-            ->get();
+        $jadwalsToday = $this->tanggalValid()
+            ? JadwalKunjunganModel::where('kolektor_id', $kolektorId)
+                ->where('tanggal_jadwal', $this->tanggal)
+                ->get()
+            : collect();
 
         $dikunjungiCount = $jadwalsToday->where('status_kunjungan', 'dikunjungi')->count();
         $dilewatiCount = $jadwalsToday->where('status_kunjungan', 'dilewati')->count();

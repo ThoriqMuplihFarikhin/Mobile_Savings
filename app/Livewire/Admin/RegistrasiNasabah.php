@@ -3,7 +3,9 @@
 namespace App\Livewire\Admin;
 
 use App\Helpers\ActivityLogger;
+use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\User;
+use App\Support\NomorHp;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -11,11 +13,18 @@ use Livewire\Component;
 #[Layout('layouts.app')]
 class RegistrasiNasabah extends Component
 {
+    use AuthorizesRole;
+
+    protected function requiredRole(): string
+    {
+        return 'admin';
+    }
+
     public $showForm = false;
 
     public $nama = '';
 
-    public $noHp = '';
+    public string $noHp = '';
 
     public $alamat = '';
 
@@ -43,9 +52,11 @@ class RegistrasiNasabah extends Component
 
     public function submit()
     {
+        $this->noHp = NomorHp::normalize($this->noHp);
+
         $this->validate([
             'nama' => 'required|string|min:3',
-            'noHp' => 'required|string|unique:users,no_hp|min:10|max:15',
+            'noHp' => 'required|string|unique:users,no_hp|min:10|max:15|regex:'.NomorHp::PATTERN,
             'alamat' => 'required|string|min:5',
             'tanggalLahir' => 'required|date|before:today',
             'jenisKelamin' => 'required|in:laki-laki,perempuan',
@@ -84,6 +95,6 @@ class RegistrasiNasabah extends Component
 
         $this->showForm = false;
         $this->reset(['nama', 'noHp', 'alamat', 'tanggalLahir', 'jenisKelamin', 'pekerjaan']);
-        session()->flash('success', "Nasabah berhasil didaftarkan! PIN awal: {$pinDefault} — sampaikan ke nasabah secara langsung/aman.");
+        session()->flash('success', "Nasabah berhasil didaftarkan! PIN awal: {$pinDefault} — sampaikan ke nasabah secara langsung/aman. Nasabah wajib login dan mengganti PIN sebelum penarikan pertama.");
     }
 }
