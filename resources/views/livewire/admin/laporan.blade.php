@@ -45,7 +45,7 @@
         <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
             <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Total Penarikan</p>
             <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">Rp {{ number_format($totalPenarikan, 0, ',', '.') }}</p>
-            <p class="text-xs text-gray-500">{{ $jumlahTransaksiPenarikan }} transaksi</p>
+            <p class="text-xs text-gray-500">{{ $jumlahTransaksiPenarikan }} transaksi · {{ $jumlahOverrideRisiko }} override berisiko</p>
         </div>
         <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
             <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Total Komisi</p>

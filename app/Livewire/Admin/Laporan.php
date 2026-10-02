@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\LogAktivitas;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use Carbon\Carbon;
@@ -155,6 +156,7 @@ class Laporan extends Component
      *     totalKomisi: int,
      *     jumlahTransaksiSetoran: int,
      *     jumlahTransaksiPenarikan: int,
+     *     jumlahOverrideRisiko: int,
      *     dailySetoran: Collection<int, Collection<int, TransaksiSetoran>>,
      *     dailyPenarikan: Collection<int, Collection<int, TransaksiPenarikan>>,
      *     days: int,
@@ -170,6 +172,7 @@ class Laporan extends Component
             'totalKomisi' => 0,
             'jumlahTransaksiSetoran' => 0,
             'jumlahTransaksiPenarikan' => 0,
+            'jumlahOverrideRisiko' => 0,
             'dailySetoran' => collect(),
             'dailyPenarikan' => collect(),
             'days' => 0,
@@ -185,6 +188,7 @@ class Laporan extends Component
      *     totalKomisi: float|int,
      *     jumlahTransaksiSetoran: int,
      *     jumlahTransaksiPenarikan: int,
+     *     jumlahOverrideRisiko: int,
      *     setoranDetails: \Illuminate\Database\Eloquent\Collection<int, TransaksiSetoran>,
      *     penarikanDetails: \Illuminate\Database\Eloquent\Collection<int, TransaksiPenarikan>
      * }
@@ -201,6 +205,9 @@ class Laporan extends Component
             ->whereIn('status', ['approved', 'selesai'])
             ->whereDate('waktu_approval', $date)
             ->get();
+        $jumlahOverrideRisiko = LogAktivitas::where('aksi', 'selesai_penarikan_override')
+            ->whereDate('timestamp', $date)
+            ->count();
 
         return [
             'totalSetoran' => $setoran->sum('nominal'),
@@ -208,6 +215,7 @@ class Laporan extends Component
             'totalKomisi' => $penarikan->sum('nominal_komisi'),
             'jumlahTransaksiSetoran' => $setoran->count(),
             'jumlahTransaksiPenarikan' => $penarikan->count(),
+            'jumlahOverrideRisiko' => $jumlahOverrideRisiko,
             'setoranDetails' => $setoran,
             'penarikanDetails' => $penarikan,
         ];
@@ -220,6 +228,7 @@ class Laporan extends Component
      *     totalKomisi: float|int,
      *     jumlahTransaksiSetoran: int,
      *     jumlahTransaksiPenarikan: int,
+     *     jumlahOverrideRisiko: int,
      *     dailySetoran: Collection<(int|string), \Illuminate\Database\Eloquent\Collection<int, TransaksiSetoran>>,
      *     dailyPenarikan: Collection<(int|string), \Illuminate\Database\Eloquent\Collection<int, TransaksiPenarikan>>,
      *     days: int,
@@ -243,6 +252,9 @@ class Laporan extends Component
 
         $dailySetoran = $setoran->groupBy(fn ($t) => Carbon::parse($t->tanggal_transaksi)->format('d'));
         $dailyPenarikan = $penarikan->groupBy(fn ($t) => Carbon::parse($t->waktu_approval)->format('d'));
+        $jumlahOverrideRisiko = LogAktivitas::where('aksi', 'selesai_penarikan_override')
+            ->whereBetween('timestamp', [$start, $end])
+            ->count();
 
         return [
             'totalSetoran' => $setoran->sum('nominal'),
@@ -250,6 +262,7 @@ class Laporan extends Component
             'totalKomisi' => $penarikan->sum('nominal_komisi'),
             'jumlahTransaksiSetoran' => $setoran->count(),
             'jumlahTransaksiPenarikan' => $penarikan->count(),
+            'jumlahOverrideRisiko' => $jumlahOverrideRisiko,
             'dailySetoran' => $dailySetoran,
             'dailyPenarikan' => $dailyPenarikan,
             'days' => (int) $start->diffInDays($end) + 1,

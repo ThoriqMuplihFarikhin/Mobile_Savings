@@ -70,6 +70,10 @@ class VerifikasiPenarikanOfflineAction
 
             $nasabah = $p->nasabah;
 
+            if ($nasabah instanceof User && $nasabah->harus_ganti_pin) {
+                return ['error' => 'Nasabah belum mengganti PIN awal. Minta nasabah login dan mengganti PIN terlebih dahulu.'];
+            }
+
             if (! $nasabah || ! Hash::check($pin, $nasabah->pin_hash)) {
                 RateLimiter::hit($key, self::RATELIMIT_DECAY_DETIK);
 

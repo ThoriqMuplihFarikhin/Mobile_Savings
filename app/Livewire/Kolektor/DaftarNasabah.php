@@ -93,6 +93,6 @@ class DaftarNasabah extends Component
 
         $this->showForm = false;
         $this->reset(['nama', 'noHp', 'alamat', 'tanggalLahir', 'jenisKelamin', 'pekerjaan']);
-        session()->flash('success', "Nasabah berhasil didaftarkan! PIN awal: {$pinDefault} — sampaikan ke nasabah secara langsung/aman. Menunggu verifikasi dari admin.");
+        session()->flash('success', "Nasabah berhasil didaftarkan! PIN awal: {$pinDefault} — sampaikan ke nasabah secara langsung/aman. Nasabah wajib login dan mengganti PIN sebelum penarikan pertama. Menunggu verifikasi dari admin.");
     }
 }
