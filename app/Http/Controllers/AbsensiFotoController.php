@@ -17,7 +17,13 @@ class AbsensiFotoController extends Controller
 
         $path = $jenis === 'selfie' ? $absensi->foto_selfie_path : $absensi->tanda_tangan_path;
 
-        abort_unless($path !== null && Storage::disk('local')->exists($path), 404);
+        if ($path === null || ! Storage::disk('local')->exists($path)) {
+            if ($path !== null && Storage::disk('public')->exists($path)) {
+                report(new \RuntimeException("Berkas absensi masih berada di disk public: {$path}"));
+            }
+
+            abort(404);
+        }
 
         return Storage::disk('local')->response($path);
     }
