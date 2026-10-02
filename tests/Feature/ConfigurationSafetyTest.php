@@ -38,6 +38,12 @@ it('seeder tidak memakai pin hardcode 123456', function () {
         ->and($admin->harus_ganti_pin)->toBeTrue();
 });
 
+it('database test berada pada skema berakhiran _test', function () {
+    $db = config('database.connections.mysql.database');
+
+    expect($db)->toMatch('/_test$/');
+});
+
 beforeEach(function () {
     unset($_ENV['SEED_ADMIN_PIN'], $_SERVER['SEED_ADMIN_PIN']);
     putenv('SEED_ADMIN_PIN');

@@ -20,3 +20,11 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
+
+## Pengujian
+
+Test selalu berjalan pada database terpisah `tabungan_digital_test` (di-`force` di `phpunit.xml`); buat dulu satu kali:
+
+```bash
+mysql -uroot -e "CREATE DATABASE IF NOT EXISTS tabungan_digital_test CHARACTER SET utf8mb4"
+```
