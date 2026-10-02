@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Actions\Fortify\ResetUserPassword;
 use App\Helpers\ActivityLogger;
 use App\Models\User;
 use App\Support\NomorHp;
@@ -36,8 +35,6 @@ class FortifyServiceProvider extends ServiceProvider
 
     private function configureActions(): void
     {
-        Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
-
         Fortify::authenticateUsing(function (Request $request) {
             $password = is_string($request->password) ? $request->password : '';
 

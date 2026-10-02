@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Pin\ResetPinOlehAdminAction;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
@@ -42,6 +43,10 @@ class KelolaKolektor extends Component
     public $availableNasabah = [];
 
     public $assignNasabahId = '';
+
+    public bool $confirmResetPin = false;
+
+    public ?int $resetPinId = null;
 
     public function render()
     {
@@ -158,6 +163,32 @@ class KelolaKolektor extends Component
         ]);
 
         session()->flash('success', 'Kunci akun kolektor berhasil dibuka!');
+    }
+
+    public function confirmResetPin(int $userId): void
+    {
+        $this->resetPinId = $userId;
+        $this->confirmResetPin = true;
+    }
+
+    public function resetPin(): void
+    {
+        $target = User::find($this->resetPinId);
+
+        if (! $target) {
+            $this->confirmResetPin = false;
+            $this->resetPinId = null;
+            session()->flash('error', 'Pengguna tidak ditemukan.');
+
+            return;
+        }
+
+        $pinBaru = app(ResetPinOlehAdminAction::class)->execute($target);
+
+        $this->confirmResetPin = false;
+        $this->resetPinId = null;
+
+        session()->flash('success', "PIN berhasil direset. PIN baru: {$pinBaru}. Catat sekarang karena hanya ditampilkan sekali. Pengguna wajib mengganti PIN setelah login.");
     }
 
     public function toggleAssign($id)

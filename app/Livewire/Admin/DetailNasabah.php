@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Pin\ResetPinOlehAdminAction;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
@@ -23,6 +24,8 @@ class DetailNasabah extends Component
     public User $user;
 
     public string $periode = '30hari';
+
+    public bool $confirmResetPin = false;
 
     public function mount(User $user): void
     {
@@ -59,6 +62,20 @@ class DetailNasabah extends Component
     public function updatedPeriode(): void
     {
         // trigger re-render
+    }
+
+    public function confirmResetPin(): void
+    {
+        $this->confirmResetPin = true;
+    }
+
+    public function resetPin(): void
+    {
+        $pinBaru = app(ResetPinOlehAdminAction::class)->execute($this->user);
+
+        $this->confirmResetPin = false;
+
+        session()->flash('success', "PIN berhasil direset. PIN baru: {$pinBaru}. Catat sekarang karena hanya ditampilkan sekali. Pengguna wajib mengganti PIN setelah login.");
     }
 
     protected function rentangTanggal(): array

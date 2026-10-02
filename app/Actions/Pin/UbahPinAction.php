@@ -4,6 +4,7 @@ namespace App\Actions\Pin;
 
 use App\Helpers\ActivityLogger;
 use App\Models\User;
+use App\Support\Pin;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
@@ -14,11 +15,6 @@ class UbahPinAction
     private const MAX_PERCOBAAN = 5;
 
     private const RATELIMIT_DECAY_DETIK = 900;
-
-    /**
-     * PIN yang dilarang selain pola berulang/berurutan.
-     */
-    private const PIN_DILARANG = ['123123', '123321', '112233'];
 
     /**
      * Ganti PIN pengguna: verifikasi PIN lama, tolak PIN sama/lemah,
@@ -51,7 +47,7 @@ class UbahPinAction
             ]);
         }
 
-        if ($this->pinLemah($pinBaru)) {
+        if (Pin::lemah($pinBaru)) {
             throw ValidationException::withMessages([
                 'pin' => 'PIN terlalu mudah ditebak. Pilih kombinasi lain.',
             ]);
@@ -72,29 +68,5 @@ class UbahPinAction
             ->delete();
 
         ActivityLogger::log('ubah_pin', 'users', $user->id);
-    }
-
-    private function pinLemah(string $pin): bool
-    {
-        if (preg_match('/^(\d)\1{5}$/', $pin) === 1) {
-            return true;
-        }
-
-        $naik = true;
-        $turun = true;
-
-        for ($i = 1; $i < 6; $i++) {
-            $selisih = ord($pin[$i]) - ord($pin[$i - 1]);
-
-            if ($selisih !== 1) {
-                $naik = false;
-            }
-
-            if ($selisih !== -1) {
-                $turun = false;
-            }
-        }
-
-        return $naik || $turun || in_array($pin, self::PIN_DILARANG, true);
     }
 }

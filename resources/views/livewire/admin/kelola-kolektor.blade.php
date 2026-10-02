@@ -117,6 +117,9 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
                                         </button>
                                     @endif
+                                    <button wire:click="confirmResetPin({{ $item->id }})" class="rounded-full p-1.5 text-[#ab570a] transition hover:bg-amber-100" title="Reset PIN">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159-.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -180,6 +183,20 @@
                         class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
                         Tutup
                     </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if($confirmResetPin)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+                <h3 class="text-lg font-semibold text-gray-900">Reset PIN?</h3>
+                <p class="mt-2 text-sm text-gray-500">PIN pengguna akan diganti menjadi PIN acak baru dan seluruh sesi aktifnya dihentikan. Pengguna wajib mengganti PIN setelah login berikutnya.</p>
+                @error('reset_pin') <p class="mt-2 text-sm text-[#ee0000]">{{ $message }}</p> @enderror
+                <div class="mt-6 flex justify-end gap-3">
+                    <button wire:click="$set('confirmResetPin', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
+                    <button wire:click="resetPin" class="rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Reset PIN</button>
                 </div>
             </div>
         </div>
