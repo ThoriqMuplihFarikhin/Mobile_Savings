@@ -10,10 +10,10 @@ use Illuminate\Support\Facades\Request;
 
 class ActivityLogger
 {
-    public static function log(string $aksi, string $entitas, int $entitasId, array $detail = []): void
+    public static function log(string $aksi, string $entitas, int $entitasId, array $detail = [], ?int $userId = null): void
     {
         LogAktivitas::create([
-            'user_id' => auth()->id(),
+            'user_id' => $userId ?? auth()->id(),
             'aksi' => $aksi,
             'entitas_terkait' => $entitas,
             'entitas_id' => $entitasId,

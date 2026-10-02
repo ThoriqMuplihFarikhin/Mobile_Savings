@@ -12,6 +12,11 @@ APP_KEY=<your-app-key>
 
 `APP_DEBUG=false` wajib diaktifkan di production agar detail error tidak ditampilkan ke pengguna.
 
+Checklist `.env` production (HTTPS):
+
+- `SESSION_SECURE_COOKIE=true` — wajib, agar cookie sesi hanya dikirim lewat HTTPS.
+- `TRUSTED_PROXIES=<ip-load-balancer>` — isi hanya jika di belakang proxy tepercaya; kosong = tidak percaya proxy sama sekali. `*` hanya bila seluruh trafik melewati load balancer tepercaya.
+
 Setelah deploy, jalankan:
 ```bash
 php artisan migrate --force

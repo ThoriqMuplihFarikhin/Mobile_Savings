@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\KelolaKolektor;
 use App\Livewire\Admin\ManajemenNasabah;
+use App\Models\LogAktivitas;
 use App\Models\NasabahProfil;
 use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -29,7 +30,7 @@ it('mengunci login sementara 15 menit setelah 5 pin salah tanpa mengunci akun pe
     $user = lockUserForLoginTest();
 
     for ($i = 0; $i < 5; $i++) {
-        kirimPercobaanLogin($this, $user->no_hp, 'pin-salah');
+        kirimPercobaanLogin($this, $user->no_hp, '999999');
         $this->assertGuest();
     }
 
@@ -45,7 +46,7 @@ it('menolak login dengan pin benar selama masa kunci sementara berlaku', functio
     $user = lockUserForLoginTest();
 
     for ($i = 0; $i < 5; $i++) {
-        kirimPercobaanLogin($this, $user->no_hp, 'pin-salah');
+        kirimPercobaanLogin($this, $user->no_hp, '999999');
     }
 
     $this->travel(2)->minutes();
@@ -58,7 +59,7 @@ it('mengizinkan login kembali setelah masa kunci sementara berakhir', function (
     $user = lockUserForLoginTest();
 
     for ($i = 0; $i < 5; $i++) {
-        kirimPercobaanLogin($this, $user->no_hp, 'pin-salah');
+        kirimPercobaanLogin($this, $user->no_hp, '999999');
     }
 
     $this->travel(16)->minutes();
@@ -71,7 +72,7 @@ it('akun admin juga hanya terkunci sementara oleh percobaan pin salah', function
     $admin = lockUserForLoginTest(['role' => 'admin']);
 
     for ($i = 0; $i < 5; $i++) {
-        kirimPercobaanLogin($this, $admin->no_hp, 'pin-salah');
+        kirimPercobaanLogin($this, $admin->no_hp, '999999');
     }
 
     $this->travel(16)->minutes();
@@ -174,4 +175,68 @@ it('tidak membuka kunci nasabah yang belum diverifikasi', function () {
     $nasabah->refresh();
     expect($nasabah->status_akun)->toBe('terkunci')
         ->and($nasabah->login_terkunci_hingga)->not->toBeNull();
+});
+
+it('menolak pin non-digit tanpa menaikkan percobaan_gagal', function () {
+    $user = lockUserForLoginTest();
+
+    kirimPercobaanLogin($this, $user->no_hp, 'pin-huruf!');
+    $this->assertGuest();
+
+    $user->refresh();
+    expect($user->percobaan_gagal)->toBe(0)
+        ->and($user->login_terkunci_hingga)->toBeNull();
+});
+
+it('kunci kedua lebih lama dari kunci pertama dan mencatat akun_terkunci_otomatis', function () {
+    $user = lockUserForLoginTest();
+
+    for ($i = 0; $i < 5; $i++) {
+        kirimPercobaanLogin($this, $user->no_hp, '999999');
+    }
+    $user->refresh();
+    $durasiPertama = now()->diffInMinutes($user->login_terkunci_hingga);
+
+    $this->travel(16)->minutes();
+
+    for ($i = 0; $i < 5; $i++) {
+        kirimPercobaanLogin($this, $user->no_hp, '999999');
+    }
+    $user->refresh();
+    $durasiKedua = now()->diffInMinutes($user->login_terkunci_hingga);
+
+    expect($durasiPertama)->toBeLessThan(30)
+        ->and($durasiKedua)->toBeGreaterThan(30);
+
+    $log = LogAktivitas::where('aksi', 'akun_terkunci_otomatis')
+        ->where('user_id', $user->id)
+        ->latest('id')
+        ->first();
+
+    expect($log)->not->toBeNull()
+        ->and($log->detail['kunci_ke'] ?? null)->toBe(2)
+        ->and($log->detail['durasi_menit'] ?? null)->toBe(60);
+});
+
+it('limiter per-ip memblokir percobaan ke-21 ke nomor berbeda', function () {
+    $response = null;
+
+    for ($i = 1; $i <= 21; $i++) {
+        $response = kirimPercobaanLogin($this, '0899'.str_pad((string) $i, 8, '0', STR_PAD_LEFT), '123456');
+    }
+
+    $response->assertStatus(429);
+});
+
+it('mencatat login_gagal dengan user_id akun target tanpa pin', function () {
+    $user = lockUserForLoginTest();
+
+    kirimPercobaanLogin($this, $user->no_hp, '999999');
+
+    $log = LogAktivitas::where('aksi', 'login_gagal')
+        ->where('user_id', $user->id)
+        ->first();
+
+    expect($log)->not->toBeNull()
+        ->and(json_encode($log->detail))->not->toContain('999999');
 });

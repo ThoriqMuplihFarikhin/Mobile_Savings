@@ -33,7 +33,7 @@ test('users can not authenticate with invalid pin', function () {
     $response = $this->withoutMiddleware(PreventRequestForgery::class)
         ->post(route('login.store'), [
             'no_hp' => $user->no_hp,
-            'password' => 'wrong-pin',
+            'password' => '999999',
         ]);
 
     $response->assertSessionHasErrorsIn('no_hp');
@@ -62,7 +62,7 @@ test('account gets temporarily locked after 5 failed attempts', function () {
         $this->withoutMiddleware(PreventRequestForgery::class)
             ->post(route('login.store'), [
                 'no_hp' => $user->no_hp,
-                'password' => 'wrong-pin',
+                'password' => '999999',
             ]);
     }
 

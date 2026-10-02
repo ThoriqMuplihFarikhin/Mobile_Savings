@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Actions\Fortify\ResetUserPassword;
+use App\Helpers\ActivityLogger;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -36,10 +38,18 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
         Fortify::authenticateUsing(function (Request $request) {
+            $password = is_string($request->password) ? $request->password : '';
+
+            if (preg_match('/^\d{6}$/', $password) !== 1) {
+                Hash::check($password, self::DUMMY_HASH);
+
+                return null;
+            }
+
             $user = User::where('no_hp', $request->no_hp)->first();
 
             if (! $user) {
-                Hash::check($request->password, self::DUMMY_HASH);
+                Hash::check($password, self::DUMMY_HASH);
 
                 return null;
             }
@@ -52,14 +62,32 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
-            if (! Hash::check($request->password, $user->pin_hash)) {
+            if (! Hash::check($password, $user->pin_hash)) {
                 $user->increment('percobaan_gagal');
 
+                ActivityLogger::log('login_gagal', 'users', $user->id, [
+                    'percobaan_gagal' => $user->percobaan_gagal,
+                ], $user->id);
+
                 if ($user->percobaan_gagal >= 5) {
+                    $kunciKe = (int) Cache::get("login-lock-count:{$user->id}", 0) + 1;
+                    Cache::put("login-lock-count:{$user->id}", $kunciKe, now()->addDay());
+
+                    $durasiMenit = match ($kunciKe) {
+                        1 => 15,
+                        2 => 60,
+                        default => 360,
+                    };
+
                     $user->update([
-                        'login_terkunci_hingga' => now()->addMinutes(15),
+                        'login_terkunci_hingga' => now()->addMinutes($durasiMenit),
                         'percobaan_gagal' => 0,
                     ]);
+
+                    ActivityLogger::log('akun_terkunci_otomatis', 'users', $user->id, [
+                        'kunci_ke' => $kunciKe,
+                        'durasi_menit' => $durasiMenit,
+                    ], $user->id);
                 }
 
                 return null;
@@ -85,7 +113,10 @@ class FortifyServiceProvider extends ServiceProvider
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
 
-            return Limit::perMinute(5)->by($throttleKey);
+            return [
+                Limit::perMinute(5)->by($throttleKey),
+                Limit::perMinute(20)->by($request->ip()),
+            ];
         });
     }
 }
