@@ -163,7 +163,7 @@ it('rejects kolektor update jadwal kunjungan for nasabah not assigned to them vi
 it('allows kolektor update jadwal kunjungan for their own assigned nasabah', function () {
     [$kolektor, $kolektor2, $nasabah] = seedJadwalIdor();
 
-    KolektorNasabah::where('kolektor_id', $kolektor2->id)->update(['status' => 'nonaktif']);
+    KolektorNasabah::where('kolektor_id', $kolektor2->id)->update(['status' => 'nonaktif', 'aktif_unik' => null]);
     KolektorNasabah::create([
         'kolektor_id' => $kolektor->id,
         'nasabah_id' => $nasabah->id,
@@ -186,7 +186,7 @@ it('allows kolektor update jadwal kunjungan for their own assigned nasabah', fun
 it('rejects jadwal kunjungan update with invalid status', function () {
     [$kolektor, $kolektor2, $nasabah] = seedJadwalIdor();
 
-    KolektorNasabah::where('kolektor_id', $kolektor2->id)->update(['status' => 'nonaktif']);
+    KolektorNasabah::where('kolektor_id', $kolektor2->id)->update(['status' => 'nonaktif', 'aktif_unik' => null]);
     KolektorNasabah::create([
         'kolektor_id' => $kolektor->id,
         'nasabah_id' => $nasabah->id,
@@ -208,7 +208,7 @@ it('rejects jadwal kunjungan update with invalid status', function () {
 it('rejects jadwal kunjungan update with invalid tanggal', function () {
     [$kolektor, $kolektor2, $nasabah] = seedJadwalIdor();
 
-    KolektorNasabah::where('kolektor_id', $kolektor2->id)->update(['status' => 'nonaktif']);
+    KolektorNasabah::where('kolektor_id', $kolektor2->id)->update(['status' => 'nonaktif', 'aktif_unik' => null]);
     KolektorNasabah::create([
         'kolektor_id' => $kolektor->id,
         'nasabah_id' => $nasabah->id,

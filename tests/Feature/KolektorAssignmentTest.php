@@ -56,6 +56,7 @@ it('allows admin to remove nasabah assignment', function () {
         'nasabah_id' => $nasabah->id,
         'tanggal_mulai_ditangani' => now()->toDateString(),
         'status' => 'aktif',
+        'aktif_unik' => 1,
     ]);
 
     $this->actingAs($admin);

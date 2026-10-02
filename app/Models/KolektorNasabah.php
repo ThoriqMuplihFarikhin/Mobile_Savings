@@ -18,6 +18,7 @@ class KolektorNasabah extends Model
         'tanggal_mulai_ditangani',
         'tanggal_selesai_ditangani',
         'status',
+        'aktif_unik',
     ];
 
     protected function casts(): array
@@ -25,6 +26,7 @@ class KolektorNasabah extends Model
         return [
             'tanggal_mulai_ditangani' => 'date',
             'tanggal_selesai_ditangani' => 'date',
+            'aktif_unik' => 'integer',
         ];
     }
 

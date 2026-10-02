@@ -36,6 +36,7 @@ function seedHandoverKolektor(): array
         'nasabah_id' => $nasabah->id,
         'tanggal_mulai_ditangani' => now()->subDays(10)->toDateString(),
         'status' => 'aktif',
+        'aktif_unik' => 1,
     ]));
 
     return compact('admin', 'lama', 'baru', 'nasabahs');
@@ -154,6 +155,14 @@ it('menghitung ulang kas dan daftar nasabah dari database saat proses handover',
         ->set('kolektorBaruId', $baru->id);
 
     $nasabahBaru = User::factory()->nasabah()->create();
+    NasabahProfil::create([
+        'user_id' => $nasabahBaru->id,
+        'nama' => 'Nasabah Baru',
+        'alamat' => 'Jl. Test No. 3',
+        'jenis_kelamin' => 'laki-laki',
+        'didaftarkan_oleh' => $admin->id,
+        'status_pendaftaran' => 'aktif',
+    ]);
     KolektorNasabah::create([
         'kolektor_id' => $lama->id,
         'nasabah_id' => $nasabahBaru->id,

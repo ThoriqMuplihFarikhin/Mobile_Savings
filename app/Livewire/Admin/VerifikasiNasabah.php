@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Kolektor\TugaskanNasabahAction;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
+use DomainException;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -55,12 +57,14 @@ class VerifikasiNasabah extends Component
                     ->exists();
 
                 if (! $existing) {
-                    KolektorNasabah::create([
-                        'kolektor_id' => $profil->didaftarkan_oleh,
-                        'nasabah_id' => $profil->user_id,
-                        'tanggal_mulai_ditangani' => now()->toDateString(),
-                        'status' => 'aktif',
-                    ]);
+                    try {
+                        app(TugaskanNasabahAction::class)->execute(
+                            (int) $profil->didaftarkan_oleh,
+                            (int) $profil->user_id,
+                        );
+                    } catch (DomainException $e) {
+                        report($e);
+                    }
                 }
             }
 

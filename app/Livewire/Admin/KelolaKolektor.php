@@ -2,12 +2,14 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Kolektor\TugaskanNasabahAction;
 use App\Actions\Pin\ResetPinOlehAdminAction;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
 use App\Models\User;
 use App\Support\NomorHp;
+use DomainException;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -218,12 +220,16 @@ class KelolaKolektor extends Component
             'assignNasabahId' => 'required|exists:users,id',
         ]);
 
-        KolektorNasabah::create([
-            'kolektor_id' => $this->selectedKolektor->id,
-            'nasabah_id' => $this->assignNasabahId,
-            'tanggal_mulai_ditangani' => now()->toDateString(),
-            'status' => 'aktif',
-        ]);
+        try {
+            app(TugaskanNasabahAction::class)->execute(
+                (int) $this->selectedKolektor->id,
+                (int) $this->assignNasabahId,
+            );
+        } catch (DomainException $e) {
+            session()->flash('error', $e->getMessage());
+
+            return;
+        }
 
         $this->assignNasabahId = '';
         $this->searchNasabah();
@@ -237,6 +243,7 @@ class KelolaKolektor extends Component
         if ($assign) {
             $assign->update([
                 'status' => 'nonaktif',
+                'aktif_unik' => null,
                 'tanggal_selesai_ditangani' => now()->toDateString(),
             ]);
         }

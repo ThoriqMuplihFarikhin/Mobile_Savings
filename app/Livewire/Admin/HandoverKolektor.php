@@ -2,12 +2,14 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Kolektor\TugaskanNasabahAction;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\LogHandoverKolektor;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
+use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -150,15 +152,14 @@ class HandoverKolektor extends Component
                 ->update([
                     'tanggal_selesai_ditangani' => $today,
                     'status' => 'nonaktif',
+                    'aktif_unik' => null,
                 ]);
 
             foreach ($nasabahIds as $nasabahId) {
-                KolektorNasabah::create([
-                    'kolektor_id' => $this->kolektorBaruId,
-                    'nasabah_id' => $nasabahId,
-                    'tanggal_mulai_ditangani' => $today,
-                    'status' => 'aktif',
-                ]);
+                app(TugaskanNasabahAction::class)->execute(
+                    (int) $this->kolektorBaruId,
+                    (int) $nasabahId,
+                );
             }
 
             $statusKas = 'lunas';
@@ -193,6 +194,12 @@ class HandoverKolektor extends Component
             $jumlahNasabah = $nasabahIds->count();
 
             DB::commit();
+        } catch (DomainException $e) {
+            DB::rollBack();
+            report($e);
+            session()->flash('error', $e->getMessage());
+
+            return;
         } catch (\Exception $e) {
             DB::rollBack();
             report($e);
