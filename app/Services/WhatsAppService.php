@@ -7,6 +7,7 @@ use App\Support\NomorHp;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class WhatsAppService
 {
@@ -41,7 +42,7 @@ class WhatsAppService
             };
 
             if ($response->successful()) {
-                Log::info('WhatsApp message sent', ['phone' => $phone, 'provider' => $this->provider]);
+                Log::info('WhatsApp message sent', ['phone' => Str::mask($phone, '*', 4, -3), 'provider' => $this->provider]);
 
                 return true;
             }

@@ -2,10 +2,10 @@
 
 namespace App\Helpers;
 
+use App\Jobs\KirimNotifikasiWhatsApp;
 use App\Models\LogAktivitas;
 use App\Models\LogNotifikasi;
 use App\Models\User;
-use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Request;
 
 class ActivityLogger
@@ -38,25 +38,47 @@ class ActivityLogger
             ]);
         }
 
-        if (in_array($jenis, ['whatsapp', 'both'])) {
-            $user = User::find($nasabahId);
-            $berhasilKirim = false;
+        if (! in_array($jenis, ['whatsapp', 'both'])) {
+            return;
+        }
 
-            if ($user && $user->no_hp) {
-                $whatsapp = app(WhatsAppService::class);
-                $berhasilKirim = $whatsapp->sendNotification($user->no_hp, $pesan);
-            }
+        $user = User::find($nasabahId);
 
+        if (! $user || ! $user->no_hp) {
             LogNotifikasi::create([
                 'nasabah_id' => $nasabahId,
                 'judul' => $judul,
                 'pesan' => $pesan,
                 'jenis_notifikasi' => $jenis,
                 'channel' => 'whatsapp',
-                'status_kirim' => $berhasilKirim ? 'terkirim' : 'gagal',
+                'status_kirim' => 'gagal',
                 'is_read' => false,
                 'waktu_kirim' => now(),
             ]);
+
+            return;
+        }
+
+        if (! $user->notifikasi_wa_aktif) {
+            return;
+        }
+
+        $log = LogNotifikasi::create([
+            'nasabah_id' => $nasabahId,
+            'judul' => $judul,
+            'pesan' => $pesan,
+            'jenis_notifikasi' => $jenis,
+            'channel' => 'whatsapp',
+            'status_kirim' => 'antri',
+            'is_read' => false,
+            'waktu_kirim' => now(),
+        ]);
+
+        try {
+            KirimNotifikasiWhatsApp::dispatch($log->id, $user->no_hp, $pesan);
+        } catch (\Throwable $e) {
+            $log->update(['status_kirim' => 'gagal', 'waktu_kirim' => now()]);
+            report($e);
         }
     }
 }
