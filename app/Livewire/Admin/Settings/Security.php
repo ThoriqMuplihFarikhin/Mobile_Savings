@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Admin\Settings;
 
+use App\Actions\Pin\UbahPinAction;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -22,23 +22,20 @@ class Security extends Component
     {
         try {
             $validated = $this->validate([
-                'current_pin' => ['required', 'string', function ($attribute, $value, $fail) {
-                    if (! Hash::check($value, Auth::user()->pin_hash)) {
-                        $fail(__('PIN saat ini tidak sesuai.'));
-                    }
-                }],
+                'current_pin' => ['required', 'string', 'digits:6'],
                 'pin' => ['required', 'string', 'digits:6', 'confirmed'],
             ]);
+
+            app(UbahPinAction::class)->execute(
+                Auth::user(),
+                $validated['current_pin'],
+                $validated['pin'],
+            );
         } catch (ValidationException $e) {
             $this->reset('current_pin', 'pin', 'pin_confirmation');
 
             throw $e;
         }
-
-        Auth::user()->update([
-            'pin_hash' => Hash::make($validated['pin']),
-            'harus_ganti_pin' => false,
-        ]);
 
         $this->reset('current_pin', 'pin', 'pin_confirmation');
 
