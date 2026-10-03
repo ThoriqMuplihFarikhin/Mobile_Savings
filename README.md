@@ -38,3 +38,24 @@ Test selalu berjalan pada database terpisah `tabungan_digital_test` (di-`force` 
 ```bash
 mysql -uroot -e "CREATE DATABASE IF NOT EXISTS tabungan_digital_test CHARACTER SET utf8mb4"
 ```
+
+## Integrasi Berkelanjutan (CI)
+
+Workflow `.github/workflows/tests.yml` menjalankan `composer ci:check` pada setiap push ke `main` dan setiap pull request:
+
+1. `composer setup` — install dependensi, salin `.env.example` → `.env`, `key:generate`, `migrate --force`, `npm run build`.
+2. `composer ci:check` — `config:clear` → `pint --parallel --test` → `phpstan analyse` → `php artisan test`.
+
+GitHub Actions menyediakan layanan `mysql:8.0` dengan database `tabungan_digital_test`; nilai env `DB_*` di workflow sengaja disamakan dengan `phpunit.xml`.
+
+Pemeriksaan yang sama dapat dijalankan lokal:
+
+```bash
+composer ci:check
+```
+
+PHPStan memakai baseline `phpstan-baseline.neon`, sehingga error lama tidak menggagalkan CI tetapi **error baru tetap gagal**. Regenerasi baseline hanya setelah error lama diperbaiki:
+
+```bash
+vendor/bin/phpstan analyse --generate-baseline phpstan-baseline.neon --memory-limit=1G
+```

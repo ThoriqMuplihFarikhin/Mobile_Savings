@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Providers\AppServiceProvider;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +15,8 @@ it('memiliki konfigurasi aman pada env example', function () {
         ->toContain('APP_FALLBACK_LOCALE=id')
         ->toContain('SESSION_ENCRYPT=true')
         ->toContain('SESSION_SECURE_COOKIE=false')
-        ->toContain('APP_TIMEZONE=Asia/Jakarta');
+        ->toContain('APP_TIMEZONE=Asia/Jakarta')
+        ->toContain('DB_CONNECTION=mysql');
 });
 
 it('seeder memakai pin admin dari env dan menandai wajib ganti pin', function () {
@@ -63,6 +65,28 @@ it('seeder menandai semua akun demo wajib ganti pin', function () {
 
     foreach ($demo as $akun) {
         expect($akun->harus_ganti_pin)->toBeTrue();
+    }
+});
+
+it('menolak sqlite sebagai koneksi database pada produksi', function () {
+    $this->app->detectEnvironment(fn () => 'production');
+    config(['database.default' => 'sqlite']);
+
+    try {
+        (new AppServiceProvider(app()))->boot();
+    } finally {
+        config(['database.default' => 'mysql']);
+    }
+})->throws(RuntimeException::class, 'SQLite tidak mendukung lockForUpdate');
+
+it('mengizinkan sqlite sebagai koneksi database di luar produksi', function () {
+    config(['database.default' => 'sqlite']);
+
+    try {
+        expect(fn () => (new AppServiceProvider(app()))->boot())
+            ->not->toThrow(RuntimeException::class);
+    } finally {
+        config(['database.default' => 'mysql']);
     }
 });
 

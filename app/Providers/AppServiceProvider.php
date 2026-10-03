@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Livewire;
+use RuntimeException;
 use Spatie\Permission\Middleware\RoleMiddleware;
 
 class AppServiceProvider extends ServiceProvider
@@ -26,8 +27,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->guardDatabaseProduksi();
         $this->configureDefaults();
         $this->configureLivewire();
+    }
+
+    /**
+     * SQLite tidak mendukung lockForUpdate; kunci baris dipakai semua aksi saldo.
+     */
+    protected function guardDatabaseProduksi(): void
+    {
+        if (app()->isProduction() && config('database.default') === 'sqlite') {
+            throw new RuntimeException('Produksi wajib MySQL: SQLite tidak mendukung lockForUpdate.');
+        }
     }
 
     /**
