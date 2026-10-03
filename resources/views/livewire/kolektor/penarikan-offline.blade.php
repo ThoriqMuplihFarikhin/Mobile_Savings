@@ -99,7 +99,7 @@
                     class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-sm font-medium text-zinc-900 dark:text-white focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition">
                     <option value="">-- Pilih Produk --</option>
                     @foreach($produkList as $produk)
-                        <option value="{{ $produk->id }}">{{ $produk->nama }} ({{ $produk->tipe === 'paket' ? 'Paket' : 'Bebas' }})</option>
+                        <option value="{{ $produk->id }}">{{ $produk->nama }} ({{ $produk->tipe === 'paket' ? 'Paket' : 'Bebas' }}){{ $produk->status !== 'aktif' ? ' (nonaktif)' : '' }}</option>
                     @endforeach
                 </select>
                 @error('produkId') <p class="mt-1.5 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
@@ -110,7 +110,7 @@
                 <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Nominal Penarikan</label>
                 <div class="relative">
                     <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-mono text-base font-semibold text-zinc-400">Rp</span>
-                    <input type="number" wire:model.live="nominal" min="10000"
+                    <input type="number" wire:model.live="nominal" min="0" step="0.01"
                         class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 py-3.5 pl-12 pr-4 text-lg font-mono font-bold text-zinc-900 dark:text-white focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition"
                         placeholder="0" />
                 </div>

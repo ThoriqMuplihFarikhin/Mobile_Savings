@@ -56,6 +56,13 @@
                 />
 
                 <flux:input
+                    type="number"
+                    wire:model="penarikanMinimal"
+                    label="Nominal Penarikan Minimal (Rp)"
+                    placeholder="10000"
+                />
+
+                <flux:input
                     wire:model="nomorWaBantuan"
                     label="Nomor WhatsApp Bantuan"
                     placeholder="6281234567890"

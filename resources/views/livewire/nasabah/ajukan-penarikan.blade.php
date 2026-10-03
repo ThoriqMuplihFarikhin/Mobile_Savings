@@ -51,7 +51,7 @@
                     class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-xs font-bold text-zinc-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition">
                     <option value="">-- Pilih Produk Tabungan --</option>
                     @foreach($produkList as $produk)
-                        <option value="{{ $produk->id }}">{{ $produk->nama }}</option>
+                        <option value="{{ $produk->id }}">{{ $produk->nama }}{{ $produk->status !== 'aktif' ? ' (nonaktif)' : '' }}</option>
                     @endforeach
                 </select>
                 @error('produk_id') <p class="mt-1 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
@@ -61,11 +61,11 @@
             <div>
                 <div class="flex items-center justify-between mb-1.5">
                     <label class="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Nominal Penarikan</label>
-                    <span class="text-[11px] text-zinc-400 font-medium">Min: Rp 10.000</span>
+                    <span class="text-[11px] text-zinc-400 font-medium">Min: Rp {{ number_format((int) $nominalMinimal, 0, ',', '.') }} atau tarik habis</span>
                 </div>
                 <div class="relative">
                     <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-mono text-sm font-bold text-zinc-400">Rp</span>
-                    <input type="number" wire:model.live="nominal" min="10000" step="5000"
+                    <input type="number" wire:model.live="nominal" min="0" step="0.01"
                         class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 py-3 pl-12 pr-4 text-base font-mono font-bold text-zinc-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition"
                         placeholder="0" />
                 </div>

@@ -31,6 +31,8 @@ class Pengaturan extends Component
 
     public string $batasToleransiHari = '';
 
+    public string $penarikanMinimal = '';
+
     public string $nomorWaBantuan = '';
 
     // Tab 2: Admin & Peran
@@ -55,6 +57,7 @@ class Pengaturan extends Component
         // Tab 1: Umum
         $this->namaProdukDefault = AdminSetting::get('nama_koperasi', '');
         $this->batasToleransiHari = AdminSetting::get('batas_toleransi_hari', '3');
+        $this->penarikanMinimal = (string) AdminSetting::get('penarikan_minimal', '10000');
         $this->nomorWaBantuan = AdminSetting::get('nomor_wa_bantuan', '');
 
         // Tab 2: Admin & Peran
@@ -81,11 +84,13 @@ class Pengaturan extends Component
         $this->validate([
             'namaProdukDefault' => ['nullable', 'string', 'max:100'],
             'batasToleransiHari' => ['nullable', 'integer', 'min:0', 'max:30'],
+            'penarikanMinimal' => ['required', 'integer', 'min:0', 'max:9999999999999'],
             'nomorWaBantuan' => ['nullable', 'string', 'max:20'],
         ]);
 
         AdminSetting::set('nama_koperasi', $this->namaProdukDefault);
         AdminSetting::set('batas_toleransi_hari', (string) $this->batasToleransiHari);
+        AdminSetting::set('penarikan_minimal', (string) $this->penarikanMinimal);
         AdminSetting::set('nomor_wa_bantuan', $this->nomorWaBantuan);
 
         session()->flash('status', 'Konfigurasi umum berhasil disimpan.');

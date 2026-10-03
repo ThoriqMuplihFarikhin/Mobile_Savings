@@ -61,7 +61,7 @@ class PenarikanOffline extends Component
             ->with('user')
             ->get();
 
-        $this->produkList = ProdukTabungan::where('status', 'aktif')->get();
+        $this->loadProduk();
 
         $this->jumlahMenungguVerifikasi = TransaksiPenarikan::where('lokasi_pengambilan', 'rumah_kolektor')
             ->where('status', 'approved')
@@ -74,11 +74,32 @@ class PenarikanOffline extends Component
             ->count();
     }
 
+    public function loadProduk(?int $nasabahId = null): void
+    {
+        $this->produkList = ProdukTabungan::query()
+            ->when($nasabahId === null, function ($query) {
+                $query->where('status', 'aktif');
+            }, function ($query) use ($nasabahId) {
+                $query->where(function ($inner) use ($nasabahId) {
+                    $inner->where('status', 'aktif')
+                        ->orWhereIn('id', function ($sub) use ($nasabahId) {
+                            $sub->select('produk_id')
+                                ->from('saldo_produk')
+                                ->where('nasabah_id', $nasabahId)
+                                ->where('saldo', '>', 0);
+                        });
+                });
+            })
+            ->orderBy('nama')
+            ->get();
+    }
+
     public function updatedNasabahId()
     {
         if ($this->nasabahId && ! $this->isNasabahBinaan((int) $this->nasabahId)) {
             $this->nasabahId = '';
             $this->selectedNasabah = null;
+            $this->loadProduk();
             session()->flash('error', 'Nasabah tidak valid.');
 
             return;
@@ -88,8 +109,10 @@ class PenarikanOffline extends Component
             $this->selectedNasabah = NasabahProfil::where('user_id', $this->nasabahId)
                 ->with(['user', 'user.saldoProduks.produk'])
                 ->first();
+            $this->loadProduk((int) $this->nasabahId);
         } else {
             $this->selectedNasabah = null;
+            $this->loadProduk();
         }
     }
 
@@ -115,13 +138,27 @@ class PenarikanOffline extends Component
 
     public function hitungKomisi()
     {
-        if ($this->nominal > 0 && $this->persenKomisi > 0) {
-            $this->nominalKomisi = ($this->nominal * $this->persenKomisi) / 100;
-            $this->nominalDiterima = $this->nominal - $this->nominalKomisi;
-        } else {
-            $this->nominalKomisi = 0;
-            $this->nominalDiterima = $this->nominal;
+        $teks = trim((string) $this->nominal);
+
+        if (! is_numeric($teks) || preg_match('/^\d{1,13}(\.\d{1,2})?$/', $teks) !== 1 || (float) $teks <= 0) {
+            $this->nominalKomisi = '0.00';
+            $this->nominalDiterima = $teks;
+
+            return;
         }
+
+        $terbulatkan = bcadd($teks, '0', 2);
+
+        if ($this->persenKomisi <= 0) {
+            $this->nominalKomisi = '0.00';
+            $this->nominalDiterima = $terbulatkan;
+
+            return;
+        }
+
+        $hasil = AjukanPenarikanAction::hitungKomisi($terbulatkan, $this->persenKomisi);
+        $this->nominalKomisi = $hasil['komisi'];
+        $this->nominalDiterima = $hasil['diterima'];
     }
 
     public function submit(AjukanPenarikanAction $action)
@@ -129,7 +166,7 @@ class PenarikanOffline extends Component
         $this->validate([
             'nasabahId' => 'required|exists:users,id',
             'produkId' => 'required|exists:produk_tabungan,id',
-            'nominal' => 'required|numeric|min:10000',
+            'nominal' => 'required|numeric|decimal:0,2|gt:0',
             'lokasi' => 'required|in:kantor,rumah_kolektor',
         ]);
 
@@ -151,7 +188,7 @@ class PenarikanOffline extends Component
             $action->execute(
                 $nasabah,
                 $produk,
-                (float) $this->nominal,
+                (string) $this->nominal,
                 'offline',
                 $this->lokasi
             );
@@ -161,6 +198,7 @@ class PenarikanOffline extends Component
             $this->persenKomisi = 0;
             $this->nominalKomisi = 0;
             $this->nominalDiterima = 0;
+            $this->loadProduk();
 
             session()->flash('success', 'Penarikan offline berhasil diajukan! Menunggu persetujuan admin.');
         } catch (\Exception $e) {

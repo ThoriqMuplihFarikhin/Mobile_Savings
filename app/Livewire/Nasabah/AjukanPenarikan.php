@@ -4,6 +4,7 @@ namespace App\Livewire\Nasabah;
 
 use App\Actions\Penarikan\AjukanPenarikanAction;
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\AdminSetting;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use Illuminate\Support\Facades\Auth;
@@ -38,15 +39,26 @@ class AjukanPenarikan extends Component
 
     public $nominalDiterima = 0;
 
+    public string $nominalMinimal = '10000';
+
     public function mount()
     {
+        $this->nominalMinimal = (string) AdminSetting::get('penarikan_minimal', '10000');
         $this->loadProduk();
         $this->loadSaldo();
     }
 
     public function loadProduk()
     {
-        $this->produkList = ProdukTabungan::where('status', 'aktif')->get();
+        $this->produkList = ProdukTabungan::where(function ($query) {
+            $query->where('status', 'aktif')
+                ->orWhereIn('id', function ($sub) {
+                    $sub->select('produk_id')
+                        ->from('saldo_produk')
+                        ->where('nasabah_id', Auth::id())
+                        ->where('saldo', '>', 0);
+                });
+        })->get();
     }
 
     public function loadSaldo()
@@ -77,20 +89,34 @@ class AjukanPenarikan extends Component
 
     public function hitungKomisi()
     {
-        if ($this->nominal > 0 && $this->persenKomisi > 0) {
-            $this->nominalKomisi = ($this->nominal * $this->persenKomisi) / 100;
-            $this->nominalDiterima = $this->nominal - $this->nominalKomisi;
-        } else {
-            $this->nominalKomisi = 0;
-            $this->nominalDiterima = $this->nominal;
+        $teks = trim((string) $this->nominal);
+
+        if (! is_numeric($teks) || preg_match('/^\d{1,13}(\.\d{1,2})?$/', $teks) !== 1 || (float) $teks <= 0) {
+            $this->nominalKomisi = '0.00';
+            $this->nominalDiterima = $teks;
+
+            return;
         }
+
+        $terbulatkan = bcadd($teks, '0', 2);
+
+        if ($this->persenKomisi <= 0) {
+            $this->nominalKomisi = '0.00';
+            $this->nominalDiterima = $terbulatkan;
+
+            return;
+        }
+
+        $hasil = AjukanPenarikanAction::hitungKomisi($terbulatkan, $this->persenKomisi);
+        $this->nominalKomisi = $hasil['komisi'];
+        $this->nominalDiterima = $hasil['diterima'];
     }
 
     public function submit(AjukanPenarikanAction $action)
     {
         $this->validate([
             'produkId' => 'required|exists:produk_tabungan,id',
-            'nominal' => 'required|numeric|min:10000',
+            'nominal' => 'required|numeric|decimal:0,2|gt:0',
             'lokasi_pengambilan' => 'required|in:rumah_kolektor,kantor',
         ]);
 
@@ -101,7 +127,7 @@ class AjukanPenarikan extends Component
             $action->execute(
                 $nasabah,
                 $produk,
-                (float) $this->nominal,
+                (string) $this->nominal,
                 'online',
                 $this->lokasi_pengambilan
             );

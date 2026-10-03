@@ -20,7 +20,7 @@ function buatProdukT46(string $status): ProdukTabungan
     ]);
 }
 
-it('ajukan penarikan tetap menampilkan saldo produk nonaktif tetapi hanya menawarkan produk aktif', function () {
+it('ajukan penarikan tetap menampilkan saldo produk nonaktif dan menawarkan produk nonaktif bersaldo', function () {
     $nasabah = User::factory()->nasabah()->create();
     $produkAktif = buatProdukT46('aktif');
     $produkNonaktif = buatProdukT46('nonaktif');
@@ -37,7 +37,7 @@ it('ajukan penarikan tetap menampilkan saldo produk nonaktif tetapi hanya menawa
     $dropdownProdukIds = $component->viewData('produkList')->pluck('id');
     expect($dropdownProdukIds->toArray())
         ->toContain($produkAktif->id)
-        ->not->toContain($produkNonaktif->id);
+        ->toContain($produkNonaktif->id);
 });
 
 it('input setoran tidak otomatis memilih saldo produk nonaktif', function () {
