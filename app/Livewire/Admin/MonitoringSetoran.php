@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Tabungan\HitungTunggakanAction;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SaldoProduk;
@@ -41,6 +42,8 @@ class MonitoringSetoran extends Component
     public $selectedBatalId = null;
 
     public $alasanBatal = '';
+
+    public bool $sudahDisetorTerpilih = false;
 
     public function render()
     {
@@ -83,6 +86,7 @@ class MonitoringSetoran extends Component
         $setoran = TransaksiSetoran::find($id);
         $this->nominalBaru = $setoran->nominal ?? '';
         $this->alasanKoreksi = '';
+        $this->sudahDisetorTerpilih = (bool) ($setoran->sudah_disetor_ke_kantor ?? false);
     }
 
     public function koreksi()
@@ -96,8 +100,8 @@ class MonitoringSetoran extends Component
             $hasil = DB::transaction(function () {
                 $setoran = TransaksiSetoran::whereKey($this->selectedId)->lockForUpdate()->first();
 
-                if (! $setoran || $setoran->status !== 'tercatat') {
-                    throw new \DomainException('Setoran tidak valid atau sudah dikoreksi/dibatalkan.');
+                if (! $setoran || ! in_array($setoran->status, ['tercatat', 'dikoreksi'], true)) {
+                    throw new \DomainException('Setoran tidak valid atau sudah dibatalkan.');
                 }
 
                 $nominalLama = (float) $setoran->nominal;
@@ -115,7 +119,7 @@ class MonitoringSetoran extends Component
 
                 $setoran->update([
                     'status' => 'dikoreksi',
-                    'nominal_asli' => $nominalLama,
+                    'nominal_asli' => $setoran->nominal_asli ?? $nominalLama,
                     'nominal' => $nominalBaruVal,
                     'dikoreksi_oleh' => auth()->id(),
                     'alasan_koreksi' => $this->alasanKoreksi,
@@ -125,6 +129,10 @@ class MonitoringSetoran extends Component
                     $saldo->increment('saldo', $selisih);
                 } elseif ($saldo && $selisih < 0) {
                     $saldo->decrement('saldo', abs($selisih));
+                }
+
+                if ($setoran->produk?->tipe === 'paket') {
+                    app(HitungTunggakanAction::class)->perbarui($setoran->nasabah_id, $setoran->produk_id);
                 }
 
                 return [
@@ -150,6 +158,7 @@ class MonitoringSetoran extends Component
                 'nominal_lama' => $hasil['nominalLama'],
                 'nominal_baru' => $hasil['nominalBaru'],
                 'alasan' => $this->alasanKoreksi,
+                'sudah_disetor' => (bool) $hasil['setoran']->sudah_disetor_ke_kantor,
             ]);
 
             ActivityLogger::notify(
@@ -175,6 +184,8 @@ class MonitoringSetoran extends Component
         $this->showBatal = true;
         $this->selectedBatalId = $id;
         $this->alasanBatal = '';
+        $setoran = TransaksiSetoran::find($id);
+        $this->sudahDisetorTerpilih = (bool) ($setoran->sudah_disetor_ke_kantor ?? false);
     }
 
     public function batal()
@@ -187,8 +198,8 @@ class MonitoringSetoran extends Component
             $setoran = DB::transaction(function () {
                 $setoran = TransaksiSetoran::whereKey($this->selectedBatalId)->lockForUpdate()->first();
 
-                if (! $setoran || $setoran->status !== 'tercatat') {
-                    throw new \DomainException('Setoran tidak valid atau sudah diproses.');
+                if (! $setoran || ! in_array($setoran->status, ['tercatat', 'dikoreksi'], true)) {
+                    throw new \DomainException('Setoran tidak valid atau sudah dibatalkan.');
                 }
 
                 $saldo = SaldoProduk::where('nasabah_id', $setoran->nasabah_id)
@@ -208,6 +219,10 @@ class MonitoringSetoran extends Component
 
                 $saldo->decrement('saldo', $setoran->nominal);
 
+                if ($setoran->produk?->tipe === 'paket') {
+                    app(HitungTunggakanAction::class)->perbarui($setoran->nasabah_id, $setoran->produk_id);
+                }
+
                 return $setoran;
             });
         } catch (\DomainException $e) {
@@ -226,6 +241,7 @@ class MonitoringSetoran extends Component
                 'nasabah_id' => $setoran->nasabah_id,
                 'nominal' => $setoran->nominal,
                 'alasan' => $this->alasanBatal,
+                'sudah_disetor' => (bool) $setoran->sudah_disetor_ke_kantor,
             ]);
 
             ActivityLogger::notify(

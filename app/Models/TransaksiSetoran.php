@@ -47,6 +47,9 @@ class TransaksiSetoran extends Model
         return $this->belongsTo(User::class, 'nasabah_id');
     }
 
+    /**
+     * @return BelongsTo<ProdukTabungan, $this>
+     */
     public function produk(): BelongsTo
     {
         return $this->belongsTo(ProdukTabungan::class, 'produk_id');

@@ -144,7 +144,7 @@ it('menolak pembatalan yang membuat saldo nasabah negatif', function () {
         ->and(saldoGuard($nasabah, $produk))->toBe(10000.00);
 });
 
-it('koreksi dua kali hanya mengubah uang sekali', function () {
+it('koreksi dua kali menerapkan masing-masing koreksi tepat sekali', function () {
     ['admin' => $admin, 'kolektor' => $kolektor, 'nasabah' => $nasabah, 'produk' => $produk] = seedGuardTransaksi();
     $setoran = setoranGuard($kolektor, $nasabah, $produk, 50000);
 
@@ -165,8 +165,9 @@ it('koreksi dua kali hanya mengubah uang sekali', function () {
 
     $setoran->refresh();
     expect($setoran->status)->toBe('dikoreksi')
-        ->and((float) $setoran->nominal)->toBe(60000.00)
-        ->and(saldoGuard($nasabah, $produk))->toBe(60000.00);
+        ->and((float) $setoran->nominal)->toBe(70000.00)
+        ->and((float) $setoran->nominal_asli)->toBe(50000.00)
+        ->and(saldoGuard($nasabah, $produk))->toBe(70000.00);
 });
 
 it('pembatalan dua kali hanya mengurangi saldo sekali', function () {

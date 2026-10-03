@@ -71,7 +71,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3">
-                                @if($item->status === 'tercatat')
+                                @if(in_array($item->status, ['tercatat', 'dikoreksi']))
                                     <div class="flex items-center gap-2">
                                         <button wire:click="toggleKoreksi({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Koreksi</button>
                                         <button wire:click="toggleBatal({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
@@ -102,6 +102,11 @@
             <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
                 <h3 class="text-lg font-semibold text-gray-900">Koreksi Setoran</h3>
                 <p class="mt-1 text-sm text-gray-500">Ubah nominal setoran yang sudah tercatat.</p>
+                @if($sudahDisetorTerpilih)
+                    <div class="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-[#ab570a]">
+                        Setoran ini sudah disetor ke kantor. Perubahan hanya penanda audit &mdash; kas tidak diubah otomatis.
+                    </div>
+                @endif
                 <form wire:submit="koreksi" wire:confirm="Yakin menyimpan koreksi setoran ini?" class="mt-4 space-y-4">
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-gray-900">Nominal Baru</label>
@@ -139,6 +144,11 @@
             <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
                 <h3 class="text-lg font-semibold text-gray-900">Batalkan Setoran</h3>
                 <p class="mt-1 text-sm text-gray-500">Setoran yang dibatalkan akan dikurangi dari saldo nasabah.</p>
+                @if($sudahDisetorTerpilih)
+                    <div class="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-[#ab570a]">
+                        Setoran ini sudah disetor ke kantor. Perubahan hanya penanda audit &mdash; kas tidak diubah otomatis.
+                    </div>
+                @endif
                 <form wire:submit="batal" wire:confirm="Yakin membatalkan setoran ini? Saldo nasabah akan dikurangi." class="mt-4 space-y-4">
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-gray-900">Alasan Pembatalan</label>

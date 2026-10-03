@@ -33,6 +33,15 @@ class HitungTunggakanAction
     }
 
     /**
+     * Hitung ulang kepesertaan yang sudah ada sebagai reaksi perubahan setoran
+     * (koreksi/batal); tidak membuat kepesertaan baru bila belum ada.
+     */
+    public function perbarui(int $nasabahId, int $produkId): void
+    {
+        $this->kepesertaanAktif($nasabahId, $produkId)?->hitungUlangKepesertaan(true);
+    }
+
+    /**
      * Kepesertaan yang sedang berjalan (belum ada keputusan akhir) untuk
      * pasangan nasabah+produk; dibuat bila diminta dan belum ada.
      */

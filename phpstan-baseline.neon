@@ -3163,12 +3163,6 @@ parameters:
 			path: app/Models/TransaksiSetoran.php
 
 		-
-			message: '#^Method App\\Models\\TransaksiSetoran\:\:produk\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TransaksiSetoran.php
-
-		-
 			message: '#^Method App\\Models\\TransaksiSetoran\:\:scopeBelumDisetor\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
