@@ -45,8 +45,8 @@ class VerifikasiPenarikanOfflineAction
                 return ['error' => 'Data penarikan tidak ditemukan.'];
             }
 
-            if ($p->jalur_pengajuan !== 'offline') {
-                return ['error' => 'Verifikasi langsung hanya berlaku untuk penarikan offline.'];
+            if ($p->lokasi_pengambilan !== 'rumah_kolektor') {
+                return ['error' => 'Verifikasi hanya berlaku untuk penarikan di rumah kolektor.'];
             }
 
             if ($p->status !== 'approved') {

@@ -2491,12 +2491,6 @@ parameters:
 			path: app/Livewire/Kolektor/VerifikasiPenarikan.php
 
 		-
-			message: '#^Method App\\Livewire\\Kolektor\\VerifikasiPenarikan\:\:bukaModal\(\) has parameter \$id with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: app/Livewire/Kolektor/VerifikasiPenarikan.php
-
-		-
 			message: '#^Method App\\Livewire\\Kolektor\\VerifikasiPenarikan\:\:konfirmasi\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -2511,18 +2505,6 @@ parameters:
 		-
 			message: '#^Method App\\Livewire\\Kolektor\\VerifikasiPenarikan\:\:tutupModal\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: app/Livewire/Kolektor/VerifikasiPenarikan.php
-
-		-
-			message: '#^Parameter \#1 \$penarikan of method App\\Actions\\Penarikan\\VerifikasiPenarikanOfflineAction\:\:execute\(\) expects App\\Models\\TransaksiPenarikan, App\\Models\\TransaksiPenarikan\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\TransaksiPenarikan\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Livewire/Kolektor/VerifikasiPenarikan.php
-
-		-
-			message: '#^Property App\\Livewire\\Kolektor\\VerifikasiPenarikan\:\:\$penarikanId has no type specified\.$#'
-			identifier: missingType.property
 			count: 1
 			path: app/Livewire/Kolektor/VerifikasiPenarikan.php
 

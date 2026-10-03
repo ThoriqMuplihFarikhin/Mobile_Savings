@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\KolektorNasabah;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\User;
@@ -76,9 +77,14 @@ class ApprovalPenarikan extends Component
                 'waktu_approval' => now(),
             ]);
 
+            $kolektorPenanggungJawab = KolektorNasabah::where('nasabah_id', $penarikan->nasabah_id)
+                ->where('status', 'aktif')
+                ->value('kolektor_id');
+
             ActivityLogger::log('approve_penarikan', 'transaksi_penarikan', $id, [
                 'nasabah_id' => $penarikan->nasabah_id,
                 'nominal' => $penarikan->nominal_diminta,
+                'kolektor_id' => $kolektorPenanggungJawab,
             ]);
 
             return $penarikan;
@@ -157,8 +163,11 @@ class ApprovalPenarikan extends Component
                 return null;
             }
 
-            $isOverrideRumah = $penarikan->jalur_pengajuan === 'offline'
-                && $penarikan->lokasi_pengambilan === 'rumah_kolektor';
+            $isOverrideRumah = $penarikan->lokasi_pengambilan === 'rumah_kolektor';
+
+            if ($isOverrideRumah && mb_strlen($this->alasan) < 10) {
+                return ['error' => 'Alasan override minimal 10 karakter.'];
+            }
 
             $nasabah = $penarikan->nasabah;
             $belumGantiPin = $nasabah instanceof User && $nasabah->harus_ganti_pin;
@@ -180,6 +189,7 @@ class ApprovalPenarikan extends Component
 
             if ($isOverrideRumah) {
                 $detail['risiko_tinggi'] = true;
+                $detail['override_rumah'] = true;
             }
 
             ActivityLogger::log(

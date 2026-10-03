@@ -63,7 +63,7 @@ class PenarikanOffline extends Component
 
         $this->produkList = ProdukTabungan::where('status', 'aktif')->get();
 
-        $this->jumlahMenungguVerifikasi = TransaksiPenarikan::where('jalur_pengajuan', 'offline')
+        $this->jumlahMenungguVerifikasi = TransaksiPenarikan::where('lokasi_pengambilan', 'rumah_kolektor')
             ->where('status', 'approved')
             ->whereIn('nasabah_id', function ($query) use ($kolektorId) {
                 $query->select('nasabah_id')

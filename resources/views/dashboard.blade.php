@@ -115,10 +115,16 @@
                         <span class="mt-1.5 text-[11px] font-medium text-zinc-700 dark:text-zinc-300">Kantor</span>
                     </a>
                     <a href="{{ route('kolektor.verifikasi-penarikan.index') }}" wire:navigate class="flex flex-col items-center group">
-                        <div class="h-11 w-11 rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition shadow-2xs border border-emerald-100 dark:border-emerald-900/50">
+                        <div class="relative h-11 w-11 rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition shadow-2xs border border-emerald-100 dark:border-emerald-900/50">
                             <flux:icon.check-badge class="size-5" />
+                            @if($penarikanMenungguDiantar > 0)
+                                <span class="absolute -top-1.5 -right-1.5 min-w-[18px] rounded-full bg-rose-500 px-1 text-center text-[9px] font-bold leading-[18px] text-white shadow">{{ $penarikanMenungguDiantar }}</span>
+                            @endif
                         </div>
                         <span class="mt-1.5 text-[11px] font-medium text-zinc-700 dark:text-zinc-300">Verifikasi</span>
+                        @if($penarikanMenungguDiantar > 0)
+                            <span class="text-[9px] font-semibold text-rose-600 dark:text-rose-400 leading-tight">menunggu diantar</span>
+                        @endif
                     </a>
                     <a href="{{ route('kolektor.jadwal.index') }}" wire:navigate class="flex flex-col items-center group">
                         <div class="h-11 w-11 rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 flex items-center justify-center group-hover:scale-105 transition shadow-2xs border border-indigo-100 dark:border-indigo-900/50">

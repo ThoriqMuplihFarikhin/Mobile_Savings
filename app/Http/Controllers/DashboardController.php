@@ -158,7 +158,12 @@ class DashboardController extends Controller
             ->where('status', 'aktif')
             ->count();
 
-        return view('dashboard', compact('user', 'stats', 'jadwalHariIni', 'sudahAbsenHariIni', 'nasabahTunggakParah', 'totalNasabahBinaan'));
+        $penarikanMenungguDiantar = TransaksiPenarikan::where('lokasi_pengambilan', 'rumah_kolektor')
+            ->where('status', 'approved')
+            ->whereIn('nasabah_id', $nasabahIds)
+            ->count();
+
+        return view('dashboard', compact('user', 'stats', 'jadwalHariIni', 'sudahAbsenHariIni', 'nasabahTunggakParah', 'totalNasabahBinaan', 'penarikanMenungguDiantar'));
     }
 
     private function nasabahDashboard($user)

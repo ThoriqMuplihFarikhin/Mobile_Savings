@@ -272,7 +272,7 @@ it('rejects verification for pending withdrawal', function () {
     expect($thrown)->toBeTrue();
 });
 
-it('rejects verification for online withdrawal', function () {
+it('rejects verification for kantor withdrawal', function () {
     $kolektor = User::factory()->kolektor()->create();
     $nasabah = User::factory()->nasabah()->create();
 
@@ -320,7 +320,7 @@ it('rejects verification for online withdrawal', function () {
         $action->execute($penarikan, '123456', $kolektor);
     } catch (Exception $e) {
         $thrown = true;
-        expect($e->getMessage())->toContain('hanya berlaku untuk penarikan offline');
+        expect($e->getMessage())->toContain('hanya berlaku untuk penarikan di rumah kolektor');
     }
 
     expect($thrown)->toBeTrue();
