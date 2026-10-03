@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class KepesertaanPaket extends Model
 {
@@ -52,6 +53,14 @@ class KepesertaanPaket extends Model
     }
 
     /**
+     * @return HasMany<TransaksiSetoran, $this>
+     */
+    public function setoran(): HasMany
+    {
+        return $this->hasMany(TransaksiSetoran::class, 'kepesertaan_id');
+    }
+
+    /**
      * Hitung ulang tunggakan berbasis hari terbayar.
      *
      * Rumus: hari_terbayar = floor(total_aktual / harga_per_hari)
@@ -70,8 +79,7 @@ class KepesertaanPaket extends Model
         $hargaPerHari = (float) $produk->harga_per_hari;
         $hariBerjalan = $this->hitungHariBerjalan($produk);
 
-        $totalAktual = TransaksiSetoran::where('nasabah_id', $this->nasabah_id)
-            ->where('produk_id', $this->produk_id)
+        $totalAktual = $this->setoran()
             ->where('status', '!=', 'dibatalkan')
             ->sum('nominal');
 

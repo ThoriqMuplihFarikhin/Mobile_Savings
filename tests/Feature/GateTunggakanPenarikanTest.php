@@ -68,18 +68,7 @@ it('allows penarikan paket when tunggakan = 0 and tanggal sudah lewat', function
     $hariBerjalan = 31;
     $seharusnya = $hariBerjalan * 5000;
 
-    TransaksiSetoran::create([
-        'nasabah_id' => $nasabah->id,
-        'produk_id' => $produk->id,
-        'nominal' => $seharusnya,
-        'status' => 'tercatat',
-        'tanggal_transaksi' => $tanggalMulai->toDateString(),
-        'tanggal_input_sistem' => now(),
-        'input_by' => $nasabah->id,
-        'sumber_input' => 'real_time',
-    ]);
-
-    KepesertaanPaket::create([
+    $kepesertaan = KepesertaanPaket::create([
         'nasabah_id' => $nasabah->id,
         'produk_id' => $produk->id,
         'tanggal_mulai_ikut' => $tanggalMulai->toDateString(),
@@ -87,6 +76,18 @@ it('allows penarikan paket when tunggakan = 0 and tanggal sudah lewat', function
         'total_aktual_terkumpul' => $seharusnya,
         'tunggakan' => 0,
         'status_alert' => 'normal',
+    ]);
+
+    TransaksiSetoran::create([
+        'nasabah_id' => $nasabah->id,
+        'produk_id' => $produk->id,
+        'kepesertaan_id' => $kepesertaan->id,
+        'nominal' => $seharusnya,
+        'status' => 'tercatat',
+        'tanggal_transaksi' => $tanggalMulai->toDateString(),
+        'tanggal_input_sistem' => now(),
+        'input_by' => $nasabah->id,
+        'sumber_input' => 'real_time',
     ]);
 
     $action = new AjukanPenarikanAction;

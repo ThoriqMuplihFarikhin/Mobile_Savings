@@ -2029,12 +2029,6 @@ parameters:
 			path: app/Livewire/Kolektor/DaftarNasabah.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\ProdukTabungan\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ProdukTabungan\>\:\:\$tipe\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Kolektor/InputSetoran.php
-
-		-
 			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:hitungTunggakan\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1

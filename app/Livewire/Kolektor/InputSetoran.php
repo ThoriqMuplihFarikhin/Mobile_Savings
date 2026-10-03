@@ -170,6 +170,7 @@ class InputSetoran extends Component
     public function submit()
     {
         $produk = ProdukTabungan::find($this->produkId);
+        $produkPaket = $produk instanceof ProdukTabungan && $produk->tipe === 'paket';
         $minimalSetor = max(1000, (int) ($produk->minimal_setor ?? 0));
 
         $this->validate([
@@ -206,16 +207,24 @@ class InputSetoran extends Component
         }
 
         try {
-            $transaksi = DB::transaction(function () use ($produk) {
+            $transaksi = DB::transaction(function () use ($produkPaket) {
                 $saldo = SaldoProduk::firstOrCreate(
                     ['nasabah_id' => $this->nasabahId, 'produk_id' => $this->produkId],
                     ['saldo' => 0]
                 );
                 $saldo = SaldoProduk::whereKey($saldo->id)->lockForUpdate()->first();
 
+                $kepesertaanId = null;
+                if ($produkPaket) {
+                    $kepesertaanId = app(HitungTunggakanAction::class)
+                        ->kepesertaanAktif((int) $this->nasabahId, (int) $this->produkId, buatJikaBelumAda: true)
+                        ?->id;
+                }
+
                 $transaksi = TransaksiSetoran::create([
                     'nasabah_id' => $this->nasabahId,
                     'produk_id' => $this->produkId,
+                    'kepesertaan_id' => $kepesertaanId,
                     'nominal' => $this->nominal,
                     'tanggal_transaksi' => $this->tanggal_transaksi,
                     'tanggal_input_sistem' => now(),
@@ -227,7 +236,7 @@ class InputSetoran extends Component
 
                 $saldo->increment('saldo', $this->nominal);
 
-                if ($produk && $produk->tipe === 'paket') {
+                if ($produkPaket) {
                     app(HitungTunggakanAction::class)
                         ->execute((int) $this->nasabahId, (int) $this->produkId, simpan: true);
                 }

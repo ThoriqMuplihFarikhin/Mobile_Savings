@@ -145,6 +145,10 @@ function setorTunggakanHari(User $nasabah, ProdukTabungan $produk, float $nomina
     TransaksiSetoran::create([
         'nasabah_id' => $nasabah->id,
         'produk_id' => $produk->id,
+        'kepesertaan_id' => KepesertaanPaket::where('nasabah_id', $nasabah->id)
+            ->where('produk_id', $produk->id)
+            ->whereNull('keputusan_akhir')
+            ->value('id'),
         'nominal' => $nominal,
         'status' => 'tercatat',
         'tanggal_transaksi' => now()->toDateString(),

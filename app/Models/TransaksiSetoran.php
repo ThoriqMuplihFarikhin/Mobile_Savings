@@ -16,6 +16,7 @@ class TransaksiSetoran extends Model
     protected $fillable = [
         'nasabah_id',
         'produk_id',
+        'kepesertaan_id',
         'nominal',
         'tanggal_transaksi',
         'tanggal_input_sistem',
@@ -49,6 +50,14 @@ class TransaksiSetoran extends Model
     public function produk(): BelongsTo
     {
         return $this->belongsTo(ProdukTabungan::class, 'produk_id');
+    }
+
+    /**
+     * @return BelongsTo<KepesertaanPaket, $this>
+     */
+    public function kepesertaan(): BelongsTo
+    {
+        return $this->belongsTo(KepesertaanPaket::class, 'kepesertaan_id');
     }
 
     public function inputBy(): BelongsTo
