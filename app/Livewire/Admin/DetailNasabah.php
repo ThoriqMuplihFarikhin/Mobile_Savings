@@ -25,7 +25,7 @@ class DetailNasabah extends Component
 
     public string $periode = '30hari';
 
-    public bool $confirmResetPin = false;
+    public bool $tampilKonfirmasiResetPin = false;
 
     public function mount(User $user): void
     {
@@ -66,14 +66,14 @@ class DetailNasabah extends Component
 
     public function confirmResetPin(): void
     {
-        $this->confirmResetPin = true;
+        $this->tampilKonfirmasiResetPin = true;
     }
 
     public function resetPin(): void
     {
         $pinBaru = app(ResetPinOlehAdminAction::class)->execute($this->user);
 
-        $this->confirmResetPin = false;
+        $this->tampilKonfirmasiResetPin = false;
 
         session()->flash('success', "PIN berhasil direset. PIN baru: {$pinBaru}. Catat sekarang karena hanya ditampilkan sekali. Pengguna wajib mengganti PIN setelah login.");
     }

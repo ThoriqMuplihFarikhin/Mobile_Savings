@@ -27,7 +27,7 @@ class AntrianKomplain extends Component
 
     public $catatan = '';
 
-    public $showDetail = false;
+    public $tampilDetail = false;
 
     protected $listeners = ['komplainUpdated' => '$refresh'];
 
@@ -54,7 +54,7 @@ class AntrianKomplain extends Component
     public function showDetail($id)
     {
         $this->selectedId = $id;
-        $this->showDetail = true;
+        $this->tampilDetail = true;
         $this->catatan = '';
     }
 
@@ -162,7 +162,7 @@ class AntrianKomplain extends Component
             }
         }
 
-        $this->showDetail = false;
+        $this->tampilDetail = false;
         $this->selectedId = null;
         $this->catatan = '';
         session()->flash('success', 'Komplain berhasil diselesaikan!');

@@ -155,27 +155,27 @@
         <div class="border-t border-[#ebebeb] px-4 py-3">{{ $nasabah->links() }}</div>
     </div>
 
-    @if($confirmDelete)
+    @if($tampilKonfirmasiHapus)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
                 <h3 class="text-lg font-semibold text-gray-900">Hapus Nasabah?</h3>
                 <p class="mt-2 text-sm text-gray-500">Data nasabah akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.</p>
                 <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('confirmDelete', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
+                    <button wire:click="$set('tampilKonfirmasiHapus', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
                     <button wire:click="delete" class="rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Hapus</button>
                 </div>
             </div>
         </div>
     @endif
 
-    @if($confirmResetPin)
+    @if($tampilKonfirmasiResetPin)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
                 <h3 class="text-lg font-semibold text-gray-900">Reset PIN?</h3>
                 <p class="mt-2 text-sm text-gray-500">PIN pengguna akan diganti menjadi PIN acak baru dan seluruh sesi aktifnya dihentikan. Pengguna wajib mengganti PIN setelah login berikutnya.</p>
                 @error('reset_pin') <p class="mt-2 text-sm text-[#ee0000]">{{ $message }}</p> @enderror
                 <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('confirmResetPin', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
+                    <button wire:click="$set('tampilKonfirmasiResetPin', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
                     <button wire:click="resetPin" class="rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Reset PIN</button>
                 </div>
             </div>

@@ -48,7 +48,7 @@ class ManajemenProduk extends Component
 
     public $batas_toleransi = '';
 
-    public $confirmDelete = false;
+    public $tampilKonfirmasiHapus = false;
 
     public $deleteId = null;
 
@@ -197,7 +197,7 @@ class ManajemenProduk extends Component
     public function confirmDelete($id)
     {
         $this->deleteId = $id;
-        $this->confirmDelete = true;
+        $this->tampilKonfirmasiHapus = true;
     }
 
     public function delete()
@@ -209,7 +209,7 @@ class ManajemenProduk extends Component
             session()->flash('error', 'Produk ini tidak bisa dihapus karena masih memiliki data transaksi/nasabah terkait. Nonaktifkan produk ini saja alih-alih menghapusnya.');
         }
 
-        $this->confirmDelete = false;
+        $this->tampilKonfirmasiHapus = false;
         $this->deleteId = null;
     }
 

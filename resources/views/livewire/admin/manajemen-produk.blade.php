@@ -215,14 +215,14 @@
         <div class="border-t border-[#ebebeb] px-4 py-3">{{ $produk->links() }}</div>
     </div>
 
-    @if($confirmDelete)
+    @if($tampilKonfirmasiHapus)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
                 <h3 class="text-lg font-semibold text-gray-900">Hapus Produk?</h3>
                 <p class="mt-2 text-sm text-gray-500">Produk akan dihapus permanen.</p>
                 <p class="mt-1 text-xs text-gray-400">Jika produk ini sudah pernah digunakan nasabah, penghapusan akan gagal - gunakan tombol Nonaktifkan sebagai gantinya.</p>
                 <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('confirmDelete', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
+                    <button wire:click="$set('tampilKonfirmasiHapus', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
                     <button wire:click="delete" class="rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Hapus</button>
                 </div>
             </div>

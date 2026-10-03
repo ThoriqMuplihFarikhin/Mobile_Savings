@@ -46,7 +46,7 @@ class KelolaKolektor extends Component
 
     public $assignNasabahId = '';
 
-    public bool $confirmResetPin = false;
+    public bool $tampilKonfirmasiResetPin = false;
 
     public ?int $resetPinId = null;
 
@@ -170,7 +170,7 @@ class KelolaKolektor extends Component
     public function confirmResetPin(int $userId): void
     {
         $this->resetPinId = $userId;
-        $this->confirmResetPin = true;
+        $this->tampilKonfirmasiResetPin = true;
     }
 
     public function resetPin(): void
@@ -178,7 +178,7 @@ class KelolaKolektor extends Component
         $target = User::find($this->resetPinId);
 
         if (! $target) {
-            $this->confirmResetPin = false;
+            $this->tampilKonfirmasiResetPin = false;
             $this->resetPinId = null;
             session()->flash('error', 'Pengguna tidak ditemukan.');
 
@@ -187,7 +187,7 @@ class KelolaKolektor extends Component
 
         $pinBaru = app(ResetPinOlehAdminAction::class)->execute($target);
 
-        $this->confirmResetPin = false;
+        $this->tampilKonfirmasiResetPin = false;
         $this->resetPinId = null;
 
         session()->flash('success', "PIN berhasil direset. PIN baru: {$pinBaru}. Catat sekarang karena hanya ditampilkan sekali. Pengguna wajib mengganti PIN setelah login.");

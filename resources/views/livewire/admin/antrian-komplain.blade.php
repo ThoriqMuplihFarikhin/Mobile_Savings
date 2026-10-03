@@ -93,7 +93,7 @@
         <div class="border-t border-[#ebebeb] px-4 py-3">{{ $komplains->links() }}</div>
     </div>
 
-    @if($showDetail && $selectedKomplain)
+    @if($tampilDetail && $selectedKomplain)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div class="mx-4 w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
                 <h3 class="text-lg font-semibold text-gray-900">Detail Komplain</h3>
@@ -145,7 +145,7 @@
                         @error('catatan') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
                     </div>
                     <div class="flex justify-end gap-3 pt-2">
-                        <button type="button" wire:click="$set('showDetail', false)"
+                        <button type="button" wire:click="$set('tampilDetail', false)"
                             class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
                             Batal
                         </button>

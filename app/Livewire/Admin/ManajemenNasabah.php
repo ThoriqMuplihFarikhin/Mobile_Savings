@@ -48,11 +48,11 @@ class ManajemenNasabah extends Component
 
     public $pin = '';
 
-    public $confirmDelete = false;
+    public $tampilKonfirmasiHapus = false;
 
     public $deleteId = null;
 
-    public bool $confirmResetPin = false;
+    public bool $tampilKonfirmasiResetPin = false;
 
     public ?int $resetPinId = null;
 
@@ -157,7 +157,7 @@ class ManajemenNasabah extends Component
     public function confirmDelete($id)
     {
         $this->deleteId = $id;
-        $this->confirmDelete = true;
+        $this->tampilKonfirmasiHapus = true;
     }
 
     public function delete(): void
@@ -166,7 +166,7 @@ class ManajemenNasabah extends Component
         $nasabahId = DB::table('nasabah_profil')->where('id', $profilId)->value('user_id');
 
         if ($nasabahId === null) {
-            $this->confirmDelete = false;
+            $this->tampilKonfirmasiHapus = false;
             $this->deleteId = null;
 
             return;
@@ -200,7 +200,7 @@ class ManajemenNasabah extends Component
             User::where('id', $nasabahId)->delete();
         });
 
-        $this->confirmDelete = false;
+        $this->tampilKonfirmasiHapus = false;
         $this->deleteId = null;
         session()->flash('success', 'Nasabah berhasil dihapus!');
     }
@@ -208,7 +208,7 @@ class ManajemenNasabah extends Component
     public function confirmResetPin(int $userId): void
     {
         $this->resetPinId = $userId;
-        $this->confirmResetPin = true;
+        $this->tampilKonfirmasiResetPin = true;
     }
 
     public function resetPin(): void
@@ -216,7 +216,7 @@ class ManajemenNasabah extends Component
         $target = User::find($this->resetPinId);
 
         if (! $target) {
-            $this->confirmResetPin = false;
+            $this->tampilKonfirmasiResetPin = false;
             $this->resetPinId = null;
             session()->flash('error', 'Pengguna tidak ditemukan.');
 
@@ -225,7 +225,7 @@ class ManajemenNasabah extends Component
 
         $pinBaru = app(ResetPinOlehAdminAction::class)->execute($target);
 
-        $this->confirmResetPin = false;
+        $this->tampilKonfirmasiResetPin = false;
         $this->resetPinId = null;
 
         session()->flash('success', "PIN berhasil direset. PIN baru: {$pinBaru}. Catat sekarang karena hanya ditampilkan sekali. Pengguna wajib mengganti PIN setelah login.");
