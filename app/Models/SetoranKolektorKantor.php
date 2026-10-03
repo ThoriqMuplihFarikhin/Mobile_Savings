@@ -48,4 +48,43 @@ class SetoranKolektorKantor extends Model
     {
         return $this->hasMany(TransaksiSetoran::class, 'setoran_kolektor_id');
     }
+
+    /**
+     * Ringkasan kas per kolektor: akumulasi selisih rekonsiliasi (status kurang/lebih)
+     * dan saldo berjalan yang belum disetor ke kantor.
+     *
+     * @return array<int, array{selisih_kumulatif: float, saldo_berjalan: float}>
+     */
+    public static function ringkasKasPerKolektor(): array
+    {
+        $ringkas = [];
+
+        $rowsSelisih = static::whereIn('status', ['kurang', 'lebih'])
+            ->whereNotNull('selisih')
+            ->groupBy('kolektor_id')
+            ->selectRaw('kolektor_id, COALESCE(SUM(selisih), 0) as total_selisih')
+            ->get();
+
+        foreach ($rowsSelisih as $row) {
+            $kolektorId = (int) $row->getAttribute('kolektor_id');
+            $ringkas[$kolektorId] = [
+                'selisih_kumulatif' => (float) $row->getAttribute('total_selisih'),
+                'saldo_berjalan' => 0.0,
+            ];
+        }
+
+        $rowsBerjalan = TransaksiSetoran::belumDisetor()
+            ->whereNotNull('input_by')
+            ->groupBy('input_by')
+            ->selectRaw('input_by, COALESCE(SUM(nominal), 0) as total_nominal')
+            ->get();
+
+        foreach ($rowsBerjalan as $row) {
+            $kolektorId = (int) $row->getAttribute('input_by');
+            $ringkas[$kolektorId] ??= ['selisih_kumulatif' => 0.0, 'saldo_berjalan' => 0.0];
+            $ringkas[$kolektorId]['saldo_berjalan'] = (float) $row->getAttribute('total_nominal');
+        }
+
+        return $ringkas;
+    }
 }

@@ -38,9 +38,16 @@
                                     <button wire:click="cancelProcess" class="rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">
                                         Batal
                                     </button>
+                                @elseif($rejectingId === $item->id)
+                                    <button wire:click="cancelReject" class="rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">
+                                        Batal
+                                    </button>
                                 @else
                                     <button wire:click="startProcess({{ $item->id }})" class="btn-primary">
                                         Proses
+                                    </button>
+                                    <button wire:click="startReject({{ $item->id }})" class="rounded-full border border-[#f7d4d6] bg-white px-3 py-1.5 text-xs font-medium text-[#c50000] transition hover:bg-[#f7d4d6]">
+                                        Tolak
                                     </button>
                                 @endif
                             </div>
@@ -82,6 +89,30 @@
                                     wire:confirm="Yakin mengonfirmasi dan menyimpan hasil rekonsiliasi kas ini?"
                                     class="btn-primary">
                                     Konfirmasi &amp; Simpan
+                                </button>
+                            </div>
+                        @endif
+
+                        @if($rejectingId === $item->id)
+                            <div class="mt-4 rounded-lg bg-white p-4 shadow-[inset_0_0_0_1px_#ebebeb]">
+                                <div class="mb-3 rounded-lg bg-[#f7d4d6] px-4 py-3">
+                                    <p class="text-sm font-medium text-[#c50000]">
+                                        Menolak pengajuan akan mengembalikan seluruh setoran ke status belum disetor.
+                                    </p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="mb-1.5 block text-sm font-medium text-gray-900">Alasan Penolakan (Wajib)</label>
+                                    <textarea wire:model="rejectAlasan" rows="2"
+                                        class="w-full rounded-md border border-[#ebebeb] bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+                                        placeholder="Jelaskan alasan penolakan..."></textarea>
+                                    @error('rejectAlasan') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                                </div>
+
+                                <button wire:click="rejectSubmission" wire:loading.attr="disabled"
+                                    wire:confirm="Yakin menolak pengajuan setoran ini?"
+                                    class="rounded-full bg-[#c50000] px-4 py-2 text-xs font-bold text-white transition hover:bg-[#a30000]">
+                                    Tolak Pengajuan
                                 </button>
                             </div>
                         @endif
@@ -212,6 +243,8 @@
                                     <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-indigo-600">Cocok</span>
                                 @elseif($item->status === 'lebih')
                                     <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 font-mono text-xs text-[#ab570a]">Lebih</span>
+                                @elseif($item->status === 'dibatalkan')
+                                    <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 font-mono text-xs text-[#c50000]">Ditolak/Dibatalkan</span>
                                 @else
                                     <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 font-mono text-xs text-[#c50000]">Kurang</span>
                                 @endif

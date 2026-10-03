@@ -25,6 +25,11 @@
         <div class="mb-5 flex items-center gap-3 rounded-2xl bg-amber-50 px-4 py-3.5 text-xs font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 shadow-xs">
             <flux:icon.clock class="size-5 shrink-0 text-amber-600 dark:text-amber-400" />
             <span class="flex-1">Pengajuan setoran kas Anda sedang menunggu verifikasi admin.</span>
+            <button wire:click="batalkan({{ $pengajuanPending->id }})"
+                wire:confirm="Yakin ingin membatalkan pengajuan setoran ini? Seluruh setoran akan kembali belum disetor."
+                class="shrink-0 rounded-xl border border-amber-300 dark:border-amber-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-[11px] font-bold text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/60 transition">
+                Batalkan
+            </button>
         </div>
     @endif
     @if (session('success'))
@@ -67,6 +72,7 @@
                 <textarea wire:model="catatan" rows="2"
                     class="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900/60 px-3 py-2 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10"
                     placeholder="Contoh: Diserahkan tunai ke kasir Mbak Rina..."></textarea>
+                @error('catatan') <p class="mt-1 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
             </div>
             <button wire:click="submit" wire:confirm="Yakin ingin mengajukan setoran kas sebesar Rp {{ number_format($totalBelumDisetor, 0, ',', '.') }} ke kantor?"
                 class="mt-4 w-full rounded-xl bg-zinc-900 dark:bg-white py-3 text-xs font-bold text-white dark:text-zinc-900 shadow-md hover:bg-zinc-800 dark:hover:bg-zinc-100 transition">
@@ -119,6 +125,8 @@
                                     <span class="inline-flex items-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">Cocok</span>
                                 @elseif($item->status === 'lebih')
                                     <span class="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-950/60 px-2.5 py-0.5 text-[11px] font-semibold text-blue-800 dark:text-blue-300">Lebih</span>
+                                @elseif($item->status === 'dibatalkan')
+                                    <span class="inline-flex items-center rounded-full bg-rose-100 dark:bg-rose-950/60 px-2.5 py-0.5 text-[11px] font-semibold text-rose-700 dark:text-rose-300">Dibatalkan</span>
                                 @else
                                     <span class="inline-flex items-center rounded-full bg-rose-100 dark:bg-rose-950/60 px-2.5 py-0.5 text-[11px] font-semibold text-rose-800 dark:text-rose-300">Kurang</span>
                                 @endif

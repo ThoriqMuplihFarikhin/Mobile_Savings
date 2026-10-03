@@ -45,6 +45,10 @@ class RekonsiliasiKas extends Component
 
     public $processKeterangan = '';
 
+    public ?int $rejectingId = null;
+
+    public string $rejectAlasan = '';
+
     public function mount()
     {
         $this->kolektorList = User::where('role', 'kolektor')->where('status_akun', 'aktif')->get();
@@ -71,6 +75,70 @@ class RekonsiliasiKas extends Component
         $this->processingId = null;
         $this->processTotalDiterima = '';
         $this->processKeterangan = '';
+    }
+
+    public function startReject(int $id): void
+    {
+        $this->rejectingId = $id;
+        $this->rejectAlasan = '';
+    }
+
+    public function cancelReject(): void
+    {
+        $this->rejectingId = null;
+        $this->rejectAlasan = '';
+    }
+
+    public function rejectSubmission(): void
+    {
+        $this->validate([
+            'rejectAlasan' => 'required|string|max:500',
+        ]);
+
+        $id = (int) $this->rejectingId;
+
+        try {
+            DB::transaction(function () use ($id) {
+                $setoran = SetoranKolektorKantor::whereKey($id)->lockForUpdate()->first();
+
+                if (! $setoran || $setoran->status !== 'pending') {
+                    throw new \DomainException('Pengajuan setoran ini sudah diproses atau tidak valid.');
+                }
+
+                $setoran->update(['status' => 'dibatalkan']);
+
+                TransaksiSetoran::where('setoran_kolektor_id', $setoran->id)
+                    ->update(['setoran_kolektor_id' => null]);
+            });
+        } catch (\DomainException $e) {
+            session()->flash('error', $e->getMessage());
+
+            return;
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', 'Gagal menolak pengajuan setoran. Silakan coba lagi.');
+
+            return;
+        }
+
+        $setoran = SetoranKolektorKantor::findOrFail($id);
+        $alasan = $this->rejectAlasan;
+
+        ActivityLogger::log('tolak_setoran_kantor', 'setoran_kolektor_kantor', $id, [
+            'kolektor_id' => $setoran->kolektor_id,
+            'alasan' => $alasan,
+        ]);
+
+        ActivityLogger::notify(
+            (int) $setoran->kolektor_id,
+            'Pengajuan setoran ditolak',
+            'Pengajuan setoran ke kantor Anda ditolak oleh admin. Alasan: '.$alasan
+        );
+
+        $this->rejectingId = null;
+        $this->rejectAlasan = '';
+        $this->loadPendingSubmissions();
+        session()->flash('success', 'Pengajuan setoran berhasil ditolak.');
     }
 
     public function processSubmission($id)

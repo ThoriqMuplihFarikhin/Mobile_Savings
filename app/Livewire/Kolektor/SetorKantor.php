@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Kolektor;
 
+use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiSetoran;
@@ -49,6 +50,10 @@ class SetorKantor extends Component
 
     public function submit()
     {
+        $this->validate([
+            'catatan' => 'nullable|string|max:500',
+        ]);
+
         $kolektorId = Auth::id();
 
         try {
@@ -72,6 +77,7 @@ class SetorKantor extends Component
                     throw new \DomainException('Tidak ada setoran yang perlu disetor ke kantor.');
                 }
 
+                // TODO(D4): rumus total_seharusnya tidak diubah — penarikan tunai tidak masuk rekonsiliasi.
                 $setoran = SetoranKolektorKantor::create([
                     'kolektor_id' => $kolektorId,
                     'tanggal_setor' => now()->toDateString(),
@@ -99,16 +105,57 @@ class SetorKantor extends Component
         session()->flash('success', 'Pengajuan setoran ke kantor berhasil diajukan!');
     }
 
+    public function batalkan(int $id): void
+    {
+        try {
+            DB::transaction(function () use ($id) {
+                $setoran = SetoranKolektorKantor::whereKey($id)
+                    ->where('kolektor_id', Auth::id())
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $setoran || $setoran->status !== 'pending') {
+                    throw new \DomainException('Pengajuan setoran ini tidak dapat dibatalkan.');
+                }
+
+                $setoran->update(['status' => 'dibatalkan']);
+
+                TransaksiSetoran::where('setoran_kolektor_id', $setoran->id)
+                    ->update(['setoran_kolektor_id' => null]);
+            });
+        } catch (\DomainException $e) {
+            session()->flash('error', $e->getMessage());
+
+            return;
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', 'Gagal membatalkan pengajuan setoran. Silakan coba lagi.');
+
+            return;
+        }
+
+        ActivityLogger::log('batal_setoran_kantor', 'setoran_kolektor_kantor', $id, [
+            'kolektor_id' => Auth::id(),
+        ]);
+
+        $this->loadData();
+        session()->flash('success', 'Pengajuan setoran ke kantor berhasil dibatalkan.');
+    }
+
     public function render()
     {
         $riwayat = SetoranKolektorKantor::where('kolektor_id', Auth::id())
             ->latest()
             ->paginate(10);
 
-        $menungguVerifikasi = SetoranKolektorKantor::where('kolektor_id', Auth::id())
+        $pengajuanPending = SetoranKolektorKantor::where('kolektor_id', Auth::id())
             ->where('status', 'pending')
-            ->exists();
+            ->first();
 
-        return view('livewire.kolektor.setor-kantor', compact('riwayat', 'menungguVerifikasi'));
+        return view('livewire.kolektor.setor-kantor', [
+            'riwayat' => $riwayat,
+            'menungguVerifikasi' => $pengajuanPending !== null,
+            'pengajuanPending' => $pengajuanPending,
+        ]);
     }
 }
