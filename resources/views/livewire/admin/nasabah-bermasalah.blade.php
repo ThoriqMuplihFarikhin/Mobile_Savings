@@ -117,21 +117,45 @@
                         </select>
                         @error('keputusan_akhir') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
                     </div>
+                    @if($keputusan_akhir === 'lanjut')
+                        <div>
+                            <label class="mb-1.5 block text-sm font-medium text-gray-900">Tunda Hingga (maks. 90 hari)</label>
+                            <input type="date" wire:model="ditunda_hingga"
+                                class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10">
+                            @error('ditunda_hingga') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                        </div>
+                    @endif
+                    @if($keputusan_akhir === 'gagal_dialihkan')
+                        <div>
+                            <label class="mb-1.5 block text-sm font-medium text-gray-900">Produk Tujuan</label>
+                            <select wire:model="produkTujuanId"
+                                class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10">
+                                <option value="">Pilih Produk</option>
+                                @foreach($produkTujuan as $p)
+                                    <option value="{{ $p->id }}">{{ $p->nama }} ({{ $p->tipe }})</option>
+                                @endforeach
+                            </select>
+                            @error('produkTujuanId') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                        </div>
+                    @endif
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-gray-900">Catatan Admin</label>
                         <textarea wire:model="catatan_admin" rows="3"
                             class="w-full rounded-md border border-[#ebebeb] bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
                             placeholder="Catatan..."></textarea>
                     </div>
-                    <div>
-                        <label class="mb-1.5 block text-sm font-medium text-gray-900">Metode Pengambilan</label>
-                        <select wire:model="metode_pengambilan"
-                            class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10">
-                            <option value="">Pilih Metode</option>
-                            <option value="ambil_sendiri">Ambil Sendiri</option>
-                            <option value="diantar_kolektor">Diantar Kolektor</option>
-                        </select>
-                    </div>
+                    @if($keputusan_akhir === 'gagal_dikembalikan')
+                        <div>
+                            <label class="mb-1.5 block text-sm font-medium text-gray-900">Metode Pengambilan</label>
+                            <select wire:model="metode_pengambilan"
+                                class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10">
+                                <option value="">Pilih Metode</option>
+                                <option value="ambil_sendiri">Ambil Sendiri</option>
+                                <option value="diantar_kolektor">Diantar Kolektor</option>
+                            </select>
+                            @error('metode_pengambilan') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                        </div>
+                    @endif
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" wire:click="$set('showDetail', false)"
                             class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">

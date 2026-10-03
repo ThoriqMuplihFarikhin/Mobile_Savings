@@ -23,6 +23,7 @@ class KepesertaanPaket extends Model
         'tunggakan',
         'status_alert',
         'catatan_admin',
+        'ditunda_hingga',
         'keputusan_akhir',
         'metode_pengambilan',
         'status_serah_terima',
@@ -38,6 +39,7 @@ class KepesertaanPaket extends Model
             'total_aktual_terkumpul' => 'decimal:2',
             'tunggakan' => 'decimal:2',
             'tanggal_mulai_ikut' => 'date',
+            'ditunda_hingga' => 'date',
             'tanggal_serah_terima' => 'date',
         ];
     }
@@ -90,7 +92,10 @@ class KepesertaanPaket extends Model
         $statusAlert = 'normal';
         if ($tunggakanHari > 0) {
             $statusAlert = 'peringatan';
-            if ($produk->batas_toleransi_tunggakan_hari && $tunggakanHari >= $produk->batas_toleransi_tunggakan_hari) {
+            $ditundaAktif = $this->ditunda_hingga !== null
+                && ! Carbon::parse($this->ditunda_hingga)->lt(today());
+
+            if (! $ditundaAktif && $produk->batas_toleransi_tunggakan_hari && $tunggakanHari >= $produk->batas_toleransi_tunggakan_hari) {
                 $statusAlert = 'perlu_review';
             }
         }

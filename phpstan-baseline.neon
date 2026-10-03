@@ -1513,18 +1513,6 @@ parameters:
 			path: app/Livewire/Admin/MonitoringSetoran.php
 
 		-
-			message: '#^Call to an undefined method App\\Models\\KepesertaanPaket\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\KepesertaanPaket\>\:\:hitungUlangKepesertaan\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Livewire/Admin/NasabahBermasalah.php
-
-		-
-			message: '#^Call to an undefined method App\\Models\\KepesertaanPaket\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\KepesertaanPaket\>\:\:refresh\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Livewire/Admin/NasabahBermasalah.php
-
-		-
 			message: '#^Method App\\Livewire\\Admin\\NasabahBermasalah\:\:render\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -1533,12 +1521,6 @@ parameters:
 		-
 			message: '#^Method App\\Livewire\\Admin\\NasabahBermasalah\:\:selectKepesertaan\(\) has no return type specified\.$#'
 			identifier: missingType.return
-			count: 1
-			path: app/Livewire/Admin/NasabahBermasalah.php
-
-		-
-			message: '#^Method App\\Livewire\\Admin\\NasabahBermasalah\:\:selectKepesertaan\(\) has parameter \$id with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: app/Livewire/Admin/NasabahBermasalah.php
 
@@ -1574,12 +1556,6 @@ parameters:
 
 		-
 			message: '#^Property App\\Livewire\\Admin\\NasabahBermasalah\:\:\$search has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: app/Livewire/Admin/NasabahBermasalah.php
-
-		-
-			message: '#^Property App\\Livewire\\Admin\\NasabahBermasalah\:\:\$selectedKepesertaan has no type specified\.$#'
 			identifier: missingType.property
 			count: 1
 			path: app/Livewire/Admin/NasabahBermasalah.php
