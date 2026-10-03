@@ -137,22 +137,24 @@
     <div>
         <p class="mb-2.5 px-1 text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Tugas & Kehadiran</p>
         <div class="overflow-hidden rounded-3xl bg-white dark:bg-zinc-800 shadow-sm border border-zinc-100 dark:border-zinc-700/60 divide-y divide-zinc-100 dark:divide-zinc-700/60">
-            {{-- Ajukan Izin --}}
+            {{-- Ajukan Izin (disembunyikan sementara sampai P6.7 selesai; route tetap ada) --}}
+            {{--
             <a href="{{ route('kolektor.izin.index') }}" wire:navigate
                class="group flex items-center gap-3.5 px-5 py-4 transition hover:bg-zinc-50 dark:hover:bg-zinc-700/40">
                 <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-400 group-hover:scale-105 transition-transform">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0121 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                     </svg>
                 </div>
                 <div class="flex-1">
                     <p class="text-sm font-semibold text-zinc-900 dark:text-white">Ajukan Izin / Cuti</p>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">Pengajuan tidak masuk kerja atau ketidakhadiran</p>
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-500 dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                 </svg>
             </a>
+            --}}
 
             {{-- Riwayat Absensi --}}
             <a href="{{ route('kolektor.riwayat-absensi.index') }}" wire:navigate
