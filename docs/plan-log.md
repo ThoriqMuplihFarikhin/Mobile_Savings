@@ -76,3 +76,13 @@ Status: `berjalan` · `selesai` · `tidak reproduksi` · `ditunda` · `dibatalka
 
 - **PHPStan (level 7) gagal sejak baseline**: `vendor/bin/phpstan analyse` melaporkan ±628 error pra-ada (mayoritas `missingType.*` di controller & Livewire yang tidak disentuh audit ini). Tidak ada error baru dari file yang diubah tiap task. Perbaikan menyeluruh agar `composer ci:check` hijau masuk lingkup **T5.x**, bukan task individual. Baseline berjalan: **573** (sejak P3.1).
 - **Cara verifikasi "nol error baru" PHPStan (diperbaiki di P3.2)**: JSON phpstan **membatasi 30 pesan pertama tanpa `-v`** (`"truncated":true`, `"hint":"Pass -v to see all errors"`) — bukan shell yang memotong; strukturnya `error_details` (tidak pernah ada key `files`; cek `$o.files` sebelumnya selalu salah sumber). Wajib: (a) selalu tambah `-v`, (b) bila output >±30 pesan tetap bisa dipotong wrapper shell — jalankan pada path tunggal/terbatas, (c) simpan ke file `*>` lalu diff pasangan `line|identifier` sebelum/sesudah via `git stash push -- <file>`; pasangan dengan identifier sama + garis bergeser = bukan error baru. Total `errors` (angka) selalu utuh dan jadi cek delta.
+
+---
+
+## Audit Oktober 2026 (branch `fix/audit-2026-10`)
+
+Sumber: `IMPLEMENTAIS_PLAN.md`. ID task memakai skema plan baru (P0.1–P7.2); **berbeda isi** dari baris P0.x–P3.2 di atas (audit `fix/audit-hardening` yang sudah merge) — seksi terpisah agar ID tidak ambigu.
+
+| Task | Status | Catatan | Commit |
+|------|--------|---------|--------|
+| P0.1 Baseline | selesai | Kondisi sebelum perbaikan: branch `fix/audit-2026-10` dari `main` (`1cb0e61`, merge audit hardening). `php artisan test --compact` **314 tes, 314 lulus, 0 gagal, 0 skip** (884 asersi, DB `tabungan_digital_test`). `vendor/bin/pint --test` **lulus**. `vendor/bin/phpstan analyse --memory-limit=1G` **573 error** (sesuai ekspektasi ±573 = baseline berjalan plan-log lama). Tidak ada tes merah. Temuan diverifikasi vs deskripsi plan: (a) 6 properti/method bentrok persis tabel P1.1 (5 komponen) + 1 ekstra `NasabahBermasalah::$showDetail` properti **tanpa** method `showDetail` (bukan kasus tombol mati; dicatat, guard test P1.1 tidak mencakupnya); (b) ID task P0.x–P3.2 lama bentrok dengan plan baru → entri plan baru dipisah ke seksi ini. | — |
