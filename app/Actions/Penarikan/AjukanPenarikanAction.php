@@ -31,7 +31,11 @@ class AjukanPenarikanAction
             }
 
             if ($produk->isPaket()) {
-                if ($produk->tanggal_boleh_cair && now()->lt($produk->tanggal_boleh_cair)) {
+                if ($produk->tanggal_boleh_cair === null) {
+                    throw new \InvalidArgumentException('Tanggal pencairan paket belum ditetapkan. Hubungi admin.');
+                }
+
+                if (now()->lt($produk->tanggal_boleh_cair)) {
                     throw new \Exception('Penarikan paket belum bisa dilakukan sebelum tanggal '.$produk->tanggal_boleh_cair->translatedFormat('d M Y'));
                 }
 

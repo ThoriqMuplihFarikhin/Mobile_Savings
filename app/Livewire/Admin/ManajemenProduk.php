@@ -52,6 +52,8 @@ class ManajemenProduk extends Component
 
     public $deleteId = null;
 
+    public int $jumlahPesertaEdit = 0;
+
     public function mount(): void
     {
         $this->isiPaketItems = [['nama' => '', 'jumlah' => '']];
@@ -107,18 +109,23 @@ class ManajemenProduk extends Component
         $this->periode_selesai = '';
         $this->tanggal_boleh_cair = '';
         $this->batas_toleransi = '';
+        $this->jumlahPesertaEdit = 0;
     }
 
     public function save()
     {
+        $paket = $this->tipe === 'paket';
+
         $this->validate([
             'nama' => 'required|string|max:255',
             'tipe' => 'required|in:bebas,paket',
             'persen_komisi' => 'required_if:tipe,bebas|nullable|numeric|min:0|max:100',
             'minimal_setor' => 'nullable|numeric|min:0',
-            'harga_per_hari' => 'required_if:tipe,paket|nullable|numeric|min:0',
+            'harga_per_hari' => $paket ? 'required|numeric|min:1' : 'nullable',
             'uang_tunai' => 'nullable|numeric|min:0',
-            'tanggal_boleh_cair' => 'nullable|date',
+            'periode_mulai' => $paket ? 'required|date' : 'nullable',
+            'periode_selesai' => $paket ? 'required|date|after_or_equal:periode_mulai' : 'nullable',
+            'tanggal_boleh_cair' => $paket ? 'required|date|after_or_equal:periode_selesai' : 'nullable',
             'batas_toleransi' => 'nullable|integer|min:0',
             'isiPaketItems.*.nama' => 'nullable|string|max:255',
             'isiPaketItems.*.jumlah' => 'nullable|string|max:255',
@@ -127,15 +134,16 @@ class ManajemenProduk extends Component
         $data = [
             'nama' => $this->nama,
             'tipe' => $this->tipe,
-            'persen_komisi' => $this->tipe === 'paket' ? 0 : $this->persen_komisi,
+            'persen_komisi' => $paket ? 0 : $this->persen_komisi,
             'minimal_setor' => $this->minimal_setor ?: null,
-            'harga_per_hari' => $this->harga_per_hari ?: null,
-            'tanggal_boleh_cair' => $this->tanggal_boleh_cair ?: null,
+            'harga_per_hari' => $paket ? ($this->harga_per_hari ?: null) : null,
+            'periode_mulai' => $paket ? ($this->periode_mulai ?: null) : null,
+            'periode_selesai' => $paket ? ($this->periode_selesai ?: null) : null,
+            'tanggal_boleh_cair' => $paket ? ($this->tanggal_boleh_cair ?: null) : null,
             'batas_toleransi_tunggakan_hari' => $this->batas_toleransi ?: null,
-            'status' => 'aktif',
         ];
 
-        if ($this->tipe === 'paket') {
+        if ($paket) {
             $items = collect($this->isiPaketItems)
                 ->filter(fn ($item) => trim($item['nama'] ?? '') !== '')
                 ->map(fn ($item) => [
@@ -154,14 +162,18 @@ class ManajemenProduk extends Component
 
             $data['isi_paket'] = ! empty($items) ? $items : null;
             $data['uang_tunai'] = $this->uang_tunai ?: null;
-            $data['periode_mulai'] = $this->periode_mulai ?: null;
-            $data['periode_selesai'] = $this->periode_selesai ?: null;
         }
 
         if ($this->editId) {
-            ProdukTabungan::find($this->editId)->update($data);
+            $produk = ProdukTabungan::find($this->editId);
+            if (! $produk) {
+                session()->flash('error', 'Produk tidak ditemukan.');
+
+                return;
+            }
+            $produk->update($data);
         } else {
-            ProdukTabungan::create($data);
+            ProdukTabungan::create($data + ['status' => 'aktif']);
         }
 
         $this->showForm = false;
@@ -172,6 +184,12 @@ class ManajemenProduk extends Component
     public function edit($id)
     {
         $produk = ProdukTabungan::find($id);
+        if (! $produk) {
+            session()->flash('error', 'Produk tidak ditemukan.');
+
+            return;
+        }
+
         $this->editId = $produk->id;
         $this->nama = $produk->nama;
         $this->tipe = $produk->tipe;
@@ -191,6 +209,7 @@ class ManajemenProduk extends Component
         $this->periode_selesai = $produk->periode_selesai?->format('Y-m-d');
         $this->tanggal_boleh_cair = $produk->tanggal_boleh_cair?->format('Y-m-d');
         $this->batas_toleransi = $produk->batas_toleransi_tunggakan_hari;
+        $this->jumlahPesertaEdit = $produk->kepesertaanPakets()->count();
         $this->showForm = true;
     }
 
@@ -202,11 +221,17 @@ class ManajemenProduk extends Component
 
     public function delete()
     {
-        try {
-            ProdukTabungan::find($this->deleteId)?->delete();
-            session()->flash('success', 'Produk berhasil dihapus!');
-        } catch (QueryException $e) {
-            session()->flash('error', 'Produk ini tidak bisa dihapus karena masih memiliki data transaksi/nasabah terkait. Nonaktifkan produk ini saja alih-alih menghapusnya.');
+        $produk = ProdukTabungan::find($this->deleteId);
+
+        if (! $produk) {
+            session()->flash('error', 'Produk tidak ditemukan.');
+        } else {
+            try {
+                $produk->delete();
+                session()->flash('success', 'Produk berhasil dihapus!');
+            } catch (QueryException $e) {
+                session()->flash('error', 'Produk ini tidak bisa dihapus karena masih memiliki data transaksi/nasabah terkait. Nonaktifkan produk ini saja alih-alih menghapusnya.');
+            }
         }
 
         $this->tampilKonfirmasiHapus = false;

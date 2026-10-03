@@ -44,9 +44,16 @@
                     @if($tipe === 'paket')
                         <div class="sm:col-span-2">
                             <div class="rounded-lg bg-purple-50 px-4 py-3 text-xs text-purple-700">
-                                Paket tidak pakai komisi persentase — nilainya sudah tetap sesuai harga/hari &amp; isi barang di bawah.
+                                Paket tidak pakai komisi persentase — komisi selalu 0% (keputusan D6), nilainya sudah tetap sesuai harga/hari &amp; isi barang di bawah.
                             </div>
                         </div>
+                        @if($editId && $jumlahPesertaEdit > 0)
+                            <div class="sm:col-span-2">
+                                <div class="rounded-lg bg-amber-50 px-4 py-3 text-xs text-amber-700">
+                                    Produk ini sudah diikuti {{ $jumlahPesertaEdit }} peserta. Mengubah harga/hari atau periode akan menghitung ulang tunggakan seluruh peserta.
+                                </div>
+                            </div>
+                        @endif
                     @else
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-gray-900">Komisi (%)</label>
