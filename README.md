@@ -26,6 +26,38 @@ php artisan route:cache
 php artisan view:cache
 ```
 
+Proses daemon yang wajib berjalan di produksi:
+
+- **Scheduler** — cron tiap menit agar perhitungan harian paket (`paket:hitung-ulang` 00:10), pengingat tunggakan (`paket:kirim-pengingat` 08:00), dan `queue:prune-failed` berjalan:
+
+  ```
+  * * * * * cd /path/to/app && php artisan schedule:run >> /dev/null 2>&1
+  ```
+
+- **Queue worker** — notifikasi WhatsApp dikirim lewat antrian job; jalankan worker persisten di bawah Supervisor/systemd, contoh unit systemd (`/etc/systemd/system/mobile-savings-worker.service`):
+
+  ```ini
+  [Unit]
+  Description=Mobile Savings queue worker
+  After=network.target
+
+  [Service]
+  User=www-data
+  WorkingDirectory=/path/to/app
+  ExecStart=/usr/bin/php artisan queue:work --tries=3 --timeout=60
+  Restart=always
+  RestartSec=5
+
+  [Install]
+  WantedBy=multi-user.target
+  ```
+
+  ```bash
+  systemctl enable --now mobile-savings-worker
+  ```
+
+- **Database** — MySQL wajib (SQLite tidak mendukung `lockForUpdate` yang dipakai seluruh transaksi uang; lihat guard di `AppServiceProvider`).
+
 Catatan deploy:
 
 - **Jangan deploy dari zip Windows** — kompresi zip merusak nama file ber-emoji (mis. `⚡security.blade.php` menjadi `#U26a1security.blade.php`) sehingga halaman Volt tidak ditemukan. Gunakan `git clone` di server atau `git archive` untuk membuat artefak.

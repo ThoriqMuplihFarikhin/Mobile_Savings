@@ -40,6 +40,10 @@ class DashboardController extends Controller
             ->whereIn('status', ['approved', 'selesai'])
             ->sum('nominal_komisi');
 
+        $perluReview = KepesertaanPaket::whereNull('keputusan_akhir')
+            ->where('status_alert', 'perlu_review')
+            ->count();
+
         $trenSetoran = collect(range(29, 0))->map(fn ($i) => [
             'tanggal' => Carbon::today()->subDays($i)->format('d M'),
             'nominal' => (float) DB::table('transaksi_setoran')
@@ -84,6 +88,7 @@ class DashboardController extends Controller
             'totalSaldo',
             'setoranHariIni',
             'totalKomisi',
+            'perluReview',
             'trenSetoran',
             'komposisiProduk',
             'transaksiTerbaru',
