@@ -35,6 +35,9 @@
                         <flux:sidebar.item icon="arrow-down-to-line" href="/admin/rekonsiliasi" :current="request()->routeIs('admin.rekonsiliasi.*')" wire:navigate>
                             {{ __('Rekonsiliasi') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="wallet" href="/admin/kas-kolektor" :current="request()->routeIs('admin.kas-kolektor.*')" wire:navigate>
+                            {{ __('Kas Kolektor') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="arrow-up-from-line" href="/admin/penarikan" :current="request()->routeIs('admin.penarikan.*')" wire:navigate>
                             {{ __('Penarikan') }}
                         </flux:sidebar.item>

@@ -58,6 +58,16 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
             </x-kpi-card>
         </a>
+        <a href="{{ route('admin.kas-kolektor.index') }}" wire:navigate class="block transition hover:opacity-80">
+            <x-kpi-card label="Kas di Tangan Kolektor" :value="'Rp ' . number_format($totalKasKolektor, 0, ',', '.')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7V4a1 1 0 00-1-1H5a2 2 0 000 4h15a1 1 0 011 1v4h-3a2 2 0 000 4h3a1 1 0 001-1v-2a1 1 0 00-1-1M3 5v14a2 2 0 002 2h15a1 1 0 001-1v-4" /></svg>
+            </x-kpi-card>
+        </a>
+        <a href="{{ route('admin.kas-kolektor.index') }}" wire:navigate class="block transition hover:opacity-80">
+            <x-kpi-card label="Kolektor Lewat Batas" :value="number_format($kolektorLewatBatas, 0, ',', '.')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </x-kpi-card>
+        </a>
     </div>
 
     {{-- Charts Row --}}

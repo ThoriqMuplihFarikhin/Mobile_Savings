@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Livewire\Admin\KasKolektor;
 use App\Models\AbsensiKolektor;
 use App\Models\KepesertaanPaket;
 use App\Models\LogNotifikasi;
@@ -43,6 +44,10 @@ class DashboardController extends Controller
         $perluReview = KepesertaanPaket::whereNull('keputusan_akhir')
             ->where('status_alert', 'perlu_review')
             ->count();
+
+        $ringkasKasKolektor = KasKolektor::ringkasUntukDashboard();
+        $totalKasKolektor = $ringkasKasKolektor['total_kas'];
+        $kolektorLewatBatas = $ringkasKasKolektor['lewat_batas'];
 
         $trenSetoran = collect(range(29, 0))->map(fn ($i) => [
             'tanggal' => Carbon::today()->subDays($i)->format('d M'),
@@ -89,6 +94,8 @@ class DashboardController extends Controller
             'setoranHariIni',
             'totalKomisi',
             'perluReview',
+            'totalKasKolektor',
+            'kolektorLewatBatas',
             'trenSetoran',
             'komposisiProduk',
             'transaksiTerbaru',

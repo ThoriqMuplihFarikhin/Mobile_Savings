@@ -63,6 +63,20 @@
                 />
 
                 <flux:input
+                    type="number"
+                    wire:model="batasKasKolektor"
+                    label="Batas Kas Kolektor (Rp, 0 = nonaktif)"
+                    placeholder="0"
+                />
+
+                <flux:input
+                    type="number"
+                    wire:model="batasHariKas"
+                    label="Batas Umur Kas Kolektor (hari, 0 = nonaktif)"
+                    placeholder="0"
+                />
+
+                <flux:input
                     wire:model="nomorWaBantuan"
                     label="Nomor WhatsApp Bantuan"
                     placeholder="6281234567890"

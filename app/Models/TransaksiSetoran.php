@@ -91,4 +91,30 @@ class TransaksiSetoran extends Model
     {
         return $query->masihAktif()->where('sudah_disetor_ke_kantor', false);
     }
+
+    /**
+     * Agregasi kas yang dipegang per kolektor dalam satu query GROUP BY.
+     *
+     * @return array<int, array{total: float, jumlah: int, terlama: string|null}>
+     */
+    public static function teragregasiPerKolektor(): array
+    {
+        $rows = static::belumDisetor()
+            ->whereNotNull('input_by')
+            ->groupBy('input_by')
+            ->selectRaw('input_by, COALESCE(SUM(nominal), 0) as total_nominal, COUNT(*) as jumlah_transaksi, MIN(tanggal_transaksi) as tanggal_terlama')
+            ->get();
+
+        $hasil = [];
+        foreach ($rows as $row) {
+            $terlama = $row->getAttribute('tanggal_terlama');
+            $hasil[(int) $row->getAttribute('input_by')] = [
+                'total' => (float) $row->getAttribute('total_nominal'),
+                'jumlah' => (int) $row->getAttribute('jumlah_transaksi'),
+                'terlama' => $terlama !== null ? (string) $terlama : null,
+            ];
+        }
+
+        return $hasil;
+    }
 }

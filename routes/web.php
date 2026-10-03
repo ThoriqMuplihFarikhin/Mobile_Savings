@@ -3,6 +3,7 @@
 use App\Http\Controllers\AbsensiFotoController;
 use App\Http\Controllers\Admin\DetailNasabahController;
 use App\Http\Controllers\Admin\HandoverController;
+use App\Http\Controllers\Admin\KasKolektorController;
 use App\Http\Controllers\Admin\KomisiController;
 use App\Http\Controllers\Admin\KomplainController;
 use App\Http\Controllers\Admin\LaporanController;
@@ -51,6 +52,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/penarikan', [AdminPenarikanController::class, 'index'])->name('penarikan.index');
         Route::get('/komisi', [KomisiController::class, 'index'])->name('komisi.index');
         Route::get('/rekonsiliasi', [RekonsiliasiController::class, 'index'])->name('rekonsiliasi.index');
+        Route::get('/kas-kolektor', [KasKolektorController::class, 'index'])->name('kas-kolektor.index');
         Route::get('/komplain', [KomplainController::class, 'index'])->name('komplain.index');
         Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
         Route::get('/log', [LogController::class, 'index'])->name('log.index');
