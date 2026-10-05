@@ -148,3 +148,13 @@ Sumber: `IMPLEMENTAIS_PLAN.md`. ID task memakai skema plan baru (P0.1–P7.2); *
 - **Backlog P6.8 lain** (tidak dikerjakan sesuai spec): tutup rekening, renewal paket, backup terjadwal (perlu approval paket atau command `mysqldump` mandiri), ekspor PDF/XLSX (D8).
 - **Smoke test manual browser P7.1 belum dilakukan** — sesi tanpa akses browser/Dusk. Perlu verifikasi manual owner: 5 komponen P1.1 (absennya penamaan `$tampil*`), alur komplain penuh, reset PIN dari 3 halaman (ManajemenNasabah/KelolaKolektor/DetailNasabah), penarikan online `rumah_kolektor` end-to-end, input setoran admin, serah terima paket.
 - **Backup database**: fitur backup admin (T3.7) mengandalkan `mysqldump` tersedia di PATH mesin produksi; backup terjadwal belum ada (lihat backlog).
+
+---
+
+## Fase 8 — Follow-up review (branch `fix/audit-2026-10-followup`)
+
+Sumber: `docs/implementation-plan.md` (FOLLOW-UP PLAN, temuan review pasca-implementasi). Aturan kerja sama dengan Bagian 0 plan sebelumnya. ID `P8.x` — seksi terpisah, tidak menimpa ID lama. Keputusan owner baru: **D10** (landing tanpa angka bisnis), **D11** (persetujuan ganda butuh 3 admin), **D12** (kolektor terkunci berkas kas tetap tampil + peringatan).
+
+| Task | Status | Catatan | Commit |
+|------|--------|---------|--------|
+| P8.0 Bersihkan working tree | selesai | **Observasi (tanpa `checkout .`/`reset --hard`/`clean`):** `git status --short` = hanya ` M resources/views/welcome.blade.php` + ` M routes/web.php` (WIP landing page); **tidak ada file terhapus** - `IMPLEMENTAIS_PLAN.md` masih ada & ter-track (commit `cf1cce1`) -> temuan "file plan terhapus" **TIDAK REPRODUKSI**; tidak ada artefak `⚡*` terhapus; `git stash list` kosong. Langkah: (1) branch baru **`fix/audit-2026-10-followup`** dari HEAD `5367f0f`; (2) WIP landing di-stash -> `stash@{0} "landing-wip"` (`routes/web.php` + `welcome.blade.php`), tidak di-commit apa adanya, dilanjut di P8.1 - **owner dimastikan tidak ada sesi/agent lain yang masih menulis ke folder ini** (catatan P6.1: `routes/web.php` sempat 0 byte "oleh proses lain"; indikasi dua aktor); (3) dokumen plan dipindah via `git mv` -> **`docs/implementation-plan.md`** (nama lama `IMPLEMENTAIS_PLAN.md` salah ketik; rujukan baru memakai path baru, referensi lama di entri plan-log historis dibiarkan apa adanya); (4) tree bersih setelah langkah (sebelumnya: cabang aktor lain tetap tidak disentuh). | `chore(P8.0)` |
