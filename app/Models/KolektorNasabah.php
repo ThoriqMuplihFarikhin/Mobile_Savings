@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * Cast `array` pada `hari_kunjungan` mengembalikan daftar nomor hari ISO, bukan string JSON mentah kolom.
+ *
+ * @property array<int, int>|null $hari_kunjungan
+ */
 class KolektorNasabah extends Model
 {
     use HasFactory;
@@ -19,6 +24,7 @@ class KolektorNasabah extends Model
         'tanggal_selesai_ditangani',
         'status',
         'aktif_unik',
+        'hari_kunjungan',
     ];
 
     protected function casts(): array
@@ -27,6 +33,7 @@ class KolektorNasabah extends Model
             'tanggal_mulai_ditangani' => 'date',
             'tanggal_selesai_ditangani' => 'date',
             'aktif_unik' => 'integer',
+            'hari_kunjungan' => 'array',
         ];
     }
 

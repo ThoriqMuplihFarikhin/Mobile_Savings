@@ -37,6 +37,32 @@ class NasabahBinaan extends Component
         $this->resetPage();
     }
 
+    public function toggleHariKunjungan(int $nasabahId, int $hari): void
+    {
+        if ($hari < 1 || $hari > 7) {
+            return;
+        }
+
+        $binaan = KolektorNasabah::where('kolektor_id', Auth::id())
+            ->where('nasabah_id', $nasabahId)
+            ->where('status', 'aktif')
+            ->first();
+
+        if ($binaan === null) {
+            return;
+        }
+
+        $terpilih = array_map('intval', $binaan->hari_kunjungan ?? []);
+
+        $terpilih = in_array($hari, $terpilih, true)
+            ? array_values(array_diff($terpilih, [$hari]))
+            : array_values(array_unique([...$terpilih, $hari]));
+
+        sort($terpilih);
+
+        $binaan->update(['hari_kunjungan' => empty($terpilih) ? null : $terpilih]);
+    }
+
     public function render()
     {
         $kolektorId = Auth::id();
@@ -74,11 +100,20 @@ class NasabahBinaan extends Component
             ->distinct('nasabah_id')
             ->count('nasabah_id');
 
+        $hariKunjungan = KolektorNasabah::where('kolektor_id', $kolektorId)
+            ->where('status', 'aktif')
+            ->get()
+            ->mapWithKeys(fn (KolektorNasabah $pasangan): array => [
+                (int) $pasangan->nasabah_id => array_map('intval', $pasangan->hari_kunjungan ?? []),
+            ])
+            ->all();
+
         return view('livewire.kolektor.nasabah-binaan', compact(
             'nasabahList',
             'totalNasabah',
             'totalSaldoDikelola',
-            'totalNasabahTunggakan'
+            'totalNasabahTunggakan',
+            'hariKunjungan'
         ));
     }
 }

@@ -134,6 +134,25 @@
                     </div>
                 @endif
 
+                {{-- Atur Hari Kunjungan --}}
+                <div class="mt-3 pt-2 border-t border-zinc-100 dark:border-zinc-700/50 flex items-center justify-between gap-2">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 shrink-0">Hari Kunjungan</span>
+                    <div class="flex gap-1">
+                        @foreach (['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as $index => $namaHari)
+                            @php
+                                $nomorHari = $index + 1;
+                                $terpilih = in_array($nomorHari, $hariKunjungan[$profil->user_id] ?? [], true);
+                            @endphp
+                            <button type="button"
+                                    wire:click="toggleHariKunjungan({{ $profil->user_id }}, {{ $nomorHari }})"
+                                    title="{{ $namaHari }}"
+                                    class="h-6 w-6 rounded-full text-[10px] font-bold transition {{ $terpilih ? 'bg-blue-600 text-white shadow-2xs' : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-700/60 dark:hover:bg-zinc-600' }}">
+                                {{ substr($namaHari, 0, 1) }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+
                 {{-- Action Bar --}}
                 <div class="pt-2 border-t border-zinc-100 dark:border-zinc-700/50 flex items-center justify-between">
                     <span class="text-[10px] text-zinc-400">

@@ -9,5 +9,6 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('paket:hitung-ulang')->dailyAt('00:10')->withoutOverlapping()->onOneServer();
+Schedule::command('jadwal:generate')->dailyAt('00:30')->withoutOverlapping()->onOneServer();
 Schedule::command('paket:kirim-pengingat')->dailyAt('08:00')->withoutOverlapping();
 Schedule::command('queue:prune-failed --hours=168')->daily();
