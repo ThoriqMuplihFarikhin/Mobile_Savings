@@ -11,6 +11,7 @@ use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -49,13 +50,7 @@ class DashboardController extends Controller
         $totalKasKolektor = $ringkasKasKolektor['total_kas'];
         $kolektorLewatBatas = $ringkasKasKolektor['lewat_batas'];
 
-        $trenSetoran = collect(range(29, 0))->map(fn ($i) => [
-            'tanggal' => Carbon::today()->subDays($i)->format('d M'),
-            'nominal' => (float) DB::table('transaksi_setoran')
-                ->where('tanggal_transaksi', Carbon::today()->subDays($i))
-                ->whereIn('status', ['tercatat', 'dikoreksi'])
-                ->sum('nominal'),
-        ])->values();
+        $trenSetoran = $this->trenSetoranHarian();
 
         $komposisiProduk = DB::table('saldo_produk')
             ->join('produk_tabungan', 'saldo_produk.produk_id', '=', 'produk_tabungan.id')
@@ -101,6 +96,32 @@ class DashboardController extends Controller
             'transaksiTerbaru',
             'kolektorTeratas',
         ));
+    }
+
+    /**
+     * Tren setoran 30 hari terakhir dalam satu query agregat; hari tanpa setoran diisi 0 di PHP.
+     *
+     * @return Collection<int, array{tanggal: string, nominal: float}>
+     */
+    private function trenSetoranHarian(): Collection
+    {
+        $hariIni = Carbon::today();
+        $rentang = collect(range(29, 0))->map(fn (int $i) => $hariIni->copy()->subDays($i));
+
+        $perTanggal = DB::table('transaksi_setoran')
+            ->selectRaw('tanggal_transaksi, SUM(nominal) as total')
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
+            ->whereBetween('tanggal_transaksi', [
+                $hariIni->copy()->subDays(29)->toDateString(),
+                $hariIni->toDateString(),
+            ])
+            ->groupBy('tanggal_transaksi')
+            ->pluck('total', 'tanggal_transaksi');
+
+        return $rentang->map(fn (Carbon $tanggal) => [
+            'tanggal' => $tanggal->format('d M'),
+            'nominal' => (float) ($perTanggal[$tanggal->toDateString()] ?? 0),
+        ])->values();
     }
 
     private function kolektorDashboard($user)
