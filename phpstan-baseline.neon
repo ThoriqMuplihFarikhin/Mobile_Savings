@@ -883,42 +883,6 @@ parameters:
 			path: app/Livewire/Admin/Laporan.php
 
 		-
-			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Livewire/Admin/Laporan.php
-
-		-
-			message: '#^Parameter \#1 \$stream of function fputcsv expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 17
-			path: app/Livewire/Admin/Laporan.php
-
-		-
-			message: '#^Property App\\Livewire\\Admin\\Laporan\:\:\$bulan has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: app/Livewire/Admin/Laporan.php
-
-		-
-			message: '#^Property App\\Livewire\\Admin\\Laporan\:\:\$periode has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: app/Livewire/Admin/Laporan.php
-
-		-
-			message: '#^Property App\\Livewire\\Admin\\Laporan\:\:\$tahun has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: app/Livewire/Admin/Laporan.php
-
-		-
-			message: '#^Property App\\Livewire\\Admin\\Laporan\:\:\$tanggal has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: app/Livewire/Admin/Laporan.php
-
-		-
 			message: '#^Method App\\Livewire\\Admin\\LogAktivitas\:\:render\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -1251,24 +1215,6 @@ parameters:
 		-
 			message: '#^Method App\\Livewire\\Admin\\ManajemenProduk\:\:updatedTipe\(\) has parameter \$value with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: app/Livewire/Admin/ManajemenProduk.php
-
-		-
-			message: '#^Offset ''jumlah'' on non\-falsy\-string on left side of \?\? does not exist\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Livewire/Admin/ManajemenProduk.php
-
-		-
-			message: '#^Offset ''nama'' on string on left side of \?\? does not exist\.$#'
-			identifier: nullCoalesce.offset
-			count: 2
-			path: app/Livewire/Admin/ManajemenProduk.php
-
-		-
-			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<\*NEVER\*, \*NEVER\*\>\|iterable\<\*NEVER\*, \*NEVER\*\>\|null, array\{\}\|string given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Livewire/Admin/ManajemenProduk.php
 

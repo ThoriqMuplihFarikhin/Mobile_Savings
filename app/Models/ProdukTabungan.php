@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Cast `array` pada `isi_paket` mengembalikan list item, bukan string JSON mentah kolom.
+ *
+ * @property array<int, array<string, mixed>>|null $isi_paket
+ */
 class ProdukTabungan extends Model
 {
     use HasFactory;
