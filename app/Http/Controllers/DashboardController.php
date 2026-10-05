@@ -44,6 +44,7 @@ class DashboardController extends Controller
 
         $perluReview = KepesertaanPaket::whereNull('keputusan_akhir')
             ->where('status_alert', 'perlu_review')
+            ->where('status_serah_terima', 'belum')
             ->count();
 
         $ringkasKasKolektor = KasKolektor::ringkasUntukDashboard();
@@ -145,6 +146,7 @@ class DashboardController extends Controller
         $kepesertaanTerpilih = KepesertaanPaket::with('produk')
             ->whereIn('nasabah_id', $jadwalHariIni->pluck('nasabah_id')->unique()->values())
             ->whereNull('keputusan_akhir')
+            ->where('status_serah_terima', 'belum')
             ->orderByDesc('tunggakan')
             ->get()
             ->groupBy('nasabah_id')
@@ -233,6 +235,7 @@ class DashboardController extends Controller
 
         $kepesertaanAktif = KepesertaanPaket::where('nasabah_id', $user->id)
             ->whereNull('keputusan_akhir')
+            ->where('status_serah_terima', 'belum')
             ->with('produk')
             ->first();
 

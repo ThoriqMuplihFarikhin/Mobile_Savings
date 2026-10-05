@@ -32,6 +32,8 @@ use App\Http\Controllers\Nasabah\PenarikanController;
 use App\Http\Controllers\Nasabah\PengaturanController as NasabahPengaturanController;
 use App\Http\Controllers\Nasabah\RiwayatController;
 use App\Http\Controllers\Nasabah\SaldoController;
+use App\Http\Controllers\SerahTerimaFotoController;
+use App\Http\Controllers\SerahTerimaPaketController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -42,6 +44,13 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/absensi/{absensi}/{jenis}', [AbsensiFotoController::class, 'show'])
         ->where('jenis', 'selfie|tanda-tangan')
         ->name('absensi.foto');
+
+    Route::get('/serah-terima/{kepesertaan}/bukti', [SerahTerimaFotoController::class, 'show'])
+        ->name('serah-terima.bukti');
+
+    Route::get('/serah-terima-paket', [SerahTerimaPaketController::class, 'index'])
+        ->middleware('role:admin|kolektor')
+        ->name('serah-terima.index');
 
     // Admin Routes
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {

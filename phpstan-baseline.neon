@@ -2803,18 +2803,6 @@ parameters:
 			path: app/Models/JadwalKunjungan.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$batas_toleransi_tunggakan_hari\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/KepesertaanPaket.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$harga_per_hari\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/KepesertaanPaket.php
-
-		-
 			message: '#^Class App\\Models\\KepesertaanPaket uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
 			identifier: missingType.generics
 			count: 1
@@ -2829,18 +2817,6 @@ parameters:
 		-
 			message: '#^Method App\\Models\\KepesertaanPaket\:\:nasabah\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
-			count: 1
-			path: app/Models/KepesertaanPaket.php
-
-		-
-			message: '#^Method App\\Models\\KepesertaanPaket\:\:produk\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/KepesertaanPaket.php
-
-		-
-			message: '#^Parameter \#1 \$produk of method App\\Models\\KepesertaanPaket\:\:hitungHariBerjalan\(\) expects App\\Models\\ProdukTabungan, Illuminate\\Database\\Eloquent\\Model given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Models/KepesertaanPaket.php
 

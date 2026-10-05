@@ -59,6 +59,9 @@
                         <flux:sidebar.item icon="circle-plus" href="/admin/setoran" :current="request()->routeIs('admin.setoran.*')" wire:navigate>
                             {{ __('Catat Setoran') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="package" href="/serah-terima-paket" :current="request()->routeIs('serah-terima.*')" wire:navigate>
+                            {{ __('Serah Terima Paket') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="arrow-down-to-line" href="/admin/monitoring-setoran" :current="request()->routeIs('admin.monitoring-setoran.*')" wire:navigate>
                             {{ __('Monitoring Setoran') }}
                         </flux:sidebar.item>
@@ -94,6 +97,9 @@
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="arrow-up-from-line" href="/kolektor/penarikan-offline" :current="request()->routeIs('kolektor.penarikan-offline.*')" wire:navigate>
                             {{ __('Penarikan Offline') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="package" href="/serah-terima-paket" :current="request()->routeIs('serah-terima.*')" wire:navigate>
+                            {{ __('Serah Terima Paket') }}
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="shield-check" href="/kolektor/verifikasi-penarikan" :current="request()->routeIs('kolektor.verifikasi-penarikan.*')" wire:navigate>
                             {{ __('Verifikasi Penarikan') }}

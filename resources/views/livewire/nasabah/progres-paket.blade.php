@@ -10,6 +10,20 @@
         </div>
     </div>
 
+    {{-- Flash Messages --}}
+    @if (session('success'))
+        <div class="flex items-center gap-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 p-4 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
+            <flux:icon.check-circle class="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="flex items-center gap-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 p-4 text-xs font-semibold text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40">
+            <flux:icon.exclamation-triangle class="size-5 shrink-0 text-rose-600 dark:text-rose-400" />
+            <span>{{ session('error') }}</span>
+        </div>
+    @endif
+
     <div class="space-y-4">
         @forelse($kepesertaan as $item)
             @php
@@ -128,6 +142,39 @@
                             @endforeach
                         </div>
                     @endif
+                @endif
+
+                {{-- Pilih Metode Pengambilan --}}
+                @if(
+                    $item->status_serah_terima === 'belum'
+                    && $item->produk?->tanggal_boleh_cair
+                    && \Carbon\Carbon::parse($item->produk->tanggal_boleh_cair)->startOfDay()->lte(today())
+                    && $item->tunggakan == 0
+                )
+                    <div class="mx-5 mt-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 p-4 border border-indigo-200/60 dark:border-indigo-800/40">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Metode Pengambilan</p>
+                        @if($item->metode_pengambilan)
+                            <p class="mt-1 text-xs font-semibold text-zinc-800 dark:text-zinc-100">
+                                {{ $item->metode_pengambilan === 'ambil_sendiri' ? 'Ambil Sendiri' : 'Diantar Kolektor' }} — menunggu penyerahan oleh admin/kolektor.
+                            </p>
+                        @else
+                            <p class="mt-1 text-xs text-zinc-600 dark:text-zinc-400">Pilih cara Anda menerima paket ini:</p>
+                        @endif
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <button type="button" wire:click="pilihMetodePengambilan({{ $item->id }}, 'ambil_sendiri')"
+                                class="rounded-xl border px-3 py-2.5 text-[11px] font-bold transition cursor-pointer {{ $item->metode_pengambilan === 'ambil_sendiri'
+                                    ? 'bg-indigo-600 border-indigo-600 text-white'
+                                    : 'bg-white dark:bg-zinc-800 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40' }}">
+                                Ambil Sendiri
+                            </button>
+                            <button type="button" wire:click="pilihMetodePengambilan({{ $item->id }}, 'diantar_kolektor')"
+                                class="rounded-xl border px-3 py-2.5 text-[11px] font-bold transition cursor-pointer {{ $item->metode_pengambilan === 'diantar_kolektor'
+                                    ? 'bg-indigo-600 border-indigo-600 text-white'
+                                    : 'bg-white dark:bg-zinc-800 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40' }}">
+                                Diantar Kolektor
+                            </button>
+                        </div>
+                    </div>
                 @endif
 
                 {{-- Admin Note --}}

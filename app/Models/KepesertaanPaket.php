@@ -49,6 +49,9 @@ class KepesertaanPaket extends Model
         return $this->belongsTo(User::class, 'nasabah_id');
     }
 
+    /**
+     * @return BelongsTo<ProdukTabungan, $this>
+     */
     public function produk(): BelongsTo
     {
         return $this->belongsTo(ProdukTabungan::class, 'produk_id');
@@ -70,9 +73,19 @@ class KepesertaanPaket extends Model
      *
      * Otomatis menangani: bolong hari, bayar susulan/dobel, DAN bayar lebih
      * (nabung di muka untuk hari-hari berikutnya).
+     *
+     * Kepesertaan yang sudah diserahkan ke nasabah keluar dari hitungan tunggakan.
      */
     public function hitungUlangKepesertaan(bool $simpan = true): array
     {
+        if ($this->status_serah_terima === 'sudah_diterima') {
+            if ($simpan) {
+                $this->update(['tunggakan' => 0, 'status_alert' => 'normal']);
+            }
+
+            return ['tunggakan_hari' => 0, 'tunggakan_rupiah' => 0];
+        }
+
         $produk = $this->produk;
         if (! $produk || ! $produk->harga_per_hari || $produk->harga_per_hari <= 0) {
             return ['tunggakan_hari' => 0, 'tunggakan_rupiah' => 0];
