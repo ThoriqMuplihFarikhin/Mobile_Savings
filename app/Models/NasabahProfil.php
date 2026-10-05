@@ -33,16 +33,25 @@ class NasabahProfil extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function didaftarkanOleh(): BelongsTo
     {
         return $this->belongsTo(User::class, 'didaftarkan_oleh');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function diverifikasiOleh(): BelongsTo
     {
         return $this->belongsTo(User::class, 'diverifikasi_oleh');

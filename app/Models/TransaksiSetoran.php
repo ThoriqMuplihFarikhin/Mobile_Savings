@@ -87,9 +87,20 @@ class TransaksiSetoran extends Model
         return $query->whereIn('status', ['tercatat', 'dikoreksi']);
     }
 
+    /**
+     * Kas yang masih dipegang kolektor: belum disetor ke kantor dan diinput
+     * oleh akun berperan kolektor. Setoran yang dicatat admin (FR-5) ikut
+     * punya `sudah_disetor_ke_kantor = true`, tetapi tetap dikeluarkan di
+     * sini berdasarkan peran `input_by` agar tidak pernah mengisi kas kolektor.
+     */
     public function scopeBelumDisetor(Builder $query): Builder
     {
-        return $query->masihAktif()->where('sudah_disetor_ke_kantor', false);
+        return $query->masihAktif()
+            ->where('sudah_disetor_ke_kantor', false)
+            ->where(function (Builder $sub) {
+                $sub->whereNull('input_by')
+                    ->orWhereIn('input_by', User::where('role', 'kolektor')->select('id'));
+            });
     }
 
     /**

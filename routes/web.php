@@ -3,6 +3,7 @@
 use App\Http\Controllers\AbsensiFotoController;
 use App\Http\Controllers\Admin\DetailNasabahController;
 use App\Http\Controllers\Admin\HandoverController;
+use App\Http\Controllers\Admin\InputSetoranController;
 use App\Http\Controllers\Admin\KasKolektorController;
 use App\Http\Controllers\Admin\KomisiController;
 use App\Http\Controllers\Admin\KomplainController;
@@ -60,6 +61,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/kolektor', [NasabahController::class, 'kolektor'])->name('kolektor.index');
         Route::get('/bermasalah', [NasabahController::class, 'bermasalah'])->name('bermasalah.index');
         Route::get('/monitoring-setoran', [NasabahController::class, 'monitoringSetoran'])->name('monitoring-setoran.index');
+        Route::get('/setoran', [InputSetoranController::class, 'index'])->name('setoran.create');
         Route::get('/monitoring-absensi', [MonitoringAbsensiController::class, 'index'])->name('monitoring-absensi.index');
         Route::get('/pengaturan', [AdminPengaturanController::class, 'index'])->name('pengaturan.index');
 

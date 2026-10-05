@@ -56,6 +56,9 @@
                         <flux:sidebar.item icon="users" href="/admin/kolektor" :current="request()->routeIs('admin.kolektor.*')" wire:navigate>
                             {{ __('Kelola Kolektor') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="circle-plus" href="/admin/setoran" :current="request()->routeIs('admin.setoran.*')" wire:navigate>
+                            {{ __('Catat Setoran') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="arrow-down-to-line" href="/admin/monitoring-setoran" :current="request()->routeIs('admin.monitoring-setoran.*')" wire:navigate>
                             {{ __('Monitoring Setoran') }}
                         </flux:sidebar.item>

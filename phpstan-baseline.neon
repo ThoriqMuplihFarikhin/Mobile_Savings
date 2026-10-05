@@ -991,12 +991,6 @@ parameters:
 			path: app/Livewire/Admin/ManajemenNasabah.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$no_hp\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/ManajemenNasabah.php
-
-		-
 			message: '#^Call to an undefined method App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\:\:nasabahProfil\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -2960,24 +2954,6 @@ parameters:
 
 		-
 			message: '#^Class App\\Models\\NasabahProfil uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/NasabahProfil.php
-
-		-
-			message: '#^Method App\\Models\\NasabahProfil\:\:didaftarkanOleh\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/NasabahProfil.php
-
-		-
-			message: '#^Method App\\Models\\NasabahProfil\:\:diverifikasiOleh\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/NasabahProfil.php
-
-		-
-			message: '#^Method App\\Models\\NasabahProfil\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/NasabahProfil.php
