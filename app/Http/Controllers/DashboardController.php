@@ -9,14 +9,16 @@ use App\Models\LogNotifikasi;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): View
     {
         $user = $request->user();
 
@@ -28,7 +30,7 @@ class DashboardController extends Controller
         };
     }
 
-    private function adminDashboard($user)
+    private function adminDashboard(User $user): View
     {
         $totalNasabah = DB::table('users')->where('role', 'nasabah')->count();
         $totalKolektor = DB::table('users')->where('role', 'kolektor')->count();
@@ -125,7 +127,7 @@ class DashboardController extends Controller
         ])->values();
     }
 
-    private function kolektorDashboard($user)
+    private function kolektorDashboard(User $user): View
     {
         $sudahAbsenHariIni = AbsensiKolektor::where('kolektor_id', $user->id)
             ->where('tanggal', today())
@@ -196,7 +198,7 @@ class DashboardController extends Controller
         return view('dashboard', compact('user', 'stats', 'jadwalHariIni', 'sudahAbsenHariIni', 'nasabahTunggakParah', 'totalNasabahBinaan', 'penarikanMenungguDiantar'));
     }
 
-    private function nasabahDashboard($user)
+    private function nasabahDashboard(User $user): View
     {
         $saldoPerProduk = SaldoProduk::where('nasabah_id', $user->id)
             ->with('produk')
@@ -222,7 +224,7 @@ class DashboardController extends Controller
             'nama' => $t->produk->nama ?? '-',
             'tanggal' => $t->tanggal_transaksi,
             'nominal' => $t->nominal,
-        ])->concat($riwayatPenarikan->filter(fn ($t) => $t->waktu_pencairan)->map(fn ($t) => [
+        ])->concat($riwayatPenarikan->filter(fn (TransaksiPenarikan $t) => $t->waktu_pencairan !== null)->map(fn ($t) => [
             'type' => 'penarikan',
             'nama' => $t->produk->nama ?? '-',
             'tanggal' => $t->waktu_pencairan,
