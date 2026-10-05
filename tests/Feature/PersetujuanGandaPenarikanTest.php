@@ -3,6 +3,7 @@
 use App\Livewire\Admin\ApprovalPenarikan;
 use App\Livewire\Admin\Pengaturan;
 use App\Models\AdminSetting;
+use App\Models\LogAktivitas;
 use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
@@ -55,6 +56,7 @@ it('approve pertama penarikan di atas batas tetap pending tanpa memotong saldo',
     Queue::fake();
     $adminA = User::factory()->admin()->create();
     User::factory()->admin()->create();
+    User::factory()->admin()->create();
     AdminSetting::set('penarikan_batas_dua_approver', '100000');
     $nasabah = User::factory()->nasabah()->create();
     $penarikan = buatPenarikanD9($adminA, $nasabah, 500000, 1000000);
@@ -77,6 +79,7 @@ it('approve kedua oleh admin berbeda mengesahkan penarikan dan memotong saldo', 
     Queue::fake();
     $adminA = User::factory()->admin()->create();
     $adminB = User::factory()->admin()->create();
+    User::factory()->admin()->create();
     AdminSetting::set('penarikan_batas_dua_approver', '100000');
     $nasabah = User::factory()->nasabah()->create();
     $penarikan = buatPenarikanD9($adminA, $nasabah, 500000, 1000000);
@@ -101,6 +104,7 @@ it('approve kedua oleh admin berbeda mengesahkan penarikan dan memotong saldo', 
 it('admin yang sama tidak boleh menyetujui dua kali', function () {
     Queue::fake();
     $adminA = User::factory()->admin()->create();
+    User::factory()->admin()->create();
     User::factory()->admin()->create();
     AdminSetting::set('penarikan_batas_dua_approver', '100000');
     $nasabah = User::factory()->nasabah()->create();
@@ -200,7 +204,7 @@ it('fitur tetap single approval saat batas nol', function () {
         ->and((float) SaldoProduk::where('nasabah_id', $nasabah->id)->value('saldo'))->toBe(500000.0);
 });
 
-it('pengaturan memuat batas dua approver dan memperingatkan bila admin kurang dari dua', function () {
+it('pengaturan memuat batas dua approver dan memperingatkan selama admin kurang dari tiga', function () {
     $admin = User::factory()->admin()->create();
     AdminSetting::set('penarikan_batas_dua_approver', '250000');
 
@@ -214,5 +218,104 @@ it('pengaturan memuat batas dua approver dan memperingatkan bila admin kurang da
     User::factory()->admin()->create();
 
     Livewire::test(Pengaturan::class)
+        ->assertSee('Fitur persetujuan ganda tidak berlaku');
+
+    User::factory()->admin()->create();
+
+    Livewire::test(Pengaturan::class)
         ->assertDontSee('Fitur persetujuan ganda tidak berlaku');
+});
+
+it('fitur persetujuan ganda tidak berlaku hanya dengan dua admin (D11)', function () {
+    Queue::fake();
+    $adminA = User::factory()->admin()->create();
+    User::factory()->admin()->create();
+    AdminSetting::set('penarikan_batas_dua_approver', '100000');
+    $nasabah = User::factory()->nasabah()->create();
+    $penarikan = buatPenarikanD9($adminA, $nasabah, 500000, 1000000);
+
+    $this->actingAs($adminA);
+
+    Livewire::test(ApprovalPenarikan::class)
+        ->call('approve', $penarikan->id)
+        ->assertSee('Penarikan disetujui!');
+
+    $penarikan->refresh();
+
+    expect($penarikan->status)->toBe('approved')
+        ->and((int) $penarikan->disetujui_oleh)->toBe((int) $adminA->id)
+        ->and($penarikan->disetujui_oleh_2)->toBeNull()
+        ->and((float) SaldoProduk::where('nasabah_id', $nasabah->id)->value('saldo'))->toBe(500000.0);
+});
+
+it('admin pertama menyelesaikan sendiri saat fitur ganda berhenti berlaku di tengah jalan (fallback)', function () {
+    Queue::fake();
+    $adminA = User::factory()->admin()->create();
+    $adminB = User::factory()->admin()->create();
+    $adminC = User::factory()->admin()->create();
+    AdminSetting::set('penarikan_batas_dua_approver', '100000');
+    $nasabah = User::factory()->nasabah()->create();
+    $penarikan = buatPenarikanD9($adminA, $nasabah, 500000, 1000000);
+
+    $this->actingAs($adminA);
+    Livewire::test(ApprovalPenarikan::class)->call('approve', $penarikan->id);
+
+    expect($penarikan->fresh()->status)->toBe('pending');
+
+    User::whereIn('id', [$adminB->id, $adminC->id])->update(['role' => 'kolektor']);
+
+    Livewire::test(ApprovalPenarikan::class)
+        ->call('approve', $penarikan->id)
+        ->assertSee('Penarikan disetujui!');
+
+    $penarikan->refresh();
+
+    expect($penarikan->status)->toBe('approved')
+        ->and((int) $penarikan->disetujui_oleh)->toBe((int) $adminA->id)
+        ->and($penarikan->disetujui_oleh_2)->toBeNull()
+        ->and($penarikan->waktu_approval)->not->toBeNull()
+        ->and((float) SaldoProduk::where('nasabah_id', $nasabah->id)->value('saldo'))->toBe(500000.0);
+
+    $log = LogAktivitas::where('aksi', 'approve_penarikan')
+        ->where('entitas_id', $penarikan->id)
+        ->latest('id')
+        ->first();
+
+    expect($log)->not->toBeNull()
+        ->and($log->detail['fallback_admin_kurang'] ?? null)->toBeTrue();
+});
+
+it('fallback tetap mencatat admin kedua yang berbeda tanpa admin ketiga', function () {
+    Queue::fake();
+    $adminA = User::factory()->admin()->create();
+    $adminB = User::factory()->admin()->create();
+    $adminC = User::factory()->admin()->create();
+    AdminSetting::set('penarikan_batas_dua_approver', '100000');
+    $nasabah = User::factory()->nasabah()->create();
+    $penarikan = buatPenarikanD9($adminA, $nasabah, 500000, 1000000);
+
+    $this->actingAs($adminA);
+    Livewire::test(ApprovalPenarikan::class)->call('approve', $penarikan->id);
+
+    $adminC->update(['role' => 'kolektor']);
+
+    $this->actingAs($adminB);
+    Livewire::test(ApprovalPenarikan::class)
+        ->call('approve', $penarikan->id)
+        ->assertSee('Penarikan disetujui!');
+
+    $penarikan->refresh();
+
+    expect($penarikan->status)->toBe('approved')
+        ->and((int) $penarikan->disetujui_oleh)->toBe((int) $adminA->id)
+        ->and((int) $penarikan->disetujui_oleh_2)->toBe((int) $adminB->id)
+        ->and((float) SaldoProduk::where('nasabah_id', $nasabah->id)->value('saldo'))->toBe(500000.0);
+
+    $log = LogAktivitas::where('aksi', 'approve_penarikan')
+        ->where('entitas_id', $penarikan->id)
+        ->latest('id')
+        ->first();
+
+    expect($log)->not->toBeNull()
+        ->and($log->detail['fallback_admin_kurang'] ?? null)->toBeTrue();
 });

@@ -20,6 +20,12 @@ class ApprovalPenarikan extends Component
     use AuthorizesRole;
     use WithPagination;
 
+    /**
+     * Jumlah minimal admin agar persetujuan ganda berlaku (D11): fase-1,
+     * fase-2, dan penandai selesai membutuhkan tiga admin berbeda.
+     */
+    public const MINIMAL_ADMIN_PERSETUJUAN_GANDA = 3;
+
     protected function requiredRole(): string
     {
         return 'admin';
@@ -51,7 +57,8 @@ class ApprovalPenarikan extends Component
     }
 
     /**
-     * Persetujuan ganda (D9) berlaku bila batas > 0, minimal dua admin, dan nominal melebihi batas.
+     * Persetujuan ganda (D9/D11) berlaku bila batas > 0, minimal tiga admin,
+     * dan nominal melebihi batas.
      */
     protected function perluDuaApprover(TransaksiPenarikan $penarikan): bool
     {
@@ -61,7 +68,7 @@ class ApprovalPenarikan extends Component
             return false;
         }
 
-        if (User::where('role', 'admin')->count() < 2) {
+        if (User::where('role', 'admin')->count() < self::MINIMAL_ADMIN_PERSETUJUAN_GANDA) {
             return false;
         }
 
@@ -78,10 +85,13 @@ class ApprovalPenarikan extends Component
             }
 
             $faseKedua = $penarikan->disetujui_oleh !== null;
+            $gandaMasihBerlaku = $faseKedua && $this->perluDuaApprover($penarikan);
 
-            if ($faseKedua && (int) $penarikan->disetujui_oleh === (int) auth()->id()) {
+            if ($gandaMasihBerlaku && (int) $penarikan->disetujui_oleh === (int) auth()->id()) {
                 return ['error' => 'Anda sudah menyetujui pengajuan ini. Persetujuan kedua harus admin lain.'];
             }
+
+            $fallback = $faseKedua && ! $this->perluDuaApprover($penarikan);
 
             $saldo = SaldoProduk::where('nasabah_id', $penarikan->nasabah_id)
                 ->where('produk_id', $penarikan->produk_id)
@@ -117,7 +127,9 @@ class ApprovalPenarikan extends Component
             $penarikan->update([
                 'status' => 'approved',
                 'disetujui_oleh' => $faseKedua ? $penarikan->disetujui_oleh : auth()->id(),
-                'disetujui_oleh_2' => $faseKedua ? auth()->id() : null,
+                'disetujui_oleh_2' => $faseKedua && (int) auth()->id() !== (int) $penarikan->disetujui_oleh
+                    ? auth()->id()
+                    : null,
                 'waktu_approval' => now(),
             ]);
 
@@ -125,11 +137,17 @@ class ApprovalPenarikan extends Component
                 ->where('status', 'aktif')
                 ->value('kolektor_id');
 
-            ActivityLogger::log('approve_penarikan', 'transaksi_penarikan', $id, [
+            $detail = [
                 'nasabah_id' => $penarikan->nasabah_id,
                 'nominal' => $penarikan->nominal_diminta,
                 'kolektor_id' => $kolektorPenanggungJawab,
-            ]);
+            ];
+
+            if ($fallback) {
+                $detail['fallback_admin_kurang'] = true;
+            }
+
+            ActivityLogger::log('approve_penarikan', 'transaksi_penarikan', $id, $detail);
 
             return ['tahap' => 'final', 'penarikan' => $penarikan];
         });

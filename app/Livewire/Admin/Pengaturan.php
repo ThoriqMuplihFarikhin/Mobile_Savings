@@ -245,7 +245,7 @@ class Pengaturan extends Component
     public function render()
     {
         $peringatanDuaApprover = (int) AdminSetting::get('penarikan_batas_dua_approver', '0') > 0
-            && User::where('role', 'admin')->count() < 2;
+            && User::where('role', 'admin')->count() < ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA;
 
         return view('livewire.admin.pengaturan', compact('peringatanDuaApprover'));
     }
