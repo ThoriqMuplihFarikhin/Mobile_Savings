@@ -18,7 +18,7 @@
     @endif
 
     <div class="mb-4 flex gap-2">
-        @foreach(['pending' => 'Pending', 'approved' => 'Disetujui', 'selesai' => 'Selesai', 'ditolak' => 'Ditolak'] as $value => $label)
+        @foreach(['pending' => 'Pending', 'approved' => 'Disetujui', 'selesai' => 'Selesai', 'ditolak' => 'Ditolak', 'dibatalkan' => 'Dibatalkan', 'kedaluwarsa' => 'Kedaluwarsa'] as $value => $label)
             <button wire:click="$set('statusFilter', '{{ $value }}')"
                 class="rounded-full px-4 py-2 text-sm font-medium transition {{ $statusFilter === $value ? 'bg-indigo-800 text-white' : 'bg-gray-50 text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb] hover:bg-white' }}">
                 {{ $label }}
@@ -58,6 +58,10 @@
                                     <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-indigo-600">Disetujui</span>
                                 @elseif($item->status === 'selesai')
                                     <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-[#0070f3]">Selesai</span>
+                                @elseif($item->status === 'dibatalkan')
+                                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 font-mono text-xs text-gray-600">Dibatalkan</span>
+                                @elseif($item->status === 'kedaluwarsa')
+                                    <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 font-mono text-xs text-rose-600">Kedaluwarsa</span>
                                 @else
                                     <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 font-mono text-xs text-[#c50000]">Ditolak</span>
                                 @endif

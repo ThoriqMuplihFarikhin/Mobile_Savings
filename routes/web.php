@@ -34,6 +34,7 @@ use App\Http\Controllers\Nasabah\RiwayatController;
 use App\Http\Controllers\Nasabah\SaldoController;
 use App\Http\Controllers\SerahTerimaFotoController;
 use App\Http\Controllers\SerahTerimaPaketController;
+use App\Http\Controllers\StrukSetoranController;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
@@ -51,6 +52,9 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/serah-terima-paket', [SerahTerimaPaketController::class, 'index'])
         ->middleware('role:admin|kolektor')
         ->name('serah-terima.index');
+
+    Route::get('/struk/setoran/{setoran}', [StrukSetoranController::class, 'show'])
+        ->name('struk.setoran');
 
     // Admin Routes
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {

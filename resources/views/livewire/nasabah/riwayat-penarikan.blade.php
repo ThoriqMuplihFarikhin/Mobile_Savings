@@ -10,6 +10,20 @@
         </div>
     </div>
 
+    {{-- Flash Messages --}}
+    @if (session('success'))
+        <div class="flex items-center gap-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 p-4 text-xs font-semibold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
+            <flux:icon.check-circle class="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="flex items-center gap-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 p-4 text-xs font-semibold text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/40">
+            <flux:icon.exclamation-triangle class="size-5 shrink-0 text-rose-600 dark:text-rose-400" />
+            <span>{{ session('error') }}</span>
+        </div>
+    @endif
+
     {{-- Withdrawal Cards --}}
     <div class="space-y-3">
         @forelse($penarikan as $item)
@@ -18,6 +32,8 @@
                     'pending'  => ['label' => 'Menunggu', 'class' => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/60'],
                     'approved' => ['label' => 'Disetujui', 'class' => 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/60'],
                     'selesai'  => ['label' => 'Selesai', 'class' => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60'],
+                    'dibatalkan' => ['label' => 'Dibatalkan', 'class' => 'bg-zinc-100 dark:bg-zinc-700/60 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-600'],
+                    'kedaluwarsa' => ['label' => 'Kedaluwarsa', 'class' => 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/60'],
                     default    => ['label' => 'Ditolak', 'class' => 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800/60'],
                 };
             @endphp
@@ -61,6 +77,17 @@
                         </p>
                     </div>
                 </div>
+
+                @if($item->status === 'pending')
+                    <div class="mt-3.5 flex justify-end">
+                        <button type="button"
+                                wire:click="batalkan({{ $item->id }})"
+                                wire:confirm="Yakin membatalkan pengajuan penarikan ini?"
+                                class="rounded-xl border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/70 transition">
+                            Batalkan
+                        </button>
+                    </div>
+                @endif
             </div>
         @empty
             <div class="rounded-3xl bg-white dark:bg-zinc-800 p-10 text-center border border-zinc-200/80 dark:border-zinc-700/80 shadow-xs">
