@@ -49,6 +49,8 @@ Autentikasi: **No. HP + PIN 6 digit** untuk seluruh role, dengan proteksi brute-
 
 ## 4. Kebutuhan Fungsional (Functional Requirements)
 
+> **Status build `fix/audit-2026-10`:** centang `[x]` pada FR yang terpenuhi dan terverifikasi lewat tes otomatis (pencatatan: `docs/plan-log.md` seksi P7.2). FR tanpa centang belum dikonfirmasi pada build ini.
+
 ### 4.1 Pendaftaran & Manajemen Nasabah
 - FR-1: Nasabah **tidak bisa mendaftar sendiri** — hanya admin atau kolektor yang bisa mendaftarkan
 - FR-2: Jika didaftarkan kolektor → status `pending_verifikasi`, wajib diverifikasi admin sebelum akun aktif
@@ -56,7 +58,7 @@ Autentikasi: **No. HP + PIN 6 digit** untuk seluruh role, dengan proteksi brute-
 - FR-4: Admin bisa mencari, memfilter, melihat detail, mengaktifkan/menonaktifkan, dan reset PIN nasabah
 
 ### 4.2 Setoran
-- FR-5: Hanya kolektor dan admin yang bisa menginput transaksi setoran (nasabah tidak bisa input sendiri)
+- [x] FR-5: Hanya kolektor dan admin yang bisa menginput transaksi setoran (nasabah tidak bisa input sendiri)
 - FR-6: Input bisa dilakukan real-time (saat di rumah nasabah) atau susulan (dari buku fisik, dengan tanggal transaksi bisa mundur/backdate)
 - FR-7: Saldo nasabah **langsung bertambah** saat transaksi diinput — tidak ada jeda approval
 - FR-8: Admin bisa mengoreksi atau membatalkan transaksi setoran yang keliru, dengan alasan wajib diisi dan riwayat perubahan tersimpan
@@ -74,15 +76,15 @@ Autentikasi: **No. HP + PIN 6 digit** untuk seluruh role, dengan proteksi brute-
 - FR-16: Tabungan Bebas tidak memiliki kewajiban setor harian — nasabah boleh tidak menabung pada hari tertentu tanpa konsekuensi
 - FR-17: Tabungan Paket memiliki kewajiban cicilan harian tetap. Jika nasabah tidak menabung suatu hari, sistem otomatis menghitung tunggakan yang harus dilunasi (2x lipat) pada kesempatan setor berikutnya
 - FR-18: Sistem menghitung otomatis: jumlah hari berjalan, total seharusnya terkumpul, total aktual terkumpul, dan tunggakan untuk tiap kepesertaan paket
-- FR-19: Jika tunggakan melewati batas toleransi (dapat dikonfigurasi admin per produk), sistem memunculkan alert ke admin — keputusan akhir (memberi kelonggaran, menyatakan gagal, dsb) dilakukan manual oleh admin
+- [x] FR-19: Jika tunggakan melewati batas toleransi (dapat dikonfigurasi admin per produk), sistem memunculkan alert ke admin — keputusan akhir (memberi kelonggaran, menyatakan gagal, dsb) dilakukan manual oleh admin
 
 ### 4.5 Pencairan & Serah Terima Paket
-- FR-20: Setelah lunas dan `tanggal_boleh_cair` tercapai, nasabah dapat memilih metode pengambilan barang: ambil sendiri (ke kantor/rumah kolektor) atau diantar kolektor
-- FR-21: Setiap pencairan paket wajib dicatat status serah terima (belum/sudah diterima), termasuk siapa yang mengonfirmasi dan kapan
+- [x] FR-20: Setelah lunas dan `tanggal_boleh_cair` tercapai, nasabah dapat memilih metode pengambilan barang: ambil sendiri (ke kantor/rumah kolektor) atau diantar kolektor
+- [x] FR-21: Setiap pencairan paket wajib dicatat status serah terima (belum/sudah diterima), termasuk siapa yang mengonfirmasi dan kapan
 
 ### 4.6 Kolektor & Penugasan
 - FR-22: Admin dapat menugaskan (assign) sejumlah nasabah ke kolektor tertentu, dengan riwayat penugasan tersimpan (termasuk histori jika terjadi perpindahan)
-- FR-23: Kolektor memiliki halaman jadwal kunjungan harian dengan status per kunjungan (dikunjungi/dilewati/nasabah tidak ada)
+- [x] FR-23: Kolektor memiliki halaman jadwal kunjungan harian dengan status per kunjungan (dikunjungi/dilewati/nasabah tidak ada)
 - FR-24: Ketika kolektor resign/pindah wilayah, sistem menyediakan alur handover: kas yang masih dipegang wajib disetor lunas terlebih dahulu, lalu seluruh nasabah dialihkan ke kolektor pengganti
 
 ### 4.7 Rekonsiliasi Kas
@@ -96,10 +98,10 @@ Autentikasi: **No. HP + PIN 6 digit** untuk seluruh role, dengan proteksi brute-
 - FR-30: Nasabah menerima notifikasi setiap ada perubahan status komplainnya
 
 ### 4.9 Notifikasi
-- FR-31: Sistem mengirim notifikasi ke nasabah (setoran tercatat, penarikan disetujui, reminder tunggakan, dll) melalui **dua kanal sekaligus**: WhatsApp otomatis dan notifikasi in-app
+- [x] FR-31: Sistem mengirim notifikasi ke nasabah (setoran tercatat, penarikan disetujui, reminder tunggakan, dll) melalui **dua kanal sekaligus**: WhatsApp otomatis dan notifikasi in-app
 
 ### 4.10 Laporan & Audit
-- FR-32: Admin dapat melihat dan mengekspor laporan (harian/bulanan) mencakup total setoran, penarikan, komisi, per kolektor, dan per paket (termasuk kalkulasi kebutuhan barang untuk pengadaan sembako)
+- [x] FR-32: Admin dapat melihat dan mengekspor laporan (harian/bulanan) mencakup total setoran, penarikan, komisi, per kolektor, dan per paket (termasuk kalkulasi kebutuhan barang untuk pengadaan sembako)
 - FR-33: Seluruh aksi penting (input, koreksi, approval, verifikasi, perubahan data) tercatat di log aktivitas dengan jejak siapa dan kapan
 
 ---

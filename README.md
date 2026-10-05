@@ -28,7 +28,12 @@ php artisan view:cache
 
 Proses daemon yang wajib berjalan di produksi:
 
-- **Scheduler** — cron tiap menit agar perhitungan harian paket (`paket:hitung-ulang` 00:10), pengingat tunggakan (`paket:kirim-pengingat` 08:00), dan `queue:prune-failed` berjalan:
+- **Scheduler** — cron tiap menit agar seluruh tugas terjadwal berjalan (daftar lengkap via `php artisan schedule:list`, dapat diuji satu per satu dengan `php artisan schedule:test --name "<perintah>"`):
+  - `paket:hitung-ulang` — 00:10 (hitung ulang progres & tunggakan paket harian)
+  - `jadwal:generate` — 00:30 (hasilkan jadwal kunjungan kolektor harian)
+  - `penarikan:kedaluwarsakan` — 00:40 (tandai pengajuan penarikan yang kedaluwarsa)
+  - `paket:kirim-pengingat` — 08:00 (pengingat tunggakan via WhatsApp + in-app)
+  - `queue:prune-failed --hours=168` — 00:00 (bersihkan job gagal lebih dari 7 hari)
 
   ```
   * * * * * cd /path/to/app && php artisan schedule:run >> /dev/null 2>&1
