@@ -23,6 +23,7 @@ class TransaksiPenarikan extends Model
         'lokasi_pengambilan',
         'status',
         'disetujui_oleh',
+        'disetujui_oleh_2',
         'waktu_approval',
         'waktu_pencairan',
         'diverifikasi_oleh',
@@ -57,6 +58,14 @@ class TransaksiPenarikan extends Model
     public function disetujuiOleh(): BelongsTo
     {
         return $this->belongsTo(User::class, 'disetujui_oleh');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function disetujuiOleh2(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'disetujui_oleh_2');
     }
 
     public function diverifikasiOleh(): BelongsTo

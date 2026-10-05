@@ -69,11 +69,20 @@
                             <td class="px-4 py-3">
                                 @if($item->status === 'pending')
                                     <div class="flex items-center gap-2">
-                                        <button wire:click="approve({{ $item->id }})" wire:confirm="Yakin menyetujui penarikan ini? Saldo nasabah akan dikurangi dan penarikan diproses." class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Setuju</button>
+                                        @if($item->disetujui_oleh === null || (int) $item->disetujui_oleh !== (int) auth()->id())
+                                            <button wire:click="approve({{ $item->id }})" wire:confirm="Yakin menyetujui penarikan ini? Saldo nasabah akan dikurangi dan penarikan diproses." class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Setuju</button>
+                                        @else
+                                            <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 font-mono text-xs text-[#ab570a]">Menunggu persetujuan admin kedua</span>
+                                        @endif
                                         <button wire:click="reject({{ $item->id }})" wire:confirm="Yakin menolak pengajuan penarikan ini?" class="inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Tolak</button>
                                     </div>
+                                    @if($item->disetujui_oleh !== null && (int) $item->disetujui_oleh !== (int) auth()->id())
+                                        <div class="mt-1 text-[11px] text-gray-500">Disetujui pertama oleh {{ $item->disetujuiOleh->name ?? '-' }}</div>
+                                    @endif
                                 @elseif($item->status === 'approved')
-                                    @if($item->jalur_pengajuan === 'offline' && $item->lokasi_pengambilan === 'rumah_kolektor')
+                                    @if($item->disetujui_oleh_2 !== null && in_array((int) auth()->id(), array_map('intval', [$item->disetujui_oleh, $item->disetujui_oleh_2]), true))
+                                        <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 font-mono text-xs text-[#ab570a]">Menunggu admin lain menyelesaikan</span>
+                                    @elseif($item->jalur_pengajuan === 'offline' && $item->lokasi_pengambilan === 'rumah_kolektor')
                                         <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 font-mono text-xs text-[#ab570a]">Menunggu verifikasi kolektor</span>
                                     @else
                                         <button wire:click="toggleSelesai({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Tandai Selesai</button>

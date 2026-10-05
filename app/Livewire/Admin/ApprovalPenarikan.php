@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\AdminSetting;
 use App\Models\KolektorNasabah;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
@@ -41,7 +42,7 @@ class ApprovalPenarikan extends Component
 
     public function render()
     {
-        $penarikan = TransaksiPenarikan::with(['nasabah', 'produk'])
+        $penarikan = TransaksiPenarikan::with(['nasabah', 'produk', 'disetujuiOleh'])
             ->where('status', $this->statusFilter)
             ->latest()
             ->paginate(10);
@@ -49,13 +50,37 @@ class ApprovalPenarikan extends Component
         return view('livewire.admin.approval-penarikan', compact('penarikan'));
     }
 
+    /**
+     * Persetujuan ganda (D9) berlaku bila batas > 0, minimal dua admin, dan nominal melebihi batas.
+     */
+    protected function perluDuaApprover(TransaksiPenarikan $penarikan): bool
+    {
+        $batas = (int) AdminSetting::get('penarikan_batas_dua_approver', '0');
+
+        if ($batas <= 0) {
+            return false;
+        }
+
+        if (User::where('role', 'admin')->count() < 2) {
+            return false;
+        }
+
+        return (float) $penarikan->nominal_diminta > $batas;
+    }
+
     public function approve($id)
     {
-        $penarikan = DB::transaction(function () use ($id) {
+        $hasil = DB::transaction(function () use ($id) {
             $penarikan = TransaksiPenarikan::where('id', $id)->lockForUpdate()->first();
 
             if (! $penarikan || $penarikan->status !== 'pending') {
                 return null;
+            }
+
+            $faseKedua = $penarikan->disetujui_oleh !== null;
+
+            if ($faseKedua && (int) $penarikan->disetujui_oleh === (int) auth()->id()) {
+                return ['error' => 'Anda sudah menyetujui pengajuan ini. Persetujuan kedua harus admin lain.'];
             }
 
             $saldo = SaldoProduk::where('nasabah_id', $penarikan->nasabah_id)
@@ -69,11 +94,30 @@ class ApprovalPenarikan extends Component
                 return null;
             }
 
+            if (! $faseKedua && $this->perluDuaApprover($penarikan)) {
+                $penarikan->update([
+                    'disetujui_oleh' => auth()->id(),
+                ]);
+
+                $kolektorPenanggungJawab = KolektorNasabah::where('nasabah_id', $penarikan->nasabah_id)
+                    ->where('status', 'aktif')
+                    ->value('kolektor_id');
+
+                ActivityLogger::log('approve_penarikan_pertama', 'transaksi_penarikan', $id, [
+                    'nasabah_id' => $penarikan->nasabah_id,
+                    'nominal' => $penarikan->nominal_diminta,
+                    'kolektor_id' => $kolektorPenanggungJawab,
+                ]);
+
+                return ['tahap' => 'pertama', 'penarikan' => $penarikan];
+            }
+
             $saldo->decrement('saldo', $penarikan->nominal_diminta);
 
             $penarikan->update([
                 'status' => 'approved',
-                'disetujui_oleh' => auth()->id(),
+                'disetujui_oleh' => $faseKedua ? $penarikan->disetujui_oleh : auth()->id(),
+                'disetujui_oleh_2' => $faseKedua ? auth()->id() : null,
                 'waktu_approval' => now(),
             ]);
 
@@ -87,8 +131,22 @@ class ApprovalPenarikan extends Component
                 'kolektor_id' => $kolektorPenanggungJawab,
             ]);
 
-            return $penarikan;
+            return ['tahap' => 'final', 'penarikan' => $penarikan];
         });
+
+        if (is_array($hasil) && isset($hasil['error'])) {
+            session()->flash('error', $hasil['error']);
+
+            return;
+        }
+
+        if (is_array($hasil) && $hasil['tahap'] === 'pertama') {
+            session()->flash('success', 'Persetujuan pertama tercatat. Menunggu persetujuan admin kedua.');
+
+            return;
+        }
+
+        $penarikan = is_array($hasil) ? $hasil['penarikan'] : null;
 
         if ($penarikan) {
             try {
@@ -161,6 +219,14 @@ class ApprovalPenarikan extends Component
 
             if (! $penarikan || $penarikan->status !== 'approved') {
                 return null;
+            }
+
+            if ($penarikan->disetujui_oleh_2 !== null && in_array(
+                (int) auth()->id(),
+                array_map('intval', [$penarikan->disetujui_oleh, $penarikan->disetujui_oleh_2]),
+                true
+            )) {
+                return ['error' => 'Penarikan dengan persetujuan ganda harus ditandai selesai oleh admin lain.'];
             }
 
             $isOverrideRumah = $penarikan->lokasi_pengambilan === 'rumah_kolektor';
