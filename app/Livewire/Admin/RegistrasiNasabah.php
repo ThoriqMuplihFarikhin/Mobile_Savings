@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Pin\KirimPinAwalAction;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\User;
 use App\Support\NomorHp;
+use App\Support\Pin;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -63,7 +65,7 @@ class RegistrasiNasabah extends Component
             'pekerjaan' => 'nullable|string',
         ]);
 
-        $pinDefault = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $pinDefault = Pin::acak();
 
         $user = User::create([
             'name' => $this->nama,
@@ -95,6 +97,11 @@ class RegistrasiNasabah extends Component
 
         $this->showForm = false;
         $this->reset(['nama', 'noHp', 'alamat', 'tanggalLahir', 'jenisKelamin', 'pekerjaan']);
-        session()->flash('success', "Nasabah berhasil didaftarkan! PIN awal: {$pinDefault} — sampaikan ke nasabah secara langsung/aman. Nasabah wajib login dan mengganti PIN sebelum penarikan pertama.");
+
+        $terkirim = app(KirimPinAwalAction::class)->kirim($user, $pinDefault);
+
+        session()->flash('success', $terkirim
+            ? 'Nasabah berhasil didaftarkan! PIN awal dikirim ke WhatsApp nasabah dan tidak ditampilkan di sini. Nasabah wajib login dan mengganti PIN sebelum penarikan pertama.'
+            : "Nasabah berhasil didaftarkan! PIN awal: {$pinDefault} — sampaikan ke nasabah secara langsung/aman. Nasabah wajib login dan mengganti PIN sebelum penarikan pertama.");
     }
 }

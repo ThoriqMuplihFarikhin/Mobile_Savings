@@ -36,4 +36,16 @@ class Pin
 
         return $naik || $turun || in_array($pin, self::DILARANG, true);
     }
+
+    /**
+     * PIN 6 digit acak yang pasti lolos uji Pin::lemah.
+     */
+    public static function acak(): string
+    {
+        do {
+            $pin = (string) random_int(100000, 999999);
+        } while (self::lemah($pin));
+
+        return $pin;
+    }
 }

@@ -3,10 +3,12 @@
 namespace App\Livewire\Admin;
 
 use App\Actions\Kolektor\TugaskanNasabahAction;
+use App\Actions\Pin\KirimPinAwalAction;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
+use App\Models\User;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -80,7 +82,13 @@ class VerifikasiNasabah extends Component
         ActivityLogger::log('verifikasi_nasabah', 'nasabah_profil', (int) $id, [
             'user_id' => $hasil['user_id'],
         ]);
-        session()->flash('success', 'Nasabah berhasil diverifikasi!');
+
+        $nasabah = User::find((int) $hasil['user_id']);
+        $pin = $nasabah ? app(KirimPinAwalAction::class)->buatDanKirim($nasabah) : null;
+
+        session()->flash('success', $pin === null
+            ? 'Nasabah berhasil diverifikasi! PIN awal dikirim ke WhatsApp nasabah dan tidak ditampilkan di sini. Nasabah wajib mengganti PIN setelah login.'
+            : "Nasabah berhasil diverifikasi! PIN awal: {$pin} — catat sekarang karena hanya ditampilkan sekali, lalu sampaikan ke nasabah. Nasabah wajib mengganti PIN setelah login.");
     }
 
     public function reject($id)
