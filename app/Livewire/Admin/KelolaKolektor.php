@@ -6,6 +6,7 @@ use App\Actions\Kolektor\TugaskanNasabahAction;
 use App\Actions\Pin\ResetPinOlehAdminAction;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
+use App\Models\LogHandoverKolektor;
 use App\Models\NasabahProfil;
 use App\Models\User;
 use App\Support\NomorHp;
@@ -92,6 +93,13 @@ class KelolaKolektor extends Component
 
         if ($this->editId) {
             $user = User::find($this->editId);
+
+            if (! $user) {
+                session()->flash('error', 'Kolektor tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+                return;
+            }
+
             $user->update([
                 'name' => $this->name,
                 'no_hp' => $this->noHp,
@@ -125,7 +133,14 @@ class KelolaKolektor extends Component
 
     public function edit($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::find($id);
+
+        if (! $user instanceof User || $user->role !== 'kolektor') {
+            session()->flash('error', 'Kolektor tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+            return;
+        }
+
         $this->editId = $user->id;
         $this->name = $user->name;
         $this->noHp = $user->no_hp;
@@ -155,6 +170,12 @@ class KelolaKolektor extends Component
     {
         $user = User::find($id);
         if (! $user || $user->role !== 'kolektor') {
+            return;
+        }
+
+        if (LogHandoverKolektor::where('kolektor_lama_id', $user->id)->exists()) {
+            session()->flash('error', 'Status kolektor ini berasal dari serah terima (handover) nasabah. Kolektor lama sengaja dinonaktifkan; jangan dibuka kunci lewat tombol ini.');
+
             return;
         }
 
@@ -195,14 +216,31 @@ class KelolaKolektor extends Component
 
     public function toggleAssign($id)
     {
+        $kolektor = User::find($id);
+
+        if (! $kolektor instanceof User || $kolektor->role !== 'kolektor') {
+            $this->showAssign = false;
+            $this->selectedKolektor = null;
+            $this->availableNasabah = collect();
+            session()->flash('error', 'Kolektor tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+            return;
+        }
+
         $this->showAssign = true;
-        $this->selectedKolektor = User::find($id);
+        $this->selectedKolektor = $kolektor;
         $this->assignNasabahId = '';
         $this->searchNasabah();
     }
 
     public function searchNasabah()
     {
+        if (! $this->selectedKolektor instanceof User) {
+            $this->availableNasabah = collect();
+
+            return;
+        }
+
         $assignedIds = KolektorNasabah::where('kolektor_id', $this->selectedKolektor->id)
             ->where('status', 'aktif')
             ->pluck('nasabah_id')
@@ -216,6 +254,12 @@ class KelolaKolektor extends Component
 
     public function assignNasabah()
     {
+        if (! $this->selectedKolektor instanceof User) {
+            session()->flash('error', 'Pilih kolektor terlebih dahulu.');
+
+            return;
+        }
+
         $this->validate([
             'assignNasabahId' => 'required|exists:users,id',
         ]);

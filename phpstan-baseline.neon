@@ -595,24 +595,6 @@ parameters:
 			path: app/Livewire/Admin/HandoverKolektor.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/KelolaKolektor.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/KelolaKolektor.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\:\:\$no_hp\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/KelolaKolektor.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\:\:\$role\.$#'
 			identifier: property.notFound
 			count: 1

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Support\NomorHp;
 use App\Support\Pin;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -68,26 +69,30 @@ class DaftarNasabah extends Component
 
         $pinDefault = Pin::acak();
 
-        $user = User::create([
-            'name' => $this->nama,
-            'no_hp' => $this->noHp,
-            'pin_hash' => Hash::make($pinDefault),
-            'role' => 'nasabah',
-            'status_akun' => 'terkunci',
-            'harus_ganti_pin' => true,
-        ]);
+        $user = DB::transaction(function () use ($pinDefault): User {
+            $user = User::create([
+                'name' => $this->nama,
+                'no_hp' => $this->noHp,
+                'pin_hash' => Hash::make($pinDefault),
+                'role' => 'nasabah',
+                'status_akun' => 'terkunci',
+                'harus_ganti_pin' => true,
+            ]);
 
-        $user->assignRole('nasabah');
+            $user->assignRole('nasabah');
 
-        $user->nasabahProfil()->create([
-            'nama' => $this->nama,
-            'alamat' => $this->alamat,
-            'tanggal_lahir' => $this->tanggalLahir,
-            'jenis_kelamin' => $this->jenisKelamin,
-            'pekerjaan' => $this->pekerjaan ?: null,
-            'didaftarkan_oleh' => Auth::id(),
-            'status_pendaftaran' => 'pending_verifikasi',
-        ]);
+            $user->nasabahProfil()->create([
+                'nama' => $this->nama,
+                'alamat' => $this->alamat,
+                'tanggal_lahir' => $this->tanggalLahir,
+                'jenis_kelamin' => $this->jenisKelamin,
+                'pekerjaan' => $this->pekerjaan ?: null,
+                'didaftarkan_oleh' => Auth::id(),
+                'status_pendaftaran' => 'pending_verifikasi',
+            ]);
+
+            return $user;
+        });
 
         ActivityLogger::log('registrasi_nasabah', 'users', $user->id, [
             'nama' => $this->nama,

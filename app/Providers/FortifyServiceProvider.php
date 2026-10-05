@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -56,7 +57,15 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
-            if ($user->login_terkunci_hingga?->isFuture()) {
+            $kunciHingga = $user->login_terkunci_hingga;
+
+            if ($kunciHingga !== null && $kunciHingga->isFuture()) {
+                if (Hash::check($password, $user->pin_hash)) {
+                    throw ValidationException::withMessages([
+                        Fortify::username() => 'Akun terkunci sementara hingga '.$kunciHingga->format('H:i').'. Coba lagi setelah masa kunci berakhir.',
+                    ]);
+                }
+
                 return null;
             }
 

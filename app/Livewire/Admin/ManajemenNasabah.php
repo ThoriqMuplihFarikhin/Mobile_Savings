@@ -99,6 +99,13 @@ class ManajemenNasabah extends Component
 
         if ($this->editId) {
             $user = User::find($this->editId);
+
+            if (! $user) {
+                session()->flash('error', 'Nasabah tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+                return;
+            }
+
             $user->update([
                 'name' => $this->nama,
                 'no_hp' => $this->no_hp,
@@ -146,7 +153,14 @@ class ManajemenNasabah extends Component
 
     public function edit($id)
     {
-        $profil = NasabahProfil::findOrFail($id);
+        $profil = NasabahProfil::find($id);
+
+        if (! $profil) {
+            session()->flash('error', 'Nasabah tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+            return;
+        }
+
         $this->editId = $profil->user_id;
         $this->nama = $profil->nama;
         $this->no_hp = $profil->user->no_hp;

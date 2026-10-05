@@ -240,3 +240,41 @@ it('mencatat login_gagal dengan user_id akun target tanpa pin', function () {
     expect($log)->not->toBeNull()
         ->and(json_encode($log->detail))->not->toContain('999999');
 });
+
+it('menampilkan pesan kunci sementara hingga saat pin benar pada masa kunci', function () {
+    $user = lockUserForLoginTest();
+
+    for ($i = 0; $i < 5; $i++) {
+        kirimPercobaanLogin($this, $user->no_hp, '999999');
+    }
+
+    $this->travel(2)->minutes();
+
+    $response = kirimPercobaanLogin($this, $user->no_hp, '123456');
+
+    $response->assertSessionHasErrors('no_hp');
+    $this->assertGuest();
+
+    $pesan = (string) session('errors')->first('no_hp');
+
+    expect($pesan)->toContain('Akun terkunci sementara hingga')
+        ->and($pesan)->toContain($user->refresh()->login_terkunci_hingga->format('H:i'));
+});
+
+it('pin salah pada masa kunci tetap menampilkan pesan gagal generik', function () {
+    $user = lockUserForLoginTest();
+
+    for ($i = 0; $i < 5; $i++) {
+        kirimPercobaanLogin($this, $user->no_hp, '999999');
+    }
+
+    $this->travel(2)->minutes();
+
+    $response = kirimPercobaanLogin($this, $user->no_hp, '999999');
+
+    $response->assertSessionHasErrors('no_hp');
+    $this->assertGuest();
+
+    expect((string) session('errors')->first('no_hp'))
+        ->not->toContain('terkunci sementara');
+});
