@@ -27,6 +27,7 @@ use App\Http\Controllers\Kolektor\PengaturanController as KolektorPengaturanCont
 use App\Http\Controllers\Kolektor\RiwayatAbsensiController;
 use App\Http\Controllers\Kolektor\SetoranController;
 use App\Http\Controllers\Kolektor\SetorKantorController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Nasabah\NotifikasiController;
 use App\Http\Controllers\Nasabah\PenarikanController;
 use App\Http\Controllers\Nasabah\PengaturanController as NasabahPengaturanController;
@@ -37,7 +38,7 @@ use App\Http\Controllers\SerahTerimaPaketController;
 use App\Http\Controllers\StrukSetoranController;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', LandingController::class)->name('home');
 
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
