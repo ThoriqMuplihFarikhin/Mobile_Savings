@@ -5,6 +5,17 @@
         <p class="mt-1 text-sm text-gray-500">Lihat kehadiran kolektor harian.</p>
     </div>
 
+    @if (session('success'))
+        <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {{ session('error') }}
+        </div>
+    @endif
+
     {{-- Date Picker --}}
     <div class="mb-6">
         <label class="mb-1.5 block text-sm font-medium text-gray-900">Tanggal</label>
@@ -13,7 +24,7 @@
     </div>
 
     {{-- Stats --}}
-    <div class="mb-6 grid gap-4 sm:grid-cols-3">
+    <div class="mb-6 grid gap-4 sm:grid-cols-4">
         <div class="rounded-xl bg-white p-4 shadow-[inset_0_0_0_1px_#ebebeb]">
             <p class="text-sm text-gray-500">Total Kolektor</p>
             <p class="mt-1 text-2xl font-bold text-gray-900">{{ $kolektors->count() }}</p>
@@ -23,10 +34,53 @@
             <p class="mt-1 text-2xl font-bold text-[#0a7a3d]">{{ $absensi->count() }}</p>
         </div>
         <div class="rounded-xl bg-white p-4 shadow-[inset_0_0_0_1px_#ebebeb]">
+            <p class="text-sm text-gray-500">Izin</p>
+            <p class="mt-1 text-2xl font-bold text-[#b45309]">{{ $jumlahIzin }}</p>
+        </div>
+        <div class="rounded-xl bg-white p-4 shadow-[inset_0_0_0_1px_#ebebeb]">
             <p class="text-sm text-gray-500">Belum Absen</p>
-            <p class="mt-1 text-2xl font-bold text-[#c50000]">{{ $kolektors->count() - $absensi->count() }}</p>
+            <p class="mt-1 text-2xl font-bold text-[#c50000]">{{ $jumlahBelumAbsen }}</p>
         </div>
     </div>
+
+    {{-- Pengajuan Izin Pending --}}
+    @if ($izinPending->isNotEmpty())
+        <div class="mb-6 overflow-hidden rounded-xl bg-white shadow-[inset_0_0_0_1px_#ebebeb]">
+            <div class="border-b border-[#ebebeb] bg-gray-50 px-4 py-3">
+                <p class="text-sm font-medium text-gray-900">Pengajuan Izin Menunggu Persetujuan</p>
+            </div>
+            <div class="divide-y divide-[#ebebeb]">
+                @foreach ($izinPending as $izin)
+                    <div class="px-4 py-3">
+                        <div class="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">
+                                    {{ $izin->kolektor->name }}
+                                    <span class="font-normal text-gray-500">
+                                        &middot; {{ \Carbon\Carbon::parse($izin->tanggal_mulai)->translatedFormat('d M Y') }}
+                                        - {{ \Carbon\Carbon::parse($izin->tanggal_selesai)->translatedFormat('d M Y') }}
+                                    </span>
+                                </p>
+                                <p class="mt-0.5 text-sm text-gray-500">{{ $izin->alasan }}</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button wire:click="prosesIzin({{ $izin->id }}, 'disetujui')"
+                                        class="rounded-lg bg-[#0a7a3d] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90">
+                                    Setujui
+                                </button>
+                                <button wire:click="prosesIzin({{ $izin->id }}, 'ditolak')"
+                                        class="rounded-lg bg-[#c50000] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90">
+                                    Tolak
+                                </button>
+                            </div>
+                        </div>
+                        <input type="text" wire:model="catatanIzin[{{ $izin->id }}]" placeholder="Catatan admin (opsional)"
+                               class="mt-2 w-full rounded-lg border border-[#ebebeb] bg-white px-3 py-1.5 text-xs text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 
     {{-- Table --}}
     <div class="overflow-hidden rounded-xl bg-white shadow-[inset_0_0_0_1px_#ebebeb]">
@@ -50,6 +104,10 @@
                             @if($absen)
                                 <span class="inline-flex items-center rounded-full bg-[#dcf5e3] px-2.5 py-0.5 text-xs font-medium text-[#0a7a3d]">
                                     Masuk {{ \Carbon\Carbon::parse($absen->waktu_masuk)->setTimezone('Asia/Jakarta')->format('H:i') }}
+                                </span>
+                            @elseif($izinHariIni->contains($kolektor->id))
+                                <span class="inline-flex items-center rounded-full bg-[#fef3c7] px-2.5 py-0.5 text-xs font-medium text-[#b45309]">
+                                    Sedang Izin
                                 </span>
                             @else
                                 <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 text-xs font-medium text-[#c50000]">

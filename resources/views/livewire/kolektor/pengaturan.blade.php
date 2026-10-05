@@ -137,8 +137,7 @@
     <div>
         <p class="mb-2.5 px-1 text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Tugas & Kehadiran</p>
         <div class="overflow-hidden rounded-3xl bg-white dark:bg-zinc-800 shadow-sm border border-zinc-100 dark:border-zinc-700/60 divide-y divide-zinc-100 dark:divide-zinc-700/60">
-            {{-- Ajukan Izin (disembunyikan sementara sampai P6.7 selesai; route tetap ada) --}}
-            {{--
+            {{-- Ajukan Izin --}}
             <a href="{{ route('kolektor.izin.index') }}" wire:navigate
                class="group flex items-center gap-3.5 px-5 py-4 transition hover:bg-zinc-50 dark:hover:bg-zinc-700/40">
                 <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-400 group-hover:scale-105 transition-transform">
@@ -154,7 +153,6 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                 </svg>
             </a>
-            --}}
 
             {{-- Riwayat Absensi --}}
             <a href="{{ route('kolektor.riwayat-absensi.index') }}" wire:navigate
