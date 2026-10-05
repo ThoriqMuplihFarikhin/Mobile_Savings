@@ -96,3 +96,9 @@ PHPStan memakai baseline `phpstan-baseline.neon`, sehingga error lama tidak meng
 ```bash
 vendor/bin/phpstan analyse --generate-baseline phpstan-baseline.neon --memory-limit=1G
 ```
+
+## Catatan Fitur & Risiko Terbuka
+
+- **Landing page (D10)** — `/` dirender `LandingController` dengan cache 10 menit, tanpa angka bisnis yang dipetik per request; kartu statistik "Real-time/Aman/Transparan" bersifat statis dan tidak dipasok data.
+- **Persetujuan penarikan ganda (D11)** — penarikan besar butuh 3 admin berbeda (`ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA`); bila admin aktif kurang dari 3, fitur jatuh ke mode satu-admin dan setiap selesai dicatat `fallback_admin_kurang` pada detail log.
+- **D4 — kas penarikan tunai di rumah** — penarikan tunai di rumah nasabah **tidak** dihitung dalam rekonsiliasi kas; rumus `total_seharusnya` pada `SetorKantor::submit()` sengaja tidak diubah sampai owner memutuskan kas siapa yang terpakai (lihat `// TODO(D4)` di `app/Livewire/Kolektor/SetorKantor.php`).
