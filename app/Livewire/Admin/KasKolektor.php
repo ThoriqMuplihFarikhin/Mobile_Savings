@@ -17,7 +17,7 @@ class KasKolektor extends Component
 {
     use AuthorizesRole;
 
-    /** @var array<int, array{kolektor_id: int, nama: string, total_belum_disetor: float, jumlah_transaksi: int, umur_terlama_hari: int, pengajuan_pending: int, selisih_kumulatif: float, lewat_batas: bool}> */
+    /** @var array<int, array{kolektor_id: int, nama: string, total_belum_disetor: float, jumlah_transaksi: int, umur_terlama_hari: int, pengajuan_pending: int, selisih_kumulatif: float, lewat_batas: bool, terkunci: bool}> */
     public array $daftarKas = [];
 
     public float $totalKas = 0.0;
@@ -42,7 +42,11 @@ class KasKolektor extends Component
     }
 
     /**
-     * @return array<int, array{kolektor_id: int, nama: string, total_belum_disetor: float, jumlah_transaksi: int, umur_terlama_hari: int, pengajuan_pending: int, selisih_kumulatif: float, lewat_batas: bool}>
+     * Termasuk kolektor terkunci yang masih memiliki berkas kas (D12):
+     * kas yang belum disetor wajib tetap terlihat agar tidak "hilang"
+     * dari pengawasan, diurutkan paling atas dengan badge terkunci.
+     *
+     * @return array<int, array{kolektor_id: int, nama: string, total_belum_disetor: float, jumlah_transaksi: int, umur_terlama_hari: int, pengajuan_pending: int, selisih_kumulatif: float, lewat_batas: bool, terkunci: bool}>
      */
     public static function kumpulkanKas(): array
     {
@@ -59,32 +63,46 @@ class KasKolektor extends Component
             $pending[(int) $row->getAttribute('kolektor_id')] = (int) $row->getAttribute('jumlah_pending');
         }
 
-        $rows = [];
-        $kolektorAktif = User::where('role', 'kolektor')
-            ->where('status_akun', 'aktif')
+        $barisTerkunci = [];
+        $barisAktif = [];
+        $kolektorSemua = User::where('role', 'kolektor')
+            ->whereIn('status_akun', ['aktif', 'terkunci'])
             ->orderBy('name')
             ->get();
 
-        foreach ($kolektorAktif as $kolektor) {
+        foreach ($kolektorSemua as $kolektor) {
             $kolektorId = (int) $kolektor->id;
             $agregat = $teragregasi[$kolektorId] ?? ['total' => 0.0, 'jumlah' => 0, 'terlama' => null];
             $umur = $agregat['terlama'] !== null
                 ? (int) Carbon::parse($agregat['terlama'])->diffInDays(today(), true)
                 : 0;
+            $pengajuanPending = $pending[$kolektorId] ?? 0;
+            $terkunci = $kolektor->status_akun === 'terkunci';
 
-            $rows[] = [
+            if ($terkunci && $agregat['total'] <= 0 && $pengajuanPending <= 0) {
+                continue;
+            }
+
+            $baris = [
                 'kolektor_id' => $kolektorId,
                 'nama' => (string) $kolektor->name,
                 'total_belum_disetor' => $agregat['total'],
                 'jumlah_transaksi' => $agregat['jumlah'],
                 'umur_terlama_hari' => $umur,
-                'pengajuan_pending' => $pending[$kolektorId] ?? 0,
+                'pengajuan_pending' => $pengajuanPending,
                 'selisih_kumulatif' => $ringkas[$kolektorId]['selisih_kumulatif'] ?? 0.0,
                 'lewat_batas' => self::lewatBatas($agregat['total'], $umur, $batas['kas'], $batas['hari']),
+                'terkunci' => $terkunci,
             ];
+
+            if ($terkunci) {
+                $barisTerkunci[] = $baris;
+            } else {
+                $barisAktif[] = $baris;
+            }
         }
 
-        return $rows;
+        return array_merge($barisTerkunci, $barisAktif);
     }
 
     /**

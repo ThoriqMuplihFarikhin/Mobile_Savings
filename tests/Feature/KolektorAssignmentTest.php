@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\KelolaKolektor;
 use App\Models\KolektorNasabah;
+use App\Models\LogAktivitas;
 use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
 use App\Models\TransaksiSetoran;
@@ -72,7 +73,7 @@ it('allows admin to remove nasabah assignment', function () {
     ]);
 });
 
-it('prevents kolektor deactivation when unsettled cash exists', function () {
+it('allows kolektor deactivation with unsettled cash and logs it (D12)', function () {
     $admin = User::factory()->admin()->create();
     $kolektor = User::factory()->kolektor()->create();
     $nasabah = User::factory()->nasabah()->create();
@@ -109,12 +110,21 @@ it('prevents kolektor deactivation when unsettled cash exists', function () {
     $this->actingAs($admin);
 
     Livewire::test(KelolaKolektor::class)
-        ->call('toggleStatus', $kolektor->id);
+        ->call('toggleStatus', $kolektor->id)
+        ->assertSee('Kas yang belum disetor tetap dipantau');
 
     $this->assertDatabaseHas('users', [
         'id' => $kolektor->id,
-        'status_akun' => 'aktif',
+        'status_akun' => 'terkunci',
     ]);
+
+    $log = LogAktivitas::where('aksi', 'kunci_kolektor_dengan_kas')
+        ->where('entitas_id', $kolektor->id)
+        ->latest('id')
+        ->first();
+
+    expect($log)->not->toBeNull()
+        ->and((int) $log->user_id)->toBe((int) $admin->id);
 });
 
 it('allows kolektor deactivation when no unsettled cash', function () {

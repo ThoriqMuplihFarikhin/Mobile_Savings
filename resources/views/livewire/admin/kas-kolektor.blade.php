@@ -48,7 +48,12 @@
                 <tbody class="divide-y divide-[#ebebeb]">
                     @forelse($daftarKas as $baris)
                         <tr @class(['transition hover:bg-gray-50', 'bg-amber-50' => $baris['lewat_batas']])>
-                            <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ $baris['nama'] }}</td>
+                            <td class="px-4 py-3 text-sm font-medium text-gray-900">
+                                {{ $baris['nama'] }}
+                                @if($baris['terkunci'])
+                                    <span class="ml-1.5 inline-flex items-center rounded-full bg-[#f7d4d6] px-2 py-0.5 font-mono text-xs text-[#c50000]">Terkunci</span>
+                                @endif
+                            </td>
                             <td class="px-4 py-3 font-mono text-sm text-gray-600">Rp {{ number_format($baris['total_belum_disetor'], 0, ',', '.') }}</td>
                             <td class="px-4 py-3 font-mono text-sm text-gray-600">{{ $baris['jumlah_transaksi'] }}</td>
                             <td class="px-4 py-3 font-mono text-sm text-gray-600">{{ $baris['umur_terlama_hari'] }} hari</td>

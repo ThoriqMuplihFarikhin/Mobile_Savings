@@ -124,8 +124,10 @@ it('menampilkan angka kas per kolektor sesuai fixture', function () {
         ->and($rowC['pengajuan_pending'])->toBe(1)
         ->and($rowC['selisih_kumulatif'])->toBe(0.0);
 
-    expect(barisKasP34($rows, $nonaktif))->toBeNull()
-        ->and($rows)->toHaveCount(3);
+    $rowNonaktif = barisKasP34($rows, $nonaktif);
+    expect($rowNonaktif['total_belum_disetor'])->toBe(70000.0)
+        ->and($rowNonaktif['terkunci'])->toBeTrue()
+        ->and($rows)->toHaveCount(4);
 });
 
 it('menandai baris yang melewati batas kas', function () {
@@ -156,18 +158,18 @@ it('kartu dashboard menampilkan total kas dan jumlah kolektor melewati batas', f
     ['admin' => $admin] = seedKasP34();
 
     expect(KasKolektor::ringkasUntukDashboard())
-        ->toBe(['total_kas' => 120000.0, 'lewat_batas' => 0]);
+        ->toBe(['total_kas' => 190000.0, 'lewat_batas' => 0]);
 
     AdminSetting::set('batas_kas_kolektor', '50000');
 
     expect(KasKolektor::ringkasUntukDashboard())
-        ->toBe(['total_kas' => 120000.0, 'lewat_batas' => 1]);
+        ->toBe(['total_kas' => 190000.0, 'lewat_batas' => 2]);
 
     $response = $this->actingAs($admin)->get('/dashboard');
     $response->assertOk()
         ->assertViewIs('dashboard');
-    expect((float) $response->viewData('totalKasKolektor'))->toBe(120000.0)
-        ->and($response->viewData('kolektorLewatBatas'))->toBe(1);
+    expect((float) $response->viewData('totalKasKolektor'))->toBe(190000.0)
+        ->and($response->viewData('kolektorLewatBatas'))->toBe(2);
 });
 
 it('hanya admin yang bisa mengakses halaman kas kolektor', function () {
@@ -188,4 +190,38 @@ it('menyimpan batas kas kolektor dari pengaturan', function () {
 
     expect((string) AdminSetting::get('batas_kas_kolektor'))->toBe('150000')
         ->and((string) AdminSetting::get('batas_hari_kas'))->toBe('7');
+});
+
+it('kolektor terkunci dengan berkas kas tampil di urutan atas (D12)', function () {
+    ['admin' => $admin, 'kolektorA' => $a, 'kolektorNonaktif' => $nonaktif] = seedKasP34();
+
+    $this->actingAs($admin);
+    $rows = collect(Livewire::test(KasKolektor::class)->viewData('daftarKas'));
+
+    $rowNonaktif = barisKasP34($rows, $nonaktif);
+
+    expect($rowNonaktif)->not->toBeNull()
+        ->and($rowNonaktif['terkunci'])->toBeTrue()
+        ->and($rowNonaktif['total_belum_disetor'])->toBe(70000.0)
+        ->and($rows->first()['kolektor_id'])->toBe($nonaktif->id)
+        ->and($rows->first()['kolektor_id'])->not->toBe($a->id);
+});
+
+it('kolektor terkunci tanpa berkas kas tidak tampil di dashboard kas', function () {
+    ['admin' => $admin] = seedKasP34();
+    $tanpaKas = User::factory()->kolektor()->create(['status_akun' => 'terkunci']);
+
+    $this->actingAs($admin);
+    $rows = collect(Livewire::test(KasKolektor::class)->viewData('daftarKas'));
+
+    expect(barisKasP34($rows, $tanpaKas))->toBeNull();
+});
+
+it('baris kolektor terkunci menampilkan badge Terkunci', function () {
+    ['admin' => $admin] = seedKasP34();
+
+    $this->actingAs($admin);
+
+    Livewire::test(KasKolektor::class)
+        ->assertSee('Terkunci');
 });

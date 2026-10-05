@@ -595,25 +595,7 @@ parameters:
 			path: app/Livewire/Admin/HandoverKolektor.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Admin/KelolaKolektor.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\:\:\$status_akun\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Livewire/Admin/KelolaKolektor.php
-
-		-
 			message: '#^Call to an undefined method App\\Models\\KolektorNasabah\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\KolektorNasabah\>\:\:update\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Livewire/Admin/KelolaKolektor.php
-
-		-
-			message: '#^Call to an undefined method App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\:\:hasUnsettledCash\(\)\.$#'
 			identifier: method.notFound
 			count: 1
 			path: app/Livewire/Admin/KelolaKolektor.php
@@ -621,7 +603,7 @@ parameters:
 		-
 			message: '#^Call to an undefined method App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\>\:\:update\(\)\.$#'
 			identifier: method.notFound
-			count: 3
+			count: 2
 			path: app/Livewire/Admin/KelolaKolektor.php
 
 		-

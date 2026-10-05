@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Actions\Kolektor\TugaskanNasabahAction;
 use App\Actions\Pin\ResetPinOlehAdminAction;
+use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\LogHandoverKolektor;
@@ -150,18 +151,29 @@ class KelolaKolektor extends Component
     public function toggleStatus($id)
     {
         $user = User::find($id);
-        if (! $user || $user->role !== 'kolektor') {
+        if (! $user instanceof User || $user->role !== 'kolektor') {
             return;
         }
 
-        if ($user->status_akun === 'aktif' && $user->hasUnsettledCash()) {
-            session()->flash('error', 'Kolektor memiliki setoran yang belum disetor ke kantor. Selesaikan terlebih dahulu sebelum menonaktifkan.');
+        $mengunci = $user->status_akun === 'aktif';
+        $denganKas = $mengunci && $user->hasUnsettledCash();
+
+        $user->update(['status_akun' => $mengunci ? 'terkunci' : 'aktif']);
+
+        if ($denganKas) {
+            try {
+                ActivityLogger::log('kunci_kolektor_dengan_kas', 'users', $user->id, [
+                    'kolektor_id' => $user->id,
+                    'kas_belum_disetor' => true,
+                ]);
+            } catch (\Exception $e) {
+                report($e);
+            }
+
+            session()->flash('success', 'Status kolektor berhasil diubah! Kas yang belum disetor tetap dipantau di dashboard kas.');
 
             return;
         }
-
-        $newStatus = $user->status_akun === 'aktif' ? 'terkunci' : 'aktif';
-        $user->update(['status_akun' => $newStatus]);
 
         session()->flash('success', 'Status kolektor berhasil diubah!');
     }
