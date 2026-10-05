@@ -9,7 +9,6 @@ use App\Models\JadwalKunjungan;
 use App\Models\KepesertaanPaket;
 use App\Models\KolektorNasabah;
 use App\Models\Komplain;
-use App\Models\LogAktivitas;
 use App\Models\LogNotifikasi;
 use App\Models\NasabahProfil;
 use App\Models\SaldoProduk;
@@ -19,6 +18,7 @@ use App\Models\User;
 use App\Support\NomorHp;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -163,16 +163,16 @@ class ManajemenNasabah extends Component
     public function delete(): void
     {
         $profilId = $this->deleteId;
-        $nasabahId = DB::table('nasabah_profil')->where('id', $profilId)->value('user_id');
+        $profilRow = DB::table('nasabah_profil')->where('id', $profilId)->first(['user_id', 'nama']);
 
-        if ($nasabahId === null) {
+        if ($profilRow === null || $profilRow->user_id === null) {
             $this->tampilKonfirmasiHapus = false;
             $this->deleteId = null;
 
             return;
         }
 
-        $nasabahId = (int) $nasabahId;
+        $nasabahId = (int) $profilRow->user_id;
 
         $punyaRiwayatKeuangan = SaldoProduk::where('nasabah_id', $nasabahId)->where('saldo', '!=', 0)->exists()
             || TransaksiSetoran::where('nasabah_id', $nasabahId)->exists()
@@ -184,13 +184,22 @@ class ManajemenNasabah extends Component
             return;
         }
 
-        DB::transaction(function () use ($nasabahId, $profilId): void {
+        DB::transaction(function () use ($nasabahId, $profilId, $profilRow): void {
+            $nasabah = User::find($nasabahId);
+
+            if ($nasabah !== null) {
+                ActivityLogger::log('hapus_nasabah', 'users', $nasabahId, [
+                    'id_lama' => $nasabahId,
+                    'nama' => $profilRow->nama ?: $nasabah->name,
+                    'no_hp_masked' => Str::mask($nasabah->no_hp, '*', 4, -3),
+                ]);
+            }
+
             KolektorNasabah::where('nasabah_id', $nasabahId)->delete();
             JadwalKunjungan::where('nasabah_id', $nasabahId)->delete();
             Komplain::where('nasabah_id', $nasabahId)->delete();
             KepesertaanPaket::where('nasabah_id', $nasabahId)->delete();
             LogNotifikasi::where('nasabah_id', $nasabahId)->delete();
-            LogAktivitas::where('user_id', $nasabahId)->delete();
             SaldoProduk::where('nasabah_id', $nasabahId)->delete();
             NasabahProfil::where('id', $profilId)->delete();
             DB::table('model_has_roles')
