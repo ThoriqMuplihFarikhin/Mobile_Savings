@@ -10,6 +10,7 @@ use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -31,7 +32,7 @@ class ApprovalPenarikan extends Component
         return 'admin';
     }
 
-    public $statusFilter = 'pending';
+    public string $statusFilter = 'pending';
 
     public string $alasan = '';
 
@@ -46,7 +47,7 @@ class ApprovalPenarikan extends Component
         $this->showSelesai = true;
     }
 
-    public function render()
+    public function render(): View
     {
         $penarikan = TransaksiPenarikan::with(['nasabah', 'produk', 'disetujuiOleh'])
             ->where('status', $this->statusFilter)
@@ -75,7 +76,7 @@ class ApprovalPenarikan extends Component
         return (float) $penarikan->nominal_diminta > $batas;
     }
 
-    public function approve($id)
+    public function approve(int $id): void
     {
         $hasil = DB::transaction(function () use ($id) {
             $penarikan = TransaksiPenarikan::where('id', $id)->lockForUpdate()->first();
@@ -185,7 +186,7 @@ class ApprovalPenarikan extends Component
         }
     }
 
-    public function reject($id)
+    public function reject(int $id): void
     {
         $penarikan = DB::transaction(function () use ($id) {
             $penarikan = TransaksiPenarikan::where('id', $id)->lockForUpdate()->first();
@@ -226,7 +227,7 @@ class ApprovalPenarikan extends Component
         }
     }
 
-    public function selesai($id)
+    public function selesai(int $id): void
     {
         $this->validate([
             'alasan' => 'required|string|max:500',
@@ -300,7 +301,7 @@ class ApprovalPenarikan extends Component
         }
     }
 
-    public function updatedStatusFilter()
+    public function updatedStatusFilter(): void
     {
         $this->resetPage();
     }

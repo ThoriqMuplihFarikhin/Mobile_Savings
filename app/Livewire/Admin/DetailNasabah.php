@@ -8,6 +8,10 @@ use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
+use Illuminate\Support\Collection;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -33,7 +37,7 @@ class DetailNasabah extends Component
         $this->user = $user;
     }
 
-    public function render()
+    public function render(): View
     {
         $saldoPerProduk = SaldoProduk::where('nasabah_id', $this->user->id)
             ->with('produk')
@@ -78,6 +82,9 @@ class DetailNasabah extends Component
         session()->flash('success', "PIN berhasil direset. PIN baru: {$pinBaru}. Catat sekarang karena hanya ditampilkan sekali. Pengguna wajib mengganti PIN setelah login.");
     }
 
+    /**
+     * @return array{0: CarbonInterface, 1: CarbonInterface}
+     */
     protected function rentangTanggal(): array
     {
         $end = now()->endOfDay();
@@ -90,7 +97,12 @@ class DetailNasabah extends Component
         return [$start, $end];
     }
 
-    protected function buildChartData($setoran, $penarikan, $start, $end): array
+    /**
+     * @param  Collection<int, TransaksiSetoran>  $setoran
+     * @param  Collection<int, TransaksiPenarikan>  $penarikan
+     * @return array{hasData: bool, pathD: string, areaD: string, saldoAkhir: float, lastPoint: array{x: float, y: float}|null, chartWidth: int, chartHeight: int, padding: int, graphHeight: int}
+     */
+    protected function buildChartData(Collection $setoran, Collection $penarikan, CarbonInterface $start, CarbonInterface $end): array
     {
         $totalSetoranPeriode = $setoran->sum('nominal');
         $totalPenarikanPeriode = $penarikan->sum('nominal_diminta');
@@ -147,7 +159,12 @@ class DetailNasabah extends Component
         ];
     }
 
-    protected function getRiwayatTransaksi($setoran, $penarikan)
+    /**
+     * @param  Collection<int, TransaksiSetoran>  $setoran
+     * @param  Collection<int, TransaksiPenarikan>  $penarikan
+     * @return Collection<int, array{tanggal: string, tipe: string, nominal: float, status: string}>
+     */
+    protected function getRiwayatTransaksi(Collection $setoran, Collection $penarikan): Collection
     {
         $riwayatSetoran = $setoran->map(fn ($s) => [
             'tanggal' => $s->tanggal_transaksi,
@@ -157,7 +174,7 @@ class DetailNasabah extends Component
         ]);
 
         $riwayatPenarikan = $penarikan->map(fn ($p) => [
-            'tanggal' => $p->waktu_approval->format('Y-m-d'),
+            'tanggal' => Carbon::parse($p->waktu_approval)->format('Y-m-d'),
             'tipe' => 'Penarikan',
             'nominal' => $p->nominal_diminta,
             'status' => $p->status,

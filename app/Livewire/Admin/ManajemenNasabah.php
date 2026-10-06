@@ -19,6 +19,7 @@ use App\Support\NomorHp;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -34,31 +35,32 @@ class ManajemenNasabah extends Component
         return 'admin';
     }
 
-    public $search = '';
+    public string $search = '';
 
-    public $showForm = false;
+    public bool $showForm = false;
 
-    public $editId = null;
+    public ?int $editId = null;
 
-    public $nama = '';
+    public string $nama = '';
 
     public string $no_hp = '';
 
-    public $alamat = '';
+    public string $alamat = '';
 
-    public $pin = '';
+    public string $pin = '';
 
-    public $tampilKonfirmasiHapus = false;
+    public bool $tampilKonfirmasiHapus = false;
 
-    public $deleteId = null;
+    public ?int $deleteId = null;
 
     public bool $tampilKonfirmasiResetPin = false;
 
     public ?int $resetPinId = null;
 
+    /** @var array<string, string> */
     protected $listeners = ['nasabahCreated' => '$refresh'];
 
-    public function render()
+    public function render(): View
     {
         $nasabah = NasabahProfil::with(['user', 'didaftarkanOleh'])
             ->where('nama', 'like', "%{$this->search}%")
@@ -71,13 +73,13 @@ class ManajemenNasabah extends Component
         return view('livewire.admin.manajemen-nasabah', compact('nasabah'));
     }
 
-    public function toggleForm()
+    public function toggleForm(): void
     {
         $this->showForm = ! $this->showForm;
         $this->resetForm();
     }
 
-    public function resetForm()
+    public function resetForm(): void
     {
         $this->editId = null;
         $this->nama = '';
@@ -86,7 +88,7 @@ class ManajemenNasabah extends Component
         $this->pin = '';
     }
 
-    public function save()
+    public function save(): void
     {
         $this->no_hp = NomorHp::normalize($this->no_hp);
 
@@ -151,7 +153,7 @@ class ManajemenNasabah extends Component
         session()->flash('success', 'Nasabah berhasil disimpan!');
     }
 
-    public function edit($id)
+    public function edit(int $id): void
     {
         $profil = NasabahProfil::find($id);
 
@@ -168,7 +170,7 @@ class ManajemenNasabah extends Component
         $this->showForm = true;
     }
 
-    public function confirmDelete($id)
+    public function confirmDelete(int $id): void
     {
         $this->deleteId = $id;
         $this->tampilKonfirmasiHapus = true;
@@ -254,7 +256,7 @@ class ManajemenNasabah extends Component
         session()->flash('success', "PIN berhasil direset. PIN baru: {$pinBaru}. Catat sekarang karena hanya ditampilkan sekali. Pengguna wajib mengganti PIN setelah login.");
     }
 
-    public function toggleStatus($id)
+    public function toggleStatus(int $id): void
     {
         $hasil = DB::transaction(function () use ($id) {
             $profil = NasabahProfil::whereKey($id)->lockForUpdate()->first();

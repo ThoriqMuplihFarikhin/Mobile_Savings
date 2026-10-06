@@ -16,8 +16,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Layout('layouts.app')]
 class Laporan extends Component
@@ -39,7 +41,7 @@ class Laporan extends Component
 
     public string $seksi = 'keuangan';
 
-    public function mount()
+    public function mount(): void
     {
         $this->tanggal = now()->format('Y-m-d');
         $this->bulan = now()->format('Y-m');
@@ -55,7 +57,7 @@ class Laporan extends Component
         $this->seksi = $seksi;
     }
 
-    public function render()
+    public function render(): View
     {
         $valid = $this->filterValid();
 
@@ -74,7 +76,7 @@ class Laporan extends Component
         return view('livewire.admin.laporan', $data);
     }
 
-    public function exportCsv()
+    public function exportCsv(): StreamedResponse
     {
         if (in_array($this->seksi, ['keuangan', 'kolektor'], true)) {
             $this->validate($this->filterRules());

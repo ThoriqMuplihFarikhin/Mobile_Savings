@@ -9,6 +9,7 @@ use App\Models\IzinKolektor;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -81,7 +82,7 @@ class MonitoringAbsensi extends Component
         session()->flash('success', 'Pengajuan izin berhasil '.($status === 'disetujui' ? 'disetujui' : 'ditolak').'.');
     }
 
-    public function render()
+    public function render(): View
     {
         $tanggal = Carbon::parse($this->tanggal);
         $kolektors = User::where('role', 'kolektor')->get();

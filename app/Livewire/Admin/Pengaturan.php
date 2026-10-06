@@ -8,6 +8,8 @@ use App\Models\AdminSetting;
 use App\Models\User;
 use App\Services\WhatsAppService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Features\SupportRedirects\Redirector;
@@ -42,7 +44,8 @@ class Pengaturan extends Component
     public string $nomorWaBantuan = '';
 
     // Tab 2: Admin & Peran
-    public $daftarAdmin = [];
+    /** @var Collection<int, User> */
+    public $daftarAdmin;
 
     // Tab 3: Integrasi WhatsApp
     public string $waProvider = '';
@@ -242,7 +245,7 @@ class Pengaturan extends Component
         return app(Logout::class)();
     }
 
-    public function render()
+    public function render(): View
     {
         $peringatanDuaApprover = (int) AdminSetting::get('penarikan_batas_dua_approver', '0') > 0
             && User::where('role', 'admin')->count() < ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA;

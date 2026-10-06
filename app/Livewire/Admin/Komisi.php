@@ -5,7 +5,9 @@ namespace App\Livewire\Admin;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\ProdukTabungan;
 use App\Models\TransaksiPenarikan;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -21,32 +23,32 @@ class Komisi extends Component
         return 'admin';
     }
 
-    public $dariTanggal = '';
+    public string $dariTanggal = '';
 
-    public $sampaiTanggal = '';
+    public string $sampaiTanggal = '';
 
-    public $produkId = '';
+    public string $produkId = '';
 
-    public $totalKomisi = 0;
+    public float $totalKomisi = 0;
 
-    public $totalTransaksi = 0;
+    public int $totalTransaksi = 0;
 
-    public $totalNominalPenarikan = 0;
+    public float $totalNominalPenarikan = 0;
 
-    public function mount()
+    public function mount(): void
     {
         $this->dariTanggal = now()->startOfMonth()->toDateString();
         $this->sampaiTanggal = now()->toDateString();
     }
 
-    public function updated($nama)
+    public function updated(string $nama): void
     {
         if (in_array($nama, ['dariTanggal', 'sampaiTanggal', 'produkId'])) {
             $this->resetPage();
         }
     }
 
-    public function resetFilter()
+    public function resetFilter(): void
     {
         $this->dariTanggal = now()->startOfMonth()->toDateString();
         $this->sampaiTanggal = now()->toDateString();
@@ -54,7 +56,10 @@ class Komisi extends Component
         $this->resetPage();
     }
 
-    protected function baseQuery()
+    /**
+     * @return Builder<TransaksiPenarikan>
+     */
+    protected function baseQuery(): Builder
     {
         return TransaksiPenarikan::query()
             ->whereIn('transaksi_penarikan.status', ['approved', 'selesai'])
@@ -63,11 +68,11 @@ class Komisi extends Component
             ->when($this->produkId, fn ($q) => $q->where('transaksi_penarikan.produk_id', $this->produkId));
     }
 
-    public function render()
+    public function render(): View
     {
-        $this->totalKomisi = (clone $this->baseQuery())->sum('nominal_komisi');
+        $this->totalKomisi = (float) (clone $this->baseQuery())->sum('nominal_komisi');
         $this->totalTransaksi = (clone $this->baseQuery())->count();
-        $this->totalNominalPenarikan = (clone $this->baseQuery())->sum('nominal_diminta');
+        $this->totalNominalPenarikan = (float) (clone $this->baseQuery())->sum('nominal_diminta');
 
         $komisiPerProduk = (clone $this->baseQuery())
             ->join('produk_tabungan', 'transaksi_penarikan.produk_id', '=', 'produk_tabungan.id')

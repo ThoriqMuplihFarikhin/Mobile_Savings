@@ -6,6 +6,7 @@ use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\Komplain;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -21,17 +22,18 @@ class AntrianKomplain extends Component
         return 'admin';
     }
 
-    public $statusFilter = 'baru';
+    public string $statusFilter = 'baru';
 
-    public $selectedId = null;
+    public ?int $selectedId = null;
 
-    public $catatan = '';
+    public string $catatan = '';
 
-    public $tampilDetail = false;
+    public bool $tampilDetail = false;
 
+    /** @var array<string, string> */
     protected $listeners = ['komplainUpdated' => '$refresh'];
 
-    public function getSelectedKomplainProperty()
+    public function getSelectedKomplainProperty(): ?Komplain
     {
         if (! $this->selectedId) {
             return null;
@@ -41,7 +43,7 @@ class AntrianKomplain extends Component
             ->find($this->selectedId);
     }
 
-    public function render()
+    public function render(): View
     {
         $komplains = Komplain::with('nasabah')
             ->where('status', $this->statusFilter)
@@ -51,14 +53,14 @@ class AntrianKomplain extends Component
         return view('livewire.admin.antrian-komplain', compact('komplains'));
     }
 
-    public function showDetail($id)
+    public function showDetail(int $id): void
     {
         $this->selectedId = $id;
         $this->tampilDetail = true;
         $this->catatan = '';
     }
 
-    public function proses($id)
+    public function proses(int $id): void
     {
         try {
             $komplain = DB::transaction(function () use ($id) {
@@ -106,7 +108,7 @@ class AntrianKomplain extends Component
         session()->flash('success', 'Komplain ditandai sedang diproses!');
     }
 
-    public function selesai($id)
+    public function selesai(int $id): void
     {
         $this->validate(['catatan' => 'required|string|min:3']);
 
@@ -168,7 +170,7 @@ class AntrianKomplain extends Component
         session()->flash('success', 'Komplain berhasil diselesaikan!');
     }
 
-    public function updatedStatusFilter()
+    public function updatedStatusFilter(): void
     {
         $this->resetPage();
     }

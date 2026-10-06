@@ -7,7 +7,9 @@ use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -23,39 +25,42 @@ class RekonsiliasiKas extends Component
         return 'admin';
     }
 
-    public $kolektorId = '';
+    public string $kolektorId = '';
 
-    public $totalSeharusnya = 0;
+    public float $totalSeharusnya = 0;
 
-    public $totalDiterima = '';
+    public string $totalDiterima = '';
 
-    public $keterangan = '';
+    public string $keterangan = '';
 
+    /** @var array<int, User>|Collection<int, User> */
     public $kolektorList = [];
 
+    /** @var array<int, TransaksiSetoran>|Collection<int, TransaksiSetoran> */
     public $detailTransaksi = [];
 
-    public $showForm = false;
+    public bool $showForm = false;
 
+    /** @var array<int, SetoranKolektorKantor>|Collection<int, SetoranKolektorKantor> */
     public $pendingSubmissions = [];
 
-    public $processingId = null;
+    public ?int $processingId = null;
 
-    public $processTotalDiterima = '';
+    public string $processTotalDiterima = '';
 
-    public $processKeterangan = '';
+    public string $processKeterangan = '';
 
     public ?int $rejectingId = null;
 
     public string $rejectAlasan = '';
 
-    public function mount()
+    public function mount(): void
     {
         $this->kolektorList = User::where('role', 'kolektor')->where('status_akun', 'aktif')->get();
         $this->loadPendingSubmissions();
     }
 
-    public function loadPendingSubmissions()
+    public function loadPendingSubmissions(): void
     {
         $this->pendingSubmissions = SetoranKolektorKantor::with(['kolektor'])
             ->where('status', 'pending')
@@ -63,14 +68,14 @@ class RekonsiliasiKas extends Component
             ->get();
     }
 
-    public function startProcess($id)
+    public function startProcess(int $id): void
     {
         $this->processingId = $id;
         $this->processTotalDiterima = '';
         $this->processKeterangan = '';
     }
 
-    public function cancelProcess()
+    public function cancelProcess(): void
     {
         $this->processingId = null;
         $this->processTotalDiterima = '';
@@ -141,7 +146,7 @@ class RekonsiliasiKas extends Component
         session()->flash('success', 'Pengajuan setoran berhasil ditolak.');
     }
 
-    public function processSubmission($id)
+    public function processSubmission(int $id): void
     {
         $this->validate([
             'processTotalDiterima' => 'required|numeric|min:0',
@@ -212,17 +217,17 @@ class RekonsiliasiKas extends Component
         session()->flash('success', 'Rekonsiliasi kas berhasil diproses!');
     }
 
-    public function render()
+    public function render(): View
     {
         $riwayat = SetoranKolektorKantor::with(['kolektor', 'diterimaOleh'])->latest()->paginate(10);
 
         return view('livewire.admin.rekonsiliasi-kas', compact('riwayat'));
     }
 
-    public function updatedKolektorId()
+    public function updatedKolektorId(): void
     {
         if ($this->kolektorId) {
-            $this->totalSeharusnya = TransaksiSetoran::belumDisetor()
+            $this->totalSeharusnya = (float) TransaksiSetoran::belumDisetor()
                 ->where('input_by', $this->kolektorId)
                 ->whereNull('setoran_kolektor_id')
                 ->sum('nominal');
@@ -241,7 +246,7 @@ class RekonsiliasiKas extends Component
         }
     }
 
-    public function submit()
+    public function submit(): void
     {
         $this->validate([
             'kolektorId' => 'required|exists:users,id',

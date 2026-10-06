@@ -10,6 +10,7 @@ use App\Support\NomorHp;
 use App\Support\Pin;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -23,21 +24,21 @@ class RegistrasiNasabah extends Component
         return 'admin';
     }
 
-    public $showForm = false;
+    public bool $showForm = false;
 
-    public $nama = '';
+    public string $nama = '';
 
     public string $noHp = '';
 
-    public $alamat = '';
+    public string $alamat = '';
 
-    public $tanggalLahir = '';
+    public string $tanggalLahir = '';
 
-    public $jenisKelamin = 'laki-laki';
+    public string $jenisKelamin = 'laki-laki';
 
-    public $pekerjaan = '';
+    public string $pekerjaan = '';
 
-    public function render()
+    public function render(): View
     {
         $nasabah = User::where('role', 'nasabah')
             ->with('nasabahProfil')
@@ -47,13 +48,13 @@ class RegistrasiNasabah extends Component
         return view('livewire.admin.registrasi-nasabah', compact('nasabah'));
     }
 
-    public function toggleForm()
+    public function toggleForm(): void
     {
         $this->showForm = ! $this->showForm;
         $this->reset(['nama', 'noHp', 'alamat', 'tanggalLahir', 'jenisKelamin', 'pekerjaan']);
     }
 
-    public function submit()
+    public function submit(): void
     {
         $this->noHp = NomorHp::normalize($this->noHp);
 

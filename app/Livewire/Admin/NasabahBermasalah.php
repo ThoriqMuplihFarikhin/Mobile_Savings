@@ -9,6 +9,7 @@ use App\Models\KepesertaanPaket;
 use App\Models\ProdukTabungan;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -24,24 +25,24 @@ class NasabahBermasalah extends Component
         return 'admin';
     }
 
-    public $search = '';
+    public string $search = '';
 
     /** @var KepesertaanPaket|null */
     public $selectedKepesertaan = null;
 
-    public $showDetail = false;
+    public bool $showDetail = false;
 
-    public $keputusan_akhir = '';
+    public string $keputusan_akhir = '';
 
-    public $catatan_admin = '';
+    public string $catatan_admin = '';
 
-    public $metode_pengambilan = '';
+    public string $metode_pengambilan = '';
 
     public string $ditunda_hingga = '';
 
     public string $produkTujuanId = '';
 
-    public function render()
+    public function render(): View
     {
         $query = KepesertaanPaket::with(['nasabah', 'produk'])
             ->where('status_alert', 'perlu_review');
@@ -63,12 +64,12 @@ class NasabahBermasalah extends Component
         return view('livewire.admin.nasabah-bermasalah', compact('kepesertaan', 'produkTujuan'));
     }
 
-    public function updatedSearch()
+    public function updatedSearch(): void
     {
         $this->resetPage();
     }
 
-    public function selectKepesertaan(int $id)
+    public function selectKepesertaan(int $id): void
     {
         $kepesertaan = KepesertaanPaket::with(['nasabah', 'produk'])->find($id);
 
@@ -91,7 +92,7 @@ class NasabahBermasalah extends Component
         $this->showDetail = true;
     }
 
-    public function updateKeputusan()
+    public function updateKeputusan(): void
     {
         $this->validate([
             'keputusan_akhir' => 'required|in:lanjut,gagal_dikembalikan,gagal_dialihkan',
@@ -113,12 +114,12 @@ class NasabahBermasalah extends Component
                 'gagal_dikembalikan' => app(ProsesKegagalanPaketAction::class)->dikembalikan(
                     (int) $this->selectedKepesertaan->id,
                     (string) $this->metode_pengambilan,
-                    (string) ($this->catatan_admin ?? ''),
+                    (string) $this->catatan_admin,
                 ),
                 'gagal_dialihkan' => app(ProsesKegagalanPaketAction::class)->dialihkan(
                     (int) $this->selectedKepesertaan->id,
                     (int) $this->produkTujuanId,
-                    (string) ($this->catatan_admin ?? ''),
+                    (string) $this->catatan_admin,
                 ),
             };
         } catch (\DomainException $e) {

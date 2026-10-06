@@ -4,7 +4,9 @@ namespace App\Livewire\Admin;
 
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\ProdukTabungan;
+use Carbon\Carbon;
 use Illuminate\Database\QueryException;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -20,37 +22,38 @@ class ManajemenProduk extends Component
         return 'admin';
     }
 
-    public $showForm = false;
+    public bool $showForm = false;
 
-    public $editId = null;
+    public ?int $editId = null;
 
-    public $nama = '';
+    public string $nama = '';
 
-    public $tipe = 'bebas';
+    public string $tipe = 'bebas';
 
-    public $persen_komisi = '';
+    public string $persen_komisi = '';
 
-    public $minimal_setor = '';
+    public string $minimal_setor = '';
 
-    public $harga_per_hari = '';
+    public string $harga_per_hari = '';
 
-    public $isi_paket = '';
+    public string $isi_paket = '';
 
-    public $uang_tunai = '';
+    public string $uang_tunai = '';
 
+    /** @var array<int|string, mixed> */
     public array $isiPaketItems = [];
 
-    public $periode_mulai = '';
+    public ?string $periode_mulai = '';
 
-    public $periode_selesai = '';
+    public ?string $periode_selesai = '';
 
-    public $tanggal_boleh_cair = '';
+    public ?string $tanggal_boleh_cair = '';
 
-    public $batas_toleransi = '';
+    public string $batas_toleransi = '';
 
-    public $tampilKonfirmasiHapus = false;
+    public bool $tampilKonfirmasiHapus = false;
 
-    public $deleteId = null;
+    public ?int $deleteId = null;
 
     public int $jumlahPesertaEdit = 0;
 
@@ -59,7 +62,7 @@ class ManajemenProduk extends Component
         $this->isiPaketItems = [['nama' => '', 'jumlah' => '']];
     }
 
-    public function updatedTipe($value): void
+    public function updatedTipe(string $value): void
     {
         if ($value === 'paket') {
             $this->persen_komisi = '';
@@ -71,7 +74,7 @@ class ManajemenProduk extends Component
         $this->isiPaketItems[] = ['nama' => '', 'jumlah' => ''];
     }
 
-    public function hapusItemPaket($index): void
+    public function hapusItemPaket(int|string $index): void
     {
         unset($this->isiPaketItems[$index]);
         $this->isiPaketItems = array_values($this->isiPaketItems);
@@ -81,20 +84,20 @@ class ManajemenProduk extends Component
         }
     }
 
-    public function render()
+    public function render(): View
     {
         $produk = ProdukTabungan::latest()->paginate(10);
 
         return view('livewire.admin.manajemen-produk', compact('produk'));
     }
 
-    public function toggleForm()
+    public function toggleForm(): void
     {
         $this->showForm = ! $this->showForm;
         $this->resetForm();
     }
 
-    public function resetForm()
+    public function resetForm(): void
     {
         $this->editId = null;
         $this->nama = '';
@@ -112,7 +115,7 @@ class ManajemenProduk extends Component
         $this->jumlahPesertaEdit = 0;
     }
 
-    public function save()
+    public function save(): void
     {
         $paket = $this->tipe === 'paket';
 
@@ -181,7 +184,7 @@ class ManajemenProduk extends Component
         session()->flash('success', 'Produk berhasil disimpan!');
     }
 
-    public function edit($id)
+    public function edit(int $id): void
     {
         $produk = ProdukTabungan::find($id);
         if (! $produk) {
@@ -193,33 +196,33 @@ class ManajemenProduk extends Component
         $this->editId = $produk->id;
         $this->nama = $produk->nama;
         $this->tipe = $produk->tipe;
-        $this->persen_komisi = $produk->persen_komisi;
-        $this->minimal_setor = $produk->minimal_setor;
-        $this->harga_per_hari = $produk->harga_per_hari;
-        $this->isi_paket = $produk->isi_paket ? json_encode($produk->isi_paket) : '';
+        $this->persen_komisi = (string) $produk->persen_komisi;
+        $this->minimal_setor = (string) $produk->minimal_setor;
+        $this->harga_per_hari = (string) $produk->harga_per_hari;
+        $this->isi_paket = $produk->isi_paket ? (string) json_encode($produk->isi_paket) : '';
 
         $items = collect($produk->isi_paket ?? []);
         $uangTunai = $items->first(fn ($item) => strtolower(trim($item['nama'] ?? '')) === 'uang tunai');
-        $this->uang_tunai = $uangTunai ? preg_replace('/\D/', '', $uangTunai['jumlah'] ?? '') : ($produk->uang_tunai ?? '');
+        $this->uang_tunai = $uangTunai ? (string) preg_replace('/\D/', '', (string) ($uangTunai['jumlah'] ?? '')) : (string) ($produk->uang_tunai ?? '');
 
         $barangItems = $items->reject(fn ($item) => strtolower(trim($item['nama'] ?? '')) === 'uang tunai')->values()->all();
         $this->isiPaketItems = ! empty($barangItems) ? $barangItems : [['nama' => '', 'jumlah' => '']];
 
-        $this->periode_mulai = $produk->periode_mulai?->format('Y-m-d');
-        $this->periode_selesai = $produk->periode_selesai?->format('Y-m-d');
-        $this->tanggal_boleh_cair = $produk->tanggal_boleh_cair?->format('Y-m-d');
-        $this->batas_toleransi = $produk->batas_toleransi_tunggakan_hari;
+        $this->periode_mulai = $produk->periode_mulai ? Carbon::parse($produk->periode_mulai)->format('Y-m-d') : null;
+        $this->periode_selesai = $produk->periode_selesai ? Carbon::parse($produk->periode_selesai)->format('Y-m-d') : null;
+        $this->tanggal_boleh_cair = $produk->tanggal_boleh_cair ? Carbon::parse($produk->tanggal_boleh_cair)->format('Y-m-d') : null;
+        $this->batas_toleransi = (string) ($produk->batas_toleransi_tunggakan_hari ?? '');
         $this->jumlahPesertaEdit = $produk->kepesertaanPakets()->count();
         $this->showForm = true;
     }
 
-    public function confirmDelete($id)
+    public function confirmDelete(int $id): void
     {
         $this->deleteId = $id;
         $this->tampilKonfirmasiHapus = true;
     }
 
-    public function delete()
+    public function delete(): void
     {
         $produk = ProdukTabungan::find($this->deleteId);
 
@@ -238,7 +241,7 @@ class ManajemenProduk extends Component
         $this->deleteId = null;
     }
 
-    public function toggleStatus($id)
+    public function toggleStatus(int $id): void
     {
         $produk = ProdukTabungan::find($id);
         if ($produk) {

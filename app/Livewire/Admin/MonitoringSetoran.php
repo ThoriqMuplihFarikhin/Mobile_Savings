@@ -8,6 +8,7 @@ use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiSetoran;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -23,29 +24,29 @@ class MonitoringSetoran extends Component
         return 'admin';
     }
 
-    public $search = '';
+    public string $search = '';
 
-    public $statusFilter = '';
+    public string $statusFilter = '';
 
-    public $tanggalFilter = '';
+    public string $tanggalFilter = '';
 
-    public $showKoreksi = false;
+    public bool $showKoreksi = false;
 
-    public $selectedId = null;
+    public ?int $selectedId = null;
 
-    public $nominalBaru = '';
+    public string $nominalBaru = '';
 
-    public $alasanKoreksi = '';
+    public string $alasanKoreksi = '';
 
-    public $showBatal = false;
+    public bool $showBatal = false;
 
-    public $selectedBatalId = null;
+    public ?int $selectedBatalId = null;
 
-    public $alasanBatal = '';
+    public string $alasanBatal = '';
 
     public bool $sudahDisetorTerpilih = false;
 
-    public function render()
+    public function render(): View
     {
         $query = TransaksiSetoran::with(['nasabah', 'produk', 'inputBy', 'dikoreksiOleh']);
 
@@ -69,27 +70,27 @@ class MonitoringSetoran extends Component
         return view('livewire.admin.monitoring-setoran', compact('setoran'));
     }
 
-    public function updatedSearch()
+    public function updatedSearch(): void
     {
         $this->resetPage();
     }
 
-    public function updatedStatusFilter()
+    public function updatedStatusFilter(): void
     {
         $this->resetPage();
     }
 
-    public function toggleKoreksi($id)
+    public function toggleKoreksi(int $id): void
     {
         $this->showKoreksi = true;
         $this->selectedId = $id;
         $setoran = TransaksiSetoran::find($id);
-        $this->nominalBaru = $setoran->nominal ?? '';
+        $this->nominalBaru = (string) ($setoran->nominal ?? '');
         $this->alasanKoreksi = '';
         $this->sudahDisetorTerpilih = (bool) ($setoran->sudah_disetor_ke_kantor ?? false);
     }
 
-    public function koreksi()
+    public function koreksi(): void
     {
         $this->validate([
             'nominalBaru' => 'required|numeric|min:1|max:1000000000',
@@ -179,7 +180,7 @@ class MonitoringSetoran extends Component
         session()->flash('success', 'Setoran berhasil dikoreksi!');
     }
 
-    public function toggleBatal($id)
+    public function toggleBatal(int $id): void
     {
         $this->showBatal = true;
         $this->selectedBatalId = $id;
@@ -188,7 +189,7 @@ class MonitoringSetoran extends Component
         $this->sudahDisetorTerpilih = (bool) ($setoran->sudah_disetor_ke_kantor ?? false);
     }
 
-    public function batal()
+    public function batal(): void
     {
         $this->validate([
             'alasanBatal' => 'required|string|max:500',

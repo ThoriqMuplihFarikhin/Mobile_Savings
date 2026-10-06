@@ -11,6 +11,7 @@ use App\Models\NasabahProfil;
 use App\Models\User;
 use DomainException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -26,7 +27,7 @@ class VerifikasiNasabah extends Component
         return 'admin';
     }
 
-    public function render()
+    public function render(): View
     {
         $pending = NasabahProfil::with(['user', 'didaftarkanOleh'])
             ->where('status_pendaftaran', 'pending_verifikasi')
@@ -36,7 +37,7 @@ class VerifikasiNasabah extends Component
         return view('livewire.admin.verifikasi-nasabah', compact('pending'));
     }
 
-    public function approve($id)
+    public function approve(int $id): void
     {
         $hasil = DB::transaction(function () use ($id) {
             $profil = NasabahProfil::whereKey($id)->lockForUpdate()->first();
@@ -91,7 +92,7 @@ class VerifikasiNasabah extends Component
             : "Nasabah berhasil diverifikasi! PIN awal: {$pin} — catat sekarang karena hanya ditampilkan sekali, lalu sampaikan ke nasabah. Nasabah wajib mengganti PIN setelah login.");
     }
 
-    public function reject($id)
+    public function reject(int $id): void
     {
         $hasil = DB::transaction(function () use ($id) {
             $profil = NasabahProfil::whereKey($id)->lockForUpdate()->first();
