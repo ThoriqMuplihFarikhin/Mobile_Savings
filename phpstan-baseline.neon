@@ -541,18 +541,6 @@ parameters:
 			path: app/Livewire/Kolektor/PenarikanOffline.php
 
 		-
-			message: '#^Parameter \#1 \$nasabah of method App\\Actions\\Penarikan\\AjukanPenarikanAction\:\:execute\(\) expects App\\Models\\User, App\\Models\\User\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\User\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Livewire/Kolektor/PenarikanOffline.php
-
-		-
-			message: '#^Parameter \#2 \$produk of method App\\Actions\\Penarikan\\AjukanPenarikanAction\:\:execute\(\) expects App\\Models\\ProdukTabungan, App\\Models\\ProdukTabungan\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ProdukTabungan\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Livewire/Kolektor/PenarikanOffline.php
-
-		-
 			message: '#^Property App\\Livewire\\Kolektor\\PenarikanOffline\:\:\$jumlahMenungguVerifikasi has no type specified\.$#'
 			identifier: missingType.property
 			count: 1

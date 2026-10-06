@@ -146,11 +146,21 @@
                     </label>
                     <label class="flex flex-col items-center justify-center p-3.5 rounded-2xl border cursor-pointer transition text-center
                         {{ ($lokasi ?? '') === 'rumah_kolektor' ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 font-bold' : 'border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400' }}">
-                        <input type="radio" wire:model.live="lokasi" value="rumah_kolektor" class="sr-only">
-                        <span class="text-sm">Rumah Kolektor</span>
-                    </label>
-                </div>
+                    <input type="radio" wire:model.live="lokasi" value="rumah_kolektor" class="sr-only">
+                    <span class="text-sm">Rumah Kolektor</span>
+                </label>
             </div>
+        </div>
+
+        {{-- Catatan --}}
+        <div>
+            <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Catatan</label>
+            <textarea wire:model="catatan" rows="2" maxlength="500"
+                placeholder="mis. buku tabungan dicoret, tanda tangan di buku"
+                class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-white focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition"></textarea>
+            <p class="mt-1 text-xs text-zinc-400">Wajib diisi untuk nasabah offline.</p>
+            @error('catatan') <p class="mt-1.5 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
+        </div>
 
             {{-- Actions --}}
             <div class="flex items-center gap-3 pt-2">

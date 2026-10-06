@@ -3,6 +3,7 @@
 namespace App\Livewire\Kolektor;
 
 use App\Actions\Penarikan\AjukanPenarikanAction;
+use App\Actions\Penarikan\CatatPenarikanOfflineLangsungAction;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Livewire\Concerns\ValidatesKolektorNasabah;
 use App\Models\KolektorNasabah;
@@ -32,6 +33,8 @@ class PenarikanOffline extends Component
     public $nominal = '';
 
     public $lokasi = 'kantor';
+
+    public string $catatan = '';
 
     public $nasabahList = [];
 
@@ -161,13 +164,14 @@ class PenarikanOffline extends Component
         $this->nominalDiterima = $hasil['diterima'];
     }
 
-    public function submit(AjukanPenarikanAction $action)
+    public function submit(CatatPenarikanOfflineLangsungAction $action)
     {
         $this->validate([
             'nasabahId' => 'required|exists:users,id',
             'produkId' => 'required|exists:produk_tabungan,id',
             'nominal' => 'required|numeric|decimal:0,2|gt:0',
             'lokasi' => 'required|in:kantor,rumah_kolektor',
+            'catatan' => 'nullable|string|max:500',
         ]);
 
         $isTanggungJawab = KolektorNasabah::where('kolektor_id', Auth::id())
@@ -181,26 +185,51 @@ class PenarikanOffline extends Component
             return;
         }
 
-        $nasabah = User::findOrFail($this->nasabahId);
-        $produk = ProdukTabungan::findOrFail($this->produkId);
+        $nasabah = User::query()->whereKey($this->nasabahId)->first();
+        $produk = ProdukTabungan::query()->whereKey($this->produkId)->first();
+
+        if (! $nasabah instanceof User || ! $produk instanceof ProdukTabungan) {
+            session()->flash('error', 'Data penarikan tidak ditemukan.');
+
+            return;
+        }
+
+        if ($nasabah->isOffline()) {
+            $this->validate(['catatan' => 'required|string|max:500']);
+        }
+
+        $kolektor = Auth::user();
+
+        if (! $kolektor instanceof User) {
+            session()->flash('error', 'Sesi berakhir. Silakan login kembali.');
+
+            return;
+        }
 
         try {
-            $action->execute(
+            $hasil = $action->execute(
+                $kolektor,
                 $nasabah,
                 $produk,
                 (string) $this->nominal,
-                'offline',
-                $this->lokasi
+                $this->lokasi,
+                (string) $this->catatan,
             );
 
-            $this->reset(['nasabahId', 'produkId', 'nominal', 'lokasi']);
+            $this->reset(['nasabahId', 'produkId', 'nominal', 'lokasi', 'catatan']);
             $this->selectedNasabah = null;
             $this->persenKomisi = 0;
             $this->nominalKomisi = 0;
             $this->nominalDiterima = 0;
             $this->loadProduk();
 
-            session()->flash('success', 'Penarikan offline berhasil diajukan! Menunggu persetujuan admin.');
+            if ($hasil['langsung']) {
+                session()->flash('success', 'Penarikan offline langsung diselesaikan! Saldo nasabah sudah dipotong.');
+            } elseif ($hasil['alasan'] === 'kas_kurang') {
+                session()->flash('error', 'Kas di tangan tidak mencukupi — penarikan masuk antrian approval admin.');
+            } else {
+                session()->flash('success', 'Penarikan offline berhasil diajukan! Menunggu persetujuan admin.');
+            }
         } catch (\Exception $e) {
             session()->flash('error', $e->getMessage());
         }

@@ -65,6 +65,15 @@ class ApprovalPenarikan extends Component
      */
     protected function perluDuaApprover(TransaksiPenarikan $penarikan): bool
     {
+        return self::melewatiAmbangDuaApprover((float) $penarikan->nominal_diminta);
+    }
+
+    /**
+     * Ambang persetujuan ganda dipakai bersama oleh jalur penarikan
+     * offline kolektor (D14, CatatPenarikanOfflineLangsungAction).
+     */
+    public static function melewatiAmbangDuaApprover(float $nominal): bool
+    {
         $batas = (int) AdminSetting::get('penarikan_batas_dua_approver', '0');
 
         if ($batas <= 0) {
@@ -75,7 +84,7 @@ class ApprovalPenarikan extends Component
             return false;
         }
 
-        return (float) $penarikan->nominal_diminta > $batas;
+        return $nominal > $batas;
     }
 
     public function approve(int $id): void
