@@ -24,6 +24,11 @@
                 <h3 class="text-sm font-semibold text-gray-900">Form Registrasi Nasabah</h3>
             </div>
             <form wire:submit="submit" class="space-y-4 p-6">
+                <label class="flex items-center gap-2 text-sm font-medium text-gray-900">
+                    <input type="checkbox" wire:model.live="modeOffline"
+                        class="h-4 w-4 rounded border-[#ebebeb] text-indigo-600 focus:ring-[#171717]" />
+                    Nasabah tidak memakai aplikasi / tidak punya HP (mode offline)
+                </label>
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-gray-900">Nama Lengkap</label>
@@ -31,12 +36,14 @@
                             class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                         @error('nama') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
                     </div>
+                    @if(! $modeOffline)
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-gray-900">No. HP</label>
                         <input type="text" wire:model="noHp" placeholder="08xxxxxxxxxx"
                             class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                         @error('noHp') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
                     </div>
+                    @endif
                     <div class="sm:col-span-2">
                         <label class="mb-1.5 block text-sm font-medium text-gray-900">Alamat</label>
                         <textarea wire:model="alamat" rows="2"

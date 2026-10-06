@@ -44,6 +44,11 @@
             </div>
 
             <form wire:submit="submit" class="space-y-5 p-6">
+                <label class="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    <input type="checkbox" wire:model.live="modeOffline"
+                        class="h-4 w-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500" />
+                    Nasabah tidak memakai aplikasi / tidak punya HP (mode offline)
+                </label>
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Nama Lengkap</label>
@@ -51,12 +56,14 @@
                             class="h-11 w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 text-sm text-zinc-900 dark:text-white focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
                         @error('nama') <p class="mt-1 text-xs font-medium text-rose-500">{{ $message }}</p> @enderror
                     </div>
+                    @if(! $modeOffline)
                     <div>
                         <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">No. HP (WhatsApp)</label>
                         <input type="text" wire:model="noHp" placeholder="08xxxxxxxxxx"
                             class="h-11 w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 text-sm font-mono text-zinc-900 dark:text-white focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
                         @error('noHp') <p class="mt-1 text-xs font-medium text-rose-500">{{ $message }}</p> @enderror
                     </div>
+                    @endif
                     <div class="sm:col-span-2">
                         <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Alamat Lengkap</label>
                         <textarea wire:model="alamat" rows="2" placeholder="Jl. Raya No. 123, RT 01/RW 02..."

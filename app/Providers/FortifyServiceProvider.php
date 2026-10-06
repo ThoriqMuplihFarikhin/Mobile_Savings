@@ -53,6 +53,12 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
 
+            if ($user->isOffline()) {
+                Hash::check($password, self::DUMMY_HASH);
+
+                return null;
+            }
+
             if ($user->isLocked()) {
                 return null;
             }

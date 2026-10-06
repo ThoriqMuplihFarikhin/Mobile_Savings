@@ -85,6 +85,13 @@ class VerifikasiNasabah extends Component
         ]);
 
         $nasabah = User::find((int) $hasil['user_id']);
+
+        if ($nasabah !== null && $nasabah->isOffline()) {
+            session()->flash('success', 'Nasabah offline berhasil diverifikasi! Tidak ada PIN yang dikirim karena nasabah tidak memakai aplikasi.');
+
+            return;
+        }
+
         $pin = $nasabah ? app(KirimPinAwalAction::class)->buatDanKirim($nasabah) : null;
 
         session()->flash('success', $pin === null

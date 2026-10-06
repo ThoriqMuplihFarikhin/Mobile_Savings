@@ -11,6 +11,7 @@ use App\Support\Pin;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -25,6 +26,8 @@ class DaftarNasabah extends Component
     }
 
     public $showForm = false;
+
+    public bool $modeOffline = false;
 
     public $nama = '';
 
@@ -51,32 +54,40 @@ class DaftarNasabah extends Component
     public function toggleForm()
     {
         $this->showForm = ! $this->showForm;
-        $this->reset(['nama', 'noHp', 'alamat', 'tanggalLahir', 'jenisKelamin', 'pekerjaan']);
+        $this->reset(['nama', 'noHp', 'alamat', 'tanggalLahir', 'jenisKelamin', 'pekerjaan', 'modeOffline']);
     }
 
     public function submit()
     {
-        $this->noHp = NomorHp::normalize($this->noHp);
+        $modeOffline = $this->modeOffline;
 
-        $this->validate([
+        $aturan = [
             'nama' => 'required|string|min:3',
-            'noHp' => 'required|string|unique:users,no_hp|min:10|max:15|regex:'.NomorHp::PATTERN,
             'alamat' => 'required|string|min:5',
             'tanggalLahir' => 'required|date|before:today',
             'jenisKelamin' => 'required|in:laki-laki,perempuan',
             'pekerjaan' => 'nullable|string',
-        ]);
+        ];
 
-        $pinDefault = Pin::acak();
+        if ($modeOffline) {
+            $this->validate($aturan);
+        } else {
+            $this->noHp = NomorHp::normalize($this->noHp);
 
-        $user = DB::transaction(function () use ($pinDefault): User {
+            $this->validate($aturan + [
+                'noHp' => 'required|string|unique:users,no_hp|min:10|max:15|regex:'.NomorHp::PATTERN,
+            ]);
+        }
+
+        $user = DB::transaction(function () use ($modeOffline): User {
             $user = User::create([
                 'name' => $this->nama,
-                'no_hp' => $this->noHp,
-                'pin_hash' => Hash::make($pinDefault),
+                'no_hp' => $modeOffline ? null : $this->noHp,
+                'pin_hash' => Hash::make($modeOffline ? Str::random(40) : Pin::acak()),
                 'role' => 'nasabah',
                 'status_akun' => 'terkunci',
-                'harus_ganti_pin' => true,
+                'mode_akses' => $modeOffline ? 'offline' : 'digital',
+                'harus_ganti_pin' => ! $modeOffline,
             ]);
 
             $user->assignRole('nasabah');
@@ -96,12 +107,20 @@ class DaftarNasabah extends Component
 
         ActivityLogger::log('registrasi_nasabah', 'users', $user->id, [
             'nama' => $this->nama,
-            'no_hp' => $this->noHp,
+            'no_hp' => $modeOffline ? null : $this->noHp,
+            'mode_akses' => $user->mode_akses,
             'didaftarkan_oleh' => Auth::id(),
         ]);
 
         $this->showForm = false;
-        $this->reset(['nama', 'noHp', 'alamat', 'tanggalLahir', 'jenisKelamin', 'pekerjaan']);
+        $this->reset(['nama', 'noHp', 'alamat', 'tanggalLahir', 'jenisKelamin', 'pekerjaan', 'modeOffline']);
+
+        if ($modeOffline) {
+            session()->flash('success', 'Nasabah offline berhasil didaftarkan! Nomor HP dikosongkan dan akun ditandai mode offline tanpa PIN awal. Menunggu verifikasi dari admin.');
+
+            return;
+        }
+
         session()->flash('success', 'Nasabah berhasil didaftarkan! PIN awal disimpan aman dan tidak ditampilkan ke kolektor — PIN baru dikirim ke nasabah saat admin memverifikasi. Nasabah wajib login dan mengganti PIN sebelum penarikan pertama. Menunggu verifikasi dari admin.');
     }
 }
