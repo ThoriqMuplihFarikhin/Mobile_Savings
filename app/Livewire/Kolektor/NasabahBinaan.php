@@ -7,6 +7,7 @@ use App\Models\KepesertaanPaket;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
 use App\Models\SaldoProduk;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -27,12 +28,19 @@ class NasabahBinaan extends Component
 
     public $filterTunggakan = 'semua';
 
+    public string $filterMode = 'semua';
+
     public function updatedSearch()
     {
         $this->resetPage();
     }
 
     public function updatedFilterTunggakan()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterMode(): void
     {
         $this->resetPage();
     }
@@ -88,9 +96,19 @@ class NasabahBinaan extends Component
             });
         }
 
+        if (in_array($this->filterMode, ['digital', 'offline'], true)) {
+            $query->whereHas('user', function ($q) {
+                $q->where('mode_akses', $this->filterMode);
+            });
+        }
+
         $nasabahList = $query->latest()->paginate(10);
 
         $totalNasabah = $nasabahIds->count();
+
+        $totalNasabahOffline = User::whereIn('id', $nasabahIds)
+            ->where('mode_akses', 'offline')
+            ->count();
 
         $totalSaldoDikelola = SaldoProduk::whereIn('nasabah_id', $nasabahIds)->sum('saldo');
 
@@ -111,6 +129,7 @@ class NasabahBinaan extends Component
         return view('livewire.kolektor.nasabah-binaan', compact(
             'nasabahList',
             'totalNasabah',
+            'totalNasabahOffline',
             'totalSaldoDikelola',
             'totalNasabahTunggakan',
             'hariKunjungan'

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Pin\KirimPinAwalAction;
 use App\Actions\Pin\ResetPinOlehAdminAction;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
@@ -57,20 +58,40 @@ class ManajemenNasabah extends Component
 
     public ?int $resetPinId = null;
 
+    public string $modeFilter = '';
+
+    public bool $tampilKonversiMode = false;
+
+    public ?int $konversiProfilId = null;
+
+    public string $konversiNoHp = '';
+
     /** @var array<string, string> */
     protected $listeners = ['nasabahCreated' => '$refresh'];
 
     public function render(): View
     {
         $nasabah = NasabahProfil::with(['user', 'didaftarkanOleh'])
-            ->where('nama', 'like', "%{$this->search}%")
-            ->orWhereHas('user', function ($query) {
-                $query->where('no_hp', 'like', "%{$this->search}%");
+            ->where(function ($query) {
+                $query->where('nama', 'like', "%{$this->search}%")
+                    ->orWhereHas('user', function ($sub) {
+                        $sub->where('no_hp', 'like', "%{$this->search}%");
+                    });
+            })
+            ->when($this->modeFilter !== '', function ($query) {
+                $query->whereHas('user', function ($sub) {
+                    $sub->where('mode_akses', $this->modeFilter);
+                });
             })
             ->latest()
             ->paginate(10);
 
         return view('livewire.admin.manajemen-nasabah', compact('nasabah'));
+    }
+
+    public function updatedModeFilter(): void
+    {
+        $this->resetPage();
     }
 
     public function toggleForm(): void
@@ -332,5 +353,90 @@ class ManajemenNasabah extends Component
         ]);
 
         session()->flash('success', 'Kunci akun nasabah berhasil dibuka!');
+    }
+
+    public function confirmKonversi(int $profilId): void
+    {
+        $profil = NasabahProfil::find($profilId);
+
+        if (! $profil) {
+            session()->flash('error', 'Nasabah tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+            return;
+        }
+
+        $this->konversiProfilId = $profil->id;
+        $this->konversiNoHp = '';
+        $this->tampilKonversiMode = true;
+    }
+
+    /**
+     * Konversi mode akses nasabah dua arah (D14, §5.3.6):
+     * offline -> digital (isi No. HP unik + kirim PIN awal), digital -> offline
+     * (hapus sesi + matikan notifikasi). Keduanya dicatat di log aktivitas.
+     */
+    public function konversiMode(): void
+    {
+        $profil = NasabahProfil::find($this->konversiProfilId);
+        $user = $profil?->user;
+
+        if ($profil === null || ! $user instanceof User) {
+            $this->tampilKonversiMode = false;
+            $this->konversiProfilId = null;
+            session()->flash('error', 'Nasabah tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+            return;
+        }
+
+        $menujuDigital = $user->isOffline();
+
+        if ($menujuDigital) {
+            $this->konversiNoHp = NomorHp::normalize($this->konversiNoHp);
+
+            $this->validate([
+                'konversiNoHp' => 'required|string|max:20|unique:users,no_hp|regex:'.NomorHp::PATTERN,
+            ], [
+                'konversiNoHp.unique' => 'No. HP sudah dipakai oleh pengguna lain.',
+            ]);
+        }
+
+        $modeLama = $user->mode_akses;
+        $modeBaru = $menujuDigital ? 'digital' : 'offline';
+
+        DB::transaction(function () use ($user, $menujuDigital, $modeLama, $modeBaru): void {
+            if ($menujuDigital) {
+                $user->update([
+                    'mode_akses' => 'digital',
+                    'no_hp' => $this->konversiNoHp,
+                ]);
+            } else {
+                $user->update([
+                    'mode_akses' => 'offline',
+                    'notifikasi_wa_aktif' => false,
+                ]);
+
+                DB::table('sessions')->where('user_id', $user->id)->delete();
+            }
+
+            ActivityLogger::log('ubah_mode_akses', 'users', $user->id, [
+                'user_id' => $user->id,
+                'mode_lama' => $modeLama,
+                'mode_baru' => $modeBaru,
+            ]);
+        });
+
+        $this->tampilKonversiMode = false;
+        $this->konversiProfilId = null;
+        $this->konversiNoHp = '';
+
+        if ($menujuDigital) {
+            $pin = app(KirimPinAwalAction::class)->buatDanKirim($user);
+
+            session()->flash('success', $pin === null
+                ? 'Mode akses diubah ke digital. PIN awal dikirim ke WhatsApp nasabah.'
+                : "Mode akses diubah ke digital. PIN awal: {$pin} — catat sekarang karena hanya ditampilkan sekali.");
+        } else {
+            session()->flash('success', 'Mode akses nasabah diubah ke mode offline. Sesi aktif dihapus dan notifikasi dimatikan.');
+        }
     }
 }

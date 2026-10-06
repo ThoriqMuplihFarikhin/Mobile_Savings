@@ -73,6 +73,10 @@ class Laporan extends Component
             : $this->laporanKosong(),
         };
 
+        $data['jumlahNasabahOffline'] = User::where('role', 'nasabah')
+            ->where('mode_akses', 'offline')
+            ->count();
+
         return view('livewire.admin.laporan', $data);
     }
 

@@ -34,6 +34,7 @@ class DashboardController extends Controller
     private function adminDashboard(User $user): View
     {
         $totalNasabah = DB::table('users')->where('role', 'nasabah')->count();
+        $nasabahOffline = DB::table('users')->where('role', 'nasabah')->where('mode_akses', 'offline')->count();
         $totalKolektor = DB::table('users')->where('role', 'kolektor')->count();
         $totalSaldo = DB::table('saldo_produk')->sum('saldo');
         $setoranHariIni = DB::table('transaksi_setoran')
@@ -88,6 +89,7 @@ class DashboardController extends Controller
         return view('dashboard', compact(
             'user',
             'totalNasabah',
+            'nasabahOffline',
             'totalKolektor',
             'totalSaldo',
             'setoranHariIni',

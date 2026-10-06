@@ -150,6 +150,9 @@
                                         Ditolak
                                     </span>
                                 @endif
+                                @if($item->user?->isOffline())
+                                    <span class="ml-1 inline-flex items-center rounded-full bg-zinc-200 dark:bg-zinc-700 px-3 py-1 text-xs font-semibold text-zinc-700 dark:text-zinc-200">Mode Offline</span>
+                                @endif
                             </td>
                             <td class="px-5 py-4 text-xs text-zinc-500 dark:text-zinc-400">
                                 {{ $item->created_at->translatedFormat('d M Y') }}

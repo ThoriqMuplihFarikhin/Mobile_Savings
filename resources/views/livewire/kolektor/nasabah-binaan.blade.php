@@ -6,7 +6,7 @@
     </div>
 
     {{-- Summary Cards --}}
-    <div class="mb-5 grid grid-cols-3 gap-2.5">
+    <div class="mb-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <div class="rounded-2xl bg-white p-3.5 shadow-sm border border-zinc-200/80 dark:bg-zinc-800/90 dark:border-zinc-700/80">
             <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Total Binaan</p>
             <p class="mt-1 font-mono text-lg font-bold text-zinc-900 dark:text-white">{{ $totalNasabah }}</p>
@@ -25,6 +25,12 @@
             <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Ada Tunggakan</p>
             <p class="mt-1 font-mono text-lg font-bold text-amber-600 dark:text-amber-400">{{ $totalNasabahTunggakan }}</p>
             <p class="mt-0.5 text-[10px] text-amber-500 font-medium">Perlu ditagih</p>
+        </div>
+
+        <div class="rounded-2xl bg-white p-3.5 shadow-sm border border-zinc-200/80 dark:bg-zinc-800/90 dark:border-zinc-700/80">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Binaan Offline</p>
+            <p class="mt-1 font-mono text-lg font-bold text-zinc-900 dark:text-white">{{ $totalNasabahOffline }}</p>
+            <p class="mt-0.5 text-[10px] text-zinc-400">Tanpa aplikasi</p>
         </div>
     </div>
 
@@ -52,6 +58,21 @@
                 ⚠️ Ada Tunggakan ({{ $totalNasabahTunggakan }})
             </button>
         </div>
+
+        <div class="flex items-center gap-1.5">
+            <button type="button" wire:click="$set('filterMode', 'semua')"
+                class="rounded-full px-3 py-1 text-[11px] font-semibold transition {{ $filterMode === 'semua' ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-2xs' : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50' }}">
+                Semua Mode
+            </button>
+            <button type="button" wire:click="$set('filterMode', 'digital')"
+                class="rounded-full px-3 py-1 text-[11px] font-semibold transition {{ $filterMode === 'digital' ? 'bg-blue-600 text-white shadow-2xs' : 'bg-white dark:bg-zinc-800 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900 hover:bg-blue-50' }}">
+                Digital
+            </button>
+            <button type="button" wire:click="$set('filterMode', 'offline')"
+                class="rounded-full px-3 py-1 text-[11px] font-semibold transition {{ $filterMode === 'offline' ? 'bg-zinc-900 text-white shadow-2xs' : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50' }}">
+                Offline
+            </button>
+        </div>
     </div>
 
     {{-- Nasabah Card List --}}
@@ -76,6 +97,11 @@
                                 <span class="rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
                                     Aktif
                                 </span>
+                                @if($userNasabah && $userNasabah->isOffline())
+                                    <span class="rounded-full bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:text-zinc-200">
+                                        Mode Offline
+                                    </span>
+                                @endif
                             </div>
                             <p class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
                                 📍 {{ $profil->alamat ?? 'Alamat belum diisi' }}

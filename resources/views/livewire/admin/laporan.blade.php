@@ -81,6 +81,11 @@
             <h2 class="text-lg font-semibold text-gray-900">Laporan {{ $judulSeksi }} - {{ $judulPeriode }}</h2>
         </div>
 
+        <div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-gray-50 px-4 py-2 text-sm text-gray-700 shadow-[inset_0_0_0_1px_#ebebeb]">
+            <span class="font-medium">Nasabah Offline</span>
+            <span class="font-mono font-semibold">{{ $jumlahNasabahOffline }}</span>
+        </div>
+
         @if($seksi === 'keuangan')
             <div class="mb-6 grid gap-4 sm:grid-cols-4">
                 <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
