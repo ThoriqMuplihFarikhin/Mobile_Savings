@@ -6,16 +6,18 @@ use App\Actions\Penarikan\BatalkanPenarikanAction;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\TransaksiPenarikan;
 use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Livewire\WithPagination;
 
-#[Layout('layouts.mobile')]
-class RiwayatPenarikan extends Component
+/**
+ * Kartu "Pengajuan Aktif" (D18): menampilkan pengajuan penarikan berjalan
+ * (pending/approved) dengan tombol pembatalan; dipasang di halaman Ajukan
+ * Penarikan dan dashboard nasabah.
+ */
+class PengajuanAktif extends Component
 {
     use AuthorizesRole;
-    use WithPagination;
 
     /** Alasan opsional pembatalan yang diisi nasabah (D18). */
     public string $alasanBatal = '';
@@ -45,13 +47,14 @@ class RiwayatPenarikan extends Component
         session()->flash('success', 'Pengajuan penarikan berhasil dibatalkan.');
     }
 
-    public function render()
+    public function render(): View
     {
-        $penarikan = TransaksiPenarikan::with('produk')
+        $pengajuan = TransaksiPenarikan::with('produk')
             ->where('nasabah_id', Auth::id())
+            ->whereIn('status', ['pending', 'approved'])
             ->latest()
-            ->paginate(10);
+            ->get();
 
-        return view('livewire.nasabah.riwayat-penarikan', compact('penarikan'));
+        return view('livewire.nasabah.pengajuan-aktif', compact('pengajuan'));
     }
 }

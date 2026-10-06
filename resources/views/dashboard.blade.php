@@ -323,6 +323,9 @@
                 </div>
             </div>
 
+            {{-- 4b. Pengajuan Penarikan Aktif (D18) --}}
+            <livewire:nasabah.pengajuan-aktif />
+
             {{-- 5. Riwayat Terbaru --}}
             @if($riwayatGabungan->count() > 0)
                 <div class="rounded-2xl bg-white p-4 shadow-xs border border-zinc-200/80 dark:bg-zinc-800/90 dark:border-zinc-700/80">

@@ -88,15 +88,15 @@ it('menolak pembatalan penarikan milik nasabah lain', function () {
         ->and(LogAktivitas::where('aksi', 'batalkan_penarikan')->count())->toBe(0);
 });
 
-it('menolak pembatalan penarikan yang bukan berstatus pending', function () {
-    ['nasabah' => $nasabah, 'penarikan' => $penarikan] = p64Fixture(['status' => 'approved']);
+it('menolak pembatalan penarikan yang bukan berstatus pending maupun approved', function () {
+    ['nasabah' => $nasabah, 'penarikan' => $penarikan] = p64Fixture(['status' => 'selesai']);
 
     Livewire::actingAs($nasabah)
         ->test(RiwayatPenarikan::class)
         ->call('batalkan', $penarikan->id)
         ->assertSee('tidak dapat dibatalkan');
 
-    expect($penarikan->fresh()->status)->toBe('approved');
+    expect($penarikan->fresh()->status)->toBe('selesai');
 });
 
 it('pembatalan dua kali hanya mengubah status dan log sekali', function () {

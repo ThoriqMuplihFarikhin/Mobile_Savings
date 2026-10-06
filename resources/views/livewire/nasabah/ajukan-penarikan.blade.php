@@ -24,6 +24,9 @@
         </div>
     @endif
 
+    {{-- Kartu Pengajuan Aktif (D18): batal langsung dari halaman ini --}}
+    <livewire:nasabah.pengajuan-aktif />
+
     {{-- Form Card --}}
     <div class="rounded-3xl bg-white dark:bg-zinc-800 shadow-xs border border-zinc-200/80 dark:border-zinc-700/80 overflow-hidden">
         {{-- Saldo Tersedia Card Header --}}

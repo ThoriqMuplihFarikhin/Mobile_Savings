@@ -78,14 +78,19 @@
                     </div>
                 </div>
 
-                @if($item->status === 'pending')
-                    <div class="mt-3.5 flex justify-end">
-                        <button type="button"
-                                wire:click="batalkan({{ $item->id }})"
-                                wire:confirm="Yakin membatalkan pengajuan penarikan ini?"
-                                class="rounded-xl border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/70 transition">
-                            Batalkan
-                        </button>
+                @if(in_array($item->status, ['pending', 'approved'], true))
+                    <div class="mt-3.5 space-y-2">
+                        <input type="text" wire:model="alasanBatal" maxlength="255"
+                               placeholder="Alasan membatalkan (opsional)"
+                               class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3 py-2 text-xs text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition" />
+                        <div class="flex justify-end">
+                            <button type="button"
+                                    wire:click="batalkan({{ $item->id }})"
+                                    wire:confirm="Yakin membatalkan pengajuan penarikan ini? Saldo yang sudah dipotong akan dikembalikan."
+                                    class="rounded-xl border border-rose-200 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/70 transition">
+                                Batalkan Pengajuan
+                            </button>
+                        </div>
                     </div>
                 @endif
             </div>
