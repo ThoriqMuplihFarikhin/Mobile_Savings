@@ -25,6 +25,12 @@ class ActivityLogger
 
     public static function notify(int $nasabahId, string $judul, string $pesan, string $jenis = 'in_app'): void
     {
+        $user = User::find($nasabahId);
+
+        if ($user !== null && $user->isOffline()) {
+            return;
+        }
+
         if (in_array($jenis, ['in_app', 'both'])) {
             LogNotifikasi::create([
                 'nasabah_id' => $nasabahId,
@@ -41,8 +47,6 @@ class ActivityLogger
         if (! in_array($jenis, ['whatsapp', 'both'])) {
             return;
         }
-
-        $user = User::find($nasabahId);
 
         if (! $user || ! $user->no_hp) {
             LogNotifikasi::create([
