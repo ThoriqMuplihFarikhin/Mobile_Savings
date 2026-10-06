@@ -7,8 +7,10 @@ use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AdminSetting;
 use App\Models\KolektorNasabah;
 use App\Models\SaldoProduk;
+use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiPenarikan;
 use App\Models\User;
+use App\Support\KasKolektorHitung;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -261,11 +263,61 @@ class ApprovalPenarikan extends Component
                 return ['error' => 'Penarikan ini diserahkan oleh kolektor di rumah nasabah — harus diselesaikan lewat verifikasi PIN oleh kolektor, bukan admin.'];
             }
 
+            $kolektorPembayar = null;
+            $kasSebelum = '0.00';
+
+            if ($isOverrideRumah) {
+                $penanggungJawab = KolektorNasabah::where('nasabah_id', $penarikan->nasabah_id)
+                    ->where('status', 'aktif')
+                    ->value('kolektor_id');
+                $kolektorPembayar = $penanggungJawab !== null ? (int) $penanggungJawab : null;
+            }
+
+            if ($kolektorPembayar !== null) {
+                // D13: penarikan tunai di rumah nasabah tetap mengurangi kas
+                // kolektor penanggung jawab, dengan guard yang sama dengan jalur PIN.
+                KasKolektorHitung::kunciBarisKas($kolektorPembayar);
+                $kasSebelum = KasKolektorHitung::kasDiTangan($kolektorPembayar);
+
+                if (! KasKolektorHitung::bolehKasMinus()
+                    && bccomp($kasSebelum, (string) $penarikan->nominal_diterima, 2) < 0) {
+                    return ['error' => sprintf(
+                        'Kas di tangan kolektor (Rp %s) tidak cukup untuk membayar Rp %s. Selesaikan setor/rekonsiliasi kas atau nyalakan izinkan kas minus di pengaturan.',
+                        number_format((float) $kasSebelum, 0, ',', '.'),
+                        number_format((float) $penarikan->nominal_diterima, 0, ',', '.'),
+                    )];
+                }
+            }
+
             $penarikan->update([
                 'status' => 'selesai',
                 'waktu_pencairan' => now(),
                 'metode_verifikasi' => 'manual_admin',
+                'dibayar_oleh' => $kolektorPembayar,
+                'mempengaruhi_kas' => $kolektorPembayar !== null,
             ]);
+
+            if ($kolektorPembayar !== null) {
+                $pengajuanPending = SetoranKolektorKantor::where('kolektor_id', $kolektorPembayar)
+                    ->where('status', 'pending')
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($pengajuanPending) {
+                    $penarikan->update(['setoran_kolektor_id' => $pengajuanPending->id]);
+                    $pengajuanPending->update([
+                        'total_seharusnya' => KasKolektorHitung::totalSeharusnyaPengajuan($pengajuanPending->id),
+                    ]);
+                }
+
+                ActivityLogger::log('kas_berkurang_penarikan_tunai', 'transaksi_penarikan', $id, [
+                    'kolektor_id' => $kolektorPembayar,
+                    'nominal_diterima' => $penarikan->nominal_diterima,
+                    'kas_sebelum' => $kasSebelum,
+                    'kas_sesudah' => bcsub($kasSebelum, (string) $penarikan->nominal_diterima, 2),
+                    'jalur' => 'manual_admin',
+                ]);
+            }
 
             $detail = [
                 'nasabah_id' => $penarikan->nasabah_id,

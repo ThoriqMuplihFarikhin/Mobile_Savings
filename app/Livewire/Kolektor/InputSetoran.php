@@ -11,6 +11,7 @@ use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiSetoran;
+use App\Support\KasKolektorHitung;
 use DomainException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -257,9 +258,8 @@ class InputSetoran extends Component
             ->take(5)
             ->get();
 
-        $totalBelumDisetor = TransaksiSetoran::belumDisetor()
-            ->where('input_by', Auth::id())
-            ->sum('nominal');
+        // D13: banner kas memakai angka net dari sumber tunggal.
+        $totalBelumDisetor = (float) KasKolektorHitung::kasDiTangan((int) Auth::id());
 
         return view('livewire.kolektor.input-setoran', compact('riwayatHariIni', 'totalBelumDisetor'));
     }

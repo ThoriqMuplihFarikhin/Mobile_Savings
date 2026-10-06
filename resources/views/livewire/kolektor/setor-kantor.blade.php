@@ -48,12 +48,24 @@
     {{-- Ringkasan Kas --}}
     <div class="mb-6 rounded-2xl bg-white p-5 shadow-sm border border-zinc-200/80 dark:bg-zinc-800/90 dark:border-zinc-700/80">
         <h3 class="mb-4 text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-            Ringkasan Kas Belum Disetor
+            Ringkasan Kas
         </h3>
-        
-        <div class="grid gap-3 sm:grid-cols-2">
+
+        <div class="grid gap-3 sm:grid-cols-4">
             <div class="rounded-xl bg-zinc-50 p-4 border border-zinc-200/60 dark:bg-zinc-900/50 dark:border-zinc-700/60">
-                <p class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Total Belum Disetor</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Setoran Masuk</p>
+                <p class="mt-1 font-mono text-2xl font-extrabold text-zinc-900 dark:text-white">
+                    Rp {{ number_format($totalSetoranMasuk, 0, ',', '.') }}
+                </p>
+            </div>
+            <div class="rounded-xl bg-zinc-50 p-4 border border-zinc-200/60 dark:bg-zinc-900/50 dark:border-zinc-700/60">
+                <p class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Penarikan Tunai</p>
+                <p class="mt-1 font-mono text-2xl font-extrabold text-zinc-900 dark:text-white">
+                    Rp {{ number_format($totalPenarikanTunai, 0, ',', '.') }}
+                </p>
+            </div>
+            <div class="rounded-xl bg-zinc-50 p-4 border border-zinc-200/60 dark:bg-zinc-900/50 dark:border-zinc-700/60">
+                <p class="text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Total Seharusnya</p>
                 <p class="mt-1 font-mono text-2xl font-extrabold text-zinc-900 dark:text-white">
                     Rp {{ number_format($totalBelumDisetor, 0, ',', '.') }}
                 </p>
@@ -66,7 +78,7 @@
             </div>
         </div>
 
-        @if($totalBelumDisetor > 0)
+        @if($jumlahTransaksi > 0)
             <div class="mt-4">
                 <label class="mb-1.5 block text-xs font-medium text-zinc-700 dark:text-zinc-300">Catatan Penyerahan Kas (Opsional)</label>
                 <textarea wire:model="catatan" rows="2"

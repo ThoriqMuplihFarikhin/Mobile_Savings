@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\KasKolektorHitung;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -51,13 +52,15 @@ class SetoranKolektorKantor extends Model
 
     /**
      * Ringkasan kas per kolektor: akumulasi selisih rekonsiliasi (status kurang/lebih)
-     * dan saldo berjalan yang belum disetor ke kantor.
+     * dan saldo berjalan kas net yang belum disetor ke kantor — setoran belum
+     * diterima kantor dikurangi penarikan tunai belum direkonsiliasi (D13).
      *
      * @return array<int, array{selisih_kumulatif: float, saldo_berjalan: float}>
      */
     public static function ringkasKasPerKolektor(): array
     {
         $ringkas = [];
+        $tunaiKeluar = KasKolektorHitung::tunaiKeluarPerKolektor();
 
         $rowsSelisih = static::whereIn('status', ['kurang', 'lebih'])
             ->whereNotNull('selisih')
@@ -73,6 +76,11 @@ class SetoranKolektorKantor extends Model
             ];
         }
 
+        foreach ($tunaiKeluar as $kolektorId => $totalTunai) {
+            $ringkas[$kolektorId] ??= ['selisih_kumulatif' => 0.0, 'saldo_berjalan' => 0.0];
+            $ringkas[$kolektorId]['saldo_berjalan'] -= $totalTunai;
+        }
+
         $rowsBerjalan = TransaksiSetoran::belumDisetor()
             ->whereNotNull('input_by')
             ->groupBy('input_by')
@@ -82,7 +90,8 @@ class SetoranKolektorKantor extends Model
         foreach ($rowsBerjalan as $row) {
             $kolektorId = (int) $row->getAttribute('input_by');
             $ringkas[$kolektorId] ??= ['selisih_kumulatif' => 0.0, 'saldo_berjalan' => 0.0];
-            $ringkas[$kolektorId]['saldo_berjalan'] = (float) $row->getAttribute('total_nominal');
+            $ringkas[$kolektorId]['saldo_berjalan'] = (float) $row->getAttribute('total_nominal')
+                - ($tunaiKeluar[$kolektorId] ?? 0.0);
         }
 
         return $ringkas;

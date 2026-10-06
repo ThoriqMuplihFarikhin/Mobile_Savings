@@ -90,6 +90,11 @@
                     placeholder="0"
                 />
 
+                <flux:select wire:model="izinkanKasMinus" label="Izinkan Kas Kolektor Minus (D13)">
+                    <flux:select.option value="false">Tidak — penarikan tunai ditolak bila kas kurang</flux:select.option>
+                    <flux:select.option value="true">Ya — penarikan tunai tetap boleh meski kas minus</flux:select.option>
+                </flux:select>
+
                 <flux:input
                     wire:model="nomorWaBantuan"
                     label="Nomor WhatsApp Bantuan"

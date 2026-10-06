@@ -7,6 +7,7 @@ use App\Models\LogAktivitas;
 use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
 use App\Models\TransaksiPenarikan;
+use App\Models\TransaksiSetoran;
 use App\Models\User;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
@@ -37,6 +38,19 @@ function createOfflineApprovedPenarikan(User $kolektor, User $nasabah): Transaks
         'persen_komisi' => 5.00,
         'minimal_setor' => 10000,
         'status' => 'aktif',
+    ]);
+
+    // D13: kas fisik kolektor Rp 100.000 agar guard kas di tangan cukup
+    // membayar penarikan tunai (47.500) pada seluruh tes di file ini.
+    TransaksiSetoran::create([
+        'nasabah_id' => $nasabah->id,
+        'produk_id' => $produk->id,
+        'nominal' => 100000,
+        'tanggal_transaksi' => now()->toDateString(),
+        'tanggal_input_sistem' => now(),
+        'input_by' => $kolektor->id,
+        'sumber_input' => 'real_time',
+        'status' => 'tercatat',
     ]);
 
     return TransaksiPenarikan::create([

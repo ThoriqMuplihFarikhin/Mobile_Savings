@@ -7,8 +7,8 @@ use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\LogHandoverKolektor;
-use App\Models\TransaksiSetoran;
 use App\Models\User;
+use App\Support\KasKolektorHitung;
 use DomainException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -67,9 +67,8 @@ class HandoverKolektor extends Component
         if ($this->kolektorLamaId) {
             $this->selectedKolektorLama = User::find($this->kolektorLamaId);
 
-            $this->unsettledCash = (float) TransaksiSetoran::belumDisetor()
-                ->where('input_by', $this->kolektorLamaId)
-                ->sum('nominal');
+            // D13: kas net yang menghalangi handover — sumber tunggal.
+            $this->unsettledCash = (float) KasKolektorHitung::kasDiTangan((int) $this->kolektorLamaId);
 
             $this->hasUnsettledCash = $this->unsettledCash > 0;
 
@@ -123,10 +122,11 @@ class HandoverKolektor extends Component
         try {
             $today = now()->toDateString();
 
-            $adaKas = TransaksiSetoran::belumDisetor()
-                ->where('input_by', $this->kolektorLamaId)
-                ->lockForUpdate()
-                ->exists();
+            // D13: baca kas net dengan baris terkunci — kunci tidak boleh
+            // jatuh saat masih ada uang yang dipegang kolektor lama.
+            KasKolektorHitung::kunciBarisKas((int) $this->kolektorLamaId);
+            $kasDiTangan = KasKolektorHitung::kasDiTangan((int) $this->kolektorLamaId);
+            $adaKas = bccomp($kasDiTangan, '0', 2) > 0;
 
             $nasabahIds = KolektorNasabah::where('kolektor_id', $this->kolektorLamaId)
                 ->where('status', 'aktif')
@@ -136,9 +136,7 @@ class HandoverKolektor extends Component
             if ($adaKas) {
                 DB::rollBack();
                 $this->hasUnsettledCash = true;
-                $this->unsettledCash = (float) TransaksiSetoran::belumDisetor()
-                    ->where('input_by', $this->kolektorLamaId)
-                    ->sum('nominal');
+                $this->unsettledCash = (float) $kasDiTangan;
                 session()->flash('error', 'Handover diblokir! Kolektor masih memiliki kas yang belum disetor ke kantor.');
 
                 return;

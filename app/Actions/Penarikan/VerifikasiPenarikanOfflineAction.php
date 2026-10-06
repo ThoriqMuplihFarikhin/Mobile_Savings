@@ -4,8 +4,10 @@ namespace App\Actions\Penarikan;
 
 use App\Helpers\ActivityLogger;
 use App\Models\KolektorNasabah;
+use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiPenarikan;
 use App\Models\User;
+use App\Support\KasKolektorHitung;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
@@ -102,6 +104,19 @@ class VerifikasiPenarikanOfflineAction
 
             RateLimiter::clear($key);
 
+            // D13: kas kolektor harus cukup membayar penarikan tunai ini.
+            KasKolektorHitung::kunciBarisKas($kolektor->id);
+            $kasSebelum = KasKolektorHitung::kasDiTangan($kolektor->id);
+
+            if (! KasKolektorHitung::bolehKasMinus()
+                && bccomp($kasSebelum, (string) $p->nominal_diterima, 2) < 0) {
+                return ['error' => sprintf(
+                    'Kas di tangan Anda (Rp %s) tidak cukup untuk membayar Rp %s. Pilih pengambilan di kantor atau setor/hubungi admin.',
+                    number_format((float) $kasSebelum, 0, ',', '.'),
+                    number_format((float) $p->nominal_diterima, 0, ',', '.'),
+                )];
+            }
+
             $p->update([
                 'status' => 'selesai',
                 'waktu_pencairan' => now(),
@@ -109,6 +124,29 @@ class VerifikasiPenarikanOfflineAction
                 'metode_verifikasi' => 'pin_nasabah',
                 'percobaan_verifikasi_gagal' => 0,
                 'terkunci_hingga' => null,
+                'dibayar_oleh' => $kolektor->id,
+                'mempengaruhi_kas' => true,
+            ]);
+
+            // D13: tautkan ke pengajuan setor yang sedang pending dan perbarui
+            // total_seharusnya menjadi net (setoran − penarikan tunai tertaut).
+            $pengajuanPending = SetoranKolektorKantor::where('kolektor_id', $kolektor->id)
+                ->where('status', 'pending')
+                ->lockForUpdate()
+                ->first();
+
+            if ($pengajuanPending) {
+                $p->update(['setoran_kolektor_id' => $pengajuanPending->id]);
+                $pengajuanPending->update([
+                    'total_seharusnya' => KasKolektorHitung::totalSeharusnyaPengajuan($pengajuanPending->id),
+                ]);
+            }
+
+            ActivityLogger::log('kas_berkurang_penarikan_tunai', 'transaksi_penarikan', $p->id, [
+                'kolektor_id' => $kolektor->id,
+                'nominal_diterima' => $p->nominal_diterima,
+                'kas_sebelum' => $kasSebelum,
+                'kas_sesudah' => bcsub($kasSebelum, (string) $p->nominal_diterima, 2),
             ]);
 
             ActivityLogger::log('verifikasi_penarikan_offline', 'transaksi_penarikan', $p->id, [

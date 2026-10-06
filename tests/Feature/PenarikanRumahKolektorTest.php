@@ -9,6 +9,7 @@ use App\Models\LogAktivitas;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
+use App\Models\TransaksiSetoran;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Livewire;
@@ -49,6 +50,24 @@ function penarikanRumahP31(User $nasabah, ProdukTabungan $produk, string $jalur,
     ]);
 }
 
+/**
+ * D13: kas fisik kolektor Rp 100.000 agar guard kas di tangan cukup
+ * membayar penarikan tunai (47.500) pada tes yang menyelesaikan penarikan.
+ */
+function kasRumahP31(User $kolektor, User $nasabah, ProdukTabungan $produk): void
+{
+    TransaksiSetoran::create([
+        'nasabah_id' => $nasabah->id,
+        'produk_id' => $produk->id,
+        'nominal' => 100000,
+        'tanggal_transaksi' => now()->toDateString(),
+        'tanggal_input_sistem' => now(),
+        'input_by' => $kolektor->id,
+        'sumber_input' => 'real_time',
+        'status' => 'tercatat',
+    ]);
+}
+
 it('menampilkan penarikan online rumah kolektor hanya di daftar kolektor yang bertanggung jawab', function () {
     $kolektorA = User::factory()->kolektor()->create();
     $kolektorB = User::factory()->kolektor()->create();
@@ -76,6 +95,7 @@ it('memverifikasi penarikan online rumah kolektor dengan pin nasabah', function 
     $produk = produkRumahP31();
 
     binaanRumahP31($kolektor, $nasabah);
+    kasRumahP31($kolektor, $nasabah, $produk);
 
     $penarikan = penarikanRumahP31($nasabah, $produk, 'online', 'rumah_kolektor');
 
@@ -97,6 +117,7 @@ it('mencatat override admin penarikan online rumah kolektor dengan penanda overr
     $produk = produkRumahP31();
 
     binaanRumahP31($kolektor, $nasabah);
+    kasRumahP31($kolektor, $nasabah, $produk);
 
     $penarikan = penarikanRumahP31($nasabah, $produk, 'online', 'rumah_kolektor');
 

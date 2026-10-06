@@ -7,6 +7,7 @@ use App\Models\AdminSetting;
 use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
+use App\Support\KasKolektorHitung;
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -17,7 +18,7 @@ class KasKolektor extends Component
 {
     use AuthorizesRole;
 
-    /** @var array<int, array{kolektor_id: int, nama: string, total_belum_disetor: float, jumlah_transaksi: int, umur_terlama_hari: int, pengajuan_pending: int, selisih_kumulatif: float, lewat_batas: bool, terkunci: bool}> */
+    /** @var array<int, array{kolektor_id: int, nama: string, total_belum_disetor: float, penarikan_tunai: float, kas_di_tangan: float, jumlah_transaksi: int, umur_terlama_hari: int, pengajuan_pending: int, selisih_kumulatif: float, lewat_batas: bool, terkunci: bool}> */
     public array $daftarKas = [];
 
     public float $totalKas = 0.0;
@@ -37,7 +38,7 @@ class KasKolektor extends Component
     public function refreshData(): void
     {
         $this->daftarKas = static::kumpulkanKas();
-        $this->totalKas = (float) array_sum(array_column($this->daftarKas, 'total_belum_disetor'));
+        $this->totalKas = (float) array_sum(array_column($this->daftarKas, 'kas_di_tangan'));
         $this->jumlahLewatBatas = count(array_filter($this->daftarKas, fn (array $baris): bool => $baris['lewat_batas']));
     }
 
@@ -46,12 +47,13 @@ class KasKolektor extends Component
      * kas yang belum disetor wajib tetap terlihat agar tidak "hilang"
      * dari pengawasan, diurutkan paling atas dengan badge terkunci.
      *
-     * @return array<int, array{kolektor_id: int, nama: string, total_belum_disetor: float, jumlah_transaksi: int, umur_terlama_hari: int, pengajuan_pending: int, selisih_kumulatif: float, lewat_batas: bool, terkunci: bool}>
+     * @return array<int, array{kolektor_id: int, nama: string, total_belum_disetor: float, penarikan_tunai: float, kas_di_tangan: float, jumlah_transaksi: int, umur_terlama_hari: int, pengajuan_pending: int, selisih_kumulatif: float, lewat_batas: bool, terkunci: bool}>
      */
     public static function kumpulkanKas(): array
     {
         $batas = self::batas();
         $teragregasi = TransaksiSetoran::teragregasiPerKolektor();
+        $tunaiKeluar = KasKolektorHitung::tunaiKeluarPerKolektor();
         $ringkas = SetoranKolektorKantor::ringkasKasPerKolektor();
 
         $pending = [];
@@ -78,6 +80,8 @@ class KasKolektor extends Component
                 : 0;
             $pengajuanPending = $pending[$kolektorId] ?? 0;
             $terkunci = $kolektor->status_akun === 'terkunci';
+            $penarikanTunai = $tunaiKeluar[$kolektorId] ?? 0.0;
+            $kasDiTangan = $agregat['total'] - $penarikanTunai;
 
             if ($terkunci && $agregat['total'] <= 0 && $pengajuanPending <= 0) {
                 continue;
@@ -87,11 +91,13 @@ class KasKolektor extends Component
                 'kolektor_id' => $kolektorId,
                 'nama' => (string) $kolektor->name,
                 'total_belum_disetor' => $agregat['total'],
+                'penarikan_tunai' => $penarikanTunai,
+                'kas_di_tangan' => $kasDiTangan,
                 'jumlah_transaksi' => $agregat['jumlah'],
                 'umur_terlama_hari' => $umur,
                 'pengajuan_pending' => $pengajuanPending,
                 'selisih_kumulatif' => $ringkas[$kolektorId]['selisih_kumulatif'] ?? 0.0,
-                'lewat_batas' => self::lewatBatas($agregat['total'], $umur, $batas['kas'], $batas['hari']),
+                'lewat_batas' => self::lewatBatas($kasDiTangan, $umur, $batas['kas'], $batas['hari']),
                 'terkunci' => $terkunci,
             ];
 
@@ -115,7 +121,7 @@ class KasKolektor extends Component
         $total = 0.0;
         $lewat = 0;
         foreach (static::kumpulkanKas() as $baris) {
-            $total += $baris['total_belum_disetor'];
+            $total += $baris['kas_di_tangan'];
             if ($baris['lewat_batas']) {
                 $lewat++;
             }

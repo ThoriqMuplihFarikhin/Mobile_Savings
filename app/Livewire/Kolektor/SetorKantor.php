@@ -5,7 +5,9 @@ namespace App\Livewire\Kolektor;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SetoranKolektorKantor;
+use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
+use App\Support\KasKolektorHitung;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -22,9 +24,19 @@ class SetorKantor extends Component
         return 'kolektor';
     }
 
+    /** Gross setoran kolektor yang belum diterima kantor (termasuk yang sudah tertaut pengajuan). */
+    #[Locked]
+    public float $totalSetoranMasuk = 0;
+
+    /** Penarikan tunai yang belum direkonsiliasi — mengurangi kas (D13). */
+    #[Locked]
+    public float $totalPenarikanTunai = 0;
+
+    /** Kas net di tangan kolektor: setoran masuk − penarikan tunai (D13). */
     #[Locked]
     public $totalBelumDisetor = 0;
 
+    /** Jumlah setoran yang belum tertaut pengajuan — penentu apakah form boleh disubmit. */
     #[Locked]
     public $jumlahTransaksi = 0;
 
@@ -37,10 +49,13 @@ class SetorKantor extends Component
 
     public function loadData()
     {
-        $this->totalBelumDisetor = TransaksiSetoran::belumDisetor()
+        $this->totalSetoranMasuk = (float) TransaksiSetoran::belumDisetor()
             ->where('input_by', Auth::id())
-            ->whereNull('setoran_kolektor_id')
             ->sum('nominal');
+
+        $this->totalPenarikanTunai = (float) KasKolektorHitung::tunaiKeluarBelumDirekonsiliasi((int) Auth::id());
+
+        $this->totalBelumDisetor = (float) KasKolektorHitung::kasDiTangan((int) Auth::id());
 
         $this->jumlahTransaksi = TransaksiSetoran::belumDisetor()
             ->where('input_by', Auth::id())
@@ -77,7 +92,6 @@ class SetorKantor extends Component
                     throw new \DomainException('Tidak ada setoran yang perlu disetor ke kantor.');
                 }
 
-                // TODO(D4): rumus total_seharusnya tidak diubah — penarikan tunai tidak masuk rekonsiliasi.
                 $setoran = SetoranKolektorKantor::create([
                     'kolektor_id' => $kolektorId,
                     'tanggal_setor' => now()->toDateString(),
@@ -88,6 +102,18 @@ class SetorKantor extends Component
 
                 TransaksiSetoran::whereIn('id', $rows->pluck('id'))
                     ->update(['setoran_kolektor_id' => $setoran->id]);
+
+                // D13 (supersedes D4): penarikan tunai ikut tertaut ke pengajuan
+                // dan memotong total_seharusnya sehingga net.
+                TransaksiPenarikan::where('dibayar_oleh', $kolektorId)
+                    ->where('mempengaruhi_kas', true)
+                    ->whereNull('setoran_kolektor_id')
+                    ->lockForUpdate()
+                    ->update(['setoran_kolektor_id' => $setoran->id]);
+
+                $setoran->update([
+                    'total_seharusnya' => KasKolektorHitung::totalSeharusnyaPengajuan($setoran->id),
+                ]);
             });
         } catch (\DomainException $e) {
             session()->flash('error', $e->getMessage());
@@ -121,6 +147,11 @@ class SetorKantor extends Component
                 $setoran->update(['status' => 'dibatalkan']);
 
                 TransaksiSetoran::where('setoran_kolektor_id', $setoran->id)
+                    ->update(['setoran_kolektor_id' => null]);
+
+                // D13: penarikan tunai yang tertaut dilepas agar kembali
+                // dihitung sebagai kas di tangan kolektor (unlinked).
+                TransaksiPenarikan::where('setoran_kolektor_id', $setoran->id)
                     ->update(['setoran_kolektor_id' => null]);
             });
         } catch (\DomainException $e) {
@@ -156,6 +187,10 @@ class SetorKantor extends Component
             'riwayat' => $riwayat,
             'menungguVerifikasi' => $pengajuanPending !== null,
             'pengajuanPending' => $pengajuanPending,
+            'totalSetoranMasuk' => $this->totalSetoranMasuk,
+            'totalPenarikanTunai' => $this->totalPenarikanTunai,
+            'totalBelumDisetor' => $this->totalBelumDisetor,
+            'jumlahTransaksi' => $this->jumlahTransaksi,
         ]);
     }
 }

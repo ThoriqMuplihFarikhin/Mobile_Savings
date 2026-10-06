@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\KasKolektorHitung;
 use App\Support\NomorHp;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -155,8 +156,8 @@ class User extends Authenticatable
             return false;
         }
 
-        return TransaksiSetoran::belumDisetor()
-            ->where('input_by', $this->id)
-            ->exists();
+        // D13: kas net — setoran belum disetor dikurangi penarikan tunai
+        // yang belum direkonsiliasi (sumber tunggal KasKolektorHitung).
+        return bccomp(KasKolektorHitung::kasDiTangan((int) $this->id), '0', 2) > 0;
     }
 }

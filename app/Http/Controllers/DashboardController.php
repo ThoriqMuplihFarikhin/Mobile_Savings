@@ -10,6 +10,7 @@ use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
+use App\Support\KasKolektorHitung;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -166,11 +167,9 @@ class DashboardController extends Controller
         $jadwalSelesai = $jadwalHariIni->where('status_kunjungan', 'dikunjungi')->count();
 
         $stats = [
-            'setoran_belum_disetor' => DB::table('transaksi_setoran')
-                ->where('input_by', $user->id)
-                ->where('sudah_disetor_ke_kantor', false)
-                ->whereIn('status', ['tercatat', 'dikoreksi'])
-                ->sum('nominal'),
+            // D13: kas net di tangan kolektor — setoran belum disetor dikurangi
+            // penarikan tunai yang belum direkonsiliasi (sumber tunggal).
+            'setoran_belum_disetor' => (float) KasKolektorHitung::kasDiTangan((int) $user->id),
             'kunjungan_selesai' => $jadwalSelesai,
             'kunjungan_total' => $jadwalTotal,
         ];

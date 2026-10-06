@@ -151,8 +151,16 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <div class="mt-3 border-t border-[#ebebeb] pt-3">
+                            <div class="mt-3 border-t border-[#ebebeb] pt-3 space-y-2">
                                 <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Setoran Masuk</span>
+                                    <span class="font-mono font-medium text-gray-900">Rp {{ number_format($totalSetoranMasuk, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Penarikan Tunai</span>
+                                    <span class="font-mono font-medium text-gray-900">Rp {{ number_format($totalPenarikanTunai, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between text-sm font-semibold">
                                     <span class="text-gray-600">Total Seharusnya</span>
                                     <span class="font-mono font-medium text-gray-900">Rp {{ number_format($totalSeharusnya, 0, ',', '.') }}</span>
                                 </div>

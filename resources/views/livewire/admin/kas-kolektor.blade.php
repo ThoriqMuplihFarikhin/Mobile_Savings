@@ -37,7 +37,9 @@
                 <thead>
                     <tr class="border-b border-[#ebebeb] bg-gray-50">
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Kolektor</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Belum Disetor</th>
+                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Setoran Masuk</th>
+                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Penarikan Tunai</th>
+                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Kas di Tangan</th>
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Transaksi</th>
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Umur Tertua</th>
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Pengajuan Pending</th>
@@ -55,6 +57,8 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 font-mono text-sm text-gray-600">Rp {{ number_format($baris['total_belum_disetor'], 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 font-mono text-sm text-gray-600">Rp {{ number_format($baris['penarikan_tunai'], 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 font-mono text-sm font-semibold text-gray-900">Rp {{ number_format($baris['kas_di_tangan'], 0, ',', '.') }}</td>
                             <td class="px-4 py-3 font-mono text-sm text-gray-600">{{ $baris['jumlah_transaksi'] }}</td>
                             <td class="px-4 py-3 font-mono text-sm text-gray-600">{{ $baris['umur_terlama_hari'] }} hari</td>
                             <td class="px-4 py-3 font-mono text-sm text-gray-600">{{ $baris['pengajuan_pending'] }}</td>
@@ -71,7 +75,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-4 py-16 text-center">
+                            <td colspan="9" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[#ebebeb]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                     <p class="text-sm text-gray-500">Belum ada kolektor aktif.</p>

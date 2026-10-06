@@ -5,8 +5,10 @@ namespace App\Livewire\Admin;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SetoranKolektorKantor;
+use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
+use App\Support\KasKolektorHitung;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -27,7 +29,14 @@ class RekonsiliasiKas extends Component
 
     public string $kolektorId = '';
 
+    /** Total seharusnya net (D13): setoran masuk − penarikan tunai. */
     public float $totalSeharusnya = 0;
+
+    /** Gross setoran kolektor yang belum diterima kantor. */
+    public float $totalSetoranMasuk = 0;
+
+    /** Penarikan tunai kolektor yang belum direkonsiliasi (memotong kas). */
+    public float $totalPenarikanTunai = 0;
 
     public string $totalDiterima = '';
 
@@ -114,6 +123,11 @@ class RekonsiliasiKas extends Component
 
                 TransaksiSetoran::where('setoran_kolektor_id', $setoran->id)
                     ->update(['setoran_kolektor_id' => null]);
+
+                // D13: penarikan tunai yang tertaut dilepas agar kembali
+                // dihitung sebagai kas di tangan kolektor (unlinked).
+                TransaksiPenarikan::where('setoran_kolektor_id', $setoran->id)
+                    ->update(['setoran_kolektor_id' => null]);
             });
         } catch (\DomainException $e) {
             session()->flash('error', $e->getMessage());
@@ -160,12 +174,10 @@ class RekonsiliasiKas extends Component
                     throw new \DomainException('Pengajuan setoran ini sudah diproses atau tidak valid.');
                 }
 
-                $totalSeharusnya = (float) TransaksiSetoran::where('setoran_kolektor_id', $setoran->id)
-                    ->where('status', '!=', 'dibatalkan')
-                    ->lockForUpdate()
-                    ->sum('nominal');
+                // D13: total_seharusnya net — setoran tertaut dikurangi penarikan tunai tertaut.
+                $totalSeharusnya = KasKolektorHitung::totalSeharusnyaPengajuan($setoran->id);
 
-                $selisih = round((float) $this->processTotalDiterima - $totalSeharusnya, 2);
+                $selisih = round((float) $this->processTotalDiterima - (float) $totalSeharusnya, 2);
 
                 $status = match (true) {
                     $selisih > 0 => 'lebih',
@@ -221,16 +233,25 @@ class RekonsiliasiKas extends Component
     {
         $riwayat = SetoranKolektorKantor::with(['kolektor', 'diterimaOleh'])->latest()->paginate(10);
 
-        return view('livewire.admin.rekonsiliasi-kas', compact('riwayat'));
+        return view('livewire.admin.rekonsiliasi-kas', [
+            'riwayat' => $riwayat,
+            'totalSeharusnya' => $this->totalSeharusnya,
+            'totalSetoranMasuk' => $this->totalSetoranMasuk,
+            'totalPenarikanTunai' => $this->totalPenarikanTunai,
+        ]);
     }
 
     public function updatedKolektorId(): void
     {
         if ($this->kolektorId) {
-            $this->totalSeharusnya = (float) TransaksiSetoran::belumDisetor()
+            $this->totalSetoranMasuk = (float) TransaksiSetoran::belumDisetor()
                 ->where('input_by', $this->kolektorId)
-                ->whereNull('setoran_kolektor_id')
                 ->sum('nominal');
+
+            $this->totalPenarikanTunai = (float) KasKolektorHitung::tunaiKeluarBelumDirekonsiliasi((int) $this->kolektorId);
+
+            // D13: pratinjau memakai kas net — sumber yang sama dengan halaman lain.
+            $this->totalSeharusnya = (float) KasKolektorHitung::kasDiTangan((int) $this->kolektorId);
 
             $this->detailTransaksi = TransaksiSetoran::belumDisetor()
                 ->where('input_by', $this->kolektorId)
@@ -241,6 +262,8 @@ class RekonsiliasiKas extends Component
             $this->showForm = true;
         } else {
             $this->totalSeharusnya = 0;
+            $this->totalSetoranMasuk = 0;
+            $this->totalPenarikanTunai = 0;
             $this->detailTransaksi = [];
             $this->showForm = false;
         }
@@ -253,7 +276,7 @@ class RekonsiliasiKas extends Component
             'totalDiterima' => 'required|numeric|min:0',
         ]);
 
-        $kolektorId = $this->kolektorId;
+        $kolektorId = (int) $this->kolektorId;
 
         try {
             $hasil = DB::transaction(function () use ($kolektorId) {
@@ -266,15 +289,19 @@ class RekonsiliasiKas extends Component
                     throw new \DomainException('Kolektor ini sudah memiliki pengajuan setoran yang masih menunggu proses admin. Proses pengajuan tersebut terlebih dahulu.');
                 }
 
-                $totalSeharusnya = (float) TransaksiSetoran::belumDisetor()
+                $totalSetoranMasuk = (float) TransaksiSetoran::belumDisetor()
                     ->where('input_by', $kolektorId)
                     ->whereNull('setoran_kolektor_id')
                     ->lockForUpdate()
                     ->sum('nominal');
 
-                if ($totalSeharusnya <= 0) {
+                if ($totalSetoranMasuk <= 0) {
                     throw new \DomainException('Tidak ada setoran yang perlu direkonsiliasi.');
                 }
+
+                // D13: kas net yang seharusnya diserahkan kolektor — setoran
+                // dikurangi penarikan tunai yang belum direkonsiliasi.
+                $totalSeharusnya = (float) KasKolektorHitung::kasDiTangan($kolektorId);
 
                 $selisih = round((float) $this->totalDiterima - $totalSeharusnya, 2);
 
@@ -301,6 +328,13 @@ class RekonsiliasiKas extends Component
 
                 TransaksiSetoran::belumDisetor()
                     ->where('input_by', $kolektorId)
+                    ->whereNull('setoran_kolektor_id')
+                    ->update(['setoran_kolektor_id' => $setoran->id]);
+
+                // D13: tautkan penarikan tunai — kas kembali nol setelah seluruh
+                // setoran ditandai sudah diterima kantor.
+                TransaksiPenarikan::where('dibayar_oleh', $kolektorId)
+                    ->where('mempengaruhi_kas', true)
                     ->whereNull('setoran_kolektor_id')
                     ->update(['setoran_kolektor_id' => $setoran->id]);
 
