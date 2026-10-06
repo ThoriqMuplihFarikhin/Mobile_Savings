@@ -24,7 +24,7 @@ new #[Title('Profile settings')] class extends Component {
     {
         $user = Auth::user();
         $this->name = $user->name;
-        $this->no_hp = $user->no_hp;
+        $this->no_hp = $user->no_hp ?? '';
 
         $profil = $user->nasabahProfil;
         if ($profil) {

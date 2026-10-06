@@ -95,7 +95,7 @@
                                 <div class="text-sm font-medium text-gray-900">{{ $item->name }}</div>
                                 <div class="text-xs text-gray-500">{{ $item->nasabahProfil->alamat ?? '-' }}</div>
                             </td>
-                            <td class="px-4 py-3 text-sm text-gray-600">{{ $item->no_hp }}</td>
+                            <td class="px-4 py-3 text-sm text-gray-600">{{ $item->no_hp ?? '— (offline)' }}</td>
                             <td class="px-4 py-3">
                                 @if($item->status_akun === 'aktif')
                                     <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-indigo-600">Aktif</span>

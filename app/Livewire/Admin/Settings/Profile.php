@@ -26,7 +26,7 @@ class Profile extends Component
     {
         $user = Auth::user();
         $this->name = $user->name;
-        $this->no_hp = $user->no_hp;
+        $this->no_hp = $user->no_hp ?? '';
     }
 
     public function updatedFotoBaru(): void

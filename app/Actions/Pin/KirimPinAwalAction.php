@@ -39,7 +39,9 @@ class KirimPinAwalAction
      */
     public function kirim(User $nasabah, string $pin): bool
     {
-        if (! app(WhatsAppService::class)->isConnected() || $nasabah->notifikasi_wa_aktif === false) {
+        if ($nasabah->no_hp === null
+            || ! app(WhatsAppService::class)->isConnected()
+            || $nasabah->notifikasi_wa_aktif === false) {
             return false;
         }
 

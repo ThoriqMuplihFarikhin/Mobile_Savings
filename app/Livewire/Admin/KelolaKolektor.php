@@ -146,7 +146,7 @@ class KelolaKolektor extends Component
 
         $this->editId = $user->id;
         $this->name = $user->name;
-        $this->noHp = $user->no_hp;
+        $this->noHp = $user->no_hp ?? '';
         $this->showForm = true;
     }
 

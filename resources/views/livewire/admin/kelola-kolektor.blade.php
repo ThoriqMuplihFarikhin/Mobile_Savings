@@ -151,7 +151,7 @@
                         class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10">
                         <option value="">Pilih Nasabah</option>
                         @foreach($availableNasabah as $nasabah)
-                            <option value="{{ $nasabah->user_id }}">{{ $nasabah->nama }} ({{ $nasabah->user->no_hp ?? '-' }})</option>
+                            <option value="{{ $nasabah->user_id }}">{{ $nasabah->nama }} ({{ $nasabah->user->no_hp ?? '— (offline)' }})</option>
                         @endforeach
                     </select>
                     @error('assignNasabahId') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror

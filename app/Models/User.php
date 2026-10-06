@@ -20,17 +20,18 @@ use Spatie\Permission\Traits\HasRoles;
 /**
  * @property int $id
  * @property string $name
- * @property string $no_hp
+ * @property string|null $no_hp
  * @property string $pin_hash
  * @property string $role
  * @property string $status_akun
+ * @property string $mode_akses
  * @property int $percobaan_gagal
  * @property bool $harus_ganti_pin
  * @property Carbon|null $login_terkunci_hingga
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'no_hp', 'pin_hash', 'role', 'status_akun', 'percobaan_gagal', 'harus_ganti_pin', 'notifikasi_wa_aktif', 'foto_profil_path', 'banner_path', 'login_terkunci_hingga'])]
+#[Fillable(['name', 'no_hp', 'pin_hash', 'role', 'status_akun', 'mode_akses', 'percobaan_gagal', 'harus_ganti_pin', 'notifikasi_wa_aktif', 'foto_profil_path', 'banner_path', 'login_terkunci_hingga'])]
 #[Hidden(['pin_hash', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -59,11 +60,16 @@ class User extends Authenticatable
     }
 
     /**
-     * @return Attribute<string, string>
+     * @return Attribute<string|null, string>
      */
     protected function noHp(): Attribute
     {
-        return Attribute::set(fn (string $value) => NomorHp::normalize($value));
+        return Attribute::set(fn (?string $value) => $value === null ? null : NomorHp::normalize($value));
+    }
+
+    public function isOffline(): bool
+    {
+        return $this->mode_akses === 'offline';
     }
 
     public function initials(): string

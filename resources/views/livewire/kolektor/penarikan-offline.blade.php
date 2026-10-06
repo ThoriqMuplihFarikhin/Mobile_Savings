@@ -67,7 +67,7 @@
                     class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-sm font-medium text-zinc-900 dark:text-white focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition">
                     <option value="">-- Pilih Nasabah --</option>
                     @foreach($nasabahList as $nasabah)
-                        <option value="{{ $nasabah->user_id }}">{{ $nasabah->nama }} ({{ $nasabah->user->no_hp }})</option>
+                        <option value="{{ $nasabah->user_id }}">{{ $nasabah->nama }} ({{ $nasabah->user->no_hp ?? '— (offline)' }})</option>
                     @endforeach
                 </select>
                 @error('nasabahId') <p class="mt-1.5 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror

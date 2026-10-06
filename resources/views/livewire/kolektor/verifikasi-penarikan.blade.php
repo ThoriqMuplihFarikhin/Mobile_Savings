@@ -40,7 +40,7 @@
                     <div class="mb-3 flex items-start justify-between">
                         <div>
                             <p class="text-sm font-bold text-zinc-900 dark:text-white">{{ $item->nasabah->name ?? '-' }}</p>
-                            <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ $item->nasabah->no_hp ?? '-' }}</p>
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ $item->nasabah->no_hp ?? '— (offline)' }}</p>
                         </div>
                         <span class="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-2.5 py-0.5 font-mono text-xs text-amber-700 dark:text-amber-400">Approved</span>
                     </div>

@@ -165,7 +165,7 @@ class ManajemenNasabah extends Component
 
         $this->editId = $profil->user_id;
         $this->nama = $profil->nama;
-        $this->no_hp = $profil->user->no_hp;
+        $this->no_hp = $profil->user->no_hp ?? '';
         $this->alamat = $profil->alamat;
         $this->showForm = true;
     }
@@ -207,7 +207,7 @@ class ManajemenNasabah extends Component
                 ActivityLogger::log('hapus_nasabah', 'users', $nasabahId, [
                     'id_lama' => $nasabahId,
                     'nama' => $profilRow->nama ?: $nasabah->name,
-                    'no_hp_masked' => Str::mask($nasabah->no_hp, '*', 4, -3),
+                    'no_hp_masked' => $nasabah->no_hp !== null ? Str::mask($nasabah->no_hp, '*', 4, -3) : null,
                 ]);
             }
 

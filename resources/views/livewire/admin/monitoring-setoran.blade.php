@@ -51,7 +51,7 @@
                             <td class="px-4 py-3 text-sm text-gray-600">{{ $item->tanggal_transaksi->translatedFormat('d M Y') }}</td>
                             <td class="px-4 py-3">
                                 <div class="text-sm font-medium text-gray-900">{{ $item->nasabah->name ?? '-' }}</div>
-                                <div class="text-xs text-gray-500">{{ $item->nasabah->no_hp ?? '-' }}</div>
+                                <div class="text-xs text-gray-500">{{ $item->nasabah->no_hp ?? '— (offline)' }}</div>
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-600">{{ $item->produk->nama ?? '-' }}</td>
                             <td class="px-4 py-3">

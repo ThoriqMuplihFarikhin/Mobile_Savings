@@ -124,7 +124,7 @@
                                 <div class="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-0.5">{{ $item->alamat }}</div>
                             </td>
                             <td class="px-5 py-4 text-sm font-mono text-zinc-700 dark:text-zinc-300">
-                                {{ $item->user->no_hp ?? '-' }}
+                                {{ $item->user->no_hp ?? '— (offline)' }}
                             </td>
                             <td class="px-5 py-4">
                                 @if($item->status_pendaftaran === 'aktif')
