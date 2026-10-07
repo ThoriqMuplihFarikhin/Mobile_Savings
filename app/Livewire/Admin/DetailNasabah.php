@@ -2,15 +2,19 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Paket\DaftarkanKePaketAction;
 use App\Actions\Pin\ResetPinOlehAdminAction;
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use DomainException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -30,6 +34,16 @@ class DetailNasabah extends Component
     public string $periode = '30hari';
 
     public bool $tampilKonfirmasiResetPin = false;
+
+    public bool $tampilDaftarPaket = false;
+
+    public int $produkDaftarId = 0;
+
+    public bool $setujuDaftar = false;
+
+    public string $catatanDaftar = '';
+
+    public ?string $pesanErrorDaftar = null;
 
     public function mount(User $user): void
     {
@@ -60,7 +74,60 @@ class DetailNasabah extends Component
         $chartData = $this->buildChartData($setoran, $penarikan, $start, $end);
         $riwayat = $this->getRiwayatTransaksi($setoran, $penarikan);
 
-        return view('livewire.admin.detail-nasabah', compact('saldoPerProduk', 'chartData', 'riwayat'));
+        return view('livewire.admin.detail-nasabah', compact('saldoPerProduk', 'chartData', 'riwayat'))
+            ->with('paketTerbuka', DaftarkanKePaketAction::paketTerbukaUntuk((int) $this->user->id));
+    }
+
+    public function bukaDaftarPaket(): void
+    {
+        $this->resetDaftarPaket();
+        $this->tampilDaftarPaket = true;
+    }
+
+    public function tutupDaftarPaket(): void
+    {
+        $this->tampilDaftarPaket = false;
+    }
+
+    public function daftarkanKePaket(): void
+    {
+        $this->validate([
+            'produkDaftarId' => 'required|integer|exists:produk_tabungan,id',
+            'setujuDaftar' => 'accepted',
+            'catatanDaftar' => 'required|string|max:255',
+        ]);
+
+        $pelaku = Auth::user();
+        if (! $pelaku instanceof User) {
+            abort(403);
+        }
+
+        $produk = ProdukTabungan::find($this->produkDaftarId);
+        if (! $produk instanceof ProdukTabungan) {
+            $this->pesanErrorDaftar = 'Paket tidak ditemukan.';
+
+            return;
+        }
+
+        try {
+            app(DaftarkanKePaketAction::class)->execute($pelaku, $this->user, $produk, $this->catatanDaftar);
+        } catch (DomainException $e) {
+            $this->pesanErrorDaftar = $e->getMessage();
+
+            return;
+        }
+
+        session()->flash('success', 'Nasabah berhasil didaftarkan ke paket '.$produk->nama.'.');
+        $this->tampilDaftarPaket = false;
+        $this->resetDaftarPaket();
+    }
+
+    private function resetDaftarPaket(): void
+    {
+        $this->produkDaftarId = 0;
+        $this->setujuDaftar = false;
+        $this->catatanDaftar = '';
+        $this->pesanErrorDaftar = null;
     }
 
     public function updatedPeriode(): void

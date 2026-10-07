@@ -189,11 +189,20 @@
                         @endif
                     </span>
 
-                    <a href="{{ route('kolektor.setoran.index') }}" wire:navigate
-                       class="rounded-xl bg-zinc-900 dark:bg-white px-3 py-1.5 text-xs font-bold text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition flex items-center gap-1">
-                        <flux:icon.plus-circle class="size-3.5" />
-                        Input Setoran
-                    </a>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button"
+                                wire:click="bukaDaftarPaket({{ $profil->user_id }})"
+                                class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-xs font-bold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition flex items-center gap-1">
+                            <flux:icon.plus class="size-3.5" />
+                            Daftar Paket
+                        </button>
+
+                        <a href="{{ route('kolektor.setoran.index') }}" wire:navigate
+                           class="rounded-xl bg-zinc-900 dark:bg-white px-3 py-1.5 text-xs font-bold text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition flex items-center gap-1">
+                            <flux:icon.plus-circle class="size-3.5" />
+                            Input Setoran
+                        </a>
+                    </div>
                 </div>
             </div>
         @empty
@@ -208,5 +217,51 @@
     {{-- Pagination --}}
     @if($nasabahList->hasPages())
         <div class="mt-5">{{ $nasabahList->links() }}</div>
+    @endif
+
+    @if($tampilDaftarPaket)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-zinc-800">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Daftarkan ke Paket</h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-zinc-400">Pendaftaran dicatat atas nama kolektor (via kolektor) dengan persetujuan dan catatan wajib (D16).</p>
+
+                <div class="mt-4 space-y-3">
+                    <div>
+                        <label for="produkDaftarId" class="block text-xs font-medium text-gray-700 dark:text-zinc-300">Pilih Paket</label>
+                        <select id="produkDaftarId" wire:model.live="produkDaftarId" class="mt-1 w-full rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none">
+                            <option value="0">— Pilih paket —</option>
+                            @foreach($paketTerbuka as $paket)
+                                <option value="{{ $paket->id }}">{{ $paket->nama }} — Rp {{ number_format((float) ($paket->harga_per_hari ?? 0), 0, ',', '.') }}/hari</option>
+                            @endforeach
+                        </select>
+                        @error('produkDaftarId') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        @if($paketTerbuka->isEmpty())
+                            <p class="mt-1 text-xs text-amber-600">Tidak ada paket terbuka untuk nasabah ini (sudah diikuti atau pendaftaran ditutup).</p>
+                        @endif
+                    </div>
+
+                    <div>
+                        <label for="catatanDaftar" class="block text-xs font-medium text-gray-700 dark:text-zinc-300">Catatan Pendaftaran</label>
+                        <textarea id="catatanDaftar" wire:model="catatanDaftar" rows="2" placeholder="Contoh: nasabah setuju saat kunjungan, membaca komitmen." class="mt-1 w-full rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"></textarea>
+                        @error('catatanDaftar') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <label class="flex items-start gap-2 text-sm text-gray-700 dark:text-zinc-300">
+                        <input type="checkbox" wire:model="setujuDaftar" class="mt-0.5 h-4 w-4 rounded border-gray-300" />
+                        <span>Nasabah telah membaca, memahami, dan menyetujui komitmen paket ini (D16).</span>
+                    </label>
+                    @error('setujuDaftar') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+
+                    @if($pesanErrorDaftar)
+                        <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/50 dark:text-red-300">{{ $pesanErrorDaftar }}</p>
+                    @endif
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <button wire:click="tutupDaftarPaket" class="rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white transition hover:bg-zinc-50 dark:hover:bg-zinc-800">Batal</button>
+                    <button wire:click="daftarkanKePaket" wire:loading.attr="disabled" class="rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Daftarkan</button>
+                </div>
+            </div>
+        </div>
     @endif
 </div>

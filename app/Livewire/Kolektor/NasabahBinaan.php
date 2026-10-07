@@ -2,12 +2,15 @@
 
 namespace App\Livewire\Kolektor;
 
+use App\Actions\Paket\DaftarkanKePaketAction;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KepesertaanPaket;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
+use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\User;
+use DomainException;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -29,6 +32,18 @@ class NasabahBinaan extends Component
     public $filterTunggakan = 'semua';
 
     public string $filterMode = 'semua';
+
+    public bool $tampilDaftarPaket = false;
+
+    public int $nasabahDaftarId = 0;
+
+    public int $produkDaftarId = 0;
+
+    public bool $setujuDaftar = false;
+
+    public string $catatanDaftar = '';
+
+    public ?string $pesanErrorDaftar = null;
 
     public function updatedSearch()
     {
@@ -69,6 +84,69 @@ class NasabahBinaan extends Component
         sort($terpilih);
 
         $binaan->update(['hari_kunjungan' => empty($terpilih) ? null : $terpilih]);
+    }
+
+    public function bukaDaftarPaket(int $nasabahId): void
+    {
+        $this->resetDaftarPaket();
+        $this->nasabahDaftarId = $nasabahId;
+        $this->tampilDaftarPaket = true;
+    }
+
+    public function tutupDaftarPaket(): void
+    {
+        $this->tampilDaftarPaket = false;
+        $this->resetDaftarPaket();
+    }
+
+    public function daftarkanKePaket(): void
+    {
+        $this->validate([
+            'produkDaftarId' => 'required|integer|exists:produk_tabungan,id',
+            'setujuDaftar' => 'accepted',
+            'catatanDaftar' => 'required|string|max:255',
+        ]);
+
+        $kolektor = Auth::user();
+        if (! $kolektor instanceof User) {
+            abort(403);
+        }
+
+        $nasabah = User::find($this->nasabahDaftarId);
+        $produk = ProdukTabungan::find($this->produkDaftarId);
+
+        if (! $nasabah instanceof User) {
+            $this->pesanErrorDaftar = 'Nasabah tidak ditemukan.';
+
+            return;
+        }
+
+        if (! $produk instanceof ProdukTabungan) {
+            $this->pesanErrorDaftar = 'Paket tidak ditemukan.';
+
+            return;
+        }
+
+        try {
+            app(DaftarkanKePaketAction::class)->execute($kolektor, $nasabah, $produk, $this->catatanDaftar);
+        } catch (DomainException $e) {
+            $this->pesanErrorDaftar = $e->getMessage();
+
+            return;
+        }
+
+        session()->flash('success', 'Binaan berhasil didaftarkan ke paket '.$produk->nama.'.');
+        $this->tampilDaftarPaket = false;
+        $this->resetDaftarPaket();
+    }
+
+    private function resetDaftarPaket(): void
+    {
+        $this->nasabahDaftarId = 0;
+        $this->produkDaftarId = 0;
+        $this->setujuDaftar = false;
+        $this->catatanDaftar = '';
+        $this->pesanErrorDaftar = null;
     }
 
     public function render()
@@ -133,6 +211,8 @@ class NasabahBinaan extends Component
             'totalSaldoDikelola',
             'totalNasabahTunggakan',
             'hariKunjungan'
-        ));
+        ))->with('paketTerbuka', $this->nasabahDaftarId > 0
+            ? DaftarkanKePaketAction::paketTerbukaUntuk($this->nasabahDaftarId)
+            : collect());
     }
 }

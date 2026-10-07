@@ -24,10 +24,16 @@
                 <p class="text-xs text-text-muted dark:text-slate-400">Informasi saldo dan riwayat transaksi</p>
             </div>
         </div>
-        <button wire:click="confirmResetPin" class="inline-flex items-center gap-2 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159-.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
-            Reset PIN
-        </button>
+        <div class="flex items-center gap-2">
+            <button wire:click="bukaDaftarPaket" class="inline-flex items-center gap-2 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                Daftarkan ke Paket
+            </button>
+            <button wire:click="confirmResetPin" class="inline-flex items-center gap-2 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159-.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
+                Reset PIN
+            </button>
+        </div>
     </div>
 
     {{-- Profile Card --}}
@@ -194,6 +200,52 @@
                 <div class="mt-6 flex justify-end gap-3">
                     <button wire:click="$set('tampilKonfirmasiResetPin', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
                     <button wire:click="resetPin" class="rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Reset PIN</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if($tampilDaftarPaket)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+                <h3 class="text-lg font-semibold text-gray-900">Daftarkan ke Paket</h3>
+                <p class="mt-2 text-sm text-gray-500">Nasabah: <strong>{{ $user->name }}</strong>. Pendaftaran dicatat sebagai dibantu (D16) tanpa PIN, dengan persetujuan dan catatan wajib.</p>
+
+                <div class="mt-4 space-y-3">
+                    <div>
+                        <label for="produkDaftarId" class="block text-xs font-medium text-gray-700">Pilih Paket</label>
+                        <select id="produkDaftarId" wire:model.live="produkDaftarId" class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+                            <option value="0">— Pilih paket —</option>
+                            @foreach($paketTerbuka as $paket)
+                                <option value="{{ $paket->id }}">{{ $paket->nama }} — Rp {{ number_format((float) ($paket->harga_per_hari ?? 0), 0, ',', '.') }}/hari</option>
+                            @endforeach
+                        </select>
+                        @error('produkDaftarId') <p class="mt-1 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                        @if($paketTerbuka->isEmpty())
+                            <p class="mt-1 text-xs text-amber-600">Semua paket aktif sudah diikuti nasabah ini atau tidak terbuka untuk pendaftaran.</p>
+                        @endif
+                    </div>
+
+                    <div>
+                        <label for="catatanDaftar" class="block text-xs font-medium text-gray-700">Catatan Pendaftaran</label>
+                        <textarea id="catatanDaftar" wire:model="catatanDaftar" rows="2" placeholder="Contoh: nasabah menyetujui di kantor, membawa KTP." class="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"></textarea>
+                        @error('catatanDaftar') <p class="mt-1 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                    </div>
+
+                    <label class="flex items-start gap-2 text-sm text-gray-700">
+                        <input type="checkbox" wire:model="setujuDaftar" class="mt-0.5 h-4 w-4 rounded border-gray-300" />
+                        <span>Saya menyatakan nasabah <strong>{{ $user->name }}</strong> telah membaca, memahami, dan menyetujui komitmen paket ini (D16).</span>
+                    </label>
+                    @error('setujuDaftar') <p class="text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+
+                    @if($pesanErrorDaftar)
+                        <p class="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">{{ $pesanErrorDaftar }}</p>
+                    @endif
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <button wire:click="tutupDaftarPaket" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
+                    <button wire:click="daftarkanKePaket" wire:loading.attr="disabled" class="rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Daftarkan</button>
                 </div>
             </div>
         </div>
