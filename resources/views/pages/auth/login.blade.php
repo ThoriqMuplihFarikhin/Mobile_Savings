@@ -27,6 +27,8 @@
         <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-5">
             @csrf
 
+            <input type="hidden" name="portal" value="{{ $portal }}">
+
             <div class="flex flex-col gap-1.5">
                 <label class="text-sm font-medium text-[#171717]">Nomor HP</label>
                 <input name="no_hp" type="tel" value="{{ old('no_hp') }}" required autofocus autocomplete="tel" placeholder="08xxxxxxxxxx"

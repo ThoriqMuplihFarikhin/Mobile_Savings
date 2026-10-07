@@ -8,12 +8,13 @@ use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Livewire\Livewire;
 
-function kirimPercobaanLogin(object $testCase, string $noHp, string $pin)
+function kirimPercobaanLogin(object $testCase, string $noHp, string $pin, string $portal = 'nasabah')
 {
     return $testCase->withoutMiddleware(PreventRequestForgery::class)
         ->post(route('login.store'), [
             'no_hp' => $noHp,
             'password' => $pin,
+            'portal' => $portal,
         ]);
 }
 
@@ -77,7 +78,7 @@ it('akun admin juga hanya terkunci sementara oleh percobaan pin salah', function
 
     $this->travel(16)->minutes();
 
-    kirimPercobaanLogin($this, $admin->no_hp, '123456')->assertRedirect(route('dashboard', absolute: false));
+    kirimPercobaanLogin($this, $admin->no_hp, '123456', 'admin')->assertRedirect(route('dashboard', absolute: false));
     $this->assertAuthenticated();
 });
 

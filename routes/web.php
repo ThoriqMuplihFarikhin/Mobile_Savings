@@ -37,9 +37,20 @@ use App\Http\Controllers\RekapMutasiController;
 use App\Http\Controllers\SerahTerimaFotoController;
 use App\Http\Controllers\SerahTerimaPaketController;
 use App\Http\Controllers\StrukSetoranController;
+use App\Support\PortalLogin;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
+
+// Portal login terpisah (D19): GET /login (nasabah) terdaftar di Fortify.
+Route::get('/login/kolektor', fn (Request $request) => view('pages.auth.login', [
+    'portal' => PortalLogin::dariUri($request),
+]))->name('login.kolektor');
+
+Route::get('/login/admin', fn (Request $request) => view('pages.auth.login', [
+    'portal' => PortalLogin::dariUri($request),
+]))->name('login.admin');
 
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');

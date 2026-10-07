@@ -3,16 +3,20 @@
 namespace App\Providers;
 
 use App\Helpers\ActivityLogger;
+use App\Http\Responses\LogoutPortalResponse;
 use App\Models\User;
 use App\Support\NomorHp;
+use App\Support\PortalLogin;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Laravel\Fortify\Contracts\LogoutResponse;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -24,7 +28,7 @@ class FortifyServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        //
+        $this->app->singleton(LogoutResponse::class, LogoutPortalResponse::class);
     }
 
     public function boot(): void
@@ -108,13 +112,28 @@ class FortifyServiceProvider extends ServiceProvider
 
             $user->update(['percobaan_gagal' => 0, 'login_terkunci_hingga' => null]);
 
+            $portal = PortalLogin::dariInput($request);
+
+            if ($user->role !== $portal) {
+                ActivityLogger::log('login_portal_salah', 'users', $user->id, [
+                    'role' => $user->role,
+                    'portal' => $portal,
+                ], $user->id);
+
+                return null;
+            }
+
+            Cookie::queue(cookie(PortalLogin::COOKIE, $portal, 43200));
+
             return $user;
         });
     }
 
     private function configureViews(): void
     {
-        Fortify::loginView(fn () => view('pages.auth.login'));
+        Fortify::loginView(fn () => view('pages.auth.login', [
+            'portal' => PortalLogin::dariUri(request()),
+        ]));
     }
 
     private function configureRateLimiting(): void
