@@ -29,6 +29,21 @@
     }
 </script>
 
+<script>
+    // Tombol Back Android di shell Capacitor (P8 butir 11.2): mundur di riwayat
+    // browser; tanpa riwayat (halaman awal) keluar dari aplikasi.
+    if (window.Capacitor && typeof window.Capacitor.isPluginAvailable === 'function'
+        && window.Capacitor.isPluginAvailable('App')) {
+        window.Capacitor.Plugins.App.addListener('backButton', function (data) {
+            if (data.canGoBack) {
+                window.history.back();
+            } else {
+                window.Capacitor.Plugins.App.exitApp();
+            }
+        });
+    }
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">

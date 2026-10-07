@@ -1,0 +1,20 @@
+{
+    "nasabah": {
+        "applicationId": "id.tabungan.nasabah",
+        "name": "Tabungan",
+        "startPath": "/login",
+        "accent": "#059669"
+    },
+    "kolektor": {
+        "applicationId": "id.tabungan.kolektor",
+        "name": "Tabungan Kolektor",
+        "startPath": "/login/kolektor",
+        "accent": "#2563eb"
+    },
+    "admin": {
+        "applicationId": "id.tabungan.admin",
+        "name": "Tabungan Admin",
+        "startPath": "/login/admin",
+        "accent": "#18181b"
+    }
+}
