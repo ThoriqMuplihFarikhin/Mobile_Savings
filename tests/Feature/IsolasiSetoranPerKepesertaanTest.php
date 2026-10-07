@@ -138,6 +138,8 @@ it('backfill mengaitkan setoran ke kepesertaan terbaru yang sudah ada sebelum se
 it('setoran paket dari InputSetoran ditandai dengan kepesertaan aktif', function () {
     ['kolektor' => $kolektor, 'nasabah' => $nasabah, 'produk' => $produk] = seedIsolasiSetoranPaket();
 
+    $kepesertaan = buatKepesertaanIsolasi($nasabah, $produk, now()->subDay()->toDateString(), now()->subDay()->toDateTimeString());
+
     $this->actingAs($kolektor);
 
     Livewire::test(InputSetoran::class)
@@ -148,11 +150,6 @@ it('setoran paket dari InputSetoran ditandai dengan kepesertaan aktif', function
         ->set('sumber_input', 'real_time')
         ->call('submit')
         ->assertHasNoErrors();
-
-    $kepesertaan = KepesertaanPaket::where('nasabah_id', $nasabah->id)
-        ->where('produk_id', $produk->id)
-        ->whereNull('keputusan_akhir')
-        ->firstOrFail();
 
     $this->assertDatabaseHas('transaksi_setoran', [
         'nasabah_id' => $nasabah->id,

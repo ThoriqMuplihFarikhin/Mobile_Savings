@@ -35,25 +35,29 @@ class CatatSetoranAction
     {
         $nominal = $this->normalisasiNominal($data['nominal']);
 
+        $produkPaket = $this->produkPaket((int) $data['produk_id']);
+        $kepesertaanId = null;
+        if ($produkPaket) {
+            $kepesertaan = app(HitungTunggakanAction::class)
+                ->kepesertaanAktif((int) $data['nasabah_id'], (int) $data['produk_id']);
+            if (! $kepesertaan) {
+                throw new DomainException('Nasabah belum terdaftar di paket ini. Daftarkan terlebih dahulu.');
+            }
+            $kepesertaanId = $kepesertaan->id;
+        }
+
         $cacheKey = 'setoran-submit:'.$data['input_by'].':'.$data['idempotency_key'];
         if (! Cache::add($cacheKey, true, now()->addMinutes(10))) {
             throw new DomainException('Setoran ini sudah diproses. Muat ulang halaman untuk setoran baru.');
         }
 
         try {
-            $transaksi = DB::transaction(function () use ($data, $nominal) {
+            $transaksi = DB::transaction(function () use ($data, $nominal, $produkPaket, $kepesertaanId) {
                 $saldo = SaldoProduk::firstOrCreate(
                     ['nasabah_id' => $data['nasabah_id'], 'produk_id' => $data['produk_id']],
                     ['saldo' => 0]
                 );
                 $saldo = SaldoProduk::whereKey($saldo->id)->lockForUpdate()->first();
-
-                $kepesertaanId = null;
-                if ($this->produkPaket((int) $data['produk_id'])) {
-                    $kepesertaanId = app(HitungTunggakanAction::class)
-                        ->kepesertaanAktif((int) $data['nasabah_id'], (int) $data['produk_id'], buatJikaBelumAda: true)
-                        ?->id;
-                }
 
                 $transaksi = TransaksiSetoran::create([
                     'nasabah_id' => $data['nasabah_id'],
@@ -71,7 +75,7 @@ class CatatSetoranAction
 
                 $saldo->increment('saldo', $nominal);
 
-                if ($this->produkPaket((int) $data['produk_id'])) {
+                if ($produkPaket) {
                     app(HitungTunggakanAction::class)
                         ->execute((int) $data['nasabah_id'], (int) $data['produk_id'], simpan: true);
                 }

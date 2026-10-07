@@ -14,7 +14,7 @@ class HitungTunggakanAction
             return null;
         }
 
-        $kepesertaan = $this->kepesertaanAktif($nasabahId, $produkId, $simpan);
+        $kepesertaan = $this->kepesertaanAktif($nasabahId, $produkId);
         if (! $kepesertaan) {
             return null;
         }
@@ -43,27 +43,14 @@ class HitungTunggakanAction
 
     /**
      * Kepesertaan yang sedang berjalan (belum ada keputusan akhir) untuk
-     * pasangan nasabah+produk; dibuat bila diminta dan belum ada.
+     * pasangan nasabah+produk; tidak pernah dibuat di sini (D16: setoran
+     * mensyaratkan kepesertaan yang sudah didaftarkan lebih dahulu).
      */
-    public function kepesertaanAktif(int $nasabahId, int $produkId, bool $buatJikaBelumAda = false): ?KepesertaanPaket
+    public function kepesertaanAktif(int $nasabahId, int $produkId): ?KepesertaanPaket
     {
-        $kepesertaan = KepesertaanPaket::where('nasabah_id', $nasabahId)
+        return KepesertaanPaket::where('nasabah_id', $nasabahId)
             ->where('produk_id', $produkId)
             ->whereNull('keputusan_akhir')
             ->first();
-
-        if (! $kepesertaan && $buatJikaBelumAda) {
-            $kepesertaan = KepesertaanPaket::create([
-                'nasabah_id' => $nasabahId,
-                'produk_id' => $produkId,
-                'tanggal_mulai_ikut' => now()->toDateString(),
-                'total_seharusnya_terkumpul' => 0,
-                'total_aktual_terkumpul' => 0,
-                'tunggakan' => 0,
-                'status_alert' => 'normal',
-            ]);
-        }
-
-        return $kepesertaan;
     }
 }

@@ -62,7 +62,7 @@ it('calculates tunggakan correctly with simpan false', function () {
     expect($result['tunggakan'])->toBeGreaterThanOrEqual(120000);
 });
 
-it('creates kepesertaan and saves when simpan is true and no kepesertaan exists', function () {
+it('does not create kepesertaan when simpan is true and no kepesertaan exists', function () {
     $nasabah = User::factory()->nasabah()->create();
     $produk = ProdukTabungan::create([
         'nama' => 'Paket Lebaran',
@@ -74,10 +74,8 @@ it('creates kepesertaan and saves when simpan is true and no kepesertaan exists'
 
     $result = app(HitungTunggakanAction::class)->execute($nasabah->id, $produk->id, simpan: true);
 
-    $this->assertDatabaseHas('kepesertaan_paket', [
-        'nasabah_id' => $nasabah->id,
-        'produk_id' => $produk->id,
-    ]);
+    expect($result)->toBeNull();
+    $this->assertDatabaseCount('kepesertaan_paket', 0);
 });
 
 it('updates kepesertaan when simpan is true', function () {
