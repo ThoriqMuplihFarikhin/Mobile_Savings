@@ -77,13 +77,17 @@ class SerahTerimaPaket extends Component
     /**
      * Konfirmasi penyerahan paket ke nasabah: status berubah menjadi sudah_diterima,
      * disertai foto bukti pada disk private, log aktivitas, dan notifikasi nasabah.
+     *
+     * Foto maksimal 5 MB (jpg/jpeg/png/webp); `upload_max_filesize` dan
+     * `post_max_size` pada php.ini minimal harus 5M agar unggahan tidak
+     * dipotong sebelum sampai ke Laravel.
      */
     public function konfirmasi(int $kepesertaanId): void
     {
         $this->validate([
             'diterimaOleh' => 'required|string|max:255',
             'tanggalSerahTerima' => 'required|date',
-            'buktiFoto' => 'required|image|max:2048',
+            'buktiFoto' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
         $foto = $this->buktiFoto;

@@ -192,6 +192,16 @@
                     @endif
                 @endif
 
+                {{-- Foto bukti serah terima (hanya pemilik, lewat controller berotorisasi) --}}
+                @if($item->status_serah_terima === 'sudah_diterima' && $item->bukti_foto_url)
+                    <div class="mx-5 mt-4">
+                        <a href="{{ route('serah-terima.bukti', $item) }}" target="_blank" rel="noopener noreferrer"
+                            class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-2.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-950/70 transition">
+                            Lihat Foto Bukti Serah Terima
+                        </a>
+                    </div>
+                @endif
+
                 {{-- Pilih Metode Pengambilan --}}
                 @if($pencairan[$item->id]['boleh'] ?? false)
                     <div class="mx-5 mt-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 p-4 border border-indigo-200/60 dark:border-indigo-800/40">

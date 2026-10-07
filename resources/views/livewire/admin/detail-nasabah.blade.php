@@ -126,6 +126,14 @@
                             @endif
                         </p>
                     </div>
+                    @if($item->bukti_foto_url)
+                        <div class="w-full">
+                            <a href="{{ route('serah-terima.bukti', $item) }}" target="_blank" rel="noopener noreferrer"
+                                class="text-xs font-semibold text-navy-950 underline-offset-2 hover:underline dark:text-white">
+                                Lihat Foto Bukti Serah Terima
+                            </a>
+                        </div>
+                    @endif
                 </div>
             @empty
                 <div class="px-5 py-4 text-xs text-text-muted dark:text-slate-400">Belum ada kepesertaan paket.</div>
