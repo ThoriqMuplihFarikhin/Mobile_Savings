@@ -68,12 +68,12 @@ it('partial head memuat tautan manifest dan pendaftaran service worker', functio
         ->and($head)->toContain('/service-worker.js');
 });
 
-it('halaman terautentikasi memuat pwa manifest dan pendaftaran service worker', function () {
+it('halaman terautentikasi memuat pwa manifest sesuai peran dan pendaftaran service worker', function () {
     $nasabah = User::factory()->nasabah()->create();
 
     $this->actingAs($nasabah)
         ->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('/manifest.webmanifest', false)
+        ->assertSee('/manifest-nasabah.webmanifest', false)
         ->assertSee('serviceWorker.register', false);
 });

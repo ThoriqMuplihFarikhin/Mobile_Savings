@@ -8,6 +8,10 @@
 </head>
 <body class="bg-[#e5e5e5] min-h-screen dark:bg-zinc-900">
     <div class="mx-auto max-w-[480px] min-h-screen bg-white shadow-[0_0_40px_rgba(0,0,0,0.08)] relative flex flex-col dark:bg-zinc-800 dark:shadow-[0_0_40px_rgba(0,0,0,0.3)]">
+        {{-- Chip peran portal (D19 butir 4) --}}
+        <div class="flex justify-end px-4 pt-3">
+            <x-peran-chip />
+        </div>
         <main class="flex-1 overflow-y-auto pb-24 px-4 pt-4">
             {{ $slot }}
         </main>

@@ -1,13 +1,20 @@
-<x-layouts::auth :title="__('Login - Tabungan Digital')">
+@php
+    $labelPortal = \App\Support\PortalLogin::labelPortal($portal);
+    $aksenPortal = \App\Support\PortalLogin::aksen($portal);
+    $portalLain = array_values(array_filter(\App\Support\PortalLogin::semua(), fn (string $p) => $p !== $portal));
+@endphp
+
+<x-layouts::auth :title="'Login '.$labelPortal.' - Tabungan Digital'" :portal="$portal">
     <div class="flex flex-col gap-6">
         <div class="flex w-full flex-col items-center text-center">
-            <a href="{{ route('home') }}" class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[#171717] text-white transition hover:opacity-90">
+            <a href="{{ route('home') }}" class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl text-white transition hover:opacity-90" style="background: {{ $aksenPortal }}">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
             </a>
             <h1 class="text-2xl font-semibold tracking-tight text-[#171717]">Tabungan Digital</h1>
             <p class="mt-1 font-mono text-xs text-[#888888]">Sistem Kolektor Keliling v1.0</p>
+            <span data-test="label-portal" class="mt-2 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white" style="background: {{ $aksenPortal }}">Portal {{ $labelPortal }}</span>
         </div>
 
         @if (session('locked'))
@@ -50,13 +57,21 @@
             </div>
 
             <button type="submit" data-test="login-button"
-                class="w-full rounded-full bg-[#171717] px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90">
+                class="w-full rounded-full px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90" style="background: {{ $aksenPortal }}">
                 Masuk
             </button>
         </form>
 
         <div class="text-center text-xs text-[#888888]">
             <p>Hubungi admin jika lupa PIN atau akun terkunci</p>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs">
+            <span class="text-[#888888]">Portal lain:</span>
+            @foreach ($portalLain as $p)
+                <a href="{{ route(\App\Support\PortalLogin::routeName($p)) }}" data-test="tautan-portal-lain"
+                    class="text-[#0070f3] hover:underline">Masuk {{ \App\Support\PortalLogin::labelPortal($p) }}</a>
+            @endforeach
         </div>
     </div>
 </x-layouts::auth>

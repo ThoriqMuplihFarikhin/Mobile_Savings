@@ -765,9 +765,18 @@
                         Ke Dashboard Saya
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-8 py-4 text-sm font-bold text-white shadow-xl transition hover:bg-slate-800 active:scale-95 whitespace-nowrap">
-                        Masuk Sekarang
-                    </a>
+                    {{-- Tiga portal login terpisah (D19 butir 5); nasabah tidak bisa daftar sendiri (FR-1) --}}
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <a href="{{ route('login') }}" class="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white shadow-xl transition hover:bg-emerald-500 active:scale-95 whitespace-nowrap">
+                            Masuk Nasabah
+                        </a>
+                        <a href="{{ route('login.kolektor') }}" class="inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3.5 text-sm font-bold text-white shadow-xl transition hover:bg-blue-500 active:scale-95 whitespace-nowrap">
+                            Masuk Kolektor
+                        </a>
+                        <a href="{{ route('login.admin') }}" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-6 py-3.5 text-sm font-bold text-white shadow-xl transition hover:bg-slate-800 active:scale-95 whitespace-nowrap">
+                            Masuk Admin
+                        </a>
+                    </div>
                 @endauth
             </div>
 

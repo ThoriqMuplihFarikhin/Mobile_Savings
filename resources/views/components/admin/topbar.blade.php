@@ -56,6 +56,9 @@
             Tambah Nasabah
         </a>
 
+        {{-- Chip peran portal (D19 butir 4) --}}
+        <x-peran-chip class="hidden sm:inline-flex" />
+
         {{-- Profile chip (desktop only) --}}
         <div class="hidden lg:flex items-center gap-2.5">
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-navy-850 text-sm font-semibold text-white">

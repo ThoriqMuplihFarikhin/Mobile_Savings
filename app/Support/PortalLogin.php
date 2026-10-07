@@ -67,4 +67,28 @@ class PortalLogin
             default => 'login',
         };
     }
+
+    /**
+     * Label peran untuk judul tab, chip, dan teks portal.
+     */
+    public static function labelPortal(string $portal): string
+    {
+        return match ($portal) {
+            self::KOLEKTOR => 'Kolektor',
+            self::ADMIN => 'Admin',
+            default => 'Nasabah',
+        };
+    }
+
+    /**
+     * Warna aksen portal (D19 butir 4): nasabah hijau, kolektor biru, admin gelap.
+     */
+    public static function aksen(string $portal): string
+    {
+        return match ($portal) {
+            self::KOLEKTOR => '#2563eb',
+            self::ADMIN => '#171717',
+            default => '#16a34a',
+        };
+    }
 }

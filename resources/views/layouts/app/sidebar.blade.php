@@ -13,6 +13,7 @@
                         </svg>
                     </div>
                     <span class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">Tabungan Digital</span>
+                    <x-peran-chip />
                 </div>
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>

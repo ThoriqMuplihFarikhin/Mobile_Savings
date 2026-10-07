@@ -8,14 +8,18 @@
 </script>
 
 <title>
-    {{ filled($title ?? null) ? $title.' - '.config('app.name', 'Laravel') : config('app.name', 'Laravel') }}
+    {{ filled($title ?? null) ? $title.' - '.config('app.name', 'Laravel') : config('app.name', 'Laravel') }}{{ auth()->check() ? ' · '.\App\Support\PortalLogin::labelPortal(auth()->user()->role) : '' }}
 </title>
 
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-<link rel="manifest" href="/manifest.webmanifest">
+@php
+    $portalManifest = $portal ?? (auth()->check() ? auth()->user()->role : null);
+    $portalManifest = is_string($portalManifest) && in_array($portalManifest, \App\Support\PortalLogin::semua(), true) ? $portalManifest : null;
+@endphp
+<link rel="manifest" href="{{ $portalManifest ? '/manifest-'.$portalManifest.'.webmanifest' : '/manifest.webmanifest' }}">
 
 <script>
     if ('serviceWorker' in navigator) {

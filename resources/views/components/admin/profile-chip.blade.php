@@ -6,6 +6,6 @@
     </div>
     <div class="min-w-0 flex-1 leading-tight">
         <p class="truncate text-[12.5px] font-medium text-navy-900 dark:text-white">{{ auth()->user()->name }}</p>
-        <p class="truncate text-[10.5px] text-text-muted">{{ auth()->user()->role_label ?? 'Administrator' }}</p>
+        <x-peran-chip />
     </div>
 </div>
