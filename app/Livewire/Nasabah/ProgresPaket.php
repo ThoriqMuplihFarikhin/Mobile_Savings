@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Nasabah;
 
+use App\Actions\Paket\HitungProgresBarangAction;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KepesertaanPaket;
 use Carbon\Carbon;
@@ -78,6 +79,16 @@ class ProgresPaket extends Component
             $item->hitungUlangKepesertaan();
         }
 
-        return view('livewire.nasabah.progres-paket', compact('kepesertaan'));
+        // Dihitung di render(), bukan properti publik: data progres tidak
+        // boleh tersimpan di payload Livewire (anti bocor harga, D15).
+        $aksi = new HitungProgresBarangAction;
+        $progres = $kepesertaan
+            ->map(fn (KepesertaanPaket $item): array => array_merge(
+                ['kepesertaan_id' => (int) $item->id],
+                $aksi->untukNasabah($item),
+            ))
+            ->values();
+
+        return view('livewire.nasabah.progres-paket', compact('kepesertaan', 'progres'));
     }
 }

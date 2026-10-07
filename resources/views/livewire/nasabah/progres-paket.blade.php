@@ -94,11 +94,45 @@
                 @endif
 
                 {{-- Isi Paket & Bonus Tunai --}}
+                @php
+                    $progresPerKepesertaan = collect($progres)->keyBy('kepesertaan_id');
+                    $progresMilik = $progresPerKepesertaan->get((int) $item->id);
+                @endphp
                 @if($item->produk && $item->produk->isPaket() && ($item->produk->isi_paket || $item->produk->uang_tunai))
                     <div class="mx-5 mt-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 p-4 border border-zinc-200/60 dark:border-zinc-700/40">
                         <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">Isi Paket</p>
 
-                        @if($item->produk->isi_paket)
+                        @if($progresMilik !== null && $progresMilik['persenKeseluruhan'] !== null)
+                            <div class="mb-3">
+                                <div class="flex items-center justify-between text-[11px] mb-1">
+                                    <span class="text-zinc-500 dark:text-zinc-400">Progres Pemenuhan Barang</span>
+                                    <span class="font-mono font-bold text-zinc-900 dark:text-white">{{ rtrim(rtrim(number_format($progresMilik['persenKeseluruhan'], 2, ',', '.'), '0'), ',') }}%</span>
+                                </div>
+                                <div class="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+                                    <div class="h-full rounded-full bg-emerald-500" style="width: {{ min(100, $progresMilik['persenKeseluruhan']) }}%"></div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($progresMilik !== null && count($progresMilik['items']) > 0)
+                            <ul class="space-y-1.5">
+                                @foreach($progresMilik['items'] as $barang)
+                                    <li class="flex items-center justify-between text-xs">
+                                        <span class="text-zinc-700 dark:text-zinc-300">{{ $barang['nama'] }}</span>
+                                        <span class="flex items-center gap-2">
+                                            @if($barang['status'] === 'tercapai')
+                                                <span class="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">Tercapai</span>
+                                            @elseif($barang['status'] === 'berjalan')
+                                                <span class="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[9px] font-bold uppercase text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">{{ rtrim(rtrim(number_format($barang['persen'], 2, ',', '.'), '0'), ',') }}%</span>
+                                            @endif
+                                            <span class="font-mono font-semibold text-zinc-900 dark:text-white">
+                                                {{ $barang['jumlah'] }}
+                                            </span>
+                                        </span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @elseif($item->produk->isi_paket)
                             <ul class="space-y-1.5">
                                 @foreach($item->produk->isi_paket as $barang)
                                     <li class="flex items-center justify-between text-xs">

@@ -57,6 +57,25 @@ class ProdukTabungan extends Model
         return $this->tipe === 'paket';
     }
 
+    /**
+     * Isi paket untuk halaman publik: kunci `harga` dibuang agar tidak
+     * bocor ke klien (D15).
+     *
+     * @return array<int, array<string, mixed>>|null
+     */
+    public function isiPaketPublik(): ?array
+    {
+        if ($this->isi_paket === null) {
+            return null;
+        }
+
+        return array_map(fn (array $item): array => array_filter(
+            $item,
+            fn (string $kunci): bool => $kunci !== 'harga',
+            ARRAY_FILTER_USE_KEY
+        ), $this->isi_paket);
+    }
+
     public function isBebas(): bool
     {
         return $this->tipe === 'bebas';
