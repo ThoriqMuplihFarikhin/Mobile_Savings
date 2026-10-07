@@ -2,9 +2,6 @@
 <html lang="id" x-bind:class="$flux.isDark && 'dark'">
 <head>
     @include('partials.head')
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4/dist/signature_pad.umd.min.js"></script>
 </head>
 <body class="bg-[#e5e5e5] min-h-screen dark:bg-zinc-900">
     <div class="mx-auto max-w-[480px] min-h-screen bg-white shadow-[0_0_40px_rgba(0,0,0,0.08)] relative flex flex-col dark:bg-zinc-800 dark:shadow-[0_0_40px_rgba(0,0,0,0.3)]">
