@@ -107,6 +107,23 @@
                                 placeholder="500000" />
                             @error('uang_tunai') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
                         </div>
+                        <div>
+                            <label class="mb-1.5 block text-sm font-medium text-gray-900">Batas Daftar Hingga (opsional)</label>
+                            <x-ui.tanggal wire:model="batas_daftar_hingga" :max="now()->addYears(1)->toDateString()"
+                                placeholder="Tanpa batas"
+                                class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
+                            @error('batas_daftar_hingga') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="flex flex-col gap-3 sm:col-span-2 sm:flex-row sm:items-end">
+                            <label class="flex items-center gap-2 text-sm font-medium text-gray-900">
+                                <input type="checkbox" wire:model="tampilkan_harga_ke_nasabah" class="h-4 w-4 rounded border-[#ebebeb] text-indigo-800 focus:ring-[#171717]" />
+                                Tampilkan harga ke nasabah
+                            </label>
+                            <label class="flex items-center gap-2 text-sm font-medium text-gray-900">
+                                <input type="checkbox" wire:model="boleh_cair_saat_target" class="h-4 w-4 rounded border-[#ebebeb] text-indigo-800 focus:ring-[#171717]" />
+                                Boleh cair lebih awal saat target tercapai
+                            </label>
+                        </div>
 
                         {{-- Isi Paket Repeater --}}
                         <div class="sm:col-span-2">
@@ -124,6 +141,24 @@
                                                 class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
                                                 placeholder="contoh: 5 kg" />
                                         </div>
+                                        <div class="w-32">
+                                            <input type="number" min="0" wire:model="isiPaketItems.{{ $index }}.harga"
+                                                class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10"
+                                                placeholder="Harga (opsional)" />
+                                            @error('isiPaketItems.'.$index.'.harga') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
+                                        </div>
+                                        <button type="button" wire:click="naikkanItemPaket({{ $index }})"
+                                            aria-label="Naikkan urutan"
+                                            class="flex h-10 w-8 shrink-0 items-center justify-center rounded-md border border-[#ebebeb] text-gray-500 transition hover:bg-gray-50 disabled:opacity-40"
+                                            {{ $index === 0 ? 'disabled' : '' }}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" /></svg>
+                                        </button>
+                                        <button type="button" wire:click="turunkanItemPaket({{ $index }})"
+                                            aria-label="Turunkan urutan"
+                                            class="flex h-10 w-8 shrink-0 items-center justify-center rounded-md border border-[#ebebeb] text-gray-500 transition hover:bg-gray-50 disabled:opacity-40"
+                                            {{ $index === count($isiPaketItems) - 1 ? 'disabled' : '' }}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                                        </button>
                                         <button type="button" wire:click="hapusItemPaket({{ $index }})"
                                             class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[#ebebeb] text-[#ee0000] transition hover:bg-[#f7d4d6]">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -136,7 +171,21 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                                 Tambah Barang
                             </button>
-                            <p class="mt-1.5 text-xs text-gray-500">Isi sesuai yang tertulis di brosur, misalnya Beras 5 kg, Ayam 2 kg, Gula 1 kg.</p>
+                            <p class="mt-1.5 text-xs text-gray-500">Isi sesuai yang tertulis di brosur, misalnya Beras 5 kg, Ayam 2 kg, Gula 1 kg. Kolom harga hanya untuk admin (D15) - kosongkan bila tidak ada.</p>
+
+                            <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-gray-50 px-4 py-3 text-sm shadow-[inset_0_0_0_1px_#ebebeb]">
+                                <span class="font-medium text-gray-900">Total Harga Barang</span>
+                                <span class="font-mono font-semibold text-gray-900">Rp {{ number_format($ringkasHarga['totalHarga'], 0, ',', '.') }}</span>
+                                <span class="text-gray-500">·</span>
+                                <span class="font-medium text-gray-900">Target Akhir</span>
+                                <span class="font-mono font-semibold text-gray-900">{{ $ringkasHarga['target'] !== null ? 'Rp '.number_format($ringkasHarga['target'], 0, ',', '.') : '-' }}</span>
+                                <span class="text-gray-500">·</span>
+                                <span class="font-medium text-gray-900">Selisih (Target &minus; Harga)</span>
+                                <span class="font-mono font-semibold {{ ($ringkasHarga['selisih'] ?? 0) < 0 ? 'text-[#ee0000]' : 'text-gray-900' }}">{{ $ringkasHarga['selisih'] !== null ? 'Rp '.number_format($ringkasHarga['selisih'], 0, ',', '.') : '-' }}</span>
+                                @if($ringkasHarga['melebihi'])
+                                    <span class="rounded-full bg-[#f7d4d6] px-2.5 py-0.5 text-xs font-bold text-[#c50000]">Total harga melebihi target - tinjau kembali!</span>
+                                @endif
+                            </div>
                         </div>
                     @endif
                 </div>

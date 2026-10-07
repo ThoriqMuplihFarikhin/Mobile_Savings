@@ -51,6 +51,12 @@ class ManajemenProduk extends Component
 
     public string $batas_toleransi = '';
 
+    public bool $tampilkan_harga_ke_nasabah = false;
+
+    public bool $boleh_cair_saat_target = false;
+
+    public ?string $batas_daftar_hingga = '';
+
     public bool $tampilKonfirmasiHapus = false;
 
     public ?int $deleteId = null;
@@ -59,7 +65,7 @@ class ManajemenProduk extends Component
 
     public function mount(): void
     {
-        $this->isiPaketItems = [['nama' => '', 'jumlah' => '']];
+        $this->isiPaketItems = [['nama' => '', 'jumlah' => '', 'harga' => '']];
     }
 
     public function updatedTipe(string $value): void
@@ -71,7 +77,33 @@ class ManajemenProduk extends Component
 
     public function tambahItemPaket(): void
     {
-        $this->isiPaketItems[] = ['nama' => '', 'jumlah' => ''];
+        $this->isiPaketItems[] = ['nama' => '', 'jumlah' => '', 'harga' => ''];
+    }
+
+    public function naikkanItemPaket(int $index): void
+    {
+        if ($index <= 0 || $index >= count($this->isiPaketItems)) {
+            return;
+        }
+
+        $this->tukarItemPaket($index, $index - 1);
+    }
+
+    public function turunkanItemPaket(int $index): void
+    {
+        $batas = count($this->isiPaketItems) - 1;
+        if ($index < 0 || $index >= $batas) {
+            return;
+        }
+
+        $this->tukarItemPaket($index, $index + 1);
+    }
+
+    private function tukarItemPaket(int $a, int $b): void
+    {
+        $items = array_values($this->isiPaketItems);
+        [$items[$a], $items[$b]] = [$items[$b], $items[$a]];
+        $this->isiPaketItems = $items;
     }
 
     public function hapusItemPaket(int|string $index): void
@@ -80,15 +112,54 @@ class ManajemenProduk extends Component
         $this->isiPaketItems = array_values($this->isiPaketItems);
 
         if (empty($this->isiPaketItems)) {
-            $this->isiPaketItems = [['nama' => '', 'jumlah' => '']];
+            $this->isiPaketItems = [['nama' => '', 'jumlah' => '', 'harga' => '']];
         }
+    }
+
+    /**
+     * Ringkas total harga isi paket vs target akhir (dihitung dari input
+     * form saat ini, dipakai form tipe paket saja di view).
+     *
+     * @return array{totalHarga: float, target: float|null, selisih: float|null, melebihi: bool}
+     */
+    public function hitungRingkasHarga(): array
+    {
+        $total = 0.0;
+
+        foreach ($this->isiPaketItems as $item) {
+            if (is_numeric($item['harga'] ?? null)) {
+                $total += max(0.0, (float) $item['harga']);
+            }
+        }
+
+        if (is_numeric($this->uang_tunai)) {
+            $total += max(0.0, (float) $this->uang_tunai);
+        }
+
+        $target = null;
+        if (is_numeric($this->harga_per_hari)
+            && $this->periode_mulai
+            && $this->periode_selesai) {
+            $hari = max(0, (int) Carbon::parse($this->periode_mulai)->diffInDays(Carbon::parse($this->periode_selesai)) + 1);
+            $target = round($hari * (float) $this->harga_per_hari, 2);
+        }
+
+        $total = round($total, 2);
+
+        return [
+            'totalHarga' => $total,
+            'target' => $target,
+            'selisih' => $target !== null ? round($target - $total, 2) : null,
+            'melebihi' => $target !== null && $total > $target,
+        ];
     }
 
     public function render(): View
     {
         $produk = ProdukTabungan::latest()->paginate(10);
+        $ringkasHarga = $this->hitungRingkasHarga();
 
-        return view('livewire.admin.manajemen-produk', compact('produk'));
+        return view('livewire.admin.manajemen-produk', compact('produk', 'ringkasHarga'));
     }
 
     public function toggleForm(): void
@@ -107,11 +178,14 @@ class ManajemenProduk extends Component
         $this->harga_per_hari = '';
         $this->isi_paket = '';
         $this->uang_tunai = '';
-        $this->isiPaketItems = [['nama' => '', 'jumlah' => '']];
+        $this->isiPaketItems = [['nama' => '', 'jumlah' => '', 'harga' => '']];
         $this->periode_mulai = '';
         $this->periode_selesai = '';
         $this->tanggal_boleh_cair = '';
         $this->batas_toleransi = '';
+        $this->tampilkan_harga_ke_nasabah = false;
+        $this->boleh_cair_saat_target = false;
+        $this->batas_daftar_hingga = '';
         $this->jumlahPesertaEdit = 0;
     }
 
@@ -130,8 +204,10 @@ class ManajemenProduk extends Component
             'periode_selesai' => $paket ? 'required|date|after_or_equal:periode_mulai' : 'nullable',
             'tanggal_boleh_cair' => $paket ? 'required|date|after_or_equal:periode_selesai' : 'nullable',
             'batas_toleransi' => 'nullable|integer|min:0',
+            'batas_daftar_hingga' => $paket ? 'nullable|date' : 'nullable',
             'isiPaketItems.*.nama' => 'nullable|string|max:255',
             'isiPaketItems.*.jumlah' => 'nullable|string|max:255',
+            'isiPaketItems.*.harga' => 'nullable|numeric|min:0',
         ]);
 
         $data = [
@@ -144,15 +220,26 @@ class ManajemenProduk extends Component
             'periode_selesai' => $paket ? ($this->periode_selesai ?: null) : null,
             'tanggal_boleh_cair' => $paket ? ($this->tanggal_boleh_cair ?: null) : null,
             'batas_toleransi_tunggakan_hari' => $this->batas_toleransi ?: null,
+            'tampilkan_harga_ke_nasabah' => $this->tampilkan_harga_ke_nasabah,
+            'boleh_cair_saat_target' => $this->boleh_cair_saat_target,
+            'batas_daftar_hingga' => $this->batas_daftar_hingga ?: null,
         ];
 
         if ($paket) {
             $items = collect($this->isiPaketItems)
                 ->filter(fn ($item) => trim($item['nama'] ?? '') !== '')
-                ->map(fn ($item) => [
-                    'nama' => trim($item['nama']),
-                    'jumlah' => trim($item['jumlah'] ?? ''),
-                ])
+                ->map(function ($item): array {
+                    $baris = [
+                        'nama' => trim($item['nama']),
+                        'jumlah' => trim($item['jumlah'] ?? ''),
+                    ];
+
+                    if (is_numeric($item['harga'] ?? null)) {
+                        $baris['harga'] = round((float) $item['harga'], 2);
+                    }
+
+                    return $baris;
+                })
                 ->values()
                 ->all();
 
@@ -160,6 +247,7 @@ class ManajemenProduk extends Component
                 $items[] = [
                     'nama' => 'Uang Tunai',
                     'jumlah' => 'Rp '.number_format((float) $this->uang_tunai, 0, ',', '.'),
+                    'harga' => round((float) $this->uang_tunai, 2),
                 ];
             }
 
@@ -205,13 +293,23 @@ class ManajemenProduk extends Component
         $uangTunai = $items->first(fn ($item) => strtolower(trim($item['nama'] ?? '')) === 'uang tunai');
         $this->uang_tunai = $uangTunai ? (string) preg_replace('/\D/', '', (string) ($uangTunai['jumlah'] ?? '')) : (string) ($produk->uang_tunai ?? '');
 
-        $barangItems = $items->reject(fn ($item) => strtolower(trim($item['nama'] ?? '')) === 'uang tunai')->values()->all();
-        $this->isiPaketItems = ! empty($barangItems) ? $barangItems : [['nama' => '', 'jumlah' => '']];
+        $barangItems = $items->reject(fn ($item) => strtolower(trim($item['nama'] ?? '')) === 'uang tunai')
+            ->map(fn ($item): array => [
+                'nama' => $item['nama'] ?? '',
+                'jumlah' => $item['jumlah'] ?? '',
+                'harga' => is_numeric($item['harga'] ?? null) ? (string) $item['harga'] : '',
+            ])
+            ->values()
+            ->all();
+        $this->isiPaketItems = ! empty($barangItems) ? $barangItems : [['nama' => '', 'jumlah' => '', 'harga' => '']];
 
         $this->periode_mulai = $produk->periode_mulai ? Carbon::parse($produk->periode_mulai)->format('Y-m-d') : null;
         $this->periode_selesai = $produk->periode_selesai ? Carbon::parse($produk->periode_selesai)->format('Y-m-d') : null;
         $this->tanggal_boleh_cair = $produk->tanggal_boleh_cair ? Carbon::parse($produk->tanggal_boleh_cair)->format('Y-m-d') : null;
         $this->batas_toleransi = (string) ($produk->batas_toleransi_tunggakan_hari ?? '');
+        $this->tampilkan_harga_ke_nasabah = (bool) $produk->tampilkan_harga_ke_nasabah;
+        $this->boleh_cair_saat_target = (bool) $produk->boleh_cair_saat_target;
+        $this->batas_daftar_hingga = $produk->batas_daftar_hingga ? Carbon::parse($produk->batas_daftar_hingga)->format('Y-m-d') : null;
         $this->jumlahPesertaEdit = $produk->kepesertaanPakets()->count();
         $this->showForm = true;
     }
