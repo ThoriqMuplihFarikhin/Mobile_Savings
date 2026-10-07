@@ -1,5 +1,7 @@
 const NAMA_CACHE = 'aset-statis-v1';
 
+const HALAMAN_OFFLINE = '/offline';
+
 const AWALAN_STATIS = [
     '/build/',
     '/manifest.webmanifest',
@@ -8,8 +10,14 @@ const AWALAN_STATIS = [
     '/apple-touch-icon',
 ];
 
-self.addEventListener('install', () => {
-    self.skipWaiting();
+self.addEventListener('install', (event) => {
+    event.waitUntil(
+        caches
+            .open(NAMA_CACHE)
+            .then((cache) => cache.addAll([HALAMAN_OFFLINE]))
+            .catch(() => undefined)
+            .then(() => self.skipWaiting())
+    );
 });
 
 self.addEventListener('activate', (event) => {
@@ -37,6 +45,15 @@ self.addEventListener('fetch', (event) => {
     const url = new URL(permintaan.url);
 
     if (url.origin !== self.location.origin) {
+        return;
+    }
+
+    if (permintaan.mode === 'navigate') {
+        event.respondWith(
+            fetch(permintaan).catch(() =>
+                caches.match(HALAMAN_OFFLINE, { ignoreSearch: true })
+            )
+        );
         return;
     }
 

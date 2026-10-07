@@ -44,7 +44,7 @@ it('ikon pwa tersedia dalam png beresolusi 192 dan 512 piksel', function () {
     }
 });
 
-it('service worker hanya menyasar aset statis dan tidak menyentuh halaman', function () {
+it('service worker menyasar aset statis dan memfallback navigasi gagal ke halaman offline', function () {
     $path = public_path('service-worker.js');
 
     expect($path)->toBeFile();
@@ -55,9 +55,11 @@ it('service worker hanya menyasar aset statis dan tidak menyentuh halaman', func
         ->and($sw)->toContain('manifest.webmanifest')
         ->and($sw)->toContain("method !== 'GET'")
         ->and($sw)->toContain('caches.open')
-        ->and($sw)->not->toContain('navigate')
+        // P8.2 (plan 11.1 butir 3): navigasi gagal -> halaman /offline, tanpa cache halaman terautentikasi.
+        ->and($sw)->toContain("permintaan.mode === 'navigate'")
+        ->and($sw)->toContain('cache.addAll([HALAMAN_OFFLINE])')
         ->and($sw)->not->toContain('/livewire')
-        ->and($sw)->not->toContain('addAll');
+        ->and($sw)->not->toContain('/admin');
 });
 
 it('partial head memuat tautan manifest dan pendaftaran service worker', function () {

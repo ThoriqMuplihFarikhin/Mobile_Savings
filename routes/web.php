@@ -45,6 +45,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', LandingController::class)->name('home');
 
+Route::view('/offline', 'pages.offline')->name('offline');
+
 // Portal login terpisah (D19): GET /login (nasabah) terdaftar di Fortify.
 Route::get('/login/kolektor', fn (Request $request) => view('pages.auth.login', [
     'portal' => PortalLogin::dariUri($request),
