@@ -131,7 +131,7 @@
                             </div>
                             <div>
                                 <label for="tanggalSerahTerima" class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Tanggal Serah Terima</label>
-                                <input id="tanggalSerahTerima" type="date" wire:model="tanggalSerahTerima"
+                                <x-ui.tanggal wire:model="tanggalSerahTerima" :max="now()->toDateString()" id="tanggalSerahTerima"
                                     class="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-2.5 text-xs text-zinc-900 dark:text-white focus:border-emerald-500 focus:ring-emerald-500" />
                                 @error('tanggalSerahTerima') <p class="mt-1 text-[11px] font-semibold text-rose-600">{{ $message }}</p> @enderror
                             </div>

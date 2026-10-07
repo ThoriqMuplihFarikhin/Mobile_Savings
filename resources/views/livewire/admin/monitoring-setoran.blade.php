@@ -27,7 +27,7 @@
             <option value="dikoreksi">Dikoreksi</option>
             <option value="dibatalkan">Dibatalkan</option>
         </select>
-        <input type="date" wire:model.live="tanggalFilter"
+        <x-ui.tanggal wire:model.live="tanggalFilter"
             class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
     </div>
 

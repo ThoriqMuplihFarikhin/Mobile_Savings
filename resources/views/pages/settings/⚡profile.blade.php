@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Concerns\ProfileValidationRules;
 use Flux\Flux;
@@ -173,7 +173,7 @@ new #[Title('Profile settings')] class extends Component {
         {{-- Tanggal Lahir --}}
         <div>
             <label class="mb-1.5 block text-sm font-medium text-[#171717] dark:text-zinc-200">Tanggal Lahir</label>
-            <input type="date" wire:model="tanggalLahir" required
+            <x-ui.tanggal wire:model="tanggalLahir" required :max="now()->toDateString()"
                    class="h-11 w-full rounded-xl border border-[#ebebeb] bg-[#fafafa] px-4 text-sm text-[#171717] focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white dark:focus:border-white dark:focus:ring-white/20" />
             @error('tanggalLahir') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
         </div>

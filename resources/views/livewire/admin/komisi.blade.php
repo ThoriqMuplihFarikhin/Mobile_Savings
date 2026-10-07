@@ -9,12 +9,12 @@
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div class="flex items-center gap-2">
                 <label class="text-xs font-medium text-gray-500">Dari</label>
-                <input type="date" wire:model.live="dariTanggal"
+                <x-ui.tanggal wire:model.live="dariTanggal"
                     class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
             </div>
             <div class="flex items-center gap-2">
                 <label class="text-xs font-medium text-gray-500">Sampai</label>
-                <input type="date" wire:model.live="sampaiTanggal"
+                <x-ui.tanggal wire:model.live="sampaiTanggal" :min="$dariTanggal"
                     class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
             </div>
             <select wire:model.live="produkId"

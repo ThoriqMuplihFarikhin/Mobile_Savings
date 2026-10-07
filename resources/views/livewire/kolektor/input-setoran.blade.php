@@ -246,7 +246,7 @@
                         </button>
                     </div>
                 </div>
-                <input type="date" wire:model="tanggal_transaksi"
+                <x-ui.tanggal wire:model="tanggal_transaksi" :max="now()->toDateString()"
                     class="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900/60 px-3 py-2 text-xs text-zinc-900 dark:text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10" />
                 @error('tanggal_transaksi') <p class="mt-1 text-[11px] text-rose-500 font-medium">{{ $message }}</p> @enderror
             </div>

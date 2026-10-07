@@ -1,4 +1,4 @@
-<div>
+﻿<div>
     <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <h1 class="text-2xl font-semibold tracking-tight text-gray-900">Kelola Produk Tabungan</h1>
@@ -87,17 +87,17 @@
                         </div>
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-gray-900">Periode Mulai</label>
-                            <input type="date" wire:model="periode_mulai"
+                            <x-ui.tanggal wire:model="periode_mulai"
                                 class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                         </div>
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-gray-900">Periode Selesai</label>
-                            <input type="date" wire:model="periode_selesai"
+                            <x-ui.tanggal wire:model="periode_selesai" :min="$periode_mulai"
                                 class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                         </div>
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-gray-900">Tanggal Boleh Cair</label>
-                            <input type="date" wire:model="tanggal_boleh_cair"
+                            <x-ui.tanggal wire:model="tanggal_boleh_cair"
                                 class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                         </div>
                         <div>

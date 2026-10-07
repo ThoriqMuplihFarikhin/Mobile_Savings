@@ -9,7 +9,7 @@
                 </p>
             </div>
             
-            <input type="date" wire:model.live="tanggal"
+            <x-ui.tanggal wire:model.live="tanggal"
                 class="rounded-xl border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-1.5 text-xs text-zinc-900 dark:text-white shadow-2xs focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10" />
         </div>
 

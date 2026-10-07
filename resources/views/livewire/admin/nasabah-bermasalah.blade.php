@@ -120,8 +120,8 @@
                     @if($keputusan_akhir === 'lanjut')
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-gray-900">Tunda Hingga (maks. 90 hari)</label>
-                            <input type="date" wire:model="ditunda_hingga"
-                                class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10">
+                            <x-ui.tanggal wire:model="ditunda_hingga" :min="now()->toDateString()"
+                                class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                             @error('ditunda_hingga') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
                         </div>
                     @endif

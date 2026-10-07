@@ -41,10 +41,10 @@
                     @endforeach
                 </div>
                 @if($periode === 'harian')
-                    <input type="date" wire:model.live="tanggal"
+                    <x-ui.tanggal wire:model.live="tanggal" :max="now()->toDateString()"
                         class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                 @else
-                    <input type="month" wire:model.live="bulan"
+                    <x-ui.tanggal wire:model.live="bulan" mode="bulan" :max="now()->toDateString()"
                         class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                 @endif
             </div>

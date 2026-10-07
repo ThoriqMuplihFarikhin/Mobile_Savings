@@ -72,7 +72,7 @@
                     </div>
                     <div>
                         <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Tanggal Lahir</label>
-                        <input type="date" wire:model="tanggalLahir"
+                        <x-ui.tanggal wire:model="tanggalLahir" :max="now()->toDateString()"
                             class="h-11 w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 text-sm text-zinc-900 dark:text-white focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
                         @error('tanggalLahir') <p class="mt-1 text-xs font-medium text-rose-500">{{ $message }}</p> @enderror
                     </div>

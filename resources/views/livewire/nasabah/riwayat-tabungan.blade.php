@@ -105,12 +105,12 @@
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Dari Tanggal</label>
-                    <input type="date" wire:model.live="dariTanggal"
+                    <x-ui.tanggal wire:model.live="dariTanggal"
                         class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3 py-2 text-xs text-zinc-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">Sampai Tanggal</label>
-                    <input type="date" wire:model.live="sampaiTanggal"
+                    <x-ui.tanggal wire:model.live="sampaiTanggal" :min="$dariTanggal"
                         class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3 py-2 text-xs text-zinc-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20" />
                 </div>
             </div>

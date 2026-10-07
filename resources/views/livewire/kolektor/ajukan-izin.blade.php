@@ -18,13 +18,13 @@
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="mb-1.5 block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Tanggal Mulai</label>
-                    <input type="date" wire:model="tanggalMulai"
+                    <x-ui.tanggal wire:model="tanggalMulai" :min="now()->toDateString()"
                            class="w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-600 dark:bg-zinc-900 dark:text-white" />
                     @error('tanggalMulai') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="mb-1.5 block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Tanggal Selesai</label>
-                    <input type="date" wire:model="tanggalSelesai"
+                    <x-ui.tanggal wire:model="tanggalSelesai" :min="$tanggalMulai ?: now()->toDateString()"
                            class="w-full rounded-2xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-600 dark:bg-zinc-900 dark:text-white" />
                     @error('tanggalSelesai') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
                 </div>

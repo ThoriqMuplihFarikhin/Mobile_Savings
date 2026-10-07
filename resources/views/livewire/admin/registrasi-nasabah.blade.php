@@ -52,7 +52,7 @@
                     </div>
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-gray-900">Tanggal Lahir</label>
-                        <input type="date" wire:model="tanggalLahir"
+                        <x-ui.tanggal wire:model="tanggalLahir" :max="now()->toDateString()"
                             class="h-10 w-full rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                         @error('tanggalLahir') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
                     </div>

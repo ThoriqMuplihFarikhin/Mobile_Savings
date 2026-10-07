@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import 'flatpickr/dist/flatpickr.min.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -123,4 +124,114 @@ select:focus[data-flux-control] {
   .btn-primary {
     @apply inline-flex items-center justify-center rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
   }
+}
+
+/* Flatpickr: palet brand + tema terang/gelap (D22/P4) */
+.flatpickr-calendar {
+    border-radius: 0.75rem;
+    border-color: var(--color-border);
+    box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.12);
+    font-family: var(--font-sans);
+}
+
+.flatpickr-months .flatpickr-month,
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year {
+    color: var(--color-text);
+}
+
+span.flatpickr-weekday {
+    color: var(--color-text-muted);
+}
+
+.flatpickr-day {
+    border-radius: 0.5rem;
+    color: var(--color-text);
+}
+
+.flatpickr-day:hover,
+.flatpickr-day.flatpickr-day.today:hover {
+    background: var(--color-brand-100);
+    border-color: var(--color-brand-100);
+}
+
+.flatpickr-day.flatpickr-day.today {
+    border-color: var(--color-brand-600);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover,
+.flatpickr-day.selected.startRange,
+.flatpickr-day.selected.endRange {
+    background: var(--color-brand-600);
+    border-color: var(--color-brand-600);
+    color: #fff;
+}
+
+.flatpickr-day.disabled,
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+    color: var(--color-text-muted);
+    opacity: 0.5;
+}
+
+.flatpickr-calendar.dark {
+    background: var(--color-surface-alt);
+    border-color: var(--color-border);
+}
+
+.flatpickr-calendar.dark .flatpickr-day {
+    color: var(--color-text);
+}
+
+.flatpickr-calendar.dark .flatpickr-day:hover,
+.flatpickr-calendar.dark .flatpickr-day.flatpickr-day.today:hover {
+    background: color-mix(in srgb, var(--color-brand-600) 25%, transparent);
+    border-color: transparent;
+}
+
+.flatpickr-calendar.dark .flatpickr-day.selected,
+.flatpickr-calendar.dark .flatpickr-day.selected:hover {
+    background: var(--color-brand-600);
+    border-color: var(--color-brand-600);
+    color: #fff;
+}
+
+.flatpickr-calendar.dark select.flatpickr-monthDropdown-months,
+.flatpickr-calendar.dark input.cur-year,
+.flatpickr-calendar.dark span.flatpickr-weekday {
+    color: var(--color-text);
+}
+
+.flatpickr-tombol-baris {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    padding: 0.5rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.flatpickr-tombol {
+    flex: 1;
+    border-radius: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--color-brand-600);
+    color: #fff;
+    cursor: pointer;
+}
+
+.flatpickr-tombol:hover {
+    background: var(--color-brand-700);
+}
+
+.flatpickr-tombol-hapus {
+    background: var(--color-surface-alt);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+}
+
+.flatpickr-tombol-hapus:hover {
+    background: var(--color-danger-soft);
 }
