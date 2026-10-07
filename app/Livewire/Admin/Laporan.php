@@ -10,6 +10,7 @@ use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
+use App\Support\CsvSafe;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -102,7 +103,7 @@ class Laporan extends Component
         ];
 
         /** Sanitasi sel teks agar formula tidak dieksekusi spreadsheet. */
-        $safe = fn ($value): string => is_string($value) && preg_match('/^[=+\-@\t\r]/', $value) ? "'".$value : $value;
+        $safe = fn ($value): string => CsvSafe::teks($value);
 
         $callback = function () use ($safe) {
             $file = fopen('php://output', 'w');
