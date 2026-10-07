@@ -94,6 +94,37 @@ class KasKolektorHitung
     }
 
     /**
+     * Kas di tangan per kolektor (D13) dalam dua query agregat — dipakai
+     * laporan per kolektor agar tidak N+1 per baris.
+     *
+     * @return array<int, float>
+     */
+    public static function kasDiTanganPerKolektor(): array
+    {
+        $setoranPerId = [];
+        foreach (TransaksiSetoran::belumDisetor()
+            ->whereNotNull('input_by')
+            ->groupBy('input_by')
+            ->selectRaw('input_by, COALESCE(SUM(nominal), 0) as total_setoran')
+            ->get() as $baris) {
+            $setoranPerId[(int) $baris->getAttribute('input_by')] = self::bc($baris->getAttribute('total_setoran'));
+        }
+
+        $tunaiPerId = self::tunaiKeluarPerKolektor();
+        $hasil = [];
+
+        foreach ($setoranPerId as $id => $setoran) {
+            $hasil[$id] = (float) bcsub($setoran, self::bc($tunaiPerId[$id] ?? 0.0), 2);
+        }
+
+        foreach ($tunaiPerId as $id => $tunai) {
+            $hasil[$id] ??= (float) bcsub('0.00', self::bc($tunai), 2);
+        }
+
+        return $hasil;
+    }
+
+    /**
      * Kunci baris setoran + penarikan milik kolektor di dalam transaksi
      * sebelum menghitung kas, mencegah pembayaran ganda yang berjalan paralel.
      * Wajib dipanggil dari dalam DB::transaction.

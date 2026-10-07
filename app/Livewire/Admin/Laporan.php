@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KepesertaanPaket;
 use App\Models\LogAktivitas;
@@ -11,6 +12,7 @@ use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
 use App\Support\CsvSafe;
+use App\Support\KasKolektorHitung;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,6 +40,10 @@ class Laporan extends Component
 
     public string $bulan = '';
 
+    public string $dariTanggal = '';
+
+    public string $sampaiTanggal = '';
+
     public int $tahun = 0;
 
     public string $seksi = 'keuangan';
@@ -46,6 +52,8 @@ class Laporan extends Component
     {
         $this->tanggal = now()->format('Y-m-d');
         $this->bulan = now()->format('Y-m');
+        $this->dariTanggal = now()->startOfMonth()->toDateString();
+        $this->sampaiTanggal = now()->toDateString();
         $this->tahun = (int) now()->format('Y');
     }
 
@@ -87,7 +95,24 @@ class Laporan extends Component
             $this->validate($this->filterRules());
         }
 
-        $periodeValue = $this->periode === 'bulanan' ? $this->bulan : $this->tanggal;
+        try {
+            ActivityLogger::log('ekspor_laporan', 'laporan', 0, [
+                'seksi' => $this->seksi,
+                'periode' => $this->periode,
+                'tanggal' => $this->tanggal,
+                'bulan' => $this->bulan,
+                'dari' => $this->dariTanggal,
+                'sampai' => $this->sampaiTanggal,
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        $periodeValue = $this->periode === 'bulanan'
+            ? $this->bulan
+            : ($this->periode === 'rentang'
+                ? $this->dariTanggal.'-'.$this->sampaiTanggal
+                : $this->tanggal);
         $filename = match ($this->seksi) {
             'kolektor' => 'laporan-kolektor-'.$this->periode.'-'.$periodeValue.'.csv',
             'paket' => 'laporan-paket-'.now()->toDateString().'.csv',
@@ -125,14 +150,16 @@ class Laporan extends Component
     }
 
     /**
-     * @return array{periode: string, tanggal: string, bulan: string}
+     * @return array{periode: string, tanggal: string, bulan: string, dariTanggal: array<int, string>, sampaiTanggal: array<int, string>}
      */
     private function filterRules(): array
     {
         return [
-            'periode' => 'required|in:harian,bulanan',
+            'periode' => 'required|in:harian,bulanan,rentang',
             'tanggal' => 'required|date_format:Y-m-d',
             'bulan' => 'required|date_format:Y-m',
+            'dariTanggal' => ['nullable', 'required_if:periode,rentang', 'date_format:Y-m-d'],
+            'sampaiTanggal' => ['nullable', 'required_if:periode,rentang', 'date_format:Y-m-d', 'after_or_equal:dariTanggal'],
         ];
     }
 
@@ -166,7 +193,22 @@ class Laporan extends Component
             return [$mulai->toDateString(), $mulai->copy()->endOfMonth()->toDateString()];
         }
 
+        if ($this->periode === 'rentang') {
+            return [$this->dariTanggal, $this->sampaiTanggal];
+        }
+
         return [$this->tanggal, $this->tanggal];
+    }
+
+    /**
+     * Batas timestamp inklusif (harian, bulanan, maupun rentang).
+     *
+     * @param  array{0: string, 1: string}  $range
+     * @return array{0: string, 1: string}
+     */
+    private function batasWaktu(array $range): array
+    {
+        return [$range[0].' 00:00:00', $range[1].' 23:59:59'];
     }
 
     /**
@@ -174,16 +216,11 @@ class Laporan extends Component
      */
     private function querySetoranPeriode(): Builder
     {
-        $query = TransaksiSetoran::query()->masihAktif();
+        [$mulai, $selesai] = $this->periodeRange();
 
-        if ($this->periode === 'bulanan') {
-            [$mulai, $selesai] = $this->periodeRange();
-            $query->whereBetween('tanggal_transaksi', [$mulai, $selesai]);
-        } else {
-            $query->whereDate('tanggal_transaksi', $this->tanggal);
-        }
-
-        return $query;
+        return TransaksiSetoran::query()
+            ->masihAktif()
+            ->whereBetween('tanggal_transaksi', [$mulai, $selesai]);
     }
 
     /**
@@ -192,13 +229,7 @@ class Laporan extends Component
     private function queryPenarikanPeriode(): Builder
     {
         $query = TransaksiPenarikan::query()->whereIn('status', ['approved', 'selesai']);
-
-        if ($this->periode === 'bulanan') {
-            $start = Carbon::parse($this->bulan)->startOfMonth();
-            $query->whereBetween('waktu_approval', [$start, $start->copy()->endOfMonth()]);
-        } else {
-            $query->whereDate('waktu_approval', $this->tanggal);
-        }
+        $query->whereBetween('waktu_approval', $this->batasWaktu($this->periodeRange()));
 
         return $query;
     }
@@ -215,8 +246,6 @@ class Laporan extends Component
      */
     private function getHarian(): array
     {
-        $date = Carbon::parse($this->tanggal);
-
         $setoran = $this->querySetoranPeriode()
             ->selectRaw('COUNT(*) as jumlah, COALESCE(SUM(nominal), 0) as total')
             ->first();
@@ -224,7 +253,7 @@ class Laporan extends Component
             ->selectRaw('COUNT(*) as jumlah, COALESCE(SUM(nominal_diminta), 0) as diminta, COALESCE(SUM(nominal_komisi), 0) as komisi')
             ->first();
         $jumlahOverrideRisiko = LogAktivitas::where('aksi', 'selesai_penarikan_override')
-            ->whereDate('timestamp', $date)
+            ->whereBetween('timestamp', $this->batasWaktu($this->periodeRange()))
             ->count();
 
         return [
@@ -323,13 +352,24 @@ class Laporan extends Component
     }
 
     /**
-     * Rekap setoran input kolektor dan selisih rekon setoran kantor pada periode berjalan.
+     * Rekap setoran input kolektor, selisih rekon, penarikan tunai dibayar,
+     * setor kantor (periode), dan kas di tangan D13 (posisi terkini).
      *
-     * @return Collection<int, array{nama: string, total_setoran: float, jumlah_transaksi: int, selisih: float}>
+     * @return Collection<int, array{nama: string, total_setoran: float, jumlah_transaksi: int, selisih: float, penarikan_dibayar: float, setor_kantor: float, kas_di_tangan: float}>
      */
     private function kolektorRows(): Collection
     {
         [$mulai, $selesai] = $this->periodeRange();
+
+        $kosong = fn (): array => [
+            'nama' => '',
+            'total_setoran' => 0.0,
+            'jumlah_transaksi' => 0,
+            'selisih' => 0.0,
+            'penarikan_dibayar' => 0.0,
+            'setor_kantor' => 0.0,
+            'kas_di_tangan' => 0.0,
+        ];
 
         $setoran = TransaksiSetoran::query()
             ->masihAktif()
@@ -347,26 +387,57 @@ class Laporan extends Component
             ->selectRaw('kolektor_id, COALESCE(SUM(selisih), 0) as total')
             ->get();
 
+        $penarikanTunai = TransaksiPenarikan::query()
+            ->whereIn('status', ['approved', 'selesai'])
+            ->whereNotNull('dibayar_oleh')
+            ->whereBetween('waktu_approval', $this->batasWaktu($this->periodeRange()))
+            ->groupBy('dibayar_oleh')
+            ->selectRaw('dibayar_oleh, COALESCE(SUM(nominal_diterima), 0) as total')
+            ->get();
+
+        $setorKantor = SetoranKolektorKantor::query()
+            ->where('status', '!=', 'dibatalkan')
+            ->whereBetween('tanggal_setor', [$mulai, $selesai])
+            ->groupBy('kolektor_id')
+            ->selectRaw('kolektor_id, COALESCE(SUM(total_seharusnya), 0) as total')
+            ->get();
+
+        $kasPerKolektor = KasKolektorHitung::kasDiTanganPerKolektor();
+
         $perId = [];
 
         foreach ($setoran as $baris) {
             $id = (int) $baris->getAttribute('input_by');
-            $perId[$id] = [
-                'nama' => '',
-                'total_setoran' => (float) $baris->getAttribute('total'),
-                'jumlah_transaksi' => (int) $baris->getAttribute('jumlah'),
-                'selisih' => 0.0,
-            ];
+            $perId[$id] = $kosong();
+            $perId[$id]['total_setoran'] = (float) $baris->getAttribute('total');
+            $perId[$id]['jumlah_transaksi'] = (int) $baris->getAttribute('jumlah');
         }
 
         foreach ($selisih as $baris) {
             $id = (int) $baris->getAttribute('kolektor_id');
-            $perId[$id] ??= ['nama' => '', 'total_setoran' => 0.0, 'jumlah_transaksi' => 0, 'selisih' => 0.0];
+            $perId[$id] ??= $kosong();
             $perId[$id]['selisih'] += (float) $baris->getAttribute('total');
         }
 
+        foreach ($penarikanTunai as $baris) {
+            $id = (int) $baris->getAttribute('dibayar_oleh');
+            $perId[$id] ??= $kosong();
+            $perId[$id]['penarikan_dibayar'] = (float) $baris->getAttribute('total');
+        }
+
+        foreach ($setorKantor as $baris) {
+            $id = (int) $baris->getAttribute('kolektor_id');
+            $perId[$id] ??= $kosong();
+            $perId[$id]['setor_kantor'] = (float) $baris->getAttribute('total');
+        }
+
+        foreach ($kasPerKolektor as $id => $kas) {
+            $perId[$id] ??= $kosong();
+            $perId[$id]['kas_di_tangan'] = $kas;
+        }
+
         foreach (User::where('role', 'kolektor')->get(['id', 'name']) as $kolektor) {
-            $perId[$kolektor->id] ??= ['nama' => '', 'total_setoran' => 0.0, 'jumlah_transaksi' => 0, 'selisih' => 0.0];
+            $perId[$kolektor->id] ??= $kosong();
             $perId[$kolektor->id]['nama'] = $kolektor->name;
         }
 
@@ -470,13 +541,25 @@ class Laporan extends Component
     }
 
     /**
+     * Label periode untuk baris "Periode" pada CSV.
+     */
+    private function labelPeriodeCsv(): string
+    {
+        return match ($this->periode) {
+            'bulanan' => $this->bulan,
+            'rentang' => $this->dariTanggal.' s/d '.$this->sampaiTanggal,
+            default => $this->tanggal,
+        };
+    }
+
+    /**
      * @param  resource  $file
      * @param  Closure(mixed): string  $safe
      */
     private function tulisCsvKeuangan($file, Closure $safe): void
     {
         fputcsv($file, [$safe('Laporan Keuangan - '.ucfirst($this->periode))]);
-        fputcsv($file, [$safe('Periode'), $safe($this->periode === 'harian' ? $this->tanggal : $this->bulan)]);
+        fputcsv($file, [$safe('Periode'), $safe($this->labelPeriodeCsv())]);
         fputcsv($file, []);
 
         fputcsv($file, ['RINGKASAN']);
@@ -532,9 +615,9 @@ class Laporan extends Component
     private function tulisCsvKolektor($file, Closure $safe): void
     {
         fputcsv($file, [$safe('Laporan Per Kolektor - '.ucfirst($this->periode))]);
-        fputcsv($file, [$safe('Periode'), $safe($this->periode === 'harian' ? $this->tanggal : $this->bulan)]);
+        fputcsv($file, [$safe('Periode'), $safe($this->labelPeriodeCsv())]);
         fputcsv($file, []);
-        fputcsv($file, ['Kolektor', 'Total Setoran', 'Jumlah Transaksi', 'Selisih Rekon']);
+        fputcsv($file, ['Kolektor', 'Total Setoran', 'Jumlah Transaksi', 'Selisih Rekon', 'Penarikan Tunai Dibayar', 'Kas di Tangan', 'Setor Kantor']);
 
         foreach ($this->kolektorRows() as $baris) {
             fputcsv($file, [
@@ -542,6 +625,9 @@ class Laporan extends Component
                 $baris['total_setoran'],
                 $baris['jumlah_transaksi'],
                 $baris['selisih'],
+                $baris['penarikan_dibayar'],
+                $baris['kas_di_tangan'],
+                $baris['setor_kantor'],
             ]);
         }
     }

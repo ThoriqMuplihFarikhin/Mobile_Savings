@@ -33,14 +33,23 @@
         @if (in_array($seksi, ['keuangan', 'kolektor'], true))
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div class="flex gap-2">
-                    @foreach(['harian' => 'Harian', 'bulanan' => 'Bulanan'] as $value => $label)
+                    @foreach(['harian' => 'Harian', 'bulanan' => 'Bulanan', 'rentang' => 'Rentang'] as $value => $label)
                         <button wire:click="$set('periode', '{{ $value }}')"
                             class="rounded-full px-4 py-2 text-sm font-medium transition {{ $periode === $value ? 'bg-indigo-800 text-white' : 'bg-gray-50 text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb] hover:bg-white' }}">
                             {{ $label }}
                         </button>
                     @endforeach
                 </div>
-                @if($periode === 'harian')
+                @if($periode === 'rentang')
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-medium text-gray-500">Dari</label>
+                        <x-ui.tanggal wire:model.live="dariTanggal" :max="now()->toDateString()"
+                            class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
+                        <label class="text-xs font-medium text-gray-500">Sampai</label>
+                        <x-ui.tanggal wire:model.live="sampaiTanggal" :min="$dariTanggal" :max="now()->toDateString()"
+                            class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
+                    </div>
+                @elseif($periode === 'harian')
                     <x-ui.tanggal wire:model.live="tanggal" :max="now()->toDateString()"
                         class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                 @else
@@ -74,7 +83,11 @@
                 default => 'Keuangan',
             };
             $judulPeriode = in_array($seksi, ['keuangan', 'kolektor'], true)
-                ? ($periode === 'bulanan' ? $bulan : $tanggal)
+                ? match ($periode) {
+                    'bulanan' => $bulan,
+                    'rentang' => $dariTanggal.' s/d '.$sampaiTanggal,
+                    default => $tanggal,
+                }
                 : now()->toDateString();
         @endphp
         <div class="mb-4 hidden print:block">
@@ -87,6 +100,13 @@
         </div>
 
         @if($seksi === 'keuangan')
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Total Setoran = jumlah setoran aktif (yang dibatalkan dikecualikan) berdasarkan tanggal transaksi. Total Penarikan = jumlah penarikan approved/selesai berdasarkan waktu approval. Total Komisi = jumlah komisi dari penarikan tersebut. Saldo Bersih = Total Setoran &minus; Total Penarikan &minus; Total Komisi. Pembulatan hanya terjadi di tampilan.</p>
+                </div>
+            </div>
             <div class="mb-6 grid gap-4 sm:grid-cols-4">
                 <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
                     <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Total Setoran</p>
@@ -136,6 +156,13 @@
                 </div>
             @endif
         @elseif($seksi === 'kolektor')
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Total Setoran = setoran yang diinput kolektor pada periode. Penarikan Tunai Dibayar = jumlah penarikan tunai (nominal diterima) yang dibayarkan kolektor pada periode. Kas di Tangan = setoran belum disetor kantor &minus; penarikan tunai belum direkonsiliasi (rumus D13, posisi terkini bukan periode). Setor Kantor = total pengajuan setor ke kantor pada periode. Selisih Rekon = selisih rekon lebih/kurang pada periode.</p>
+                </div>
+            </div>
             <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
                 <h3 class="mb-4 text-sm font-semibold text-gray-900">Rekap Per Kolektor</h3>
                 <div class="overflow-x-auto">
@@ -146,6 +173,9 @@
                                 <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Total Setoran</th>
                                 <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Jumlah Transaksi</th>
                                 <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Selisih Rekon</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Penarikan Tunai Dibayar</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Kas di Tangan</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Setor Kantor</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[#ebebeb]">
@@ -155,15 +185,25 @@
                                     <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['total_setoran'], 0, ',', '.') }}</td>
                                     <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['jumlah_transaksi'] }}</td>
                                     <td class="px-3 py-2 font-mono text-sm {{ $baris['selisih'] < 0 ? 'text-[#ee0000]' : 'text-gray-900' }}">Rp {{ number_format($baris['selisih'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['penarikan_dibayar'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['kas_di_tangan'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['setor_kantor'], 0, ',', '.') }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="px-3 py-4 text-sm text-gray-500">Belum ada data kolektor.</td></tr>
+                                <tr><td colspan="7" class="px-3 py-4 text-sm text-gray-500">Belum ada data kolektor.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
         @elseif($seksi === 'paket')
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Peserta Aktif = kepesertaan tanpa keputusan akhir dan belum diserahkan. Total Terkumpul = jumlah total aktual terkumpul seluruh peserta aktif. Total Tunggakan = jumlah tunggakan seluruh peserta aktif.</p>
+                </div>
+            </div>
             <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
                 <h3 class="mb-4 text-sm font-semibold text-gray-900">Rekap Per Paket</h3>
                 <div class="overflow-x-auto">
@@ -192,6 +232,13 @@
                 </div>
             </div>
         @else
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Total Kebutuhan = Peserta Aktif x jumlah per orang (teks bebas pada isi paket). Harga barang tidak ditampilkan pada laporan ini (keputusan D15, hanya admin).</p>
+                </div>
+            </div>
             <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
                 <h3 class="mb-4 text-sm font-semibold text-gray-900">Kebutuhan Barang Pengadaan</h3>
                 <div class="overflow-x-auto">
