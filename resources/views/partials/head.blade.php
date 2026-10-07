@@ -1,5 +1,5 @@
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <script>
   if (localStorage.getItem('td-theme') === 'dark' ||
      (!('td-theme' in localStorage) && matchMedia('(prefers-color-scheme: dark)').matches)) {
