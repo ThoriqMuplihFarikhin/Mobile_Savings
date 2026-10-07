@@ -123,6 +123,9 @@
                         <flux:sidebar.item icon="package" href="/nasabah/progres-paket" :current="request()->routeIs('nasabah.progres-paket.*')" wire:navigate>
                             {{ __('Progres Paket') }}
                         </flux:sidebar.item>
+                        <flux:sidebar.item icon="circle-plus" href="/nasabah/pilih-paket" :current="request()->routeIs('nasabah.paket.pilih')" wire:navigate>
+                            {{ __('Ikuti Paket') }}
+                        </flux:sidebar.item>
                         <flux:sidebar.item icon="arrow-down-to-line" href="/nasabah/penarikan" :current="request()->routeIs('nasabah.penarikan.*')" wire:navigate>
                             {{ __('Penarikan') }}
                         </flux:sidebar.item>

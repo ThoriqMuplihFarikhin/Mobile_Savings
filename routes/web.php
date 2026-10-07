@@ -31,6 +31,7 @@ use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Nasabah\NotifikasiController;
 use App\Http\Controllers\Nasabah\PenarikanController;
 use App\Http\Controllers\Nasabah\PengaturanController as NasabahPengaturanController;
+use App\Http\Controllers\Nasabah\PilihPaketController;
 use App\Http\Controllers\Nasabah\RiwayatController;
 use App\Http\Controllers\Nasabah\SaldoController;
 use App\Http\Controllers\RekapMutasiController;
@@ -124,6 +125,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat.index');
         Route::get('/riwayat-tabungan', [RiwayatController::class, 'riwayatTabungan'])->name('riwayat-tabungan.index');
         Route::get('/progres-paket', [RiwayatController::class, 'progresPaket'])->name('progres-paket.index');
+        Route::get('/pilih-paket', [PilihPaketController::class, 'index'])->name('paket.pilih');
         Route::get('/komplain', [RiwayatController::class, 'komplain'])->name('komplain.index');
         Route::get('/saldo', [SaldoController::class, 'index'])->name('saldo.index');
         Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
