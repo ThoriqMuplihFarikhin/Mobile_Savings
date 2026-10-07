@@ -24,6 +24,11 @@ class KepesertaanPaket extends Model
         'status_alert',
         'catatan_admin',
         'ditunda_hingga',
+        'komitmen_disetujui_pada',
+        'komitmen_via',
+        'komitmen_dicatat_oleh',
+        'komitmen_teks',
+        'komitmen_catatan',
         'keputusan_akhir',
         'metode_pengambilan',
         'status_serah_terima',
@@ -41,6 +46,7 @@ class KepesertaanPaket extends Model
             'tanggal_mulai_ikut' => 'date',
             'ditunda_hingga' => 'date',
             'tanggal_serah_terima' => 'date',
+            'komitmen_disetujui_pada' => 'datetime',
         ];
     }
 

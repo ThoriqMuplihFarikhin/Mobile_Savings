@@ -29,6 +29,9 @@ class ProdukTabungan extends Model
         'periode_selesai',
         'tanggal_boleh_cair',
         'batas_toleransi_tunggakan_hari',
+        'tampilkan_harga_ke_nasabah',
+        'boleh_cair_saat_target',
+        'batas_daftar_hingga',
         'status',
     ];
 
@@ -43,6 +46,9 @@ class ProdukTabungan extends Model
             'periode_mulai' => 'date',
             'periode_selesai' => 'date',
             'tanggal_boleh_cair' => 'date',
+            'tampilkan_harga_ke_nasabah' => 'boolean',
+            'boleh_cair_saat_target' => 'boolean',
+            'batas_daftar_hingga' => 'date',
         ];
     }
 
