@@ -62,7 +62,7 @@ class Laporan extends Component
 
     public function pilihSeksi(string $seksi): void
     {
-        if (! in_array($seksi, ['keuangan', 'kolektor', 'paket', 'barang', 'rekon', 'umurkas', 'mutasi', 'penarikan'], true)) {
+        if (! in_array($seksi, ['keuangan', 'kolektor', 'paket', 'barang', 'rekon', 'umurkas', 'mutasi', 'penarikan', 'tunggakan', 'serah'], true)) {
             return;
         }
 
@@ -81,6 +81,8 @@ class Laporan extends Component
             'umurkas' => $this->umurKasData(),
             'mutasi' => $this->mutasiData($valid),
             'penarikan' => $this->penarikanData($valid),
+            'tunggakan' => ['tunggakanRows' => $this->tunggakanRows()],
+            'serah' => ['serahRows' => $this->serahRows()],
             default => $valid
                 ? match ($this->periode) {
                     'bulanan' => $this->getBulanan(),
@@ -130,6 +132,8 @@ class Laporan extends Component
             'umurkas' => 'laporan-umur-kas-'.now()->toDateString().'.csv',
             'mutasi' => 'laporan-mutasi-'.$this->periode.'-'.$periodeValue.'.csv',
             'penarikan' => 'laporan-penarikan-'.$this->periode.'-'.$periodeValue.'.csv',
+            'tunggakan' => 'laporan-tunggakan-'.now()->toDateString().'.csv',
+            'serah' => 'laporan-serah-terima-'.now()->toDateString().'.csv',
             'paket' => 'laporan-paket-'.now()->toDateString().'.csv',
             'barang' => 'laporan-kebutuhan-barang-'.now()->toDateString().'.csv',
             default => 'laporan-'.$this->periode.'-'.$periodeValue.'.csv',
@@ -157,6 +161,8 @@ class Laporan extends Component
                 'umurkas' => $this->tulisCsvUmurKas($file, $safe),
                 'mutasi' => $this->tulisCsvMutasi($file, $safe),
                 'penarikan' => $this->tulisCsvPenarikan($file, $safe),
+                'tunggakan' => $this->tulisCsvTunggakan($file, $safe),
+                'serah' => $this->tulisCsvSerah($file, $safe),
                 'paket' => $this->tulisCsvPaket($file, $safe),
                 'barang' => $this->tulisCsvBarang($file, $safe),
                 default => $this->tulisCsvKeuangan($file, $safe),
@@ -901,6 +907,85 @@ class Laporan extends Component
     }
 
     /**
+     * Nasabah menunggak pada paket: hari & rupiah tunggakan, status alert,
+     * dan keputusan akhir. Posisi terkini tanpa filter periode (konsisten
+     * seksi paket).
+     *
+     * @return array<int, array{id: int, nasabah: string, produk: string, tunggakan_hari: int, tunggakan_rupiah: float, status_alert: string, keputusan_akhir: string, ditunda_hingga: ?string}>
+     */
+    private function tunggakanRows(): array
+    {
+        return KepesertaanPaket::query()
+            ->with(['nasabah', 'produk'])
+            ->where('tunggakan', '>', 0)
+            ->orderByDesc('tunggakan')
+            ->orderBy('id')
+            ->get()
+            ->map(function (KepesertaanPaket $item): array {
+                $hargaPerHari = (float) ($item->produk->harga_per_hari ?? 0);
+
+                return [
+                    'id' => (int) $item->id,
+                    'nasabah' => $item->nasabah->name ?? '-',
+                    'produk' => $item->produk->nama ?? '-',
+                    'tunggakan_hari' => (int) (float) $item->tunggakan,
+                    'tunggakan_rupiah' => round((float) $item->tunggakan * $hargaPerHari, 2),
+                    'status_alert' => match ($item->status_alert) {
+                        'peringatan' => 'Peringatan',
+                        'perlu_review' => 'Perlu Review',
+                        default => 'Normal',
+                    },
+                    'keputusan_akhir' => match ($item->keputusan_akhir) {
+                        'lanjut' => 'Lanjut',
+                        'gagal_dikembalikan' => 'Gagal Dikembalikan',
+                        'gagal_dialihkan' => 'Gagal Dialihkan',
+                        default => '-',
+                    },
+                    'ditunda_hingga' => $item->ditunda_hingga !== null
+                        ? Carbon::parse($item->ditunda_hingga)->format('d/m/Y')
+                        : null,
+                ];
+            })
+            ->all();
+    }
+
+    /**
+     * Status serah terima paket: status, metode, penerima, tanggal, dan
+     * tautan foto bukti. Posisi terkini tanpa filter periode.
+     *
+     * @return array<int, array{id: int, nasabah: string, produk: string, status: string, status_kunci: string, metode: string, penerima: string, tanggal: ?string, foto: ?string}>
+     */
+    private function serahRows(): array
+    {
+        return KepesertaanPaket::query()
+            ->with(['nasabah', 'produk'])
+            ->orderBy('status_serah_terima')
+            ->orderByDesc('tanggal_serah_terima')
+            ->orderBy('id')
+            ->get()
+            ->map(function (KepesertaanPaket $item): array {
+                return [
+                    'id' => (int) $item->id,
+                    'nasabah' => $item->nasabah->name ?? '-',
+                    'produk' => $item->produk->nama ?? '-',
+                    'status' => $item->status_serah_terima === 'sudah_diterima' ? 'Sudah Diterima' : 'Belum',
+                    'status_kunci' => (string) $item->status_serah_terima,
+                    'metode' => match ($item->metode_pengambilan) {
+                        'ambil_sendiri' => 'Ambil Sendiri',
+                        'diantar_kolektor' => 'Diantar Kolektor',
+                        default => '-',
+                    },
+                    'penerima' => $item->diterima_oleh ?? '-',
+                    'tanggal' => $item->tanggal_serah_terima !== null
+                        ? Carbon::parse($item->tanggal_serah_terima)->format('d/m/Y')
+                        : null,
+                    'foto' => $item->bukti_foto_url,
+                ];
+            })
+            ->all();
+    }
+
+    /**
      * Label periode untuk baris "Periode" pada CSV.
      */
     private function labelPeriodeCsv(): string
@@ -1138,6 +1223,54 @@ class Laporan extends Component
                 $safe($baris['lokasi']),
                 $safe($baris['waktu_proses'] ?? '-'),
                 $safe($baris['alasan']),
+            ]);
+        }
+    }
+
+    /**
+     * @param  resource  $file
+     * @param  Closure(mixed): string  $safe
+     */
+    private function tulisCsvTunggakan($file, Closure $safe): void
+    {
+        fputcsv($file, [$safe('Laporan Tunggakan & Paket Gagal')]);
+        fputcsv($file, [$safe('Tanggal'), now()->toDateString()]);
+        fputcsv($file, []);
+        fputcsv($file, ['Nasabah', 'Produk', 'Tunggakan (hari)', 'Tunggakan (Rp)', 'Status Alert', 'Keputusan Akhir', 'Ditunda Hingga']);
+
+        foreach ($this->tunggakanRows() as $baris) {
+            fputcsv($file, [
+                $safe($baris['nasabah']),
+                $safe($baris['produk']),
+                $baris['tunggakan_hari'],
+                $baris['tunggakan_rupiah'],
+                $safe($baris['status_alert']),
+                $safe($baris['keputusan_akhir']),
+                $safe($baris['ditunda_hingga'] ?? '-'),
+            ]);
+        }
+    }
+
+    /**
+     * @param  resource  $file
+     * @param  Closure(mixed): string  $safe
+     */
+    private function tulisCsvSerah($file, Closure $safe): void
+    {
+        fputcsv($file, [$safe('Laporan Serah Terima Paket')]);
+        fputcsv($file, [$safe('Tanggal'), now()->toDateString()]);
+        fputcsv($file, []);
+        fputcsv($file, ['Nasabah', 'Produk', 'Status', 'Metode', 'Penerima', 'Tanggal Serah', 'Foto Bukti']);
+
+        foreach ($this->serahRows() as $baris) {
+            fputcsv($file, [
+                $safe($baris['nasabah']),
+                $safe($baris['produk']),
+                $safe($baris['status']),
+                $safe($baris['metode']),
+                $safe($baris['penerima']),
+                $safe($baris['tanggal'] ?? '-'),
+                $safe($baris['foto'] ?? '-'),
             ]);
         }
     }

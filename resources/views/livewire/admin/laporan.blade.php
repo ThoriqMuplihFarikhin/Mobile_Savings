@@ -21,7 +21,7 @@
     @endif
 
     <div class="mb-4 flex flex-wrap gap-2">
-        @foreach(['keuangan' => 'Keuangan', 'kolektor' => 'Per Kolektor', 'rekon' => 'Rekonsiliasi', 'umurkas' => 'Umur Kas', 'mutasi' => 'Mutasi', 'penarikan' => 'Penarikan', 'paket' => 'Per Paket', 'barang' => 'Kebutuhan Barang'] as $nilaiSeksi => $labelSeksi)
+        @foreach(['keuangan' => 'Keuangan', 'kolektor' => 'Per Kolektor', 'rekon' => 'Rekonsiliasi', 'umurkas' => 'Umur Kas', 'mutasi' => 'Mutasi', 'penarikan' => 'Penarikan', 'tunggakan' => 'Tunggakan', 'serah' => 'Serah Terima', 'paket' => 'Per Paket', 'barang' => 'Kebutuhan Barang'] as $nilaiSeksi => $labelSeksi)
             <button wire:click="pilihSeksi('{{ $nilaiSeksi }}')"
                 class="rounded-full px-4 py-2 text-sm font-medium transition {{ $seksi === $nilaiSeksi ? 'bg-indigo-800 text-white' : 'bg-gray-50 text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb] hover:bg-white' }}">
                 {{ $labelSeksi }}
@@ -93,6 +93,8 @@
                 'umurkas' => 'Umur Kas',
                 'mutasi' => 'Mutasi Nasabah',
                 'penarikan' => 'Penarikan',
+                'tunggakan' => 'Tunggakan & Paket Gagal',
+                'serah' => 'Serah Terima Paket',
                 default => 'Keuangan',
             };
             $judulPeriode = in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan'], true)
@@ -462,6 +464,104 @@
                                 </tr>
                             @empty
                                 <tr><td colspan="10" class="px-3 py-4 text-sm text-gray-500">Belum ada penarikan pada periode ini.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @elseif($seksi === 'tunggakan')
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Tunggakan hari = hari berjalan &minus; hari terbayar (peserta aktif yang belum diserahkan). Tunggakan (Rp) = tunggakan hari &times; harga per hari. Status Alert: peringatan bila menunggak, perlu review bila melewati batas toleransi tanpa penundaan. Keputusan akhir kosong berarti masih berjalan. Posisi terkini, bukan periode.</p>
+                </div>
+            </div>
+            <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+                <h3 class="mb-4 text-sm font-semibold text-gray-900">Nasabah Menunggak</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-[#ebebeb]">
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Nasabah</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Produk</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Tunggakan (hari)</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Tunggakan (Rp)</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Status Alert</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Keputusan Akhir</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Ditunda Hingga</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ebebeb]">
+                            @forelse($tunggakanRows as $baris)
+                                <tr class="transition hover:bg-gray-50">
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $baris['nasabah'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['produk'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['tunggakan_hari'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['tunggakan_rupiah'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 text-sm {{ $baris['status_alert'] === 'Perlu Review' ? 'text-[#ee0000]' : 'text-gray-900' }}">{{ $baris['status_alert'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['keputusan_akhir'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-600">{{ $baris['ditunda_hingga'] ?? '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="px-3 py-4 text-sm text-gray-500">Tidak ada nasabah menunggak.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @elseif($seksi === 'serah')
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Status serah terima: belum (masih berjalan) atau sudah diterima. Metode = cara paket diambil. Penerima = nama yang menandatangani serah terima. Tanggal = tanggal serah terima (kosong bila belum). Foto bukti hanya dapat dilihat oleh admin (D15). Posisi terkini, bukan periode.</p>
+                </div>
+            </div>
+            <div class="mb-6 grid gap-4 sm:grid-cols-2">
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Sudah Diterima</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">{{ collect($serahRows)->where('status_kunci', 'sudah_diterima')->count() }} paket</p>
+                </div>
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Belum</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">{{ collect($serahRows)->where('status_kunci', 'belum')->count() }} paket</p>
+                </div>
+            </div>
+            <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+                <h3 class="mb-4 text-sm font-semibold text-gray-900">Detail Serah Terima</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-[#ebebeb]">
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Nasabah</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Produk</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Status</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Metode</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Penerima</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Tanggal</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Foto Bukti</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ebebeb]">
+                            @forelse($serahRows as $baris)
+                                <tr class="transition hover:bg-gray-50">
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $baris['nasabah'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['produk'] }}</td>
+                                    <td class="px-3 py-2 text-sm {{ $baris['status_kunci'] === 'sudah_diterima' ? 'text-gray-900' : 'text-gray-500' }}">{{ $baris['status'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['metode'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $baris['penerima'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['tanggal'] ?? '-' }}</td>
+                                    <td class="px-3 py-2 text-sm">
+                                        @if ($baris['foto'] !== null)
+                                            <a href="{{ $baris['foto'] }}" target="_blank" rel="noopener noreferrer" class="text-indigo-800 underline-offset-2 hover:underline">Lihat</a>
+                                        @else
+                                            <span class="text-gray-500">-</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="px-3 py-4 text-sm text-gray-500">Belum ada kepesertaan paket.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
