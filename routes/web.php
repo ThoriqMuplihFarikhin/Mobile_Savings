@@ -33,6 +33,7 @@ use App\Http\Controllers\Nasabah\PenarikanController;
 use App\Http\Controllers\Nasabah\PengaturanController as NasabahPengaturanController;
 use App\Http\Controllers\Nasabah\RiwayatController;
 use App\Http\Controllers\Nasabah\SaldoController;
+use App\Http\Controllers\RekapMutasiController;
 use App\Http\Controllers\SerahTerimaFotoController;
 use App\Http\Controllers\SerahTerimaPaketController;
 use App\Http\Controllers\StrukSetoranController;
@@ -56,6 +57,10 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::get('/struk/setoran/{setoran}', [StrukSetoranController::class, 'show'])
         ->name('struk.setoran');
+
+    Route::get('/rekap/nasabah/{user}', [RekapMutasiController::class, 'show'])
+        ->middleware('role:admin|kolektor')
+        ->name('rekap.nasabah');
 
     // Admin Routes
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
