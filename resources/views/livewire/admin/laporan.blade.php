@@ -21,7 +21,7 @@
     @endif
 
     <div class="mb-4 flex flex-wrap gap-2">
-        @foreach(['keuangan' => 'Keuangan', 'kolektor' => 'Per Kolektor', 'rekon' => 'Rekonsiliasi', 'umurkas' => 'Umur Kas', 'paket' => 'Per Paket', 'barang' => 'Kebutuhan Barang'] as $nilaiSeksi => $labelSeksi)
+        @foreach(['keuangan' => 'Keuangan', 'kolektor' => 'Per Kolektor', 'rekon' => 'Rekonsiliasi', 'umurkas' => 'Umur Kas', 'mutasi' => 'Mutasi', 'penarikan' => 'Penarikan', 'paket' => 'Per Paket', 'barang' => 'Kebutuhan Barang'] as $nilaiSeksi => $labelSeksi)
             <button wire:click="pilihSeksi('{{ $nilaiSeksi }}')"
                 class="rounded-full px-4 py-2 text-sm font-medium transition {{ $seksi === $nilaiSeksi ? 'bg-indigo-800 text-white' : 'bg-gray-50 text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb] hover:bg-white' }}">
                 {{ $labelSeksi }}
@@ -30,7 +30,7 @@
     </div>
 
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        @if (in_array($seksi, ['keuangan', 'kolektor', 'rekon'], true))
+        @if (in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan'], true))
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div class="flex gap-2">
                     @foreach(['harian' => 'Harian', 'bulanan' => 'Bulanan', 'rentang' => 'Rentang'] as $value => $label)
@@ -55,6 +55,15 @@
                 @else
                     <x-ui.tanggal wire:model.live="bulan" mode="bulan" :max="now()->toDateString()"
                         class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
+                @endif
+                @if ($seksi === 'mutasi')
+                    <select wire:model.live="mutasiNasabahId"
+                        class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10">
+                        <option value="0">Pilih nasabah</option>
+                        @foreach ($mutasiNasabahList as $nasabah)
+                            <option value="{{ $nasabah['id'] }}">{{ $nasabah['nama'] }}</option>
+                        @endforeach
+                    </select>
                 @endif
             </div>
         @else
@@ -82,9 +91,11 @@
                 'barang' => 'Kebutuhan Barang',
                 'rekon' => 'Rekonsiliasi Kas',
                 'umurkas' => 'Umur Kas',
+                'mutasi' => 'Mutasi Nasabah',
+                'penarikan' => 'Penarikan',
                 default => 'Keuangan',
             };
-            $judulPeriode = in_array($seksi, ['keuangan', 'kolektor', 'rekon'], true)
+            $judulPeriode = in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan'], true)
                 ? match ($periode) {
                     'bulanan' => $bulan,
                     'rentang' => $dariTanggal.' s/d '.$sampaiTanggal,
@@ -341,6 +352,117 @@
                                     <td class="px-3 py-2 text-sm text-gray-900">{{ $umurTotal['lewat_batas'] }} lewat</td>
                                 </tr>
                             @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @elseif($seksi === 'mutasi')
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Saldo Awal = saldo saat ini dikurangi seluruh mutasi sejak awal periode. Saldo Berjalan = saldo setelah setiap baris. Setoran hanya yang aktif (dibatalkan dikecualikan); penarikan hanya approved/selesai. Cocokkan dengan buku tabungan fisik untuk nasabah offline (D14).</p>
+                </div>
+            </div>
+            <div class="mb-6 grid gap-4 sm:grid-cols-4">
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Saldo Awal</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">Rp {{ number_format($mutasiRingkas['saldoAwal'], 0, ',', '.') }}</p>
+                </div>
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Total Setoran</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">Rp {{ number_format($mutasiRingkas['totalSetoran'], 0, ',', '.') }}</p>
+                </div>
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Total Penarikan</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">Rp {{ number_format($mutasiRingkas['totalPenarikan'], 0, ',', '.') }}</p>
+                </div>
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Saldo Akhir</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">Rp {{ number_format($mutasiRingkas['saldoAkhir'], 0, ',', '.') }}</p>
+                </div>
+            </div>
+            <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+                <h3 class="mb-4 text-sm font-semibold text-gray-900">Buku Tabungan</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-[#ebebeb]">
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Tanggal</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Tipe</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Produk</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Nominal</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Saldo Berjalan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ebebeb]">
+                            @forelse($mutasiRows as $baris)
+                                <tr class="transition hover:bg-gray-50">
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ \Carbon\Carbon::parse($baris['tanggal'])->format('d/m/Y') }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $baris['tipe'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['produk'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm {{ $baris['arah'] > 0 ? 'text-gray-900' : 'text-[#ee0000]' }}">{{ $baris['arah'] > 0 ? '+' : '-' }} Rp {{ number_format($baris['nominal'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['saldo'], 0, ',', '.') }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" class="px-3 py-4 text-sm text-gray-500">{{ $mutasiNasabahId > 0 ? 'Belum ada mutasi pada periode ini.' : 'Pilih nasabah untuk menampilkan buku tabungan.' }}</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @elseif($seksi === 'penarikan')
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Periode mengikuti saat pengajuan diajukan (bukan saat diproses). Rekap per status: pending, approved, selesai, ditolak, dibatalkan, kedaluwarsa. Total Diminta = nominal diminta nasabah. Waktu Proses = waktu approval (kosong bila belum diproses). Alasan terisi untuk pengajuan yang dibatalkan/ditolak.</p>
+                </div>
+            </div>
+            <div class="mb-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+                @foreach($penarikanRekap as $ringkas)
+                    <div class="rounded-xl bg-gray-50 p-4 shadow-[inset_0_0_0_1px_#ebebeb]">
+                        <p class="font-mono text-xs uppercase tracking-wider text-gray-500">{{ $ringkas['label'] }}</p>
+                        <p class="mt-1 font-mono text-2xl font-semibold {{ in_array($ringkas['status'], ['ditolak', 'dibatalkan'], true) ? 'text-[#ee0000]' : 'text-gray-900' }}">{{ $ringkas['jumlah'] }}</p>
+                        <p class="text-xs text-gray-500">Rp {{ number_format($ringkas['total'], 0, ',', '.') }}</p>
+                    </div>
+                @endforeach
+            </div>
+            <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+                <h3 class="mb-4 text-sm font-semibold text-gray-900">Detail Penarikan</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-[#ebebeb]">
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Tanggal</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Nasabah</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Produk</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Diminta</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Komisi</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Diterima</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Status</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Lokasi</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Waktu Proses</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Alasan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ebebeb]">
+                            @forelse($penarikanRows as $baris)
+                                <tr class="transition hover:bg-gray-50">
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['tanggal'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $baris['nasabah'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['produk'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['diminta'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['komisi'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['diterima'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 text-sm {{ in_array($baris['status'], ['ditolak', 'dibatalkan'], true) ? 'text-[#ee0000]' : 'text-gray-900' }}">{{ $baris['status'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['lokasi'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['waktu_proses'] ?? '-' }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['alasan'] }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="10" class="px-3 py-4 text-sm text-gray-500">Belum ada penarikan pada periode ini.</td></tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

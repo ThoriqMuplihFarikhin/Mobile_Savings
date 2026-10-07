@@ -7,6 +7,7 @@ use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KepesertaanPaket;
 use App\Models\LogAktivitas;
 use App\Models\ProdukTabungan;
+use App\Models\SaldoProduk;
 use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
@@ -48,6 +49,8 @@ class Laporan extends Component
 
     public string $seksi = 'keuangan';
 
+    public int $mutasiNasabahId = 0;
+
     public function mount(): void
     {
         $this->tanggal = now()->format('Y-m-d');
@@ -59,7 +62,7 @@ class Laporan extends Component
 
     public function pilihSeksi(string $seksi): void
     {
-        if (! in_array($seksi, ['keuangan', 'kolektor', 'paket', 'barang', 'rekon', 'umurkas'], true)) {
+        if (! in_array($seksi, ['keuangan', 'kolektor', 'paket', 'barang', 'rekon', 'umurkas', 'mutasi', 'penarikan'], true)) {
             return;
         }
 
@@ -76,6 +79,8 @@ class Laporan extends Component
             'barang' => ['barangRows' => $this->barangRows()],
             'rekon' => $this->rekonData($valid),
             'umurkas' => $this->umurKasData(),
+            'mutasi' => $this->mutasiData($valid),
+            'penarikan' => $this->penarikanData($valid),
             default => $valid
                 ? match ($this->periode) {
                     'bulanan' => $this->getBulanan(),
@@ -95,6 +100,10 @@ class Laporan extends Component
     {
         if (in_array($this->seksi, ['keuangan', 'kolektor', 'rekon'], true)) {
             $this->validate($this->filterRules());
+        } elseif ($this->seksi === 'mutasi') {
+            $this->validate(array_merge($this->filterRules(), [
+                'mutasiNasabahId' => 'required|integer|exists:users,id',
+            ]));
         }
 
         try {
@@ -119,6 +128,8 @@ class Laporan extends Component
             'kolektor' => 'laporan-kolektor-'.$this->periode.'-'.$periodeValue.'.csv',
             'rekon' => 'laporan-rekon-'.$this->periode.'-'.$periodeValue.'.csv',
             'umurkas' => 'laporan-umur-kas-'.now()->toDateString().'.csv',
+            'mutasi' => 'laporan-mutasi-'.$this->periode.'-'.$periodeValue.'.csv',
+            'penarikan' => 'laporan-penarikan-'.$this->periode.'-'.$periodeValue.'.csv',
             'paket' => 'laporan-paket-'.now()->toDateString().'.csv',
             'barang' => 'laporan-kebutuhan-barang-'.now()->toDateString().'.csv',
             default => 'laporan-'.$this->periode.'-'.$periodeValue.'.csv',
@@ -144,6 +155,8 @@ class Laporan extends Component
                 'kolektor' => $this->tulisCsvKolektor($file, $safe),
                 'rekon' => $this->tulisCsvRekon($file, $safe),
                 'umurkas' => $this->tulisCsvUmurKas($file, $safe),
+                'mutasi' => $this->tulisCsvMutasi($file, $safe),
+                'penarikan' => $this->tulisCsvPenarikan($file, $safe),
                 'paket' => $this->tulisCsvPaket($file, $safe),
                 'barang' => $this->tulisCsvBarang($file, $safe),
                 default => $this->tulisCsvKeuangan($file, $safe),
@@ -696,6 +709,198 @@ class Laporan extends Component
     }
 
     /**
+     * Normalisasi nilai uang ke numeric-string untuk perhitungan bcmath.
+     *
+     * @return numeric-string
+     */
+    private function uang(mixed $nilai): string
+    {
+        $teks = (string) $nilai;
+
+        return is_numeric($teks) ? $teks : '0.00';
+    }
+
+    /**
+     * Buku tabungan per nasabah: kronologi setoran/penarikan pada periode
+     * dengan saldo berjalan (pola Rekonsiliasi D14, siap cetak).
+     *
+     * @return array{
+     *     mutasiRows: array<int, array{tanggal: string, tipe: string, produk: string, nominal: float, arah: int, saldo: float}>,
+     *     mutasiRingkas: array{saldoAwal: float, saldoAkhir: float, totalSetoran: float, totalPenarikan: float, jumlahMutasi: int},
+     *     mutasiNasabahList: array<int, array{id: int, nama: string}>
+     * }
+     */
+    private function mutasiData(bool $valid): array
+    {
+        $daftar = User::where('role', 'nasabah')
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn (User $nasabah): array => ['id' => (int) $nasabah->id, 'nama' => (string) $nasabah->name])
+            ->all();
+
+        $kosong = [
+            'mutasiRows' => [],
+            'mutasiRingkas' => [
+                'saldoAwal' => 0.0,
+                'saldoAkhir' => 0.0,
+                'totalSetoran' => 0.0,
+                'totalPenarikan' => 0.0,
+                'jumlahMutasi' => 0,
+            ],
+            'mutasiNasabahList' => $daftar,
+        ];
+
+        if (! $valid || $this->mutasiNasabahId <= 0) {
+            return $kosong;
+        }
+
+        $nasabahId = $this->mutasiNasabahId;
+        [$mulai, $selesai] = $this->periodeRange();
+
+        $setoran = TransaksiSetoran::with('produk')
+            ->where('nasabah_id', $nasabahId)
+            ->where('status', '!=', 'dibatalkan')
+            ->orderBy('tanggal_transaksi')
+            ->orderBy('id')
+            ->get();
+
+        $penarikan = TransaksiPenarikan::with('produk')
+            ->where('nasabah_id', $nasabahId)
+            ->whereIn('status', ['approved', 'selesai'])
+            ->orderBy('waktu_approval')
+            ->orderBy('id')
+            ->get();
+
+        $kronologi = $setoran->map(fn (TransaksiSetoran $s): array => [
+            'tanggal' => Carbon::parse($s->tanggal_transaksi)->format('Y-m-d'),
+            'waktu' => Carbon::parse($s->tanggal_transaksi)->format('Y-m-d 00:00:00'),
+            'tipe' => 'Setoran',
+            'produk' => $s->produk->nama ?? '-',
+            'nominal' => (float) $s->nominal,
+            'arah' => 1,
+        ])->concat($penarikan->map(fn (TransaksiPenarikan $p): array => [
+            'tanggal' => Carbon::parse($p->waktu_approval)->format('Y-m-d'),
+            'waktu' => Carbon::parse($p->waktu_approval)->format('Y-m-d H:i:s'),
+            'tipe' => 'Penarikan',
+            'produk' => $p->produk->nama ?? '-',
+            'nominal' => (float) $p->nominal_diminta,
+            'arah' => -1,
+        ]))->sortBy('waktu')->values();
+
+        $saldoSekarang = (float) SaldoProduk::where('nasabah_id', $nasabahId)->sum('saldo');
+
+        $mundur = $this->uang($saldoSekarang);
+        foreach ($kronologi as $baris) {
+            if ($baris['tanggal'] >= $mulai) {
+                $mundur = $baris['arah'] > 0
+                    ? bcsub($mundur, $this->uang($baris['nominal']), 2)
+                    : bcadd($mundur, $this->uang($baris['nominal']), 2);
+            }
+        }
+
+        $rows = [];
+        $saldo = $mundur;
+        $totalSetoran = '0.00';
+        $totalPenarikan = '0.00';
+
+        foreach ($kronologi as $baris) {
+            if ($baris['tanggal'] < $mulai || $baris['tanggal'] > $selesai) {
+                continue;
+            }
+
+            if ($baris['arah'] > 0) {
+                $saldo = bcadd($saldo, $this->uang($baris['nominal']), 2);
+                $totalSetoran = bcadd($totalSetoran, $this->uang($baris['nominal']), 2);
+            } else {
+                $saldo = bcsub($saldo, $this->uang($baris['nominal']), 2);
+                $totalPenarikan = bcadd($totalPenarikan, $this->uang($baris['nominal']), 2);
+            }
+
+            $rows[] = [
+                'tanggal' => $baris['tanggal'],
+                'tipe' => $baris['tipe'],
+                'produk' => $baris['produk'],
+                'nominal' => $baris['nominal'],
+                'arah' => $baris['arah'],
+                'saldo' => (float) $saldo,
+            ];
+        }
+
+        return [
+            'mutasiRows' => $rows,
+            'mutasiRingkas' => [
+                'saldoAwal' => (float) $mundur,
+                'saldoAkhir' => (float) $saldo,
+                'totalSetoran' => (float) $totalSetoran,
+                'totalPenarikan' => (float) $totalPenarikan,
+                'jumlahMutasi' => count($rows),
+            ],
+            'mutasiNasabahList' => $daftar,
+        ];
+    }
+
+    /**
+     * Penarikan pada periode (filter saat pengajuan/created_at): rekap per
+     * status dan detail lokasi, waktu proses, serta alasan batal.
+     *
+     * @return array{
+     *     penarikanRows: array<int, array{id: int, tanggal: string, nasabah: string, produk: string, diminta: float, komisi: float, diterima: float, status: string, lokasi: string, waktu_proses: ?string, alasan: string}>,
+     *     penarikanRekap: array<int, array{status: string, label: string, jumlah: int, total: float}>
+     * }
+     */
+    private function penarikanData(bool $valid): array
+    {
+        $label = static fn (string $status): array => [
+            'status' => $status,
+            'label' => ucfirst($status),
+            'jumlah' => 0,
+            'total' => 0.0,
+        ];
+
+        $rekap = array_map($label, ['pending', 'approved', 'selesai', 'ditolak', 'dibatalkan', 'kedaluwarsa']);
+
+        if (! $valid) {
+            return ['penarikanRows' => [], 'penarikanRekap' => $rekap];
+        }
+
+        $rows = TransaksiPenarikan::with(['nasabah', 'produk'])
+            ->whereBetween('created_at', $this->batasWaktu($this->periodeRange()))
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (TransaksiPenarikan $item): array => [
+                'id' => (int) $item->id,
+                'tanggal' => Carbon::parse($item->created_at)->format('d/m/Y'),
+                'nasabah' => $item->nasabah->name ?? '-',
+                'produk' => $item->produk->nama ?? '-',
+                'diminta' => (float) $item->nominal_diminta,
+                'komisi' => (float) $item->nominal_komisi,
+                'diterima' => (float) $item->nominal_diterima,
+                'status' => (string) $item->status,
+                'lokasi' => match ($item->lokasi_pengambilan) {
+                    'kantor' => 'Kantor',
+                    default => 'Rumah Kolektor',
+                },
+                'waktu_proses' => $item->waktu_approval !== null
+                    ? Carbon::parse($item->waktu_approval)->format('d/m/Y H:i')
+                    : null,
+                'alasan' => $item->alasan_batal ?? '-',
+            ])->all();
+
+        foreach ($rows as $baris) {
+            foreach ($rekap as $i => $ringkas) {
+                if ($ringkas['status'] === $baris['status']) {
+                    $rekap[$i]['jumlah']++;
+                    $rekap[$i]['total'] += $baris['diminta'];
+                    break;
+                }
+            }
+        }
+
+        return ['penarikanRows' => $rows, 'penarikanRekap' => $rekap];
+    }
+
+    /**
      * Label periode untuk baris "Periode" pada CSV.
      */
     private function labelPeriodeCsv(): string
@@ -863,6 +1068,76 @@ class Laporan extends Component
                 $baris['umur_terlama_hari'],
                 $safe($this->kelompokUmur($baris['umur_terlama_hari'])),
                 $safe($baris['lewat_batas'] ? 'Ya' : 'Tidak'),
+            ]);
+        }
+    }
+
+    /**
+     * @param  resource  $file
+     * @param  Closure(mixed): string  $safe
+     */
+    private function tulisCsvMutasi($file, Closure $safe): void
+    {
+        $data = $this->mutasiData(true);
+        $nasabah = User::find($this->mutasiNasabahId);
+
+        fputcsv($file, [$safe('Laporan Mutasi Nasabah - '.ucfirst($this->periode))]);
+        fputcsv($file, [$safe('Periode'), $safe($this->labelPeriodeCsv())]);
+        fputcsv($file, [$safe('Nasabah'), $safe($nasabah->name ?? '-')]);
+        fputcsv($file, ['Saldo Awal', $data['mutasiRingkas']['saldoAwal']]);
+        fputcsv($file, []);
+
+        fputcsv($file, ['Tanggal', 'Tipe', 'Produk', 'Nominal', 'Saldo Berjalan']);
+        foreach ($data['mutasiRows'] as $baris) {
+            fputcsv($file, [
+                $baris['tanggal'],
+                $safe($baris['tipe']),
+                $safe($baris['produk']),
+                $baris['nominal'],
+                $baris['saldo'],
+            ]);
+        }
+        fputcsv($file, []);
+
+        fputcsv($file, ['Saldo Akhir', $data['mutasiRingkas']['saldoAkhir']]);
+        fputcsv($file, ['Total Setoran', $data['mutasiRingkas']['totalSetoran']]);
+        fputcsv($file, ['Total Penarikan', $data['mutasiRingkas']['totalPenarikan']]);
+        fputcsv($file, ['Jumlah Mutasi', $data['mutasiRingkas']['jumlahMutasi']]);
+    }
+
+    /**
+     * @param  resource  $file
+     * @param  Closure(mixed): string  $safe
+     */
+    private function tulisCsvPenarikan($file, Closure $safe): void
+    {
+        $data = $this->penarikanData(true);
+
+        fputcsv($file, [$safe('Laporan Penarikan - '.ucfirst($this->periode))]);
+        fputcsv($file, [$safe('Periode'), $safe($this->labelPeriodeCsv())]);
+        fputcsv($file, []);
+
+        fputcsv($file, ['REKAP PER STATUS']);
+        fputcsv($file, ['Status', 'Jumlah', 'Total Diminta']);
+        foreach ($data['penarikanRekap'] as $ringkas) {
+            fputcsv($file, [$safe($ringkas['label']), $ringkas['jumlah'], $ringkas['total']]);
+        }
+        fputcsv($file, []);
+
+        fputcsv($file, ['DETAIL PENARIKAN']);
+        fputcsv($file, ['Tanggal Pengajuan', 'Nasabah', 'Produk', 'Diminta', 'Komisi', 'Diterima', 'Status', 'Lokasi', 'Waktu Proses', 'Alasan']);
+        foreach ($data['penarikanRows'] as $baris) {
+            fputcsv($file, [
+                $baris['tanggal'],
+                $safe($baris['nasabah']),
+                $safe($baris['produk']),
+                $baris['diminta'],
+                $baris['komisi'],
+                $baris['diterima'],
+                $safe($baris['status']),
+                $safe($baris['lokasi']),
+                $safe($baris['waktu_proses'] ?? '-'),
+                $safe($baris['alasan']),
             ]);
         }
     }
