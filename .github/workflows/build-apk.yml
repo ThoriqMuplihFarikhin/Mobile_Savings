@@ -1,0 +1,78 @@
+name: build-apk
+
+on:
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: "Flavor yang dibangun"
+        required: false
+        default: all
+        type: choice
+        options:
+          - all
+          - nasabah
+          - kolektor
+          - admin
+  push:
+    tags:
+      - "apk-*"
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      flavors: ${{ steps.pilih.outputs.flavors }}
+      version: ${{ steps.pilih.outputs.version }}
+    steps:
+      - name: Menentukan flavor dan versi
+        id: pilih
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.flavor }}" != "all" ]; then
+            echo 'flavors=["${{ inputs.flavor }}"]' >> "$GITHUB_OUTPUT"
+          else
+            echo 'flavors=["nasabah","kolektor","admin"]' >> "$GITHUB_OUTPUT"
+          fi
+          VERSI="$(echo "${{ github.ref_name }}" | sed -n 's/^apk-//p')"
+          echo "version=${VERSI:-dev}" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor: ${{ fromJson(needs.plan.outputs.flavors) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Siapkan Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Siapkan Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Bangun APK flavor ${{ matrix.flavor }}
+        env:
+          APP_DOMAIN: ${{ vars.APP_DOMAIN }}
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: ${{ needs.plan.outputs.version }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: bash mobile/scripts/build-flavor.sh "${{ matrix.flavor }}"
+
+      - name: Unggah APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: tabungan-${{ matrix.flavor }}-${{ needs.plan.outputs.version }}
+          path: mobile/build/${{ matrix.flavor }}/*.apk
+          if-no-files-found: error

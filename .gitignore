@@ -22,3 +22,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+*.jks
+*.keystore
+mobile/build/
+mobile/node_modules/
