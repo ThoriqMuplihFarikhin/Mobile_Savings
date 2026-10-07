@@ -135,20 +135,54 @@ class KepesertaanPaket extends Model
     }
 
     /**
+     * Total hari kepesertaan ini: dari `tanggal_mulai_ikut` s/d
+     * `periode_selesai` paket (gabung terlambat punya komitmen lebih
+     * pendek daripada periode penuh). Null bila paket tanpa periode selesai.
+     */
+    public function totalHariKepesertaan(): ?int
+    {
+        $produk = $this->produk;
+        if (! $produk || ! $produk->periode_selesai) {
+            return null;
+        }
+
+        $mulai = Carbon::parse($this->tanggal_mulai_ikut)->startOfDay();
+        $selesai = Carbon::parse($produk->periode_selesai)->startOfDay();
+
+        return max(0, (int) $mulai->diffInDays($selesai) + 1);
+    }
+
+    /**
+     * Target akhir kepesertaan = harga_per_hari x totalHariKepesertaan.
+     */
+    public function targetKepesertaan(): ?float
+    {
+        $produk = $this->produk;
+        $totalHari = $this->totalHariKepesertaan();
+
+        if (! $produk || ! $produk->harga_per_hari || $totalHari === null || $totalHari <= 0) {
+            return null;
+        }
+
+        return round($totalHari * (float) $produk->harga_per_hari, 2);
+    }
+
+    /**
      * Hari ke berapa kepesertaan ini berjalan hari ini, dalam bilangan bulat.
      *
      * - hari pertama ikut paket dihitung hari ke-1,
      * - tanggal mulai ikut di masa depan dihitung 0,
-     * - tidak pernah melebihi total hari periode paket.
+     * - tidak pernah melebihi totalHariKepesertaan (gabung terlambat
+     *   dibatasi sampai periode selesai, bukan seluruh periode paket).
      */
     protected function hitungHariBerjalan(ProdukTabungan $produk): int
     {
         $mulai = Carbon::parse($this->tanggal_mulai_ikut)->startOfDay();
         $hariBerjalan = max(0, (int) $mulai->diffInDays(now()->startOfDay()) + 1);
 
-        $totalHariPaket = $produk->totalHariPaket();
-        if ($totalHariPaket !== null) {
-            $hariBerjalan = min($hariBerjalan, $totalHariPaket);
+        $totalHari = $this->totalHariKepesertaan() ?? $produk->totalHariPaket();
+        if ($totalHari !== null) {
+            $hariBerjalan = min($hariBerjalan, $totalHari);
         }
 
         return $hariBerjalan;
