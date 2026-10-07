@@ -140,6 +140,31 @@ it('akun terkunci diarahkan ke portal login sesuai perannya', function () {
         ->assertRedirect(route('login.kolektor'));
 });
 
+it('kunci sementara 15 menit tetap terpicu melalui portal kolektor', function () {
+    $this->withoutMiddleware(PreventRequestForgery::class);
+
+    $kolektor = User::factory()->kolektor()->create([
+        'no_hp' => '089900000001',
+        'pin_hash' => bcrypt('123456'),
+    ]);
+
+    for ($i = 0; $i < 5; $i++) {
+        kirimLoginPortal($this, $kolektor->no_hp, '999999', 'kolektor')
+            ->assertSessionHasErrorsIn('no_hp');
+
+        $this->assertGuest();
+    }
+
+    expect($kolektor->fresh()->login_terkunci_hingga)->not->toBeNull();
+
+    $this->travel(2)->minutes();
+
+    kirimLoginPortal($this, $kolektor->no_hp, '123456', 'kolektor')
+        ->assertSessionHasErrorsIn('no_hp');
+
+    $this->assertGuest();
+});
+
 it('akun offline ditolak di semua portal', function () {
     $this->withoutMiddleware(PreventRequestForgery::class);
 
