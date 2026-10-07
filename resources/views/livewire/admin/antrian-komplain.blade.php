@@ -11,10 +11,10 @@
         </div>
     @endif
 
-    <div class="mb-4 flex gap-2">
+    <div class="mb-4 flex flex-wrap gap-2">
         @foreach(['baru' => 'Baru', 'diproses' => 'Diproses', 'selesai' => 'Selesai'] as $value => $label)
             <button wire:click="$set('statusFilter', '{{ $value }}')"
-                class="rounded-full px-4 py-2 text-sm font-medium transition {{ $statusFilter === $value ? 'bg-indigo-800 text-white' : 'bg-gray-50 text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb] hover:bg-white' }}">
+                class="min-h-11 rounded-full px-4 py-2 text-sm font-medium transition {{ $statusFilter === $value ? 'bg-indigo-800 text-white' : 'bg-gray-50 text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb] hover:bg-white' }}">
                 {{ $label }}
             </button>
         @endforeach
@@ -22,7 +22,7 @@
 
     <div class="overflow-hidden rounded-xl bg-white shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
         <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="hidden md:table w-full text-left">
                 <thead>
                     <tr class="border-b border-[#ebebeb] bg-gray-50">
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Tanggal</th>
@@ -67,11 +67,11 @@
                             <td class="px-4 py-3">
                                 @if($item->status === 'baru')
                                     <div class="flex items-center gap-2">
-                                        <button wire:click="proses({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Proses</button>
-                                        <button wire:click="showDetail({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Detail</button>
+                                        <button wire:click="proses({{ $item->id }})" class="min-h-11 inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Proses</button>
+                                        <button wire:click="showDetail({{ $item->id }})" class="min-h-11 inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Detail</button>
                                     </div>
                                 @elseif($item->status === 'diproses')
-                                    <button wire:click="showDetail({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Selesaikan</button>
+                                    <button wire:click="showDetail({{ $item->id }})" class="min-h-11 inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Selesaikan</button>
                                 @else
                                     <span class="text-xs text-gray-500">-</span>
                                 @endif
@@ -89,6 +89,67 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div data-test="kartu-tabel" class="divide-y divide-[#ebebeb] md:hidden">
+            @forelse($komplains as $item)
+                <div class="px-4 py-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-gray-900">{{ $item->nasabah->name ?? '-' }}</p>
+                            <p class="text-xs text-gray-500">{{ $item->nasabah->no_hp ?? '— (offline)' }}</p>
+                        </div>
+                        @if($item->status === 'baru')
+                            <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-indigo-600">Baru</span>
+                        @elseif($item->status === 'diproses')
+                            <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 font-mono text-xs text-[#ab570a]">Diproses</span>
+                        @else
+                            <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-[#0070f3]">Selesai</span>
+                        @endif
+                    </div>
+                    <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Tanggal</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $item->tanggal_dibuat->translatedFormat('d M Y') }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Kategori</span>
+                            <span class="font-mono text-sm text-gray-600">
+                                @php
+                                    $color = match($item->kategori) {
+                                        'saldo' => 'bg-indigo-100 text-indigo-600',
+                                        'barang_paket' => 'bg-purple-100 text-[#4c2889]',
+                                        'penarikan' => 'bg-amber-100 text-[#ab570a]',
+                                        default => 'bg-gray-50 text-gray-600'
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 font-mono text-xs {{ $color }}">
+                                    {{ ucfirst(str_replace('_', ' ', $item->kategori)) }}
+                                </span>
+                            </span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Deskripsi</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $item->deskripsi }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        @if($item->status === 'baru')
+                            <div class="flex items-center gap-2">
+                                <button wire:click="proses({{ $item->id }})" class="min-h-11 inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Proses</button>
+                                <button wire:click="showDetail({{ $item->id }})" class="min-h-11 inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Detail</button>
+                            </div>
+                        @elseif($item->status === 'diproses')
+                            <button wire:click="showDetail({{ $item->id }})" class="min-h-11 inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Selesaikan</button>
+                        @else
+                            <span class="text-xs text-gray-500">-</span>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="px-4 py-10 text-center">
+                    <p class="text-sm text-gray-500">Tidak ada komplain.</p>
+                </div>
+            @endforelse
         </div>
         <div class="border-t border-[#ebebeb] px-4 py-3">{{ $komplains->links() }}</div>
     </div>
@@ -146,11 +207,11 @@
                     </div>
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" wire:click="$set('tampilDetail', false)"
-                            class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
+                            class="min-h-11 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
                             Batal
                         </button>
                         <button type="submit"
-                            class="rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
+                            class="min-h-11 rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
                             Selesaikan Komplain
                         </button>
                     </div>

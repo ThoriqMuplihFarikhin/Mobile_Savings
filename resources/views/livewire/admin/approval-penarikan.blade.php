@@ -17,10 +17,10 @@
         </div>
     @endif
 
-    <div class="mb-4 flex gap-2">
+    <div class="mb-4 flex flex-wrap gap-2">
         @foreach(['pending' => 'Pending', 'approved' => 'Disetujui', 'selesai' => 'Selesai', 'ditolak' => 'Ditolak', 'dibatalkan' => 'Dibatalkan', 'kedaluwarsa' => 'Kedaluwarsa'] as $value => $label)
             <button wire:click="$set('statusFilter', '{{ $value }}')"
-                class="rounded-full px-4 py-2 text-sm font-medium transition {{ $statusFilter === $value ? 'bg-indigo-800 text-white' : 'bg-gray-50 text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb] hover:bg-white' }}">
+                class="min-h-11 rounded-full px-4 py-2 text-sm font-medium transition {{ $statusFilter === $value ? 'bg-indigo-800 text-white' : 'bg-gray-50 text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb] hover:bg-white' }}">
                 {{ $label }}
             </button>
         @endforeach
@@ -28,7 +28,7 @@
 
     <div class="overflow-hidden rounded-xl bg-white shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
         <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="hidden md:table w-full text-left">
                 <thead>
                     <tr class="border-b border-[#ebebeb] bg-gray-50">
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Nasabah</th>
@@ -70,11 +70,11 @@
                                 @if($item->status === 'pending')
                                     <div class="flex items-center gap-2">
                                         @if($item->disetujui_oleh === null || (int) $item->disetujui_oleh !== (int) auth()->id())
-                                            <button wire:click="approve({{ $item->id }})" wire:confirm="Yakin menyetujui penarikan ini? Saldo nasabah akan dikurangi dan penarikan diproses." class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Setuju</button>
+                                            <button wire:click="approve({{ $item->id }})" wire:confirm="Yakin menyetujui penarikan ini? Saldo nasabah akan dikurangi dan penarikan diproses." class="min-h-11 inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Setuju</button>
                                         @else
                                             <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 font-mono text-xs text-[#ab570a]">Menunggu persetujuan admin kedua</span>
                                         @endif
-                                        <button wire:click="reject({{ $item->id }})" wire:confirm="Yakin menolak pengajuan penarikan ini?" class="inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Tolak</button>
+                                        <button wire:click="reject({{ $item->id }})" wire:confirm="Yakin menolak pengajuan penarikan ini?" class="min-h-11 inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Tolak</button>
                                     </div>
                                     @if($item->disetujui_oleh !== null && (int) $item->disetujui_oleh !== (int) auth()->id())
                                         <div class="mt-1 text-[11px] text-gray-500">Disetujui pertama oleh {{ $item->disetujuiOleh->name ?? '-' }}</div>
@@ -85,7 +85,7 @@
                                     @elseif($item->jalur_pengajuan === 'offline' && $item->lokasi_pengambilan === 'rumah_kolektor')
                                         <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 font-mono text-xs text-[#ab570a]">Menunggu verifikasi kolektor</span>
                                     @else
-                                        <button wire:click="toggleSelesai({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Tandai Selesai</button>
+                                        <button wire:click="toggleSelesai({{ $item->id }})" class="min-h-11 inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Tandai Selesai</button>
                                     @endif
                                 @elseif($item->status === 'selesai' && $item->metode_verifikasi === 'pin_nasabah')
                                     <span class="text-xs text-emerald-600 font-medium">Diverifikasi PIN nasabah</span>
@@ -107,6 +107,80 @@
                 </tbody>
             </table>
         </div>
+        <div data-test="kartu-tabel" class="divide-y divide-[#ebebeb] md:hidden">
+            @forelse($penarikan as $item)
+                <div class="px-4 py-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-gray-900">{{ $item->nasabah->name ?? '-' }}</p>
+                            <p class="text-xs text-gray-500">{{ $item->nasabah->no_hp ?? '— (offline)' }}</p>
+                        </div>
+                        @if($item->status === 'pending')
+                            <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 font-mono text-xs text-[#ab570a]">Pending</span>
+                        @elseif($item->status === 'approved')
+                            <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-indigo-600">Disetujui</span>
+                        @elseif($item->status === 'selesai')
+                            <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-[#0070f3]">Selesai</span>
+                        @elseif($item->status === 'dibatalkan')
+                            <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 font-mono text-xs text-gray-600">Dibatalkan</span>
+                        @elseif($item->status === 'kedaluwarsa')
+                            <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 font-mono text-xs text-rose-600">Kedaluwarsa</span>
+                        @else
+                            <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 font-mono text-xs text-[#c50000]">Ditolak</span>
+                        @endif
+                    </div>
+                    <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Produk</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $item->produk->nama ?? '-' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Diminta</span>
+                            <span class="font-mono text-sm font-semibold text-gray-900">Rp {{ number_format($item->nominal_diminta, 0, ',', '.') }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Diterima</span>
+                            <span class="font-mono text-sm font-semibold text-gray-900">Rp {{ number_format($item->nominal_diterima, 0, ',', '.') }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Lokasi</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $item->lokasi_pengambilan === 'kantor' ? 'Kantor' : 'Rumah Kolektor' }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        @if($item->status === 'pending')
+                            <div class="flex items-center gap-2">
+                                @if($item->disetujui_oleh === null || (int) $item->disetujui_oleh !== (int) auth()->id())
+                                    <button wire:click="approve({{ $item->id }})" wire:confirm="Yakin menyetujui penarikan ini? Saldo nasabah akan dikurangi dan penarikan diproses." class="min-h-11 inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Setuju</button>
+                                @else
+                                    <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 font-mono text-xs text-[#ab570a]">Menunggu persetujuan admin kedua</span>
+                                @endif
+                                <button wire:click="reject({{ $item->id }})" wire:confirm="Yakin menolak pengajuan penarikan ini?" class="min-h-11 inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Tolak</button>
+                            </div>
+                            @if($item->disetujui_oleh !== null && (int) $item->disetujui_oleh !== (int) auth()->id())
+                                <div class="text-[11px] text-gray-500">Disetujui pertama oleh {{ $item->disetujuiOleh->name ?? '-' }}</div>
+                            @endif
+                        @elseif($item->status === 'approved')
+                            @if($item->disetujui_oleh_2 !== null && in_array((int) auth()->id(), array_map('intval', [$item->disetujui_oleh, $item->disetujui_oleh_2]), true))
+                                <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 font-mono text-xs text-[#ab570a]">Menunggu admin lain menyelesaikan</span>
+                            @elseif($item->jalur_pengajuan === 'offline' && $item->lokasi_pengambilan === 'rumah_kolektor')
+                                <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 font-mono text-xs text-[#ab570a]">Menunggu verifikasi kolektor</span>
+                            @else
+                                <button wire:click="toggleSelesai({{ $item->id }})" class="min-h-11 inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Tandai Selesai</button>
+                            @endif
+                        @elseif($item->status === 'selesai' && $item->metode_verifikasi === 'pin_nasabah')
+                            <span class="text-xs text-emerald-600 font-medium">Diverifikasi PIN nasabah</span>
+                        @else
+                            <span class="text-xs text-gray-500">-</span>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="px-4 py-10 text-center">
+                    <p class="text-sm text-gray-500">Tidak ada data penarikan.</p>
+                </div>
+            @endforelse
+        </div>
         <div class="border-t border-[#ebebeb] px-4 py-3">{{ $penarikan->links() }}</div>
     </div>
 
@@ -125,11 +199,11 @@
                     </div>
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" wire:click="$set('showSelesai', false)"
-                            class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
+                            class="min-h-11 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
                             Batal
                         </button>
                         <button type="submit" wire:loading.attr="disabled" wire:target="selesai"
-                            class="rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50">
+                            class="min-h-11 rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50">
                             Tandai Selesai
                         </button>
                     </div>

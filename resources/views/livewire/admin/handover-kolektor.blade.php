@@ -113,7 +113,7 @@
                                 Kolektor lama akan dinonaktifkan. Lanjutkan?
                             </p>
                             <button wire:click="processHandover" wire:loading.attr="disabled" wire:confirm="Yakin ingin melakukan handover? Tindakan ini tidak dapat dibatalkan."
-                                class="mt-3 rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
+                                class="mt-3 min-h-11 rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
                                 Proses Handover
                             </button>
                         </div>
@@ -123,12 +123,19 @@
         </div>
     </div>
 
+    <div class="mb-4 flex flex-wrap gap-2">
+        <button type="button" wire:click="$refresh"
+            class="min-h-11 inline-flex items-center gap-1.5 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
+            Muat Ulang
+        </button>
+    </div>
+
     <div class="overflow-hidden rounded-xl bg-white shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
         <div class="border-b border-[#ebebeb] px-6 py-4">
             <h3 class="text-sm font-semibold text-gray-900">Riwayat Handover</h3>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="hidden md:table w-full text-left">
                 <thead>
                     <tr class="border-b border-[#ebebeb] bg-gray-50">
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Tanggal</th>
@@ -167,6 +174,41 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div data-test="kartu-tabel" class="divide-y divide-[#ebebeb] md:hidden">
+            @forelse($riwayat as $item)
+                <div class="px-4 py-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-gray-900">{{ $item->kolektorLama->name ?? '-' }}</p>
+                            <p class="text-xs text-gray-500">{{ $item->kolektorBaru->name ?? '-' }}</p>
+                        </div>
+                        @if($item->status_kas_saat_handover === 'lunas')
+                            <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-indigo-600">Lunas</span>
+                        @else
+                            <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 font-mono text-xs text-[#c50000]">Tunggakan</span>
+                        @endif
+                    </div>
+                    <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Tanggal</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $item->tanggal_handover->translatedFormat('d M Y') }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Nasabah Dipindah</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $item->jumlah_nasabah_dipindah }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Diproses Oleh</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $item->diprosesOleh->name ?? '-' }}</span>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="px-4 py-10 text-center">
+                    <p class="text-sm text-gray-500">Belum ada riwayat handover.</p>
+                </div>
+            @endforelse
         </div>
         <div class="border-t border-[#ebebeb] px-4 py-3">{{ $riwayat->links() }}</div>
     </div>
