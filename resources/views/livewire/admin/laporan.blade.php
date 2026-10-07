@@ -21,7 +21,7 @@
     @endif
 
     <div class="mb-4 flex flex-wrap gap-2">
-        @foreach(['keuangan' => 'Keuangan', 'kolektor' => 'Per Kolektor', 'paket' => 'Per Paket', 'barang' => 'Kebutuhan Barang'] as $nilaiSeksi => $labelSeksi)
+        @foreach(['keuangan' => 'Keuangan', 'kolektor' => 'Per Kolektor', 'rekon' => 'Rekonsiliasi', 'umurkas' => 'Umur Kas', 'paket' => 'Per Paket', 'barang' => 'Kebutuhan Barang'] as $nilaiSeksi => $labelSeksi)
             <button wire:click="pilihSeksi('{{ $nilaiSeksi }}')"
                 class="rounded-full px-4 py-2 text-sm font-medium transition {{ $seksi === $nilaiSeksi ? 'bg-indigo-800 text-white' : 'bg-gray-50 text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb] hover:bg-white' }}">
                 {{ $labelSeksi }}
@@ -30,7 +30,7 @@
     </div>
 
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        @if (in_array($seksi, ['keuangan', 'kolektor'], true))
+        @if (in_array($seksi, ['keuangan', 'kolektor', 'rekon'], true))
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div class="flex gap-2">
                     @foreach(['harian' => 'Harian', 'bulanan' => 'Bulanan', 'rentang' => 'Rentang'] as $value => $label)
@@ -80,9 +80,11 @@
                 'kolektor' => 'Per Kolektor',
                 'paket' => 'Per Paket',
                 'barang' => 'Kebutuhan Barang',
+                'rekon' => 'Rekonsiliasi Kas',
+                'umurkas' => 'Umur Kas',
                 default => 'Keuangan',
             };
-            $judulPeriode = in_array($seksi, ['keuangan', 'kolektor'], true)
+            $judulPeriode = in_array($seksi, ['keuangan', 'kolektor', 'rekon'], true)
                 ? match ($periode) {
                     'bulanan' => $bulan,
                     'rentang' => $dariTanggal.' s/d '.$sampaiTanggal,
@@ -192,6 +194,153 @@
                             @empty
                                 <tr><td colspan="7" class="px-3 py-4 text-sm text-gray-500">Belum ada data kolektor.</td></tr>
                             @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @elseif($seksi === 'rekon')
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Seharusnya = total seharusnya disetor kolektor. Diterima = total yang benar-benar diterima kantor. Selisih = Diterima &minus; Seharusnya (lebih = positif, kurang = negatif). Penerima = admin yang menerima/merekonsiliasi pengajuan. Seluruh status pengajuan (pending, cocok, lebih, kurang, dibatalkan) pada periode disertakan agar riwayat tetap terlacak.</p>
+                </div>
+            </div>
+            <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+                <h3 class="mb-4 text-sm font-semibold text-gray-900">Rekap Pengajuan Setor per Kolektor</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-[#ebebeb]">
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Kolektor</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Pengajuan</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Seharusnya</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Diterima</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Selisih</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ebebeb]">
+                            @forelse($rekonRows as $baris)
+                                <tr class="transition hover:bg-gray-50">
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $baris['nama'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['jumlah'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['seharusnya'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['diterima'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm {{ $baris['selisih'] != 0 ? 'text-[#ee0000]' : 'text-gray-900' }}">Rp {{ number_format($baris['selisih'], 0, ',', '.') }}</td>
+                                </tr>
+                                @empty
+                                <tr><td colspan="5" class="px-3 py-4 text-sm text-gray-500">Belum ada pengajuan setor pada periode ini.</td></tr>
+                            @endforelse
+                            @if(count($rekonRows) > 0)
+                                <tr class="bg-gray-50 font-semibold">
+                                    <td class="px-3 py-2 text-sm text-gray-900">TOTAL</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $rekonTotal['jumlah'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($rekonTotal['seharusnya'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($rekonTotal['diterima'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm {{ $rekonTotal['selisih'] != 0 ? 'text-[#ee0000]' : 'text-gray-900' }}">Rp {{ number_format($rekonTotal['selisih'], 0, ',', '.') }}</td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-6 rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+                <h3 class="mb-4 text-sm font-semibold text-gray-900">Detail Pengajuan</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-[#ebebeb]">
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Tanggal</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Kolektor</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Seharusnya</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Diterima</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Selisih</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Keterangan</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Penerima</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ebebeb]">
+                            @forelse($rekonDetail as $item)
+                                <tr class="transition hover:bg-gray-50">
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ \Carbon\Carbon::parse($item->tanggal_setor)->format('d/m/Y') }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $item->kolektor->name ?? '-' }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format((float) $item->total_seharusnya, 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format((float) $item->total_diterima, 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm {{ (float) $item->selisih != 0 ? 'text-[#ee0000]' : 'text-gray-900' }}">Rp {{ number_format((float) $item->selisih, 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $item->keterangan_selisih ?? '-' }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $item->diterimaOleh->name ?? '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="px-3 py-4 text-sm text-gray-500">Belum ada pengajuan setor pada periode ini.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @elseif($seksi === 'umurkas')
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Kas di Tangan = setoran belum disetor kantor &minus; penarikan tunai belum direkonsiliasi (rumus D13, posisi terkini). Umur = hari sejak setoran belum disetor terkoleksi; kelompok 0-1, 2-3, dan lebih dari 3 hari. Lewat Batas = kas melebihi batas kas dan/atau umur melebihi batas hari sesuai pengaturan admin. Laporan ini adalah posisi terkini, bukan periode.</p>
+                </div>
+            </div>
+            <div class="mb-6 grid gap-4 sm:grid-cols-3">
+                @foreach($umurKelompok as $kelompok => $ringkas)
+                    <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                        <p class="font-mono text-xs uppercase tracking-wider text-gray-500">{{ $kelompok }}</p>
+                        <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">Rp {{ number_format($ringkas['kas'], 0, ',', '.') }}</p>
+                        <p class="text-xs text-gray-500">{{ $ringkas['jumlah'] }} kolektor</p>
+                    </div>
+                @endforeach
+            </div>
+            <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+                <h3 class="mb-4 text-sm font-semibold text-gray-900">Umur Kas Per Kolektor</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-[#ebebeb]">
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Kolektor</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Kas di Tangan</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Umur Terlama</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Kelompok</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Lewat Batas</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ebebeb]">
+                            @forelse($umurKasRows as $baris)
+                                @php
+                                    $kunciUmur = match (true) {
+                                        $baris['umur_terlama_hari'] <= 1 => '0-1 hari',
+                                        $baris['umur_terlama_hari'] <= 3 => '2-3 hari',
+                                        default => '>3 hari',
+                                    };
+                                @endphp
+                                <tr class="transition hover:bg-gray-50">
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $baris['nama'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['kas_di_tangan'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['umur_terlama_hari'] }} hari</td>
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $kunciUmur }}</td>
+                                    <td class="px-3 py-2 text-sm">
+                                        @if($baris['lewat_batas'])
+                                            <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2 py-0.5 font-mono text-xs text-[#c50000]">Ya</span>
+                                        @else
+                                            <span class="text-gray-500">Tidak</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" class="px-3 py-4 text-sm text-gray-500">Belum ada data kolektor.</td></tr>
+                            @endforelse
+                            @if(count($umurKasRows) > 0)
+                                <tr class="bg-gray-50 font-semibold">
+                                    <td class="px-3 py-2 text-sm text-gray-900">TOTAL</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($umurTotal['kas'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">&mdash;</td>
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $umurTotal['jumlah'] }} kolektor</td>
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $umurTotal['lewat_batas'] }} lewat</td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>

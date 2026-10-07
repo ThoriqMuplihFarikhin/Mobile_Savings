@@ -59,7 +59,7 @@ class Laporan extends Component
 
     public function pilihSeksi(string $seksi): void
     {
-        if (! in_array($seksi, ['keuangan', 'kolektor', 'paket', 'barang'], true)) {
+        if (! in_array($seksi, ['keuangan', 'kolektor', 'paket', 'barang', 'rekon', 'umurkas'], true)) {
             return;
         }
 
@@ -74,6 +74,8 @@ class Laporan extends Component
             'kolektor' => ['kolektorRows' => $valid ? $this->kolektorRows() : collect()],
             'paket' => ['paketRows' => $this->paketRows()],
             'barang' => ['barangRows' => $this->barangRows()],
+            'rekon' => $this->rekonData($valid),
+            'umurkas' => $this->umurKasData(),
             default => $valid
                 ? match ($this->periode) {
                     'bulanan' => $this->getBulanan(),
@@ -91,7 +93,7 @@ class Laporan extends Component
 
     public function exportCsv(): StreamedResponse
     {
-        if (in_array($this->seksi, ['keuangan', 'kolektor'], true)) {
+        if (in_array($this->seksi, ['keuangan', 'kolektor', 'rekon'], true)) {
             $this->validate($this->filterRules());
         }
 
@@ -115,6 +117,8 @@ class Laporan extends Component
                 : $this->tanggal);
         $filename = match ($this->seksi) {
             'kolektor' => 'laporan-kolektor-'.$this->periode.'-'.$periodeValue.'.csv',
+            'rekon' => 'laporan-rekon-'.$this->periode.'-'.$periodeValue.'.csv',
+            'umurkas' => 'laporan-umur-kas-'.now()->toDateString().'.csv',
             'paket' => 'laporan-paket-'.now()->toDateString().'.csv',
             'barang' => 'laporan-kebutuhan-barang-'.now()->toDateString().'.csv',
             default => 'laporan-'.$this->periode.'-'.$periodeValue.'.csv',
@@ -138,6 +142,8 @@ class Laporan extends Component
 
             match ($this->seksi) {
                 'kolektor' => $this->tulisCsvKolektor($file, $safe),
+                'rekon' => $this->tulisCsvRekon($file, $safe),
+                'umurkas' => $this->tulisCsvUmurKas($file, $safe),
                 'paket' => $this->tulisCsvPaket($file, $safe),
                 'barang' => $this->tulisCsvBarang($file, $safe),
                 default => $this->tulisCsvKeuangan($file, $safe),
@@ -541,6 +547,155 @@ class Laporan extends Component
     }
 
     /**
+     * Data seksi rekonsiliasi kas: rekap per kolektor, detail pengajuan, dan total.
+     *
+     * @return array{
+     *     rekonRows: array<int, array{kolektor_id: int, nama: string, jumlah: int, seharusnya: float, diterima: float, selisih: float}>,
+     *     rekonDetail: array<int, SetoranKolektorKantor>,
+     *     rekonTotal: array{jumlah: int, seharusnya: float, diterima: float, selisih: float}
+     * }
+     */
+    private function rekonData(bool $valid): array
+    {
+        $rows = $valid ? $this->rekonRows() : [];
+        $detail = $valid ? $this->rekonDetail() : [];
+
+        return [
+            'rekonRows' => $rows,
+            'rekonDetail' => $detail,
+            'rekonTotal' => $this->rekonTotal($rows),
+        ];
+    }
+
+    /**
+     * Rekap pengajuan setor ke kantor per kolektor pada periode.
+     *
+     * @return array<int, array{kolektor_id: int, nama: string, jumlah: int, seharusnya: float, diterima: float, selisih: float}>
+     */
+    private function rekonRows(): array
+    {
+        [$mulai, $selesai] = $this->periodeRange();
+
+        $agregat = SetoranKolektorKantor::query()
+            ->whereBetween('tanggal_setor', [$mulai, $selesai])
+            ->groupBy('kolektor_id')
+            ->selectRaw('kolektor_id, COUNT(*) as jumlah, COALESCE(SUM(total_seharusnya), 0) as seharusnya, COALESCE(SUM(total_diterima), 0) as diterima, COALESCE(SUM(selisih), 0) as selisih')
+            ->get();
+
+        $nama = User::where('role', 'kolektor')->pluck('name', 'id')->all();
+
+        $rows = [];
+        foreach ($agregat as $baris) {
+            $id = (int) $baris->getAttribute('kolektor_id');
+            $rows[] = [
+                'kolektor_id' => $id,
+                'nama' => (string) ($nama[$id] ?? 'Kolektor #'.$id),
+                'jumlah' => (int) $baris->getAttribute('jumlah'),
+                'seharusnya' => (float) $baris->getAttribute('seharusnya'),
+                'diterima' => (float) $baris->getAttribute('diterima'),
+                'selisih' => (float) $baris->getAttribute('selisih'),
+            ];
+        }
+
+        usort($rows, fn (array $a, array $b): int => strcmp($a['nama'], $b['nama']));
+
+        return $rows;
+    }
+
+    /**
+     * Detail pengajuan setor ke kantor pada periode, terbaru dulu.
+     *
+     * @return array<int, SetoranKolektorKantor>
+     */
+    private function rekonDetail(): array
+    {
+        [$mulai, $selesai] = $this->periodeRange();
+
+        return SetoranKolektorKantor::query()
+            ->with(['kolektor', 'diterimaOleh'])
+            ->whereBetween('tanggal_setor', [$mulai, $selesai])
+            ->orderByDesc('tanggal_setor')
+            ->orderByDesc('id')
+            ->get()
+            ->all();
+    }
+
+    /**
+     * @param  array<int, array{jumlah: int, seharusnya: float, diterima: float, selisih: float}>  $rows
+     * @return array{jumlah: int, seharusnya: float, diterima: float, selisih: float}
+     */
+    private function rekonTotal(array $rows): array
+    {
+        $total = ['jumlah' => 0, 'seharusnya' => 0.0, 'diterima' => 0.0, 'selisih' => 0.0];
+
+        foreach ($rows as $baris) {
+            $total['jumlah'] += $baris['jumlah'];
+            $total['seharusnya'] += $baris['seharusnya'];
+            $total['diterima'] += $baris['diterima'];
+            $total['selisih'] += $baris['selisih'];
+        }
+
+        return $total;
+    }
+
+    /**
+     * Data seksi umur kas: posisi terkini per kolektor dikelompokkan 0-1,
+     * 2-3, dan lebih dari 3 hari (selaras KasKolektor::kumpulkanKas()).
+     *
+     * @return array{
+     *     umurKasRows: array<int, array{kolektor_id: int, nama: string, kas_di_tangan: float, umur_terlama_hari: int, lewat_batas: bool}>,
+     *     umurKelompok: array<string, array{jumlah: int, kas: float}>,
+     *     umurTotal: array{kas: float, jumlah: int, lewat_batas: int}
+     * }
+     */
+    private function umurKasData(): array
+    {
+        $rows = KasKolektor::kumpulkanKas();
+
+        return [
+            'umurKasRows' => $rows,
+            'umurKelompok' => $this->umurKelompok($rows),
+            'umurTotal' => [
+                'kas' => array_sum(array_column($rows, 'kas_di_tangan')),
+                'jumlah' => count($rows),
+                'lewat_batas' => count(array_filter($rows, fn (array $baris): bool => $baris['lewat_batas'])),
+            ],
+        ];
+    }
+
+    /**
+     * @param  array<int, array{umur_terlama_hari: int, kas_di_tangan: float}>  $rows
+     * @return array<string, array{jumlah: int, kas: float}>
+     */
+    private function umurKelompok(array $rows): array
+    {
+        $akumulasi = [];
+
+        foreach ($rows as $baris) {
+            $kunci = $this->kelompokUmur((int) $baris['umur_terlama_hari']);
+            $akumulasi[$kunci] = [
+                'jumlah' => ($akumulasi[$kunci]['jumlah'] ?? 0) + 1,
+                'kas' => ($akumulasi[$kunci]['kas'] ?? 0.0) + $baris['kas_di_tangan'],
+            ];
+        }
+
+        return [
+            '0-1 hari' => $akumulasi['0-1 hari'] ?? ['jumlah' => 0, 'kas' => 0.0],
+            '2-3 hari' => $akumulasi['2-3 hari'] ?? ['jumlah' => 0, 'kas' => 0.0],
+            '>3 hari' => $akumulasi['>3 hari'] ?? ['jumlah' => 0, 'kas' => 0.0],
+        ];
+    }
+
+    private function kelompokUmur(int $umur): string
+    {
+        return match (true) {
+            $umur <= 1 => '0-1 hari',
+            $umur <= 3 => '2-3 hari',
+            default => '>3 hari',
+        };
+    }
+
+    /**
      * Label periode untuk baris "Periode" pada CSV.
      */
     private function labelPeriodeCsv(): string
@@ -628,6 +783,86 @@ class Laporan extends Component
                 $baris['penarikan_dibayar'],
                 $baris['kas_di_tangan'],
                 $baris['setor_kantor'],
+            ]);
+        }
+    }
+
+    /**
+     * @param  resource  $file
+     * @param  Closure(mixed): string  $safe
+     */
+    private function tulisCsvRekon($file, Closure $safe): void
+    {
+        fputcsv($file, [$safe('Laporan Rekonsiliasi Kas - '.ucfirst($this->periode))]);
+        fputcsv($file, [$safe('Periode'), $safe($this->labelPeriodeCsv())]);
+        fputcsv($file, []);
+
+        $rows = $this->rekonData(true);
+
+        fputcsv($file, ['REKON PER KOLEKTOR']);
+        fputcsv($file, ['Kolektor', 'Pengajuan', 'Seharusnya', 'Diterima', 'Selisih']);
+        foreach ($rows['rekonRows'] as $baris) {
+            fputcsv($file, [
+                $safe($baris['nama']),
+                $baris['jumlah'],
+                $baris['seharusnya'],
+                $baris['diterima'],
+                $baris['selisih'],
+            ]);
+        }
+        fputcsv($file, [
+            'TOTAL',
+            $rows['rekonTotal']['jumlah'],
+            $rows['rekonTotal']['seharusnya'],
+            $rows['rekonTotal']['diterima'],
+            $rows['rekonTotal']['selisih'],
+        ]);
+        fputcsv($file, []);
+
+        fputcsv($file, ['DETAIL PENGAJUAN']);
+        fputcsv($file, ['Tanggal', 'Kolektor', 'Seharusnya', 'Diterima', 'Selisih', 'Keterangan', 'Penerima']);
+        foreach ($rows['rekonDetail'] as $item) {
+            fputcsv($file, [
+                Carbon::parse($item->tanggal_setor)->format('d/m/Y'),
+                $safe($item->kolektor->name ?? '-'),
+                $item->total_seharusnya,
+                $item->total_diterima,
+                $item->selisih ?? 0,
+                $safe($item->keterangan_selisih ?? '-'),
+                $safe($item->diterimaOleh->name ?? '-'),
+            ]);
+        }
+    }
+
+    /**
+     * @param  resource  $file
+     * @param  Closure(mixed): string  $safe
+     */
+    private function tulisCsvUmurKas($file, Closure $safe): void
+    {
+        fputcsv($file, [$safe('Laporan Umur Kas')]);
+        fputcsv($file, [$safe('Tanggal'), now()->toDateString()]);
+        fputcsv($file, []);
+
+        $data = $this->umurKasData();
+
+        fputcsv($file, ['UMUR PER KELOMPOK']);
+        fputcsv($file, ['Kelompok', 'Jumlah Kolektor', 'Kas di Tangan']);
+        foreach ($data['umurKelompok'] as $kelompok => $ringkas) {
+            fputcsv($file, [$safe($kelompok), $ringkas['jumlah'], $ringkas['kas']]);
+        }
+        fputcsv($file, ['TOTAL', $data['umurTotal']['jumlah'], $data['umurTotal']['kas']]);
+        fputcsv($file, []);
+
+        fputcsv($file, ['UMUR PER KOLEKTOR']);
+        fputcsv($file, ['Kolektor', 'Kas di Tangan', 'Umur Terlama (hari)', 'Kelompok', 'Lewat Batas']);
+        foreach ($data['umurKasRows'] as $baris) {
+            fputcsv($file, [
+                $safe($baris['nama']),
+                $baris['kas_di_tangan'],
+                $baris['umur_terlama_hari'],
+                $safe($this->kelompokUmur($baris['umur_terlama_hari'])),
+                $safe($baris['lewat_batas'] ? 'Ya' : 'Tidak'),
             ]);
         }
     }
