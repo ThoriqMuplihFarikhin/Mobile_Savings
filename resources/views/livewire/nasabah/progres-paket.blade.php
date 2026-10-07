@@ -93,6 +93,19 @@
                     </div>
                 @endif
 
+                {{-- Terikat Komitmen (tanpa tombol keluar, bagian 9.3 butir 5) --}}
+                @if($item->keputusan_akhir === null)
+                    <div class="mx-5 mt-4 flex items-center gap-3 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 p-3.5 border border-indigo-200/70 dark:border-indigo-800/50">
+                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300">
+                            <flux:icon.package class="size-4" />
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-indigo-800 dark:text-indigo-200">Anda terikat komitmen paket ini</p>
+                            <p class="text-[11px] text-indigo-600 dark:text-indigo-300 mt-0.5">Paket tidak dapat ditinggalkan di tengah jalan; pengambilan diproses setelah jatuh tempo. Hubungi admin bila ada kendala.</p>
+                        </div>
+                    </div>
+                @endif
+
                 {{-- Isi Paket & Bonus Tunai --}}
                 @php
                     $progresPerKepesertaan = collect($progres)->keyBy('kepesertaan_id');
@@ -164,6 +177,7 @@
                             $item->keputusan_akhir           ? ['label' => 'Keputusan', 'value' => ucfirst(str_replace('_', ' ', $item->keputusan_akhir))] : null,
                             $item->metode_pengambilan        ? ['label' => 'Pengambilan', 'value' => $item->metode_pengambilan === 'ambil_sendiri' ? 'Ambil Sendiri' : 'Diantar Kolektor'] : null,
                             $item->status_serah_terima       ? ['label' => 'Serah Terima', 'value' => $item->status_serah_terima === 'sudah_diterima' ? 'Sudah Diterima' : 'Belum'] : null,
+                            $item->komitmen_disetujui_pada   ? ['label' => 'Komitmen', 'value' => \Carbon\Carbon::parse($item->komitmen_disetujui_pada)->translatedFormat('d M Y').($item->komitmen_via ? ' · '.ucfirst($item->komitmen_via) : '')] : null,
                         ]);
                     @endphp
                     @if(count($details) > 0)

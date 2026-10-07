@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Actions\Paket\DaftarkanKePaketAction;
 use App\Actions\Pin\ResetPinOlehAdminAction;
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\KepesertaanPaket;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
@@ -74,7 +75,12 @@ class DetailNasabah extends Component
         $chartData = $this->buildChartData($setoran, $penarikan, $start, $end);
         $riwayat = $this->getRiwayatTransaksi($setoran, $penarikan);
 
-        return view('livewire.admin.detail-nasabah', compact('saldoPerProduk', 'chartData', 'riwayat'))
+        $kepesertaan = KepesertaanPaket::with('produk')
+            ->where('nasabah_id', $this->user->id)
+            ->latest('tanggal_mulai_ikut')
+            ->get();
+
+        return view('livewire.admin.detail-nasabah', compact('saldoPerProduk', 'chartData', 'riwayat', 'kepesertaan'))
             ->with('paketTerbuka', DaftarkanKePaketAction::paketTerbukaUntuk((int) $this->user->id));
     }
 

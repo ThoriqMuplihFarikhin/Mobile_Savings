@@ -92,6 +92,47 @@
         </div>
     </div>
 
+    {{-- Kepesertaan & Status Komitmen --}}
+    <div>
+        <h3 class="mb-3 font-serif text-sm font-semibold text-text dark:text-white">Kepesertaan Paket</h3>
+        <div class="card p-0">
+            @forelse($kepesertaan as $item)
+                <div class="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4 last:border-b-0">
+                    <div class="min-w-0">
+                        <p class="text-sm font-medium text-text dark:text-white">{{ $item->produk?->nama ?? '-' }}</p>
+                        <p class="mt-0.5 text-xs text-text-muted dark:text-slate-400">
+                            Gabung {{ $item->tanggal_mulai_ikut?->translatedFormat('d M Y') }}
+                            @if($item->keputusan_akhir)
+                                · {{ ucfirst(str_replace('_', ' ', $item->keputusan_akhir)) }}
+                            @else
+                                · Aktif
+                            @endif
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Komitmen</p>
+                        <p class="mt-0.5 text-xs font-semibold text-text dark:text-white">
+                            @if($item->komitmen_disetujui_pada)
+                                {{ \Carbon\Carbon::parse($item->komitmen_disetujui_pada)->translatedFormat('d M Y') }}
+                                @if($item->komitmen_via)
+                                    · {{ match ($item->komitmen_via) {
+                                        'admin' => 'Admin',
+                                        'kolektor' => 'Kolektor',
+                                        default => 'Mandiri',
+                                    } }}
+                                @endif
+                            @else
+                                —
+                            @endif
+                        </p>
+                    </div>
+                </div>
+            @empty
+                <div class="px-5 py-4 text-xs text-text-muted dark:text-slate-400">Belum ada kepesertaan paket.</div>
+            @endforelse
+        </div>
+    </div>
+
     {{-- Perkembangan Saldo --}}
     <div class="card">
         <div class="mb-4 flex items-center justify-between">
