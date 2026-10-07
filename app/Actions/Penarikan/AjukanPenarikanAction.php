@@ -2,12 +2,13 @@
 
 namespace App\Actions\Penarikan;
 
-use App\Actions\Tabungan\HitungTunggakanAction;
 use App\Models\AdminSetting;
+use App\Models\KepesertaanPaket;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AjukanPenarikanAction
@@ -36,18 +37,31 @@ class AjukanPenarikanAction
             $this->assertAturanMinimal($nominalUang, $tersedia);
 
             if ($produk->isPaket()) {
-                if ($produk->tanggal_boleh_cair === null) {
-                    throw new \InvalidArgumentException('Tanggal pencairan paket belum ditetapkan. Hubungi admin.');
-                }
+                $kepesertaan = KepesertaanPaket::query()
+                    ->with('produk')
+                    ->where('nasabah_id', $nasabah->id)
+                    ->where('produk_id', $produk->id)
+                    ->whereNull('keputusan_akhir')
+                    ->first();
 
-                if (now()->lt($produk->tanggal_boleh_cair)) {
-                    throw new \Exception('Penarikan paket belum bisa dilakukan sebelum tanggal '.$produk->tanggal_boleh_cair->translatedFormat('d M Y'));
-                }
+                if ($kepesertaan instanceof KepesertaanPaket) {
+                    $status = $kepesertaan->statusPencairan(simpan: false);
 
-                $statusTunggakan = (new HitungTunggakanAction)->execute($nasabah->id, $produk->id);
+                    if (! $status['boleh']) {
+                        if ($status['alasan'] === KepesertaanPaket::ALASAN_TANGGAL_KOSONG) {
+                            throw new \InvalidArgumentException((string) $status['alasan']);
+                        }
 
-                if ($statusTunggakan && $statusTunggakan['tunggakan'] > 0) {
-                    throw new \Exception('Penarikan paket belum bisa dilakukan karena masih ada tunggakan sebesar Rp '.number_format($statusTunggakan['tunggakan'], 0, ',', '.').'. Lunasi tunggakan terlebih dahulu atau hubungi admin.');
+                        throw new \Exception((string) $status['alasan']);
+                    }
+                } else {
+                    if ($produk->tanggal_boleh_cair === null) {
+                        throw new \InvalidArgumentException(KepesertaanPaket::ALASAN_TANGGAL_KOSONG);
+                    }
+
+                    if (now()->startOfDay()->lt(Carbon::parse($produk->tanggal_boleh_cair)->startOfDay())) {
+                        throw new \Exception(KepesertaanPaket::ALASAN_BELUM_WAKTU);
+                    }
                 }
             }
 

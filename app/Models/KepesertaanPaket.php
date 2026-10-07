@@ -12,6 +12,17 @@ class KepesertaanPaket extends Model
 {
     use HasFactory;
 
+    /** Pesan pencairan tunggal (D17): identik di semua titik pengecekan. */
+    public const ALASAN_BELUM_KOMITMEN = 'Komitmen paket belum disetujui. Hubungi admin.';
+
+    public const ALASAN_SUDAH_DISERAHKAN = 'Paket ini sudah diserahkan dan tidak dapat dicairkan lagi.';
+
+    public const ALASAN_TUNGGAKAN = 'Lunasi tunggakan sebelum mencairkan paket.';
+
+    public const ALASAN_BELUM_WAKTU = 'Paket ini belum boleh cair pada tanggal ini.';
+
+    public const ALASAN_TANGGAL_KOSONG = 'Tanggal pencairan paket belum ditetapkan. Hubungi admin.';
+
     protected $table = 'kepesertaan_paket';
 
     protected $fillable = [
@@ -165,6 +176,80 @@ class KepesertaanPaket extends Model
         }
 
         return round($totalHari * (float) $produk->harga_per_hari, 2);
+    }
+
+    /**
+     * Gerbang pencairan tunggal (D17): kepesertaan boleh mencair bila komitmen
+     * ada, belum diserahterimakan, tunggakan = 0, dan (tanggal boleh cair sudah
+     * tiba ATAU toggle `boleh_cair_saat_target` aktif dengan target tercapai).
+     *
+     * Selalu memanggil hitungUlangKepesertaan() lebih dahulu agar keputusan
+     * memakai data tunggakan terbaru.
+     *
+     * @return array{boleh: bool, alasan: ?string, kode: string}
+     */
+    public function statusPencairan(bool $simpan = true): array
+    {
+        $hasil = $this->hitungUlangKepesertaan($simpan);
+        $tunggakanHari = (int) $hasil['tunggakan_hari'];
+
+        if ($this->komitmen_disetujui_pada === null) {
+            return $this->gerbangDitolak('belum_komitmen', self::ALASAN_BELUM_KOMITMEN);
+        }
+
+        if ($this->status_serah_terima === 'sudah_diterima') {
+            return $this->gerbangDitolak('sudah_diserahkan', self::ALASAN_SUDAH_DISERAHKAN);
+        }
+
+        $produk = $this->produk;
+        if ($produk === null) {
+            return $this->gerbangDitolak('belum_waktunya', self::ALASAN_TANGGAL_KOSONG);
+        }
+
+        $tanggalCair = $produk->tanggal_boleh_cair;
+        $bolehWaktu = $tanggalCair !== null && ! Carbon::parse($tanggalCair)->startOfDay()->isFuture();
+
+        if (! $bolehWaktu && $produk->boleh_cair_saat_target && $this->targetTercapai()) {
+            $bolehWaktu = true;
+        }
+
+        if (! $bolehWaktu) {
+            return $this->gerbangDitolak(
+                'belum_waktunya',
+                $tanggalCair === null ? self::ALASAN_TANGGAL_KOSONG : self::ALASAN_BELUM_WAKTU,
+            );
+        }
+
+        if ($tunggakanHari > 0) {
+            return $this->gerbangDitolak('ada_tunggakan', self::ALASAN_TUNGGAKAN);
+        }
+
+        return ['boleh' => true, 'alasan' => null, 'kode' => 'ok'];
+    }
+
+    /**
+     * @return array{boleh: bool, alasan: ?string, kode: string}
+     */
+    private function gerbangDitolak(string $kode, string $alasan): array
+    {
+        return ['boleh' => false, 'alasan' => $alasan, 'kode' => $kode];
+    }
+
+    /**
+     * Total terkumpul (dari setoran aktif) sudah mencapai target kepesertaan.
+     */
+    private function targetTercapai(): bool
+    {
+        $target = $this->targetKepesertaan();
+        if ($target === null) {
+            return false;
+        }
+
+        $terkumpul = (float) $this->setoran()
+            ->where('status', '!=', 'dibatalkan')
+            ->sum('nominal');
+
+        return bccomp(number_format($terkumpul, 2, '.', ''), number_format($target, 2, '.', ''), 2) >= 0;
     }
 
     /**

@@ -5,7 +5,6 @@ namespace App\Livewire\Nasabah;
 use App\Actions\Paket\HitungProgresBarangAction;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KepesertaanPaket;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -21,8 +20,8 @@ class ProgresPaket extends Component
     }
 
     /**
-     * Pilih cara nasabah menerima paket; hanya boleh setelah tanggal boleh cair
-     * dan tunggakan lunas, sebelum paket diserahkan.
+     * Pilih cara nasabah menerima paket; hanya boleh setelah lulus gerbang
+     * pencairan tunggal (D17), sebelum paket diserahkan.
      */
     public function pilihMetodePengambilan(int $kepesertaanId, string $metode): void
     {
@@ -43,22 +42,10 @@ class ProgresPaket extends Component
             return;
         }
 
-        if ($kepesertaan->status_serah_terima === 'sudah_diterima') {
-            session()->flash('error', 'Paket ini sudah diserahkan dan tidak dapat diubah.');
+        $status = $kepesertaan->statusPencairan();
 
-            return;
-        }
-
-        $tanggalBolehCair = $kepesertaan->produk?->tanggal_boleh_cair;
-
-        if ($tanggalBolehCair === null || Carbon::parse($tanggalBolehCair)->startOfDay()->isFuture()) {
-            session()->flash('error', 'Paket ini belum boleh cair pada tanggal ini.');
-
-            return;
-        }
-
-        if ($kepesertaan->hitungUlangKepesertaan(false)['tunggakan_hari'] > 0) {
-            session()->flash('error', 'Lunasi tunggakan sebelum memilih metode pengambilan.');
+        if (! $status['boleh']) {
+            session()->flash('error', $status['alasan']);
 
             return;
         }
@@ -75,12 +62,13 @@ class ProgresPaket extends Component
             ->latest('tanggal_mulai_ikut')
             ->get();
 
-        foreach ($kepesertaan as $item) {
-            $item->hitungUlangKepesertaan();
-        }
-
         // Dihitung di render(), bukan properti publik: data progres tidak
         // boleh tersimpan di payload Livewire (anti bocor harga, D15).
+        $pencairan = [];
+        foreach ($kepesertaan as $item) {
+            $pencairan[(int) $item->id] = $item->statusPencairan();
+        }
+
         $aksi = new HitungProgresBarangAction;
         $progres = $kepesertaan
             ->map(fn (KepesertaanPaket $item): array => array_merge(
@@ -89,6 +77,6 @@ class ProgresPaket extends Component
             ))
             ->values();
 
-        return view('livewire.nasabah.progres-paket', compact('kepesertaan', 'progres'));
+        return view('livewire.nasabah.progres-paket', compact('kepesertaan', 'progres', 'pencairan'));
     }
 }

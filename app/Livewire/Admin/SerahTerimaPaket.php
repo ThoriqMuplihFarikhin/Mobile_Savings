@@ -122,8 +122,10 @@ class SerahTerimaPaket extends Component
                     }
                 }
 
-                if ($item->hitungUlangKepesertaan(false)['tunggakan_hari'] > 0) {
-                    throw new DomainException('Masih ada tunggakan setoran. Lunasi tunggakan sebelum serah terima.');
+                $status = $item->statusPencairan();
+
+                if (! $status['boleh']) {
+                    throw new DomainException((string) $status['alasan']);
                 }
 
                 $item->update([
@@ -189,16 +191,20 @@ class SerahTerimaPaket extends Component
             $query->where('status_serah_terima', 'belum');
 
             if ($this->filter === 'siap') {
-                $query->where('tunggakan', 0)
-                    ->whereNotNull('metode_pengambilan')
-                    ->whereHas('produk', fn ($q) => $q->whereDate('tanggal_boleh_cair', '<=', today()));
+                $query->whereNotNull('metode_pengambilan');
             }
         }
 
         $kepesertaan = $query->orderByDesc('tanggal_mulai_ikut')->get();
 
-        foreach ($kepesertaan as $item) {
-            $item->hitungUlangKepesertaan(false);
+        if ($this->filter === 'siap') {
+            $kepesertaan = $kepesertaan
+                ->filter(fn (KepesertaanPaket $item): bool => $item->statusPencairan()['boleh'])
+                ->values();
+        } else {
+            foreach ($kepesertaan as $item) {
+                $item->hitungUlangKepesertaan(false);
+            }
         }
 
         return view('livewire.admin.serah-terima-paket', [
@@ -209,10 +215,9 @@ class SerahTerimaPaket extends Component
 
     private function jumlahSiap(): int
     {
-        $query = KepesertaanPaket::where('status_serah_terima', 'belum')
-            ->where('tunggakan', 0)
-            ->whereNotNull('metode_pengambilan')
-            ->whereHas('produk', fn ($q) => $q->whereDate('tanggal_boleh_cair', '<=', today()));
+        $query = KepesertaanPaket::query()->with('produk')
+            ->where('status_serah_terima', 'belum')
+            ->whereNotNull('metode_pengambilan');
 
         if (auth()->user()?->role === 'kolektor') {
             $query->whereIn('nasabah_id', KolektorNasabah::where('kolektor_id', Auth::id())
@@ -220,6 +225,8 @@ class SerahTerimaPaket extends Component
                 ->select('nasabah_id'));
         }
 
-        return $query->count();
+        return $query->get()
+            ->filter(fn (KepesertaanPaket $item): bool => $item->statusPencairan()['boleh'])
+            ->count();
     }
 }

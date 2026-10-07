@@ -34,6 +34,8 @@ it('blocks penarikan paket when tunggakan > 0 and tanggal sudah lewat', function
         'total_aktual_terkumpul' => 100000,
         'tunggakan' => 10,
         'status_alert' => 'peringatan',
+        'komitmen_disetujui_pada' => now(),
+        'komitmen_via' => 'migrasi',
     ]);
 
     $action = new AjukanPenarikanAction;
@@ -76,6 +78,8 @@ it('allows penarikan paket when tunggakan = 0 and tanggal sudah lewat', function
         'total_aktual_terkumpul' => $seharusnya,
         'tunggakan' => 0,
         'status_alert' => 'normal',
+        'komitmen_disetujui_pada' => now(),
+        'komitmen_via' => 'migrasi',
     ]);
 
     TransaksiSetoran::create([
@@ -124,12 +128,14 @@ it('blocks penarikan with tanggal message when tanggal belum lewat regardless of
         'total_aktual_terkumpul' => 10000,
         'tunggakan' => 3,
         'status_alert' => 'peringatan',
+        'komitmen_disetujui_pada' => now(),
+        'komitmen_via' => 'migrasi',
     ]);
 
     $action = new AjukanPenarikanAction;
 
     $this->expectException(Exception::class);
-    $this->expectExceptionMessage('belum bisa dilakukan sebelum tanggal');
+    $this->expectExceptionMessage('belum boleh cair');
 
     $action->execute($nasabah, $produk, 50000, 'online');
 });
@@ -216,6 +222,8 @@ it('does not write to database when checking tunggakan (read-only)', function ()
         'total_aktual_terkumpul' => 100000,
         'tunggakan' => 10,
         'status_alert' => 'peringatan',
+        'komitmen_disetujui_pada' => now(),
+        'komitmen_via' => 'migrasi',
     ]);
 
     $originalUpdatedAt = $kepesertaan->updated_at->copy();

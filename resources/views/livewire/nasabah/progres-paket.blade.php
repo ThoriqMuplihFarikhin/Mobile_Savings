@@ -193,12 +193,7 @@
                 @endif
 
                 {{-- Pilih Metode Pengambilan --}}
-                @if(
-                    $item->status_serah_terima === 'belum'
-                    && $item->produk?->tanggal_boleh_cair
-                    && \Carbon\Carbon::parse($item->produk->tanggal_boleh_cair)->startOfDay()->lte(today())
-                    && $item->tunggakan == 0
-                )
+                @if($pencairan[$item->id]['boleh'] ?? false)
                     <div class="mx-5 mt-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/30 p-4 border border-indigo-200/60 dark:border-indigo-800/40">
                         <p class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Metode Pengambilan</p>
                         @if($item->metode_pengambilan)

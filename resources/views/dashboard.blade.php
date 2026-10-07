@@ -264,8 +264,11 @@
                 {{-- Countdown Paket Lebaran --}}
                 @if($kepesertaanAktif?->produk)
                     @php
-                        $tanggalCair = \Carbon\Carbon::parse($kepesertaanAktif->produk->tanggal_boleh_cair)->startOfDay();
-                        $hariLagi = (int) now()->startOfDay()->diffInDays($tanggalCair, false);
+                        $pencairanPaket = $kepesertaanAktif->statusPencairan(simpan: false);
+                        $tanggalCair = $kepesertaanAktif->produk->tanggal_boleh_cair;
+                        $hariLagi = $tanggalCair
+                            ? (int) now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($tanggalCair)->startOfDay(), false)
+                            : 0;
                     @endphp
                     <a href="{{ route('nasabah.progres-paket.index') }}" wire:navigate
                        class="rounded-2xl bg-amber-50 dark:bg-amber-950/40 p-4 border border-amber-200 dark:border-amber-800/60 block hover:border-amber-300 transition">
@@ -273,10 +276,12 @@
                             {{ $kepesertaanAktif->produk->nama }}
                         </span>
                         <p class="text-sm font-bold text-amber-900 dark:text-amber-200 mt-0.5">
-                            @if($hariLagi > 0)
+                            @if($pencairanPaket['boleh'])
+                                Sudah Bisa Dicairkan
+                            @elseif($pencairanPaket['kode'] === 'belum_waktunya' && $tanggalCair !== null)
                                 {{ $hariLagi }} Hari Lagi
                             @else
-                                Sudah Bisa Dicairkan
+                                {{ $pencairanPaket['alasan'] }}
                             @endif
                         </p>
                     </a>

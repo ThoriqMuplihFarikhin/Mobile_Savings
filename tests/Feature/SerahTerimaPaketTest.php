@@ -36,6 +36,8 @@ function p61Fixture(array $opsi = []): array
         'tanggal_mulai_ikut' => now()->toDateString(),
         'metode_pengambilan' => $opsi['metode'] ?? null,
         'status_serah_terima' => 'belum',
+        'komitmen_disetujui_pada' => now(),
+        'komitmen_via' => 'migrasi',
     ]);
 
     if ($opsi['lunas'] ?? false) {

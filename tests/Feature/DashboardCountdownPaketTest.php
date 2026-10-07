@@ -3,6 +3,27 @@
 use App\Models\KepesertaanPaket;
 use App\Models\ProdukTabungan;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Setoran lunas agar gerbang pencairan D17 tidak menolak karena tunggakan.
+ */
+function countdownSetorLunas(KepesertaanPaket $kepesertaan, ProdukTabungan $produk, User $nasabah, float $nominal): void
+{
+    DB::table('transaksi_setoran')->insert([
+        'nasabah_id' => $nasabah->id,
+        'produk_id' => $produk->id,
+        'kepesertaan_id' => $kepesertaan->id,
+        'nominal' => $nominal,
+        'tanggal_transaksi' => now()->toDateString(),
+        'tanggal_input_sistem' => now(),
+        'input_by' => $nasabah->id,
+        'sumber_input' => 'real_time',
+        'status' => 'tercatat',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+}
 
 it('shows countdown as integer without decimal', function () {
     $nasabah = User::factory()->nasabah()->create();
@@ -25,6 +46,8 @@ it('shows countdown as integer without decimal', function () {
         'total_aktual_terkumpul' => 30000,
         'tunggakan' => 0,
         'status_alert' => 'normal',
+        'komitmen_disetujui_pada' => now(),
+        'komitmen_via' => 'migrasi',
     ]);
 
     $this->actingAs($nasabah);
@@ -49,7 +72,7 @@ it('shows "Sudah Bisa Dicairkan" when tanggal cair has passed', function () {
         'status' => 'aktif',
     ]);
 
-    KepesertaanPaket::create([
+    $kepesertaan = KepesertaanPaket::create([
         'nasabah_id' => $nasabah->id,
         'produk_id' => $produk->id,
         'tanggal_mulai_ikut' => now()->subDays(30)->toDateString(),
@@ -57,7 +80,11 @@ it('shows "Sudah Bisa Dicairkan" when tanggal cair has passed', function () {
         'total_aktual_terkumpul' => 150000,
         'tunggakan' => 0,
         'status_alert' => 'normal',
+        'komitmen_disetujui_pada' => now(),
+        'komitmen_via' => 'migrasi',
     ]);
+
+    countdownSetorLunas($kepesertaan, $produk, $nasabah, 200000);
 
     $this->actingAs($nasabah);
 
@@ -80,7 +107,7 @@ it('shows "Sudah Bisa Dicairkan" when tanggal cair is today', function () {
         'status' => 'aktif',
     ]);
 
-    KepesertaanPaket::create([
+    $kepesertaan = KepesertaanPaket::create([
         'nasabah_id' => $nasabah->id,
         'produk_id' => $produk->id,
         'tanggal_mulai_ikut' => now()->subDays(20)->toDateString(),
@@ -88,7 +115,11 @@ it('shows "Sudah Bisa Dicairkan" when tanggal cair is today', function () {
         'total_aktual_terkumpul' => 100000,
         'tunggakan' => 0,
         'status_alert' => 'normal',
+        'komitmen_disetujui_pada' => now(),
+        'komitmen_via' => 'migrasi',
     ]);
+
+    countdownSetorLunas($kepesertaan, $produk, $nasabah, 200000);
 
     $this->actingAs($nasabah);
 
