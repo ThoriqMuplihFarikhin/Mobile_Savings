@@ -35,7 +35,7 @@
         @endphp
         @foreach ($daftarFilter as $nilai => $label)
             <button type="button" wire:click="pilihFilter('{{ $nilai }}')"
-                class="rounded-full px-4 py-2 text-[11px] font-bold border transition cursor-pointer {{ $filter === $nilai
+                class="min-h-11 rounded-full px-4 py-2 text-[11px] font-bold border transition cursor-pointer {{ $filter === $nilai
                     ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-zinc-900 dark:border-white'
                     : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500' }}">
                 {{ $label }}
@@ -107,7 +107,7 @@
                     @elseif ($filter !== 'sudah')
                         <div class="flex justify-end border-t border-zinc-100 dark:border-zinc-700/60 pt-4">
                             <button type="button" wire:click="bukaKonfirmasi({{ $item->id }})"
-                                class="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white transition cursor-pointer">
+                                class="min-h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white transition cursor-pointer">
                                 Konfirmasi Serah Terima
                             </button>
                         </div>
@@ -147,11 +147,11 @@
 
                         <div class="flex justify-end gap-2">
                             <button type="button" wire:click="batalKonfirmasi"
-                                class="rounded-xl border border-zinc-300 dark:border-zinc-600 px-4 py-2.5 text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition cursor-pointer">
+                                class="min-h-11 rounded-xl border border-zinc-300 dark:border-zinc-600 px-4 py-2.5 text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition cursor-pointer">
                                 Batal
                             </button>
                             <button type="button" wire:click="konfirmasi({{ $item->id }})"
-                                class="rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white transition cursor-pointer disabled:opacity-60"
+                                class="min-h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white transition cursor-pointer disabled:opacity-60"
                                 wire:loading.attr="disabled" wire:target="konfirmasi">
                                 Simpan Konfirmasi
                             </button>

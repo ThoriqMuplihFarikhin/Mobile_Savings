@@ -29,11 +29,15 @@
         </select>
         <x-ui.tanggal wire:model.live="tanggalFilter"
             class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
+        <button type="button" wire:click="$refresh"
+            class="min-h-11 inline-flex items-center gap-1.5 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50 sm:ml-auto">
+            Muat Ulang
+        </button>
     </div>
 
     <div class="overflow-hidden rounded-xl bg-white shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
         <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="hidden md:table w-full text-left">
                 <thead>
                     <tr class="border-b border-[#ebebeb] bg-gray-50">
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Tanggal</th>
@@ -73,8 +77,8 @@
                             <td class="px-4 py-3">
                                 @if(in_array($item->status, ['tercatat', 'dikoreksi']))
                                     <div class="flex items-center gap-2">
-                                        <button wire:click="toggleKoreksi({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Koreksi</button>
-                                        <button wire:click="toggleBatal({{ $item->id }})" class="inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
+                                        <button wire:click="toggleKoreksi({{ $item->id }})" class="min-h-11 inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Koreksi</button>
+                                        <button wire:click="toggleBatal({{ $item->id }})" class="min-h-11 inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
                                     </div>
                                 @else
                                     <span class="text-xs text-gray-500">-</span>
@@ -93,6 +97,60 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div data-test="kartu-tabel" class="divide-y divide-[#ebebeb] md:hidden">
+            @forelse($setoran as $item)
+                <div class="px-4 py-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-gray-900">{{ $item->nasabah->name ?? '-' }}</p>
+                            <p class="text-xs text-gray-500">{{ $item->nasabah->no_hp ?? '— (offline)' }}</p>
+                        </div>
+                        @if($item->status === 'tercatat')
+                            <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-indigo-600">Tercatat</span>
+                        @elseif($item->status === 'dikoreksi')
+                            <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 font-mono text-xs text-[#ab570a]">Dikoreksi</span>
+                        @else
+                            <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 font-mono text-xs text-[#c50000]">Dibatalkan</span>
+                        @endif
+                    </div>
+                    <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Tanggal</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $item->tanggal_transaksi->translatedFormat('d M Y') }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Produk</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $item->produk->nama ?? '-' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Nominal</span>
+                            <span class="font-mono text-sm font-semibold text-gray-900">Rp {{ number_format($item->nominal, 0, ',', '.') }}</span>
+                            @if($item->nominal_asli)
+                                <span class="block font-mono text-xs font-medium text-gray-500">Asli: Rp {{ number_format($item->nominal_asli, 0, ',', '.') }}</span>
+                            @endif
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Input Oleh</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $item->inputBy->name ?? '-' }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        @if(in_array($item->status, ['tercatat', 'dikoreksi']))
+                            <div class="flex items-center gap-2">
+                                <button wire:click="toggleKoreksi({{ $item->id }})" class="min-h-11 inline-flex items-center gap-1 rounded-full bg-indigo-800 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90">Koreksi</button>
+                                <button wire:click="toggleBatal({{ $item->id }})" class="min-h-11 inline-flex items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
+                            </div>
+                        @else
+                            <span class="text-xs text-gray-500">-</span>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="px-4 py-10 text-center">
+                    <p class="text-sm text-gray-500">Tidak ada data setoran.</p>
+                </div>
+            @endforelse
         </div>
         <div class="border-t border-[#ebebeb] px-4 py-3">{{ $setoran->links() }}</div>
     </div>
@@ -126,11 +184,11 @@
                     </div>
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" wire:click="$set('showKoreksi', false)"
-                            class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
+                            class="min-h-11 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
                             Batal
                         </button>
                         <button type="submit"
-                            class="rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
+                            class="min-h-11 rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
                             Simpan Koreksi
                         </button>
                     </div>
@@ -159,11 +217,11 @@
                     </div>
                     <div class="flex justify-end gap-3 pt-2">
                         <button type="button" wire:click="$set('showBatal', false)"
-                            class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
+                            class="min-h-11 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
                             Batal
                         </button>
                         <button type="submit"
-                            class="rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
+                            class="min-h-11 rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
                             Batalkan Setoran
                         </button>
                     </div>

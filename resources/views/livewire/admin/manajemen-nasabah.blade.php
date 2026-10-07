@@ -5,7 +5,7 @@
             <p class="mt-1 text-sm text-gray-500">Kelola data nasabah tabungan digital.</p>
         </div>
         <button wire:click="toggleForm"
-            class="inline-flex shrink-0 items-center gap-2 rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
+            class="min-h-11 inline-flex shrink-0 items-center gap-2 rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
             Tambah Nasabah
         </button>
@@ -63,11 +63,11 @@
                 </div>
                 <div class="flex gap-3">
                     <button type="submit" wire:loading.attr="disabled"
-                        class="rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
+                        class="min-h-11 rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
                         {{ $editId ? 'Simpan Perubahan' : 'Tambah Nasabah' }}
                     </button>
                     <button type="button" wire:click="toggleForm"
-                        class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
+                        class="min-h-11 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
                         Batal
                     </button>
                 </div>
@@ -88,7 +88,7 @@
 
     <div class="overflow-hidden rounded-xl bg-white shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
         <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="hidden md:table w-full text-left">
                 <thead>
                     <tr class="border-b border-[#ebebeb] bg-gray-50">
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Nama</th>
@@ -124,10 +124,10 @@
                                     <a href="{{ route('admin.nasabah.detail', $item->user_id) }}" class="rounded-full p-1.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900" title="Lihat Detail">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                                     </a>
-                                    <button wire:click="edit({{ $item->id }})" class="rounded-full p-1.5 text-[#0070f3] transition hover:bg-indigo-100">
+                                    <button wire:click="edit({{ $item->id }})" class="min-h-11 rounded-full p-1.5 text-[#0070f3] transition hover:bg-indigo-100">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                     </button>
-                                    <button wire:click="toggleStatus({{ $item->id }})" class="rounded-full p-1.5 transition {{ $item->status_pendaftaran === 'aktif' ? 'text-[#ab570a] hover:bg-amber-100' : 'text-[#0070f3] hover:bg-indigo-100' }}">
+                                    <button wire:click="toggleStatus({{ $item->id }})" class="min-h-11 rounded-full p-1.5 transition {{ $item->status_pendaftaran === 'aktif' ? 'text-[#ab570a] hover:bg-amber-100' : 'text-[#0070f3] hover:bg-indigo-100' }}">
                                         @if($item->status_pendaftaran === 'aktif')
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
                                         @else
@@ -135,17 +135,17 @@
                                         @endif
                                     </button>
                                     @if($item->status_pendaftaran === 'aktif' && ($item->user->status_akun === 'terkunci' || ($item->user->login_terkunci_hingga && $item->user->login_terkunci_hingga->isFuture())))
-                                        <button wire:click="bukaKunci({{ $item->id }})" class="rounded-full p-1.5 text-emerald-600 transition hover:bg-emerald-100" title="Buka Kunci">
+                                        <button wire:click="bukaKunci({{ $item->id }})" class="min-h-11 rounded-full p-1.5 text-emerald-600 transition hover:bg-emerald-100" title="Buka Kunci">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
                                         </button>
                                     @endif
-                                    <button wire:click="confirmKonversi({{ $item->id }})" class="rounded-full p-1.5 text-zinc-500 transition hover:bg-zinc-100" title="Ubah Mode Akses">
+                                    <button wire:click="confirmKonversi({{ $item->id }})" class="min-h-11 rounded-full p-1.5 text-zinc-500 transition hover:bg-zinc-100" title="Ubah Mode Akses">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>
                                     </button>
-                                    <button wire:click="confirmResetPin({{ $item->user_id }})" class="rounded-full p-1.5 text-[#ab570a] transition hover:bg-amber-100" title="Reset PIN">
+                                    <button wire:click="confirmResetPin({{ $item->user_id }})" class="min-h-11 rounded-full p-1.5 text-[#ab570a] transition hover:bg-amber-100" title="Reset PIN">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159-.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
                                     </button>
-                                    <button wire:click="confirmDelete({{ $item->id }})" class="rounded-full p-1.5 text-[#ee0000] transition hover:bg-[#f7d4d6]">
+                                    <button wire:click="confirmDelete({{ $item->id }})" class="min-h-11 rounded-full p-1.5 text-[#ee0000] transition hover:bg-[#f7d4d6]">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     </button>
                                 </div>
@@ -164,6 +164,73 @@
                 </tbody>
             </table>
         </div>
+        <div data-test="kartu-tabel" class="divide-y divide-[#ebebeb] md:hidden">
+            @forelse($nasabah as $item)
+                <div class="px-4 py-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-gray-900">{{ $item->nama }}</p>
+                            <p class="text-xs text-gray-500">oleh {{ $item->didaftarkan_oleh->name ?? '-' }}</p>
+                        </div>
+                        @if($item->status_pendaftaran === 'aktif')
+                            <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-indigo-600">Aktif</span>
+                        @elseif($item->status_pendaftaran === 'pending_verifikasi')
+                            <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 font-mono text-xs text-[#ab570a]">Pending</span>
+                        @else
+                            <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 font-mono text-xs text-[#c50000]">Ditolak</span>
+                        @endif
+                        @if($item->user?->isOffline())
+                            <span class="ml-1 inline-flex items-center rounded-full bg-zinc-200 px-2.5 py-0.5 font-mono text-xs text-zinc-700">Mode Offline</span>
+                        @endif
+                    </div>
+                    <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">No. HP</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $item->user->no_hp ?? '— (offline)' }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Alamat</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $item->alamat }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        <div class="flex items-center gap-1">
+                            <a href="{{ route('admin.nasabah.detail', $item->user_id) }}" class="rounded-full p-1.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900" title="Lihat Detail">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            </a>
+                            <button wire:click="edit({{ $item->id }})" class="min-h-11 rounded-full p-1.5 text-[#0070f3] transition hover:bg-indigo-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            </button>
+                            <button wire:click="toggleStatus({{ $item->id }})" class="min-h-11 rounded-full p-1.5 transition {{ $item->status_pendaftaran === 'aktif' ? 'text-[#ab570a] hover:bg-amber-100' : 'text-[#0070f3] hover:bg-indigo-100' }}">
+                                @if($item->status_pendaftaran === 'aktif')
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                                @else
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                @endif
+                            </button>
+                            @if($item->status_pendaftaran === 'aktif' && ($item->user->status_akun === 'terkunci' || ($item->user->login_terkunci_hingga && $item->user->login_terkunci_hingga->isFuture())))
+                                <button wire:click="bukaKunci({{ $item->id }})" class="min-h-11 rounded-full p-1.5 text-emerald-600 transition hover:bg-emerald-100" title="Buka Kunci">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+                                </button>
+                            @endif
+                            <button wire:click="confirmKonversi({{ $item->id }})" class="min-h-11 rounded-full p-1.5 text-zinc-500 transition hover:bg-zinc-100" title="Ubah Mode Akses">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>
+                            </button>
+                            <button wire:click="confirmResetPin({{ $item->user_id }})" class="min-h-11 rounded-full p-1.5 text-[#ab570a] transition hover:bg-amber-100" title="Reset PIN">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159-.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
+                            </button>
+                            <button wire:click="confirmDelete({{ $item->id }})" class="min-h-11 rounded-full p-1.5 text-[#ee0000] transition hover:bg-[#f7d4d6]">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="px-4 py-10 text-center">
+                    <p class="text-sm text-gray-500">Tidak ada data nasabah.</p>
+                </div>
+            @endforelse
+        </div>
         <div class="border-t border-[#ebebeb] px-4 py-3">{{ $nasabah->links() }}</div>
     </div>
 
@@ -173,8 +240,8 @@
                 <h3 class="text-lg font-semibold text-gray-900">Hapus Nasabah?</h3>
                 <p class="mt-2 text-sm text-gray-500">Data nasabah akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.</p>
                 <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('tampilKonfirmasiHapus', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
-                    <button wire:click="delete" class="rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Hapus</button>
+                    <button wire:click="$set('tampilKonfirmasiHapus', false)" class="min-h-11 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
+                    <button wire:click="delete" class="min-h-11 rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Hapus</button>
                 </div>
             </div>
         </div>
@@ -187,8 +254,8 @@
                 <p class="mt-2 text-sm text-gray-500">PIN pengguna akan diganti menjadi PIN acak baru dan seluruh sesi aktifnya dihentikan. Pengguna wajib mengganti PIN setelah login berikutnya.</p>
                 @error('reset_pin') <p class="mt-2 text-sm text-[#ee0000]">{{ $message }}</p> @enderror
                 <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('tampilKonfirmasiResetPin', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
-                    <button wire:click="resetPin" class="rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Reset PIN</button>
+                    <button wire:click="$set('tampilKonfirmasiResetPin', false)" class="min-h-11 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
+                    <button wire:click="resetPin" class="min-h-11 rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Reset PIN</button>
                 </div>
             </div>
         </div>
@@ -215,8 +282,8 @@
                     <p class="mt-4 text-sm text-gray-500">Seluruh sesi login nasabah akan dihapus dan notifikasi dimatikan — nasabah dicatat kembali lewat buku fisik.</p>
                 @endif
                 <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('tampilKonversiMode', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
-                    <button wire:click="konversiMode" wire:loading.attr="disabled" class="rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50">
+                    <button wire:click="$set('tampilKonversiMode', false)" class="min-h-11 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
+                    <button wire:click="konversiMode" wire:loading.attr="disabled" class="min-h-11 rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50">
                         {{ $profilKonversi?->user?->isOffline() ? 'Aktifkan Digital' : 'Aktifkan Offline' }}
                     </button>
                 </div>
