@@ -524,8 +524,9 @@ class Laporan extends Component
 
     /**
      * Kebutuhan barang per item isi paket: peserta aktif × isi_paket.
+     * `estimasi` = harga item × peserta, hanya untuk item yang punya harga (D15).
      *
-     * @return array<int, array{produk: string, item: string, jumlah: string, peserta: int, total: ?string}>
+     * @return array<int, array{produk: string, item: string, jumlah: string, peserta: int, total: ?string, estimasi: float|null}>
      */
     private function barangRows(): array
     {
@@ -543,6 +544,7 @@ class Laporan extends Component
 
             foreach ($isiPaket as $item) {
                 $jumlah = (string) data_get($item, 'jumlah', '');
+                $harga = data_get($item, 'harga');
 
                 $rows[] = [
                     'produk' => $produk->nama,
@@ -550,6 +552,7 @@ class Laporan extends Component
                     'jumlah' => $jumlah,
                     'peserta' => $peserta,
                     'total' => $this->hitungKebutuhan($peserta, $jumlah),
+                    'estimasi' => is_numeric($harga) ? round((float) $harga * $peserta, 2) : null,
                 ];
             }
         }
@@ -1514,7 +1517,7 @@ class Laporan extends Component
         fputcsv($file, [$safe('Laporan Kebutuhan Barang')]);
         fputcsv($file, [$safe('Tanggal'), now()->toDateString()]);
         fputcsv($file, []);
-        fputcsv($file, ['Paket', 'Item', 'Jumlah per Orang', 'Peserta Aktif', 'Total Kebutuhan']);
+        fputcsv($file, ['Paket', 'Item', 'Jumlah per Orang', 'Peserta Aktif', 'Total Kebutuhan', 'Estimasi Biaya']);
 
         foreach ($this->barangRows() as $baris) {
             fputcsv($file, [
@@ -1522,7 +1525,8 @@ class Laporan extends Component
                 $safe($baris['item']),
                 $safe($baris['jumlah']),
                 $baris['peserta'],
-                $safe($baris['total'] ?? $baris['peserta'].' peserta × '.$baris['jumlah']),
+                $safe($baris['total'] ?? '-'),
+                $baris['estimasi'] !== null ? $baris['estimasi'] : '-',
             ]);
         }
     }

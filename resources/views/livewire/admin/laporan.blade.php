@@ -758,7 +758,7 @@
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-gray-900">Definisi angka</p>
-                    <p class="mt-0.5">Total Kebutuhan = Peserta Aktif x jumlah per orang (teks bebas pada isi paket). Harga barang tidak ditampilkan pada laporan ini (keputusan D15, hanya admin).</p>
+                    <p class="mt-0.5">Total Kebutuhan = Peserta Aktif x jumlah per orang (teks bebas pada isi paket). Estimasi Biaya = harga per item x Peserta Aktif, hanya untuk item yang punya harga (tanda - berarti tanpa harga). Angka harga hanya tersedia di laporan admin ini (keputusan D15).</p>
                 </div>
             </div>
             <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
@@ -772,6 +772,7 @@
                                 <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Jumlah per Orang</th>
                                 <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Peserta Aktif</th>
                                 <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Total Kebutuhan</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Estimasi Biaya</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[#ebebeb]">
@@ -788,9 +789,12 @@
                                             {{ $baris['peserta'] }} peserta × {{ $baris['jumlah'] }}
                                         @endif
                                     </td>
+                                    <td class="px-3 py-2 font-mono text-sm {{ $baris['estimasi'] !== null ? 'text-gray-900' : 'text-gray-500' }}">
+                                        {{ $baris['estimasi'] !== null ? 'Rp '.number_format($baris['estimasi'], 0, ',', '.') : '-' }}
+                                    </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="px-3 py-4 text-sm text-gray-500">Belum ada isi paket pada produk paket.</td></tr>
+                                <tr><td colspan="6" class="px-3 py-4 text-sm text-gray-500">Belum ada isi paket pada produk paket.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
