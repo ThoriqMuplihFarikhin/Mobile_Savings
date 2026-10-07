@@ -21,7 +21,7 @@
     @endif
 
     <div class="mb-4 flex flex-wrap gap-2">
-        @foreach(['keuangan' => 'Keuangan', 'kolektor' => 'Per Kolektor', 'rekon' => 'Rekonsiliasi', 'umurkas' => 'Umur Kas', 'mutasi' => 'Mutasi', 'penarikan' => 'Penarikan', 'tunggakan' => 'Tunggakan', 'serah' => 'Serah Terima', 'paket' => 'Per Paket', 'barang' => 'Kebutuhan Barang'] as $nilaiSeksi => $labelSeksi)
+        @foreach(['keuangan' => 'Keuangan', 'kolektor' => 'Per Kolektor', 'rekon' => 'Rekonsiliasi', 'umurkas' => 'Umur Kas', 'mutasi' => 'Mutasi', 'penarikan' => 'Penarikan', 'tunggakan' => 'Tunggakan', 'serah' => 'Serah Terima', 'absensi' => 'Absensi', 'nasabah' => 'Nasabah', 'paket' => 'Per Paket', 'barang' => 'Kebutuhan Barang'] as $nilaiSeksi => $labelSeksi)
             <button wire:click="pilihSeksi('{{ $nilaiSeksi }}')"
                 class="rounded-full px-4 py-2 text-sm font-medium transition {{ $seksi === $nilaiSeksi ? 'bg-indigo-800 text-white' : 'bg-gray-50 text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb] hover:bg-white' }}">
                 {{ $labelSeksi }}
@@ -30,7 +30,7 @@
     </div>
 
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        @if (in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan'], true))
+        @if (in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan', 'absensi'], true))
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div class="flex gap-2">
                     @foreach(['harian' => 'Harian', 'bulanan' => 'Bulanan', 'rentang' => 'Rentang'] as $value => $label)
@@ -80,6 +80,11 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                 Cetak
             </button>
+            <a href="{{ route('admin.komisi.index') }}"
+                class="inline-flex items-center gap-2 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                Laporan Komisi
+            </a>
         </div>
     </div>
 
@@ -95,9 +100,11 @@
                 'penarikan' => 'Penarikan',
                 'tunggakan' => 'Tunggakan & Paket Gagal',
                 'serah' => 'Serah Terima Paket',
+                'absensi' => 'Absensi & Izin',
+                'nasabah' => 'Nasabah',
                 default => 'Keuangan',
             };
-            $judulPeriode = in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan'], true)
+            $judulPeriode = in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan', 'absensi'], true)
                 ? match ($periode) {
                     'bulanan' => $bulan,
                     'rentang' => $dariTanggal.' s/d '.$sampaiTanggal,
@@ -562,6 +569,150 @@
                                 </tr>
                             @empty
                                 <tr><td colspan="7" class="px-3 py-4 text-sm text-gray-500">Belum ada kepesertaan paket.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @elseif($seksi === 'absensi')
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Hadir = jumlah hari absensi kolektor tercatat (satu baris per tanggal per kolektor) pada periode berjalan. Izin Disetujui dan Izin Pending dihitung dari izin yang tanggalnya tumpang tindih dengan periode. Jam Masuk dan Jam Keluar berasal dari absensi harian kolektor.</p>
+                </div>
+            </div>
+            <div class="mb-6 grid gap-4 sm:grid-cols-3">
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Hadir</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">{{ $absensiRekap['hadir'] }}</p>
+                </div>
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Izin Disetujui</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">{{ $absensiRekap['izinDisetujui'] }}</p>
+                </div>
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Izin Pending</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">{{ $absensiRekap['izinPending'] }}</p>
+                </div>
+            </div>
+
+            <div class="mb-6 rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+                <h3 class="mb-4 text-sm font-semibold text-gray-900">Absensi Kolektor</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-[#ebebeb]">
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Tanggal</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Kolektor</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Jam Masuk</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Jam Keluar</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ebebeb]">
+                            @forelse($absensiRows as $baris)
+                                <tr class="transition hover:bg-gray-50">
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['tanggal'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $baris['kolektor'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['jam_masuk'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm {{ $baris['jam_keluar'] !== null ? 'text-gray-900' : 'text-[#ee0000]' }}">{{ $baris['jam_keluar'] ?? 'Belum keluar' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4" class="px-3 py-4 text-sm text-gray-500">Belum ada absensi pada periode ini.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+                <h3 class="mb-4 text-sm font-semibold text-gray-900">Izin Kolektor</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-[#ebebeb]">
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Kolektor</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Dari</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Sampai</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Alasan</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Status</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Diproses Oleh</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Catatan</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ebebeb]">
+                            @forelse($izinRows as $baris)
+                                <tr class="transition hover:bg-gray-50">
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $baris['kolektor'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-600">{{ $baris['dari'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-600">{{ $baris['sampai'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['alasan'] }}</td>
+                                    <td class="px-3 py-2 text-sm {{ $baris['status'] === 'Ditolak' ? 'text-[#ee0000]' : 'text-gray-900' }}">{{ $baris['status'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['pemroses'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-500">{{ $baris['catatan'] ?? '-' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="px-3 py-4 text-sm text-gray-500">Tidak ada izin pada periode ini.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @elseif($seksi === 'nasabah')
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Status = status pendaftaran nasabah pada posisi terkini (tanpa filter periode). Mode Akses = Digital atau Offline sesuai akun nasabah. Kolektor = penanggung jawab aktif dari nasabah tersebut; tanda &minus; berarti belum ditangani kolektor mana pun.</p>
+                </div>
+            </div>
+            <div class="mb-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Aktif</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">{{ $nasabahRekap['aktif'] }}</p>
+                </div>
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Pending Verifikasi</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">{{ $nasabahRekap['pending'] }}</p>
+                </div>
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Ditolak</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">{{ $nasabahRekap['ditolak'] }}</p>
+                </div>
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Digital</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">{{ $nasabahRekap['digital'] }}</p>
+                </div>
+                <div class="rounded-xl bg-gray-50 p-5 shadow-[inset_0_0_0_1px_#ebebeb]">
+                    <p class="font-mono text-xs uppercase tracking-wider text-gray-500">Offline</p>
+                    <p class="mt-1 font-mono text-2xl font-semibold text-gray-900">{{ $nasabahRekap['offline'] }}</p>
+                </div>
+            </div>
+
+            <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+                <h3 class="mb-4 text-sm font-semibold text-gray-900">Daftar Nasabah</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-[#ebebeb]">
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Nama</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">No HP</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Status Pendaftaran</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Mode Akses</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Kolektor</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ebebeb]">
+                            @forelse($nasabahRows as $baris)
+                                <tr class="transition hover:bg-gray-50">
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $baris['nama'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-600">{{ $baris['no_hp'] }}</td>
+                                    <td class="px-3 py-2 text-sm {{ in_array($baris['status_pendaftaran'], ['Ditolak'], true) ? 'text-[#ee0000]' : 'text-gray-900' }}">{{ $baris['status_pendaftaran'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['mode_akses'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['kolektor'] }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" class="px-3 py-4 text-sm text-gray-500">Belum ada nasabah terdaftar.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

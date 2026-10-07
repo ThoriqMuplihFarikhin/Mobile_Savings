@@ -4,7 +4,10 @@ namespace App\Livewire\Admin;
 
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\AbsensiKolektor;
+use App\Models\IzinKolektor;
 use App\Models\KepesertaanPaket;
+use App\Models\KolektorNasabah;
 use App\Models\LogAktivitas;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
@@ -62,7 +65,7 @@ class Laporan extends Component
 
     public function pilihSeksi(string $seksi): void
     {
-        if (! in_array($seksi, ['keuangan', 'kolektor', 'paket', 'barang', 'rekon', 'umurkas', 'mutasi', 'penarikan', 'tunggakan', 'serah'], true)) {
+        if (! in_array($seksi, ['keuangan', 'kolektor', 'paket', 'barang', 'rekon', 'umurkas', 'mutasi', 'penarikan', 'tunggakan', 'serah', 'absensi', 'nasabah'], true)) {
             return;
         }
 
@@ -83,6 +86,8 @@ class Laporan extends Component
             'penarikan' => $this->penarikanData($valid),
             'tunggakan' => ['tunggakanRows' => $this->tunggakanRows()],
             'serah' => ['serahRows' => $this->serahRows()],
+            'absensi' => $this->absensiData($valid),
+            'nasabah' => $this->nasabahData(),
             default => $valid
                 ? match ($this->periode) {
                     'bulanan' => $this->getBulanan(),
@@ -100,7 +105,7 @@ class Laporan extends Component
 
     public function exportCsv(): StreamedResponse
     {
-        if (in_array($this->seksi, ['keuangan', 'kolektor', 'rekon'], true)) {
+        if (in_array($this->seksi, ['keuangan', 'kolektor', 'rekon', 'absensi'], true)) {
             $this->validate($this->filterRules());
         } elseif ($this->seksi === 'mutasi') {
             $this->validate(array_merge($this->filterRules(), [
@@ -134,6 +139,8 @@ class Laporan extends Component
             'penarikan' => 'laporan-penarikan-'.$this->periode.'-'.$periodeValue.'.csv',
             'tunggakan' => 'laporan-tunggakan-'.now()->toDateString().'.csv',
             'serah' => 'laporan-serah-terima-'.now()->toDateString().'.csv',
+            'absensi' => 'laporan-absensi-'.$this->periode.'-'.$periodeValue.'.csv',
+            'nasabah' => 'laporan-nasabah-'.now()->toDateString().'.csv',
             'paket' => 'laporan-paket-'.now()->toDateString().'.csv',
             'barang' => 'laporan-kebutuhan-barang-'.now()->toDateString().'.csv',
             default => 'laporan-'.$this->periode.'-'.$periodeValue.'.csv',
@@ -163,6 +170,8 @@ class Laporan extends Component
                 'penarikan' => $this->tulisCsvPenarikan($file, $safe),
                 'tunggakan' => $this->tulisCsvTunggakan($file, $safe),
                 'serah' => $this->tulisCsvSerah($file, $safe),
+                'absensi' => $this->tulisCsvAbsensi($file, $safe),
+                'nasabah' => $this->tulisCsvNasabah($file, $safe),
                 'paket' => $this->tulisCsvPaket($file, $safe),
                 'barang' => $this->tulisCsvBarang($file, $safe),
                 default => $this->tulisCsvKeuangan($file, $safe),
@@ -986,6 +995,134 @@ class Laporan extends Component
     }
 
     /**
+     * Absensi kolektor (hadir per hari, jam masuk/keluar) dan daftar izin
+     * yang tumpang tindih dengan periode, plus rekap singkat.
+     *
+     * @return array{
+     *     absensiRows: array<int, array{tanggal: string, kolektor: string, jam_masuk: string, jam_keluar: string|null}>,
+     *     izinRows: array<int, array{kolektor: string, dari: string, sampai: string, alasan: string, status: string, pemroses: string, catatan: string|null}>,
+     *     absensiRekap: array{hadir: int, izinDisetujui: int, izinPending: int}
+     * }
+     */
+    private function absensiData(bool $valid): array
+    {
+        if (! $valid) {
+            return [
+                'absensiRows' => [],
+                'izinRows' => [],
+                'absensiRekap' => ['hadir' => 0, 'izinDisetujui' => 0, 'izinPending' => 0],
+            ];
+        }
+
+        [$mulai, $selesai] = $this->periodeRange();
+
+        $absensiRows = AbsensiKolektor::with('kolektor')
+            ->whereBetween('tanggal', [$mulai, $selesai])
+            ->orderByDesc('tanggal')
+            ->orderBy('kolektor_id')
+            ->get()
+            ->map(fn (AbsensiKolektor $item): array => [
+                'tanggal' => Carbon::parse($item->tanggal)->format('d/m/Y'),
+                'kolektor' => $item->kolektor->name ?? '-',
+                'jam_masuk' => substr((string) $item->waktu_masuk, 0, 5),
+                'jam_keluar' => $item->waktu_keluar !== null
+                    ? substr((string) $item->waktu_keluar, 0, 5)
+                    : null,
+            ])
+            ->all();
+
+        $izinRows = IzinKolektor::with(['kolektor', 'diprosesOleh'])
+            ->where('tanggal_mulai', '<=', $selesai)
+            ->where('tanggal_selesai', '>=', $mulai)
+            ->orderByDesc('tanggal_mulai')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (IzinKolektor $item): array => [
+                'kolektor' => $item->kolektor->name ?? '-',
+                'dari' => Carbon::parse($item->tanggal_mulai)->format('d/m/Y'),
+                'sampai' => Carbon::parse($item->tanggal_selesai)->format('d/m/Y'),
+                'alasan' => (string) $item->alasan,
+                'status' => match ($item->status) {
+                    'disetujui' => 'Disetujui',
+                    'ditolak' => 'Ditolak',
+                    default => 'Pending',
+                },
+                'pemroses' => $item->diprosesOleh->name ?? '-',
+                'catatan' => $item->catatan_admin,
+            ])
+            ->all();
+
+        return [
+            'absensiRows' => $absensiRows,
+            'izinRows' => $izinRows,
+            'absensiRekap' => [
+                'hadir' => count($absensiRows),
+                'izinDisetujui' => count(array_filter($izinRows, fn (array $baris): bool => $baris['status'] === 'Disetujui')),
+                'izinPending' => count(array_filter($izinRows, fn (array $baris): bool => $baris['status'] === 'Pending')),
+            ],
+        ];
+    }
+
+    /**
+     * Posisi terkini nasabah: status pendaftaran, mode akses, dan kolektor
+     * penanggung jawab (tanpa filter periode).
+     *
+     * @return array{
+     *     nasabahRows: array<int, array{id: int, nama: string, no_hp: string, status_pendaftaran: string, mode_akses: string, kolektor: string}>,
+     *     nasabahRekap: array{aktif: int, pending: int, ditolak: int, digital: int, offline: int}
+     * }
+     */
+    private function nasabahData(): array
+    {
+        $kolektorPerNasabah = KolektorNasabah::where('status', 'aktif')
+            ->get(['nasabah_id', 'kolektor_id'])
+            ->mapWithKeys(fn (KolektorNasabah $baris): array => [
+                (int) $baris->nasabah_id => (int) $baris->kolektor_id,
+            ]);
+
+        $namaKolektor = User::query()
+            ->whereIn('id', $kolektorPerNasabah->unique()->values())
+            ->pluck('name', 'id');
+
+        $nasabahRows = User::with('nasabahProfil')
+            ->where('role', 'nasabah')
+            ->orderBy('name')
+            ->get()
+            ->map(function (User $nasabah) use ($kolektorPerNasabah, $namaKolektor): array {
+                $kolektorId = $kolektorPerNasabah->get((int) $nasabah->id);
+                $profil = $nasabah->nasabahProfil;
+
+                return [
+                    'id' => (int) $nasabah->id,
+                    'nama' => (string) $nasabah->name,
+                    'no_hp' => (string) ($nasabah->no_hp ?? '-'),
+                    'status_pendaftaran' => match ($profil?->status_pendaftaran) {
+                        'aktif' => 'Aktif',
+                        'pending_verifikasi' => 'Pending Verifikasi',
+                        'ditolak' => 'Ditolak',
+                        default => '-',
+                    },
+                    'mode_akses' => $nasabah->mode_akses === 'offline' ? 'Offline' : 'Digital',
+                    'kolektor' => $kolektorId !== null
+                        ? (string) ($namaKolektor[$kolektorId] ?? 'Kolektor #'.$kolektorId)
+                        : '-',
+                ];
+            })
+            ->all();
+
+        return [
+            'nasabahRows' => $nasabahRows,
+            'nasabahRekap' => [
+                'aktif' => count(array_filter($nasabahRows, fn (array $baris): bool => $baris['status_pendaftaran'] === 'Aktif')),
+                'pending' => count(array_filter($nasabahRows, fn (array $baris): bool => $baris['status_pendaftaran'] === 'Pending Verifikasi')),
+                'ditolak' => count(array_filter($nasabahRows, fn (array $baris): bool => $baris['status_pendaftaran'] === 'Ditolak')),
+                'digital' => count(array_filter($nasabahRows, fn (array $baris): bool => $baris['mode_akses'] === 'Digital')),
+                'offline' => count(array_filter($nasabahRows, fn (array $baris): bool => $baris['mode_akses'] === 'Offline')),
+            ],
+        ];
+    }
+
+    /**
      * Label periode untuk baris "Periode" pada CSV.
      */
     private function labelPeriodeCsv(): string
@@ -1271,6 +1408,78 @@ class Laporan extends Component
                 $safe($baris['penerima']),
                 $safe($baris['tanggal'] ?? '-'),
                 $safe($baris['foto'] ?? '-'),
+            ]);
+        }
+    }
+
+    /**
+     * @param  resource  $file
+     * @param  Closure(mixed): string  $safe
+     */
+    private function tulisCsvAbsensi($file, Closure $safe): void
+    {
+        $data = $this->absensiData(true);
+
+        fputcsv($file, [$safe('Laporan Absensi & Izin Kolektor')]);
+        fputcsv($file, [$safe('Periode'), $this->labelPeriodeCsv()]);
+        fputcsv($file, []);
+        fputcsv($file, ['Hadir', $data['absensiRekap']['hadir']]);
+        fputcsv($file, ['Izin Disetujui', $data['absensiRekap']['izinDisetujui']]);
+        fputcsv($file, ['Izin Pending', $data['absensiRekap']['izinPending']]);
+        fputcsv($file, []);
+        fputcsv($file, ['ABSENSI']);
+        fputcsv($file, ['Tanggal', 'Kolektor', 'Jam Masuk', 'Jam Keluar']);
+
+        foreach ($data['absensiRows'] as $baris) {
+            fputcsv($file, [
+                $baris['tanggal'],
+                $safe($baris['kolektor']),
+                $baris['jam_masuk'],
+                $safe($baris['jam_keluar'] ?? '-'),
+            ]);
+        }
+
+        fputcsv($file, []);
+        fputcsv($file, ['IZIN']);
+        fputcsv($file, ['Kolektor', 'Dari', 'Sampai', 'Alasan', 'Status', 'Diproses Oleh', 'Catatan']);
+
+        foreach ($data['izinRows'] as $baris) {
+            fputcsv($file, [
+                $safe($baris['kolektor']),
+                $baris['dari'],
+                $baris['sampai'],
+                $safe($baris['alasan']),
+                $baris['status'],
+                $safe($baris['pemroses']),
+                $safe($baris['catatan'] ?? '-'),
+            ]);
+        }
+    }
+
+    /**
+     * @param  resource  $file
+     * @param  Closure(mixed): string  $safe
+     */
+    private function tulisCsvNasabah($file, Closure $safe): void
+    {
+        $data = $this->nasabahData();
+
+        fputcsv($file, [$safe('Laporan Nasabah')]);
+        fputcsv($file, [$safe('Tanggal'), now()->toDateString()]);
+        fputcsv($file, []);
+        fputcsv($file, ['Aktif', $data['nasabahRekap']['aktif']]);
+        fputcsv($file, ['Pending Verifikasi', $data['nasabahRekap']['pending']]);
+        fputcsv($file, ['Ditolak', $data['nasabahRekap']['ditolak']]);
+        fputcsv($file, []);
+        fputcsv($file, ['Nama', 'No HP', 'Status Pendaftaran', 'Mode Akses', 'Kolektor Penanggung Jawab']);
+
+        foreach ($data['nasabahRows'] as $baris) {
+            fputcsv($file, [
+                $safe($baris['nama']),
+                $safe($baris['no_hp']),
+                $baris['status_pendaftaran'],
+                $baris['mode_akses'],
+                $safe($baris['kolektor']),
             ]);
         }
     }

@@ -81,6 +81,9 @@ class User extends Authenticatable
             : $initials;
     }
 
+    /**
+     * @return HasOne<NasabahProfil, $this>
+     */
     public function nasabahProfil(): HasOne
     {
         return $this->hasOne(NasabahProfil::class);
