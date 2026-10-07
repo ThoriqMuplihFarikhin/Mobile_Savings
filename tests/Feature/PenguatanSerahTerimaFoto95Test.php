@@ -251,7 +251,7 @@ it('input foto membatasi tipe dan mencantumkan kompresi klien', function () {
         ->test(SerahTerimaPaket::class)
         ->call('bukaKonfirmasi', $kepesertaan->id)
         ->assertSee('maks 5 MB')
-        ->assertSee('accept="image/jpeg,image/png,image/webp"', false)
+        ->assertSee('accept="image/*" capture', false)
         ->assertSee('kompresFoto', false);
 });
 

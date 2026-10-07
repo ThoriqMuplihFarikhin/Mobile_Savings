@@ -137,7 +137,7 @@
                             </div>
                             <div x-data="kompresFoto">
                                 <label for="buktiFoto" class="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Foto Bukti (JPG/PNG/WebP, maks 5 MB)</label>
-                                <input id="buktiFoto" type="file" accept="image/jpeg,image/png,image/webp"
+                                <input id="buktiFoto" type="file" accept="image/*" capture
                                     x-on:change="proses($event.target)"
                                     class="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-2 text-xs text-zinc-600 dark:text-zinc-300 focus:border-emerald-500 focus:ring-emerald-500 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-200 file:px-3 file:py-1.5 file:text-[11px] file:font-bold file:text-zinc-700 dark:file:bg-zinc-700 dark:file:text-zinc-200" />
                                 <p x-show="sedangKompres" style="display:none" class="mt-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">Mengompres foto...</p>
