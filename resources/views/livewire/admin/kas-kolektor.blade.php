@@ -33,7 +33,7 @@
             <h3 class="text-sm font-semibold text-gray-900">Kas Per Kolektor</h3>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="hidden md:table w-full text-left">
                 <thead>
                     <tr class="border-b border-[#ebebeb] bg-gray-50">
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Kolektor</th>
@@ -85,6 +85,61 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div data-test="kartu-kas" class="divide-y divide-[#ebebeb] md:hidden">
+            @forelse($daftarKas as $baris)
+                <div class="px-4 py-3" @class(['bg-amber-50' => $baris['lewat_batas']])>
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                            <span class="text-sm font-medium text-gray-900">{{ $baris['nama'] }}</span>
+                            @if($baris['terkunci'])
+                                <span class="ml-1.5 inline-flex items-center rounded-full bg-[#f7d4d6] px-2 py-0.5 font-mono text-xs text-[#c50000]">Terkunci</span>
+                            @endif
+                        </div>
+                        @if($baris['lewat_batas'])
+                            <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 font-mono text-xs text-[#ab570a]">Lewat Batas</span>
+                        @else
+                            <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-indigo-600">Aman</span>
+                        @endif
+                    </div>
+                    <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Setoran Masuk</span>
+                            <span class="font-mono text-sm text-gray-600">Rp {{ number_format($baris['total_belum_disetor'], 0, ',', '.') }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Penarikan Tunai</span>
+                            <span class="font-mono text-sm text-gray-600">Rp {{ number_format($baris['penarikan_tunai'], 0, ',', '.') }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Kas di Tangan</span>
+                            <span class="font-mono text-sm font-semibold text-gray-900">Rp {{ number_format($baris['kas_di_tangan'], 0, ',', '.') }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Transaksi</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $baris['jumlah_transaksi'] }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Umur Tertua</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $baris['umur_terlama_hari'] }} hari</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Pengajuan Pending</span>
+                            <span class="font-mono text-sm text-gray-600">{{ $baris['pengajuan_pending'] }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Akumulasi Selisih</span>
+                            <span class="font-mono text-sm {{ $baris['selisih_kumulatif'] != 0 ? 'text-[#ee0000]' : 'text-gray-600' }}">
+                                {{ $baris['selisih_kumulatif'] >= 0 ? '+' : '' }}Rp {{ number_format($baris['selisih_kumulatif'], 0, ',', '.') }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="flex flex-col items-center gap-2 px-4 py-10 text-center">
+                    <p class="text-sm text-gray-500">Belum ada kolektor aktif.</p>
+                </div>
+            @endforelse
         </div>
     </div>
 </div>

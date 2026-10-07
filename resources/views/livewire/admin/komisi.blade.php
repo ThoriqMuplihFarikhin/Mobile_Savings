@@ -23,15 +23,15 @@
         {{-- Filter --}}
         <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div class="flex items-center gap-2">
+                <div data-test="baris-tanggal-filter" class="flex flex-wrap items-center gap-2">
                     <label class="text-xs font-medium text-gray-500">Dari</label>
                     <x-ui.tanggal wire:model.live="dariTanggal"
-                        class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
+                        class="w-full h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                     <label class="text-xs font-medium text-gray-500">Sampai</label>
                     <x-ui.tanggal wire:model.live="sampaiTanggal" :min="$dariTanggal"
-                        class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
+                        class="w-full h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10" />
                 </div>
                 <select wire:model.live="produkId"
                     class="h-10 rounded-md border border-[#ebebeb] bg-white px-3 text-sm text-gray-900 focus:border-[#171717] focus:outline-none focus:ring-2 focus:ring-[#171717]/10">
@@ -41,7 +41,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="flex items-center gap-2">
+            <div data-test="baris-aksi-filter" class="flex flex-wrap items-center gap-2">
                 <button wire:click="exportCsv"
                     class="inline-flex items-center gap-2 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
@@ -133,34 +133,51 @@
         {{-- Komisi per Bulan --}}
         <div class="mb-6 rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
             <h3 class="mb-4 text-sm font-semibold text-gray-900">Komisi per Bulan</h3>
-            @if($rekapBulan->isNotEmpty())
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead>
-                            <tr class="border-b border-[#ebebeb] bg-gray-50">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Bulan</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500 text-right">Transaksi</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500 text-right">Komisi</th>
+            <div class="overflow-x-auto">
+                <table class="hidden md:table w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-[#ebebeb] bg-gray-50">
+                            <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Bulan</th>
+                            <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500 text-right">Transaksi</th>
+                            <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500 text-right">Komisi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#ebebeb]">
+                        @forelse($rekapBulan as $item)
+                            @php
+                                $namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                                [$tahun, $bulan] = explode('-', $item->bulan);
+                            @endphp
+                            <tr>
+                                <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-900">{{ $namaBulan[(int) $bulan - 1] }} {{ $tahun }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-right font-mono text-sm text-gray-600">{{ $item->jumlah_transaksi }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-right font-mono text-sm font-semibold text-gray-900">Rp {{ number_format($item->total_komisi, 0, ',', '.') }}</td>
                             </tr>
-                        </thead>
-                        <tbody class="divide-y divide-[#ebebeb]">
-                            @foreach($rekapBulan as $item)
-                                @php
-                                    $namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                                    [$tahun, $bulan] = explode('-', $item->bulan);
-                                @endphp
-                                <tr>
-                                    <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-900">{{ $namaBulan[(int) $bulan - 1] }} {{ $tahun }}</td>
-                                    <td class="whitespace-nowrap px-4 py-3 text-right font-mono text-sm text-gray-600">{{ $item->jumlah_transaksi }}</td>
-                                    <td class="whitespace-nowrap px-4 py-3 text-right font-mono text-sm font-semibold text-gray-900">Rp {{ number_format($item->total_komisi, 0, ',', '.') }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <p class="text-sm text-gray-500">Belum ada komisi pada periode ini.</p>
-            @endif
+                        @empty
+                            <tr>
+                                <td colspan="3" class="px-4 py-8 text-center text-sm text-gray-500">Belum ada komisi pada periode ini.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div data-test="kartu-komisi-bulan" class="divide-y divide-[#ebebeb] md:hidden">
+                @forelse($rekapBulan as $item)
+                    @php
+                        $namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                        [$tahun, $bulan] = explode('-', $item->bulan);
+                    @endphp
+                    <div class="flex items-center justify-between gap-3 py-3">
+                        <div class="min-w-0">
+                            <p class="text-sm text-gray-900">{{ $namaBulan[(int) $bulan - 1] }} {{ $tahun }}</p>
+                            <p class="text-xs text-gray-500">{{ $item->jumlah_transaksi }} transaksi</p>
+                        </div>
+                        <span class="font-mono text-sm font-semibold text-gray-900">Rp {{ number_format($item->total_komisi, 0, ',', '.') }}</span>
+                    </div>
+                @empty
+                    <div class="py-8 text-center text-sm text-gray-500">Belum ada komisi pada periode ini.</div>
+                @endforelse
+            </div>
         </div>
 
         {{-- Riwayat Transaksi --}}
@@ -168,42 +185,62 @@
             <div class="border-b border-[#ebebeb] px-5 py-4">
                 <h3 class="text-sm font-semibold text-gray-900">Riwayat Transaksi</h3>
             </div>
-            @if($riwayat->isNotEmpty())
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead>
-                            <tr class="border-b border-[#ebebeb] bg-gray-50">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Tanggal</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Nasabah</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Produk</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500 text-right">Nominal</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500 text-right">% Komisi</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500 text-right">Komisi</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Disetujui Oleh</th>
+            <div class="overflow-x-auto">
+                <table class="hidden md:table w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-[#ebebeb] bg-gray-50">
+                            <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Tanggal</th>
+                            <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Nasabah</th>
+                            <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Produk</th>
+                            <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500 text-right">Nominal</th>
+                            <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500 text-right">% Komisi</th>
+                            <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500 text-right">Komisi</th>
+                            <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Disetujui Oleh</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#ebebeb]">
+                        @forelse($riwayat as $item)
+                            <tr class="transition hover:bg-gray-50">
+                                <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{{ $item->waktu_approval?->format('d M Y, H:i') ?? '-' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3">
+                                    <div class="text-sm font-medium text-gray-900">{{ $item->nasabah->name ?? '-' }}</div>
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{{ $item->produk->nama ?? '-' }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-right font-mono text-sm text-gray-900">Rp {{ number_format($item->nominal_diminta, 0, ',', '.') }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-right font-mono text-sm text-gray-600">{{ rtrim(rtrim(number_format($item->persen_komisi_terpakai, 2), '0'), '.') }}%</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-right font-mono text-sm font-semibold text-gray-900">Rp {{ number_format($item->nominal_komisi, 0, ',', '.') }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{{ $item->disetujuiOleh->name ?? '-' }}</td>
                             </tr>
-                        </thead>
-                        <tbody class="divide-y divide-[#ebebeb]">
-                            @foreach($riwayat as $item)
-                                <tr class="transition hover:bg-gray-50">
-                                    <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{{ $item->waktu_approval?->format('d M Y, H:i') ?? '-' }}</td>
-                                    <td class="whitespace-nowrap px-4 py-3">
-                                        <div class="text-sm font-medium text-gray-900">{{ $item->nasabah->name ?? '-' }}</div>
-                                    </td>
-                                    <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{{ $item->produk->nama ?? '-' }}</td>
-                                    <td class="whitespace-nowrap px-4 py-3 text-right font-mono text-sm text-gray-900">Rp {{ number_format($item->nominal_diminta, 0, ',', '.') }}</td>
-                                    <td class="whitespace-nowrap px-4 py-3 text-right font-mono text-sm text-gray-600">{{ rtrim(rtrim(number_format($item->persen_komisi_terpakai, 2), '0'), '.') }}%</td>
-                                    <td class="whitespace-nowrap px-4 py-3 text-right font-mono text-sm font-semibold text-gray-900">Rp {{ number_format($item->nominal_komisi, 0, ',', '.') }}</td>
-                                    <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{{ $item->disetujuiOleh->name ?? '-' }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-4 py-12 text-center text-sm text-gray-500">Tidak ada data komisi pada periode ini.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div data-test="kartu-riwayat-komisi" class="divide-y divide-[#ebebeb] md:hidden">
+                @forelse($riwayat as $item)
+                    <div class="px-4 py-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="text-sm font-medium text-gray-900">{{ $item->nasabah->name ?? '-' }}</p>
+                                <p class="text-xs text-gray-500">{{ $item->waktu_approval?->format('d M Y, H:i') ?? '-' }} &middot; {{ $item->produk->nama ?? '-' }}</p>
+                            </div>
+                            <span class="font-mono text-sm font-semibold text-gray-900">Rp {{ number_format($item->nominal_komisi, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                            <span class="font-mono">Nominal Rp {{ number_format($item->nominal_diminta, 0, ',', '.') }}</span>
+                            <span class="font-mono">{{ rtrim(rtrim(number_format($item->persen_komisi_terpakai, 2), '0'), '.') }}%</span>
+                            <span>Disetujui {{ $item->disetujuiOleh->name ?? '-' }}</span>
+                        </div>
+                    </div>
+                @empty
+                    <div class="py-12 text-center text-sm text-gray-500">Tidak ada data komisi pada periode ini.</div>
+                @endforelse
+            </div>
+            @if($riwayat->hasPages())
                 <div class="border-t border-[#ebebeb] px-4 py-3">{{ $riwayat->links() }}</div>
-            @else
-                <div class="px-5 py-12 text-center">
-                    <p class="text-sm text-gray-500">Tidak ada data komisi pada periode ini.</p>
-                </div>
             @endif
         </div>
     </div>

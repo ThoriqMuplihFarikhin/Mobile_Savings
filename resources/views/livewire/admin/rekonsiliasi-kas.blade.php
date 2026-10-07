@@ -25,7 +25,7 @@
             <div class="divide-y divide-[#e0c88a]">
                 @foreach($pendingSubmissions as $item)
                     <div class="px-6 py-4">
-                        <div class="flex items-center justify-between">
+                        <div data-test="baris-pengajuan" class="flex flex-wrap items-center justify-between gap-2">
                             <div>
                                 <p class="text-sm font-medium text-gray-900">{{ $item->kolektor->name ?? '-' }}</p>
                                 <p class="text-xs text-gray-500">{{ $item->tanggal_setor->translatedFormat('d M Y') }} &middot; Seharusnya: Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</p>
@@ -213,7 +213,7 @@
             <h3 class="text-sm font-semibold text-gray-900">Riwayat Rekonsiliasi</h3>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left">
+            <table class="hidden md:table w-full text-left">
                 <thead>
                     <tr class="border-b border-[#ebebeb] bg-gray-50">
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Tanggal</th>
@@ -270,6 +270,59 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div data-test="kartu-riwayat" class="divide-y divide-[#ebebeb] md:hidden">
+            @forelse($riwayat as $item)
+                <div class="px-4 py-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-gray-900">{{ $item->kolektor->name ?? '-' }}</p>
+                            <p class="text-xs text-gray-500">{{ $item->tanggal_setor->translatedFormat('d M Y') }}</p>
+                        </div>
+                        @if($item->status === 'pending')
+                            <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 font-mono text-xs text-[#ab570a]">Menunggu</span>
+                        @elseif($item->status === 'cocok')
+                            <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-indigo-600">Cocok</span>
+                        @elseif($item->status === 'lebih')
+                            <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 font-mono text-xs text-[#ab570a]">Lebih</span>
+                        @elseif($item->status === 'dibatalkan')
+                            <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 font-mono text-xs text-[#c50000]">Ditolak/Dibatalkan</span>
+                        @else
+                            <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 font-mono text-xs text-[#c50000]">Kurang</span>
+                        @endif
+                    </div>
+                    <div class="mt-2 grid grid-cols-3 gap-x-3 gap-y-1.5">
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Seharusnya</span>
+                            <span class="font-mono text-sm text-gray-600">Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Diterima</span>
+                            <span class="font-mono text-sm text-gray-600">
+                                @if($item->total_diterima !== null)
+                                    Rp {{ number_format($item->total_diterima, 0, ',', '.') }}
+                                @else
+                                    -
+                                @endif
+                            </span>
+                        </div>
+                        <div>
+                            <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Selisih</span>
+                            <span class="font-mono text-sm {{ $item->selisih && $item->selisih != 0 ? 'text-[#ee0000]' : 'text-[#0070f3]' }}">
+                                @if($item->selisih !== null)
+                                    {{ $item->selisih >= 0 ? '+' : '' }} Rp {{ number_format($item->selisih, 0, ',', '.') }}
+                                @else
+                                    -
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="flex flex-col items-center gap-2 px-4 py-10 text-center">
+                    <p class="text-sm text-gray-500">Belum ada riwayat rekonsiliasi.</p>
+                </div>
+            @endforelse
         </div>
         <div class="border-t border-[#ebebeb] px-4 py-3">{{ $riwayat->links() }}</div>
     </div>
