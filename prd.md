@@ -49,7 +49,7 @@ Autentikasi: **No. HP + PIN 6 digit** untuk seluruh role, dengan proteksi brute-
 
 ## 4. Kebutuhan Fungsional (Functional Requirements)
 
-> **Status build `fix/audit-2026-10`:** centang `[x]` pada FR yang terpenuhi dan terverifikasi lewat tes otomatis (pencatatan: `docs/plan-log.md` seksi P7.2). FR tanpa centang belum dikonfirmasi pada build ini.
+> **Status build `fix/audit-2026-10` + `feat/okt26`:** centang `[x]` pada FR yang terpenuhi dan terverifikasi lewat tes otomatis (FR lama: `docs/plan-log.md` seksi P7.2; FR baru 4.11: seksi P9.1). FR tanpa centang belum dikonfirmasi pada build ini.
 
 ### 4.1 Pendaftaran & Manajemen Nasabah
 - FR-1: Nasabah **tidak bisa mendaftar sendiri** — hanya admin atau kolektor yang bisa mendaftarkan
@@ -103,6 +103,15 @@ Autentikasi: **No. HP + PIN 6 digit** untuk seluruh role, dengan proteksi brute-
 ### 4.10 Laporan & Audit
 - [x] FR-32: Admin dapat melihat dan mengekspor laporan (harian/bulanan) mencakup total setoran, penarikan, komisi, per kolektor, dan per paket (termasuk kalkulasi kebutuhan barang untuk pengadaan sembako)
 - FR-33: Seluruh aksi penting (input, koreksi, approval, verifikasi, perubahan data) tercatat di log aktivitas dengan jejak siapa dan kapan
+
+### 4.11 Penambahan Fitur (Oktober 2026 — keputusan D13–D22)
+- [x] FR-34: **Nasabah mode offline** — nasabah tanpa HP/tanpa aplikasi tetap punya akun, saldo, riwayat, dan kepesertaan paket; `mode_akses = offline` (login ditolak, tanpa notifikasi WA/in-app), seluruh pencatatan oleh kolektor/admin, termasuk penarikan tunai yang dicatat langsung `selesai` (di bawah ambang persetujuan ganda) dan konversi mode dua arah oleh admin — tes: `NasabahOfflineAkunTest`, `NoHpNullSafetyTest`, `NotifikasiOfflineD14Test`, `PenarikanOfflineLangsungD14Test`, `KonversiModeOfflineD14Test`, `RekapMutasiNasabahTest`
+- [x] FR-35: **Kas kolektor dikurangi penarikan tunai** — kas di tangan = setoran belum disetor − penarikan tunai (`nominal_diterima`) yang dibayarkan kolektor dan belum direkonsiliasi; kas tidak cukup ditolak kecuali `izinkan_kas_minus`; `total_seharusnya` setor kantor ikut dikurangi; komisi tetap di kas — tes: `KasPenarikanTunaiTest`
+- [x] FR-36: **Komitmen paket** — kepesertaan tidak lagi dibuat otomatis saat setoran; nasabah memilih paket sendiri (konfirmasi PIN + teks komitmen) atau didaftarkan kolektor/admin (catatan persetujuan); setoran ke paket mensyaratkan kepesertaan aktif; gabung terlambat memakai `totalHariKepesertaan()`; status komitmen tampil di progres & detail admin — tes: `SetoranWajibKepesertaanTest`, `PilihPaketTest`, `DaftarkanKePaketTest`, `StatusKomitmenUiTest`, `TargetKepesertaanGabungTerlambatTest`
+- [x] FR-37: **Login portal terpisah** — `/login` (nasabah), `/login/kolektor`, `/login/admin`; role tidak cocok portal ditolak dengan pesan generik anti-enumerasi dan tercatat di log; logout kembali ke portal asal; pembeda visual per portal (warna, chip peran, judul tab, manifest per portal) — tes: `LoginPortalTerpisahD19Test`, `PembedaVisualPortalD19Test`
+- [x] FR-38: **Ekspor komisi & laporan lengkap** — halaman komisi memiliki filter (status, lokasi, kolektor, dasar tanggal), rekap per bulan, ekspor CSV (aman formula-injection), dan cetak; laporan admin bertambah mode rentang tanggal serta seksi rekonsiliasi kas, umur kas, mutasi nasabah, penarikan, tunggakan, serah terima, absensi/izin, dan nasabah — tes: `KomisiEksporD21Test`, `LaporanPeriodeRentangTest`, `LaporanRekonUmurKasTest`, `LaporanMutasiPenarikanTest`, `LaporanTunggakanSerahTest`, `LaporanAbsensiNasabahTest`
+- [x] FR-39: **Pembatalan penarikan oleh nasabah** — boleh untuk `pending` (termasuk fase-1 approval ganda) dan `approved` (saldo dikembalikan dalam transaksi berlock); `selesai`/`ditolak` ditolak; log + notifikasi admin/kolektor penanggung jawab; penarikan `dibatalkan`/kedaluwarsa tidak masuk komisi/laporan — tes: `BatalkanPenarikanD18Test`
+- [x] FR-40: **APK (Capacitor) & PWA** — proyek `mobile/` tiga flavor (`nasabah`/`kolektor`/`admin`) + workflow GitHub Actions build APK + PWA dasar (manifest per portal, service worker aset statis + halaman `/offline`, bundel Leaflet/signature_pad tanpa CDN) — tes: `ProyekCapacitorP85Test`, `WorkflowBuildApkP86Test`, `PwaDasarTest`, `HalamanOfflineP82Test`, `PrasyaratWebP81Test`, `AksesibilitasKameraP83Test`. **Catatan:** pengisian secrets/`APP_DOMAIN`, sekali build CI, dan uji perangkat Android nyata masih menunggu pemilik (lihat `docs/apk.md`).
 
 ---
 
