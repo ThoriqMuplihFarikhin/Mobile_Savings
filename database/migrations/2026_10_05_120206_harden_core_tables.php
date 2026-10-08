@@ -34,8 +34,22 @@ return new class extends Migration
         Schema::table('transaksi_setoran', function (Blueprint $table) {
             $table->dropForeign(['setoran_kolektor_id']);
             $table->dropIndex(['setoran_kolektor_id']);
+        });
+
+        // FK `input_by` menumpang pada index komposit (index auto FK asli lenyap
+        // saat komposit dibuat) — lepas FK-nya dulu agar komposit bisa dibuang,
+        // lalu pasang kembali agar MySQL membuat index pendukungnya lagi.
+        Schema::table('transaksi_setoran', function (Blueprint $table) {
+            $table->dropForeign(['input_by']);
+        });
+
+        Schema::table('transaksi_setoran', function (Blueprint $table) {
             $table->dropIndex(['input_by', 'status', 'sudah_disetor_ke_kantor']);
             $table->dropIndex(['tanggal_transaksi']);
+        });
+
+        Schema::table('transaksi_setoran', function (Blueprint $table) {
+            $table->foreign('input_by')->references('id')->on('users');
         });
     }
 
