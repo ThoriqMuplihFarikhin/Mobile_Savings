@@ -16,6 +16,7 @@ class NasabahProfil extends Model
         'user_id',
         'nama',
         'alamat',
+        'catatan_offline',
         'tanggal_lahir',
         'jenis_kelamin',
         'pekerjaan',
