@@ -67,6 +67,10 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3">
+                                @if($item->bukti_path)
+                                    <a href="{{ route('penarikan.bukti', $item) }}" target="_blank" rel="noopener"
+                                        class="mb-1.5 inline-flex min-h-11 items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-[#0070f3] transition hover:bg-gray-50">Lihat bukti</a>
+                                @endif
                                 @if($item->status === 'pending')
                                     <div class="flex items-center gap-2">
                                         @if($item->disetujui_oleh === null || (int) $item->disetujui_oleh !== (int) auth()->id())
@@ -148,6 +152,10 @@
                         </div>
                     </div>
                     <div class="mt-3 flex flex-wrap items-center gap-2">
+                        @if($item->bukti_path)
+                            <a href="{{ route('penarikan.bukti', $item) }}" target="_blank" rel="noopener"
+                                class="inline-flex min-h-11 items-center gap-1 rounded-full border border-[#ebebeb] bg-white px-3 py-1.5 text-xs font-medium text-[#0070f3] transition hover:bg-gray-50">Lihat bukti</a>
+                        @endif
                         @if($item->status === 'pending')
                             <div class="flex items-center gap-2">
                                 @if($item->disetujui_oleh === null || (int) $item->disetujui_oleh !== (int) auth()->id())

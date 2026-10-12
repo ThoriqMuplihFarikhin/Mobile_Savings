@@ -1,4 +1,60 @@
-<div class="mx-auto max-w-2xl space-y-5">
+<div x-data="{
+    signaturePad: null,
+    ttdTimer: null,
+    tab: @js(in_array($buktiJenis, ['tanda_tangan', 'foto'], true) ? $buktiJenis : 'tanda_tangan'),
+    initBukti() {
+        const canvas = document.getElementById('canvas-bukti-penarikan');
+        if (!canvas) return;
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        this.signaturePad = new SignaturePad(canvas);
+        const kirim = () => this.kirimTandaTangan();
+        canvas.addEventListener('mouseup', kirim);
+        canvas.addEventListener('touchend', kirim);
+    },
+    kirimTandaTangan() {
+        if (!this.signaturePad) return;
+        clearTimeout(this.ttdTimer);
+        this.ttdTimer = setTimeout(() => {
+            const kosong = this.signaturePad.isEmpty();
+            $wire.setBuktiBase64(kosong ? '' : this.signaturePad.toDataURL());
+            if (!kosong) $wire.setBuktiJenis('tanda_tangan');
+        }, 300);
+    },
+    pilihJenis(jenis) {
+        this.tab = jenis;
+        if (this.signaturePad) this.signaturePad.clear();
+        $wire.setBuktiBase64('');
+        $wire.setBuktiJenis(jenis);
+    },
+    hapusTandaTangan() {
+        if (this.signaturePad) this.signaturePad.clear();
+        $wire.setBuktiBase64('');
+    },
+    pilihFoto(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        if (file.size > 1572864) {
+            $wire.setBuktiBase64('');
+            alert('Ukuran foto maksimal 1,5 MB.');
+            event.target.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            $wire.setBuktiBase64(reader.result);
+            $wire.setBuktiJenis('foto');
+        };
+        reader.readAsDataURL(file);
+    },
+    async prosesPenarikan() {
+        if (this.tab === 'tanda_tangan' && this.signaturePad && !this.signaturePad.isEmpty()) {
+            await $wire.setBuktiBase64(this.signaturePad.toDataURL());
+            await $wire.setBuktiJenis('tanda_tangan');
+        }
+        await $wire.call('submit');
+    }
+}" x-init="$nextTick(() => initBukti())" class="mx-auto max-w-2xl space-y-5">
     {{-- Header --}}
     <div class="flex items-center justify-between">
         <div>
@@ -162,13 +218,62 @@
             @error('catatan') <p class="mt-1.5 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
         </div>
 
+        {{-- Bukti Penarikan (D24) --}}
+        @if($selectedNasabah && $selectedNasabah->user->isOffline())
+            <div class="rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/60 p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <p class="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Bukti Penarikan</p>
+                    <div class="flex gap-1 text-[11px] font-bold">
+                        <button type="button" x-on:click="pilihJenis('tanda_tangan')"
+                            class="rounded-full px-3 py-1.5 transition {{ $buktiJenis !== 'foto' ? 'bg-amber-500 text-white' : 'bg-white dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700' }}">
+                            Tanda Tangan
+                        </button>
+                        <button type="button" x-on:click="pilihJenis('foto')"
+                            class="rounded-full px-3 py-1.5 transition {{ $buktiJenis === 'foto' ? 'bg-amber-500 text-white' : 'bg-white dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700' }}">
+                            Foto
+                        </button>
+                    </div>
+                </div>
+
+                <div x-show="tab === 'tanda_tangan'" x-cloak class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Minta nasabah menggambar tanda tangan di layar.</p>
+                        <button type="button" x-on:click="hapusTandaTangan()"
+                            class="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline">Hapus / Reset</button>
+                    </div>
+                    <canvas id="canvas-bukti-penarikan"
+                        style="width:100%;height:120px;background:white;"
+                        class="rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900"></canvas>
+                </div>
+
+                <div x-show="tab === 'foto'" x-cloak class="space-y-2">
+                    <label class="flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 p-6 text-center transition hover:border-amber-500">
+                        <input type="file" accept="image/png,image/jpeg" capture="environment" x-on:change="pilihFoto($event)" class="sr-only">
+                        <span class="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Ambil / pilih foto bukti</span>
+                        <span class="mt-1 text-xs text-zinc-400">Buku tabungan dicoret atau nasabah menerima uang (maks. 1,5 MB).</span>
+                    </label>
+                    <img x-show="$wire.buktiBase64" :src="$wire.buktiBase64" alt="Preview bukti"
+                        class="h-32 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 object-contain bg-white">
+                </div>
+
+                @error('buktiBase64') <p class="text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
+            </div>
+        @endif
+
+        {{-- Pratinjau keputusan (D23) --}}
+        @if($teksKeputusan = $this->keputusanTeks())
+            <div class="rounded-2xl border border-sky-200 dark:border-sky-900/60 bg-sky-50 dark:bg-sky-950/40 p-3.5 text-xs font-medium text-sky-700 dark:text-sky-300">
+                {{ $teksKeputusan }}
+            </div>
+        @endif
+
             {{-- Actions --}}
             <div class="flex items-center gap-3 pt-2">
                 <a href="{{ route('dashboard') }}" wire:navigate
                     class="w-1/3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 py-3.5 text-center text-sm font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition">
                     Batal
                 </a>
-                <button type="submit" wire:loading.attr="disabled"
+                <button type="button" wire:loading.attr="disabled" x-on:click="prosesPenarikan()"
                     class="w-2/3 rounded-2xl bg-amber-500 hover:bg-amber-600 py-3.5 text-center text-sm font-bold text-white shadow-md shadow-amber-500/20 transition disabled:opacity-50">
                     <span wire:loading.remove wire:target="submit">Proses Penarikan</span>
                     <span wire:loading wire:target="submit">Memproses...</span>

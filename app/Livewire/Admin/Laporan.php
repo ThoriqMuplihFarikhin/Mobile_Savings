@@ -65,7 +65,7 @@ class Laporan extends Component
 
     public function pilihSeksi(string $seksi): void
     {
-        if (! in_array($seksi, ['keuangan', 'kolektor', 'paket', 'barang', 'rekon', 'umurkas', 'mutasi', 'penarikan', 'tunggakan', 'serah', 'absensi', 'nasabah'], true)) {
+        if (! in_array($seksi, ['keuangan', 'kolektor', 'paket', 'barang', 'rekon', 'umurkas', 'mutasi', 'penarikan', 'offline', 'tunggakan', 'serah', 'absensi', 'nasabah'], true)) {
             return;
         }
 
@@ -84,6 +84,7 @@ class Laporan extends Component
             'umurkas' => $this->umurKasData(),
             'mutasi' => $this->mutasiData($valid),
             'penarikan' => $this->penarikanData($valid),
+            'offline' => $this->offlineData($valid),
             'tunggakan' => ['tunggakanRows' => $this->tunggakanRows()],
             'serah' => ['serahRows' => $this->serahRows()],
             'absensi' => $this->absensiData($valid),
@@ -137,6 +138,7 @@ class Laporan extends Component
             'umurkas' => 'laporan-umur-kas-'.now()->toDateString().'.csv',
             'mutasi' => 'laporan-mutasi-'.$this->periode.'-'.$periodeValue.'.csv',
             'penarikan' => 'laporan-penarikan-'.$this->periode.'-'.$periodeValue.'.csv',
+            'offline' => 'laporan-penarikan-offline-'.$this->periode.'-'.$periodeValue.'.csv',
             'tunggakan' => 'laporan-tunggakan-'.now()->toDateString().'.csv',
             'serah' => 'laporan-serah-terima-'.now()->toDateString().'.csv',
             'absensi' => 'laporan-absensi-'.$this->periode.'-'.$periodeValue.'.csv',
@@ -168,6 +170,7 @@ class Laporan extends Component
                 'umurkas' => $this->tulisCsvUmurKas($file, $safe),
                 'mutasi' => $this->tulisCsvMutasi($file, $safe),
                 'penarikan' => $this->tulisCsvPenarikan($file, $safe),
+                'offline' => $this->tulisCsvOffline($file, $safe),
                 'tunggakan' => $this->tulisCsvTunggakan($file, $safe),
                 'serah' => $this->tulisCsvSerah($file, $safe),
                 'absensi' => $this->tulisCsvAbsensi($file, $safe),
@@ -919,6 +922,85 @@ class Laporan extends Component
     }
 
     /**
+     * Rekap per kolektor dan detail penarikan offline langsung
+     * (`metode_verifikasi = tanpa_verifikasi_offline`) pada periode terpilih.
+     *
+     * `persen_kas` = total diterima penarikan langsung kolektor dibagi total
+     * seluruh penarikan yang `mempengaruhi_kas` milik kolektor tersebut pada
+     * periode yang sama — pecahan kas fisik yang dipegang kolektor dari
+     * penarikan langsung.
+     *
+     * @return array{offlineRows: array<int, array{kolektor_id: int, kolektor: string, jumlah: int, total: float, persen_kas: float, belum: int, sesuai: int, bermasalah: int}>, offlineDetail: array<int, array{id: int, tanggal: string, nasabah: string, kolektor: string, diterima: float, tinjauan: string, bukti: ?string}>}
+     */
+    private function offlineData(bool $valid): array
+    {
+        if (! $valid) {
+            return ['offlineRows' => [], 'offlineDetail' => []];
+        }
+
+        $periode = $this->batasWaktu($this->periodeRange());
+
+        $penarikan = TransaksiPenarikan::with(['nasabah'])
+            ->whereBetween('created_at', $periode)
+            ->where('status', 'selesai')
+            ->where('mempengaruhi_kas', true)
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get();
+
+        $kolektorPerId = [];
+        foreach (User::query()
+            ->whereIn('id', $penarikan->pluck('dibayar_oleh')->filter()->unique())
+            ->get(['id', 'name']) as $pengguna) {
+            $kolektorPerId[$pengguna->id] = $pengguna->name;
+        }
+
+        $langsung = $penarikan
+            ->where('metode_verifikasi', 'tanpa_verifikasi_offline')
+            ->values();
+
+        $totalKasPerKolektor = $penarikan
+            ->groupBy(fn (TransaksiPenarikan $item): int => (int) $item->dibayar_oleh)
+            ->map(fn (Collection $grup): float => (float) $grup->sum('nominal_diterima'));
+
+        $rows = $langsung
+            ->groupBy(fn (TransaksiPenarikan $item): int => (int) $item->dibayar_oleh)
+            ->map(function (Collection $grup, int $kolektorId) use ($totalKasPerKolektor, $kolektorPerId): array {
+                $total = (float) $grup->sum('nominal_diterima');
+                $kas = (float) $totalKasPerKolektor->get($kolektorId, 0.0);
+
+                return [
+                    'kolektor_id' => $kolektorId,
+                    'kolektor' => $kolektorPerId[$kolektorId] ?? '-',
+                    'jumlah' => $grup->count(),
+                    'total' => $total,
+                    'persen_kas' => $kas > 0 ? round($total / $kas * 100, 1) : 0.0,
+                    'belum' => $grup->whereNull('hasil_tinjauan')->count(),
+                    'sesuai' => $grup->where('hasil_tinjauan', 'sesuai')->count(),
+                    'bermasalah' => $grup->where('hasil_tinjauan', 'bermasalah')->count(),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $detail = $langsung->map(fn (TransaksiPenarikan $item): array => [
+            'id' => (int) $item->id,
+            'tanggal' => Carbon::parse($item->created_at)->format('d/m/Y'),
+            'nasabah' => $item->nasabah->name ?? '-',
+            'kolektor' => $kolektorPerId[(int) $item->dibayar_oleh] ?? '-',
+            'diterima' => (float) $item->nominal_diterima,
+            'tinjauan' => match ($item->hasil_tinjauan) {
+                'sesuai' => 'Sesuai',
+                'bermasalah' => 'Bermasalah',
+                default => 'Belum ditinjau',
+            },
+            'bukti' => $item->bukti_path !== null ? route('penarikan.bukti', $item->id) : null,
+        ])->all();
+
+        return ['offlineRows' => $rows, 'offlineDetail' => $detail];
+    }
+
+    /**
      * Nasabah menunggak pada paket: hari & rupiah tunggakan, status alert,
      * dan keputusan akhir. Posisi terkini tanpa filter periode (konsisten
      * seksi paket).
@@ -1363,6 +1445,48 @@ class Laporan extends Component
                 $safe($baris['lokasi']),
                 $safe($baris['waktu_proses'] ?? '-'),
                 $safe($baris['alasan']),
+            ]);
+        }
+    }
+
+    /**
+     * CSV seksi penarikan offline: rekap per kolektor lalu detail per baris.
+     *
+     * @param  resource  $file
+     * @param  Closure(mixed): string  $safe
+     */
+    private function tulisCsvOffline($file, Closure $safe): void
+    {
+        $data = $this->offlineData(true);
+
+        fputcsv($file, [$safe('Laporan Penarikan Offline Langsung')]);
+        fputcsv($file, [$safe('Periode'), $safe($this->labelPeriodeCsv())]);
+        fputcsv($file, []);
+
+        fputcsv($file, ['REKAP PER KOLEKTOR']);
+        fputcsv($file, ['Kolektor', 'Jumlah', 'Total Diterima', 'Persen Kas', 'Belum Ditinjau', 'Sesuai', 'Bermasalah']);
+        foreach ($data['offlineRows'] as $baris) {
+            fputcsv($file, [
+                $safe($baris['kolektor']),
+                $baris['jumlah'],
+                $baris['total'],
+                $baris['persen_kas'],
+                $baris['belum'],
+                $baris['sesuai'],
+                $baris['bermasalah'],
+            ]);
+        }
+        fputcsv($file, []);
+
+        fputcsv($file, ['DETAIL PENARIKAN']);
+        fputcsv($file, ['Tanggal', 'Nasabah', 'Kolektor', 'Diterima', 'Tinjauan']);
+        foreach ($data['offlineDetail'] as $baris) {
+            fputcsv($file, [
+                $baris['tanggal'],
+                $safe($baris['nasabah']),
+                $safe($baris['kolektor']),
+                $baris['diterima'],
+                $safe($baris['tinjauan']),
             ]);
         }
     }

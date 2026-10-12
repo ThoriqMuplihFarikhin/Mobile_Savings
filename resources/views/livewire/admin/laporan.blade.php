@@ -21,7 +21,7 @@
     @endif
 
     <div class="mb-4 flex flex-wrap gap-2">
-        @foreach(['keuangan' => 'Keuangan', 'kolektor' => 'Per Kolektor', 'rekon' => 'Rekonsiliasi', 'umurkas' => 'Umur Kas', 'mutasi' => 'Mutasi', 'penarikan' => 'Penarikan', 'tunggakan' => 'Tunggakan', 'serah' => 'Serah Terima', 'absensi' => 'Absensi', 'nasabah' => 'Nasabah', 'paket' => 'Per Paket', 'barang' => 'Kebutuhan Barang'] as $nilaiSeksi => $labelSeksi)
+        @foreach(['keuangan' => 'Keuangan', 'kolektor' => 'Per Kolektor', 'rekon' => 'Rekonsiliasi', 'umurkas' => 'Umur Kas', 'mutasi' => 'Mutasi', 'penarikan' => 'Penarikan', 'offline' => 'Penarikan Offline', 'tunggakan' => 'Tunggakan', 'serah' => 'Serah Terima', 'absensi' => 'Absensi', 'nasabah' => 'Nasabah', 'paket' => 'Per Paket', 'barang' => 'Kebutuhan Barang'] as $nilaiSeksi => $labelSeksi)
             <button wire:click="pilihSeksi('{{ $nilaiSeksi }}')"
                 class="rounded-full px-4 py-2 text-sm font-medium transition {{ $seksi === $nilaiSeksi ? 'bg-indigo-800 text-white' : 'bg-gray-50 text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb] hover:bg-white' }}">
                 {{ $labelSeksi }}
@@ -30,7 +30,7 @@
     </div>
 
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        @if (in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan', 'absensi'], true))
+        @if (in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan', 'offline', 'absensi'], true))
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div data-test="baris-periode" class="flex flex-wrap gap-2">
                     @foreach(['harian' => 'Harian', 'bulanan' => 'Bulanan', 'rentang' => 'Rentang'] as $value => $label)
@@ -98,13 +98,14 @@
                 'umurkas' => 'Umur Kas',
                 'mutasi' => 'Mutasi Nasabah',
                 'penarikan' => 'Penarikan',
+                'offline' => 'Penarikan Offline',
                 'tunggakan' => 'Tunggakan & Paket Gagal',
                 'serah' => 'Serah Terima Paket',
                 'absensi' => 'Absensi & Izin',
                 'nasabah' => 'Nasabah',
                 default => 'Keuangan',
             };
-            $judulPeriode = in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan', 'absensi'], true)
+            $judulPeriode = in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan', 'offline', 'absensi'], true)
                 ? match ($periode) {
                     'bulanan' => $bulan,
                     'rentang' => $dariTanggal.' s/d '.$sampaiTanggal,
@@ -730,6 +731,139 @@
                         </div>
                     @empty
                         <div class="px-4 py-4 text-sm text-gray-500">Belum ada penarikan pada periode ini.</div>
+                    @endforelse
+                </div>
+            </div>
+        @elseif($seksi === 'offline')
+            <div class="mb-4 flex items-start gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600 shadow-[inset_0_0_0_1px_#ebebeb]">
+                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <p class="font-medium text-gray-900">Definisi angka</p>
+                    <p class="mt-0.5">Penarikan offline langsung = penarikan tunai yang diselesaikan kolektor tanpa PIN nasabah (verifikasi offline) dan menunggu tinjauan admin. Belum Ditinjau = baris yang hasil tinjauannya masih kosong. Persen Kas = total penarikan langsung kolektor &divide; total seluruh penarikan yang mempengaruhi kas milik kolektor tersebut pada periode ini.</p>
+                </div>
+            </div>
+            <div class="mb-6 rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+                <h3 class="mb-4 text-sm font-semibold text-gray-900">Rekap Per Kolektor</h3>
+                <div class="overflow-x-auto">
+                    <table class="hidden md:table w-full text-left">
+                        <thead>
+                            <tr class="border-b border-[#ebebeb]">
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Kolektor</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Jumlah</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Total Diterima</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Persen Kas</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Belum Ditinjau</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Sesuai</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Bermasalah</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ebebeb]">
+                            @forelse($offlineRows as $baris)
+                                <tr class="transition hover:bg-gray-50">
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $baris['kolektor'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['jumlah'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['total'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ number_format($baris['persen_kas'], 1, ',', '.') }}%</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['belum'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['sesuai'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm {{ $baris['bermasalah'] > 0 ? 'text-[#ee0000]' : 'text-gray-900' }}">{{ $baris['bermasalah'] }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="px-3 py-4 text-sm text-gray-500">Belum ada penarikan offline langsung pada periode ini.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div data-test="kartu-tabel" class="divide-y divide-[#ebebeb] md:hidden">
+                    @forelse($offlineRows as $baris)
+                        <div class="px-4 py-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="text-sm font-medium text-gray-900">{{ $baris['kolektor'] }}</p>
+                                <span class="shrink-0 font-mono text-sm text-gray-900">{{ number_format($baris['persen_kas'], 1, ',', '.') }}%</span>
+                            </div>
+                            <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+                                <div>
+                                    <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Jumlah</span>
+                                    <span class="font-mono text-sm text-gray-900">{{ $baris['jumlah'] }}</span>
+                                </div>
+                                <div>
+                                    <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Total Diterima</span>
+                                    <span class="font-mono text-sm text-gray-900">Rp {{ number_format($baris['total'], 0, ',', '.') }}</span>
+                                </div>
+                                <div>
+                                    <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Belum Ditinjau</span>
+                                    <span class="font-mono text-sm text-gray-900">{{ $baris['belum'] }}</span>
+                                </div>
+                                <div>
+                                    <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Sesuai</span>
+                                    <span class="font-mono text-sm text-gray-900">{{ $baris['sesuai'] }}</span>
+                                </div>
+                                <div>
+                                    <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Bermasalah</span>
+                                    <span class="font-mono text-sm {{ $baris['bermasalah'] > 0 ? 'text-[#ee0000]' : 'text-gray-900' }}">{{ $baris['bermasalah'] }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="px-4 py-4 text-sm text-gray-500">Belum ada penarikan offline langsung pada periode ini.</div>
+                    @endforelse
+                </div>
+            </div>
+            <div class="rounded-xl bg-white p-6 shadow-[0px_1px_1px_#00000005,0px_2px_2px_#0000000a,inset_0_0_0_1px_#ebebeb]">
+                <h3 class="mb-4 text-sm font-semibold text-gray-900">Detail Penarikan Offline</h3>
+                <div class="overflow-x-auto">
+                    <table class="hidden md:table w-full text-left">
+                        <thead>
+                            <tr class="border-b border-[#ebebeb]">
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Tanggal</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Nasabah</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Kolektor</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Diterima</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Tinjauan</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Bukti</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#ebebeb]">
+                            @forelse($offlineDetail as $baris)
+                                <tr class="transition hover:bg-gray-50">
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">{{ $baris['tanggal'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-900">{{ $baris['nasabah'] }}</td>
+                                    <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['kolektor'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-900">Rp {{ number_format($baris['diterima'], 0, ',', '.') }}</td>
+                                    <td class="px-3 py-2 text-sm {{ $baris['tinjauan'] === 'Bermasalah' ? 'text-[#ee0000]' : ($baris['tinjauan'] === 'Belum ditinjau' ? 'text-amber-600' : 'text-gray-600') }}">{{ $baris['tinjauan'] }}</td>
+                                    <td class="px-3 py-2 text-sm">
+                                        @if($baris['bukti'] !== null)
+                                            <a href="{{ $baris['bukti'] }}" target="_blank" rel="noopener" class="font-medium text-indigo-700 hover:underline">Lihat bukti</a>
+                                        @else
+                                            <span class="text-gray-500">-</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="6" class="px-3 py-4 text-sm text-gray-500">Belum ada penarikan offline langsung pada periode ini.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div data-test="kartu-tabel" class="divide-y divide-[#ebebeb] md:hidden">
+                    @forelse($offlineDetail as $baris)
+                        <div class="px-4 py-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-medium text-gray-900">{{ $baris['nasabah'] }}</p>
+                                    <p class="text-xs text-gray-500">{{ $baris['tanggal'] }} &middot; {{ $baris['kolektor'] }}</p>
+                                </div>
+                                <span class="shrink-0 text-sm {{ $baris['tinjauan'] === 'Bermasalah' ? 'text-[#ee0000]' : ($baris['tinjauan'] === 'Belum ditinjau' ? 'text-amber-600' : 'text-gray-600') }}">{{ $baris['tinjauan'] }}</span>
+                            </div>
+                            <div class="mt-2 flex items-center justify-between gap-3">
+                                <span class="font-mono text-sm text-gray-900">Rp {{ number_format($baris['diterima'], 0, ',', '.') }}</span>
+                                @if($baris['bukti'] !== null)
+                                    <a href="{{ $baris['bukti'] }}" target="_blank" rel="noopener" class="text-sm font-medium text-indigo-700 hover:underline">Lihat bukti</a>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="px-4 py-4 text-sm text-gray-500">Belum ada penarikan offline langsung pada periode ini.</div>
                     @endforelse
                 </div>
             </div>

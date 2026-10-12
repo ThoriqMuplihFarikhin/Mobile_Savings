@@ -43,6 +43,10 @@ class Pengaturan extends Component
 
     public string $izinkanKasMinus = 'false';
 
+    public string $offlineBatasLangsung = '0';
+
+    public string $offlineBatasHarian = '0';
+
     public string $nomorWaBantuan = '';
 
     // Tab 2: Admin & Peran
@@ -73,6 +77,8 @@ class Pengaturan extends Component
         $this->batasKasKolektor = (string) AdminSetting::get('batas_kas_kolektor', '0');
         $this->batasHariKas = (string) AdminSetting::get('batas_hari_kas', '0');
         $this->izinkanKasMinus = (string) AdminSetting::get('izinkan_kas_minus', 'false');
+        $this->offlineBatasLangsung = (string) AdminSetting::get('offline_penarikan_batas_langsung', '0');
+        $this->offlineBatasHarian = (string) AdminSetting::get('offline_penarikan_batas_harian', '0');
         $this->nomorWaBantuan = AdminSetting::get('nomor_wa_bantuan', '');
 
         // Tab 2: Admin & Peran
@@ -104,6 +110,8 @@ class Pengaturan extends Component
             'batasKasKolektor' => ['nullable', 'integer', 'min:0', 'max:9999999999999'],
             'batasHariKas' => ['nullable', 'integer', 'min:0', 'max:365'],
             'izinkanKasMinus' => ['required', 'in:true,false'],
+            'offlineBatasLangsung' => ['required', 'integer', 'min:0', 'max:9999999999999'],
+            'offlineBatasHarian' => ['required', 'integer', 'min:0', 'max:9999999999999'],
             'nomorWaBantuan' => ['nullable', 'string', 'max:20'],
         ]);
 
@@ -114,6 +122,8 @@ class Pengaturan extends Component
         AdminSetting::set('batas_kas_kolektor', (string) ((int) $this->batasKasKolektor));
         AdminSetting::set('batas_hari_kas', (string) ((int) $this->batasHariKas));
         AdminSetting::set('izinkan_kas_minus', $this->izinkanKasMinus === 'true' ? 'true' : 'false');
+        AdminSetting::set('offline_penarikan_batas_langsung', (string) ((int) $this->offlineBatasLangsung));
+        AdminSetting::set('offline_penarikan_batas_harian', (string) ((int) $this->offlineBatasHarian));
         AdminSetting::set('nomor_wa_bantuan', $this->nomorWaBantuan);
 
         session()->flash('status', 'Konfigurasi umum berhasil disimpan.');
@@ -255,6 +265,12 @@ class Pengaturan extends Component
         $peringatanDuaApprover = (int) AdminSetting::get('penarikan_batas_dua_approver', '0') > 0
             && User::where('role', 'admin')->count() < ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA;
 
-        return view('livewire.admin.pengaturan', compact('peringatanDuaApprover'));
+        // D23: penarikan langsung tanpa ambang dua approver aktif (atau admin
+        // kurang) berarti transaksi besar bisa selesai tanpa pengawasan ganda.
+        $peringatanOfflineLangsung = (int) AdminSetting::get('offline_penarikan_batas_langsung', '0') > 0
+            && ((int) AdminSetting::get('penarikan_batas_dua_approver', '0') <= 0
+                || User::where('role', 'admin')->count() < ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA);
+
+        return view('livewire.admin.pengaturan', compact('peringatanDuaApprover', 'peringatanOfflineLangsung'));
     }
 }

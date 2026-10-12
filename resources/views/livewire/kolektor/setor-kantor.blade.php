@@ -78,6 +78,17 @@
             </div>
         </div>
 
+        @if($rincianLangsung['belum']['jumlah'] + $rincianLangsung['sesuai']['jumlah'] + $rincianLangsung['bermasalah']['jumlah'] > 0)
+            <div class="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-800 border border-amber-300/70 dark:bg-amber-950/40 dark:border-amber-700/60 dark:text-amber-300">
+                <p class="font-semibold">Rincian penarikan offline langsung kolektor ini</p>
+                <p class="mt-1 font-mono">
+                    belum ditinjau {{ $rincianLangsung['belum']['jumlah'] }} (Rp {{ number_format($rincianLangsung['belum']['nominal'], 0, ',', '.') }})
+                    &middot; sesuai {{ $rincianLangsung['sesuai']['jumlah'] }} (Rp {{ number_format($rincianLangsung['sesuai']['nominal'], 0, ',', '.') }})
+                    &middot; bermasalah {{ $rincianLangsung['bermasalah']['jumlah'] }} (Rp {{ number_format($rincianLangsung['bermasalah']['nominal'], 0, ',', '.') }})
+                </p>
+            </div>
+        @endif
+
         @if($jumlahTransaksi > 0)
             <div class="mt-4">
                 <label class="mb-1.5 block text-xs font-medium text-zinc-700 dark:text-zinc-300">Catatan Penyerahan Kas (Opsional)</label>

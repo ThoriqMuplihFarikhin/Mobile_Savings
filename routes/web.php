@@ -18,7 +18,9 @@ use App\Http\Controllers\Admin\ProdukController;
 use App\Http\Controllers\Admin\RegistrasiController;
 use App\Http\Controllers\Admin\RekonsiliasiController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
+use App\Http\Controllers\Admin\TinjauanPenarikanOfflineController;
 use App\Http\Controllers\Admin\VerifikasiController;
+use App\Http\Controllers\BuktiPenarikanController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Kolektor\AbsenController;
 use App\Http\Controllers\Kolektor\DaftarNasabahController;
@@ -63,6 +65,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->where('jenis', 'selfie|tanda-tangan')
         ->name('absensi.foto');
 
+    Route::get('/penarikan/{penarikan}/bukti', [BuktiPenarikanController::class, 'show'])
+        ->name('penarikan.bukti');
+
     Route::get('/serah-terima/{kepesertaan}/bukti', [SerahTerimaFotoController::class, 'show'])
         ->name('serah-terima.bukti');
 
@@ -99,6 +104,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/monitoring-absensi', [MonitoringAbsensiController::class, 'index'])->name('monitoring-absensi.index');
         Route::get('/pengaturan', [AdminPengaturanController::class, 'index'])->name('pengaturan.index');
         Route::get('/persetujuan', [PersetujuanController::class, 'index'])->name('persetujuan.index');
+        Route::get('/tinjauan-penarikan-offline', [TinjauanPenarikanOfflineController::class, 'index'])
+            ->name('tinjauan-penarikan-offline');
 
         // Settings khusus admin
         Route::prefix('settings')->name('settings.')->group(function () {

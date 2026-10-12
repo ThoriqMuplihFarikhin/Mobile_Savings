@@ -32,6 +32,18 @@ class SetorKantor extends Component
     #[Locked]
     public float $totalPenarikanTunai = 0;
 
+    /**
+     * Rincian penarikan offline langsung kolektor per hasil tinjauan (D25).
+     *
+     * @var array{belum: array{jumlah: int, nominal: float}, sesuai: array{jumlah: int, nominal: float}, bermasalah: array{jumlah: int, nominal: float}}
+     */
+    #[Locked]
+    public array $rincianLangsung = [
+        'belum' => ['jumlah' => 0, 'nominal' => 0.0],
+        'sesuai' => ['jumlah' => 0, 'nominal' => 0.0],
+        'bermasalah' => ['jumlah' => 0, 'nominal' => 0.0],
+    ];
+
     /** Kas net di tangan kolektor: setoran masuk − penarikan tunai (D13). */
     #[Locked]
     public $totalBelumDisetor = 0;
@@ -54,6 +66,8 @@ class SetorKantor extends Component
             ->sum('nominal');
 
         $this->totalPenarikanTunai = (float) KasKolektorHitung::tunaiKeluarBelumDirekonsiliasi((int) Auth::id());
+
+        $this->rincianLangsung = KasKolektorHitung::rincianLangsung((int) Auth::id());
 
         $this->totalBelumDisetor = (float) KasKolektorHitung::kasDiTangan((int) Auth::id());
 

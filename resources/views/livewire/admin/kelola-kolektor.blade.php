@@ -81,6 +81,7 @@
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">No. HP</th>
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Nasabah Aktif</th>
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Status</th>
+                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Penarikan Langsung</th>
                         <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-gray-500">Aksi</th>
                     </tr>
                 </thead>
@@ -96,6 +97,18 @@
                                 @else
                                     <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 font-mono text-xs text-[#c50000]">Nonaktif</span>
                                 @endif
+                            </td>
+                            <td class="px-4 py-3">
+                                @if($item->izin_penarikan_langsung)
+                                    <span class="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 font-mono text-xs text-indigo-600">Diizinkan</span>
+                                @else
+                                    <span class="inline-flex items-center rounded-full bg-[#f7d4d6] px-2.5 py-0.5 font-mono text-xs text-[#c50000]">Diblokir</span>
+                                @endif
+                                <button wire:click="toggleIzinPenarikanLangsung({{ $item->id }})"
+                                    wire:confirm="{{ $item->izin_penarikan_langsung ? 'Nonaktifkan izin penarikan offline langsung kolektor ini?' : 'Aktifkan izin penarikan offline langsung kolektor ini?' }}"
+                                    class="mt-1 block text-xs text-[#0070f3] hover:underline">
+                                    {{ $item->izin_penarikan_langsung ? 'Nonaktifkan' : 'Aktifkan' }}
+                                </button>
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-1">
@@ -125,7 +138,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-16 text-center">
+                            <td colspan="6" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center gap-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[#ebebeb]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                     <p class="text-sm text-gray-500">Tidak ada data kolektor.</p>

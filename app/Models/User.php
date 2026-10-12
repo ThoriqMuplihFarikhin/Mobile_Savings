@@ -27,11 +27,12 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $mode_akses
  * @property int $percobaan_gagal
  * @property bool $harus_ganti_pin
+ * @property bool $izin_penarikan_langsung
  * @property Carbon|null $login_terkunci_hingga
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'no_hp', 'pin_hash', 'role', 'status_akun', 'mode_akses', 'percobaan_gagal', 'harus_ganti_pin', 'notifikasi_wa_aktif', 'foto_profil_path', 'banner_path', 'login_terkunci_hingga'])]
+#[Fillable(['name', 'no_hp', 'pin_hash', 'role', 'status_akun', 'mode_akses', 'percobaan_gagal', 'harus_ganti_pin', 'izin_penarikan_langsung', 'notifikasi_wa_aktif', 'foto_profil_path', 'banner_path', 'login_terkunci_hingga'])]
 #[Hidden(['pin_hash', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -39,6 +40,17 @@ class User extends Authenticatable
     use HasFactory, HasRoles, Notifiable;
 
     protected $guard_name = 'web';
+
+    /**
+     * Nilai bawaan atribut model: `izin_penarikan_langsung` ikut di-insert
+     * agar instance yang belum di-refresh (mis. hasil factory) tetap membaca
+     * keputusan D23, bukan null.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'izin_penarikan_langsung' => true,
+    ];
 
     protected static function booted(): void
     {
@@ -54,6 +66,7 @@ class User extends Authenticatable
         return [
             'percobaan_gagal' => 'integer',
             'harus_ganti_pin' => 'boolean',
+            'izin_penarikan_langsung' => 'boolean',
             'notifikasi_wa_aktif' => 'boolean',
             'login_terkunci_hingga' => 'datetime',
         ];

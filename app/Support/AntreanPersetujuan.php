@@ -15,7 +15,7 @@ class AntreanPersetujuan
      * Hitungan tiap antrean persetujuan admin: satu query agregat per antrean,
      * tanpa cache agar halaman hub dan lencana bottom-nav selalu real-time.
      *
-     * @return array{penarikan: int, verifikasi: int, setoran_kantor: int, komplain: int, izin: int, bermasalah: int}
+     * @return array{penarikan: int, verifikasi: int, setoran_kantor: int, komplain: int, izin: int, bermasalah: int, tinjauan: int}
      */
     public static function ringkas(): array
     {
@@ -26,6 +26,8 @@ class AntreanPersetujuan
             'komplain' => Komplain::where('status', 'baru')->count(),
             'izin' => IzinKolektor::where('status', 'pending')->count(),
             'bermasalah' => KepesertaanPaket::where('status_alert', 'perlu_review')->count(),
+            'tinjauan' => TransaksiPenarikan::where('metode_verifikasi', 'tanpa_verifikasi_offline')
+                ->whereNull('hasil_tinjauan')->count(),
         ];
     }
 

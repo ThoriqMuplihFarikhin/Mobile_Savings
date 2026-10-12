@@ -7,6 +7,7 @@
             ['kode' => 'komplain', 'label' => 'Komplain Baru', 'ket' => 'Komplain belum diproses', 'url' => route('admin.komplain.index')],
             ['kode' => 'izin', 'label' => 'Izin Kolektor', 'ket' => 'Pengajuan izin menunggu', 'url' => route('admin.monitoring-absensi.index')],
             ['kode' => 'bermasalah', 'label' => 'Nasabah Bermasalah', 'ket' => 'Kepesertaan perlu review', 'url' => route('admin.bermasalah.index')],
+            ['kode' => 'tinjauan', 'label' => 'Penarikan Offline Belum Ditinjau', 'ket' => 'Penarikan langsung menunggu tinjauan pasca-fakta', 'url' => route('admin.tinjauan-penarikan-offline')],
         ];
     @endphp
 

@@ -108,6 +108,7 @@ it('menampilkan hub persetujuan dengan hitungan antrean', function () {
             'komplain' => 1,
             'izin' => 1,
             'bermasalah' => 1,
+            'tinjauan' => 0,
         ]);
 });
 
@@ -132,7 +133,8 @@ it('menautkan tiap hitungan ke halaman antriannya', function () {
         ->assertSee(route('admin.rekonsiliasi.index'))
         ->assertSee(route('admin.komplain.index'))
         ->assertSee(route('admin.monitoring-absensi.index'))
-        ->assertSee(route('admin.bermasalah.index'));
+        ->assertSee(route('admin.bermasalah.index'))
+        ->assertSee(route('admin.tinjauan-penarikan-offline'));
 });
 
 it('menolak role selain admin membuka hub persetujuan', function () {

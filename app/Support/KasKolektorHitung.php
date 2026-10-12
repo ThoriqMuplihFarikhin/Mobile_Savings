@@ -59,6 +59,39 @@ class KasKolektorHitung
     }
 
     /**
+     * Rincian penarikan offline langsung kolektor (D25) per hasil tinjauan,
+     * dihitung dari query tunai keluar yang sama dengan kas agar angka di
+     * rekonsiliasi dan setor kantor tidak berbeda satu sama lain.
+     *
+     * @return array{belum: array{jumlah: int, nominal: float}, sesuai: array{jumlah: int, nominal: float}, bermasalah: array{jumlah: int, nominal: float}}
+     */
+    public static function rincianLangsung(int $kolektorId): array
+    {
+        $hasil = [
+            'belum' => ['jumlah' => 0, 'nominal' => 0.0],
+            'sesuai' => ['jumlah' => 0, 'nominal' => 0.0],
+            'bermasalah' => ['jumlah' => 0, 'nominal' => 0.0],
+        ];
+
+        $baris = self::queryTunaiKeluar($kolektorId)
+            ->where('metode_verifikasi', 'tanpa_verifikasi_offline')
+            ->get(['hasil_tinjauan', 'nominal_diterima']);
+
+        foreach ($baris as $penarikan) {
+            $kunci = match ($penarikan->hasil_tinjauan) {
+                'sesuai' => 'sesuai',
+                'bermasalah' => 'bermasalah',
+                default => 'belum',
+            };
+
+            $hasil[$kunci]['jumlah']++;
+            $hasil[$kunci]['nominal'] += (float) $penarikan->nominal_diterima;
+        }
+
+        return $hasil;
+    }
+
+    /**
      * Kas fisik yang dipegang kolektor sesuai rumus D13 (skala 2).
      *
      * @return numeric-string

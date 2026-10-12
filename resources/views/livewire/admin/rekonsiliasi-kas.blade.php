@@ -170,6 +170,17 @@
                         @endif
                     </div>
 
+                    @if($rincianLangsung['belum']['jumlah'] + $rincianLangsung['sesuai']['jumlah'] + $rincianLangsung['bermasalah']['jumlah'] > 0)
+                        <div class="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 shadow-[inset_0_0_0_1px_#fde68a]">
+                            <p class="font-medium">Rincian penarikan offline langsung kolektor ini</p>
+                            <p class="mt-1 font-mono text-xs">
+                                belum ditinjau {{ $rincianLangsung['belum']['jumlah'] }} (Rp {{ number_format($rincianLangsung['belum']['nominal'], 0, ',', '.') }})
+                                &middot; sesuai {{ $rincianLangsung['sesuai']['jumlah'] }} (Rp {{ number_format($rincianLangsung['sesuai']['nominal'], 0, ',', '.') }})
+                                &middot; bermasalah {{ $rincianLangsung['bermasalah']['jumlah'] }} (Rp {{ number_format($rincianLangsung['bermasalah']['nominal'], 0, ',', '.') }})
+                            </p>
+                        </div>
+                    @endif
+
                     @if($detailTransaksi->count() > 0)
                         <form wire:submit="submit" class="mt-4 space-y-4">
                             <div>

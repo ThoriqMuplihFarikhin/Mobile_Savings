@@ -202,6 +202,29 @@ class KelolaKolektor extends Component
         session()->flash('success', 'Kunci akun kolektor berhasil dibuka!');
     }
 
+    /**
+     * Toggle izin penarikan offline langsung kolektor (D23). Id yang bukan
+     * kolektor diabaikan tanpa log agar tombol tidak salah sasaran.
+     */
+    public function toggleIzinPenarikanLangsung(int $id): void
+    {
+        $user = User::find($id);
+        if (! $user instanceof User || $user->role !== 'kolektor') {
+            return;
+        }
+
+        $user->update(['izin_penarikan_langsung' => ! $user->izin_penarikan_langsung]);
+
+        ActivityLogger::log('ubah_izin_penarikan_langsung', 'users', $user->id, [
+            'kolektor_id' => $user->id,
+            'izin_penarikan_langsung' => $user->izin_penarikan_langsung,
+        ]);
+
+        session()->flash('success', $user->izin_penarikan_langsung
+            ? 'Izin penarikan offline langsung kolektor diaktifkan.'
+            : 'Izin penarikan offline langsung kolektor dinonaktifkan.');
+    }
+
     public function confirmResetPin(int $userId): void
     {
         $this->resetPinId = $userId;

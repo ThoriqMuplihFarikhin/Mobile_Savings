@@ -13,8 +13,24 @@ use App\Models\TransaksiSetoran;
 use App\Models\User;
 use App\Support\KasKolektorHitung;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
+
+/**
+ * Gambar bukti valid (PNG) berformat data URL — kontrak D24: bukti wajib
+ * untuk seluruh penarikan nasabah offline.
+ */
+function buktiD14(): string
+{
+    $image = imagecreatetruecolor(8, 8);
+    ob_start();
+    imagepng($image);
+    $raw = ob_get_clean();
+    imagedestroy($image);
+
+    return 'data:image/png;base64,'.base64_encode($raw);
+}
 
 /**
  * Fixture kolektor penanggung jawab + nasabah mode offline bersaldo,
@@ -71,8 +87,10 @@ function offlineKasP24(float $kas = 100000, float $saldo = 500000): array
 }
 
 it('penarikan offline di bawah ambang langsung selesai memotong saldo kas dan mencatat log (D14)', function () {
+    Storage::fake('local');
     $fix = offlineKasP24();
     $admin = User::factory()->admin()->create();
+    AdminSetting::set('offline_penarikan_batas_langsung', '100000');
 
     $this->actingAs($fix['kolektor']);
 
@@ -82,6 +100,8 @@ it('penarikan offline di bawah ambang langsung selesai memotong saldo kas dan me
         ->set('nominal', '50000')
         ->set('lokasi', 'rumah_kolektor')
         ->set('catatan', 'Buku tabungan dicoret, tanda tangan di buku.')
+        ->set('buktiBase64', buktiD14())
+        ->set('buktiJenis', 'tanda_tangan')
         ->call('submit')
         ->assertSee('Penarikan offline langsung diselesaikan');
 
@@ -116,12 +136,14 @@ it('penarikan offline di bawah ambang langsung selesai memotong saldo kas dan me
 });
 
 it('penarikan offline di atas ambang dua approver masuk antrian approval admin (D14)', function () {
+    Storage::fake('local');
     $fix = offlineKasP24();
 
     User::factory()->admin()->create();
     User::factory()->admin()->create();
     User::factory()->admin()->create();
     AdminSetting::set('penarikan_batas_dua_approver', '30000');
+    AdminSetting::set('offline_penarikan_batas_langsung', '100000');
 
     $this->actingAs($fix['kolektor']);
 
@@ -131,6 +153,8 @@ it('penarikan offline di atas ambang dua approver masuk antrian approval admin (
         ->set('nominal', '50000')
         ->set('lokasi', 'rumah_kolektor')
         ->set('catatan', 'Diambil di rumah, menunggu approval admin.')
+        ->set('buktiBase64', buktiD14())
+        ->set('buktiJenis', 'tanda_tangan')
         ->call('submit')
         ->assertSee('Menunggu persetujuan admin');
 
@@ -171,8 +195,10 @@ it('menolak kolektor yang bukan penanggung jawab nasabah offline (IDOR, D14)', f
 });
 
 it('pengaturan offline penarikan langsung selesai nonaktif mengembalikan ke antrian approval (D14)', function () {
+    Storage::fake('local');
     $fix = offlineKasP24();
     AdminSetting::set('offline_penarikan_langsung_selesai', 'false');
+    AdminSetting::set('offline_penarikan_batas_langsung', '100000');
 
     $this->actingAs($fix['kolektor']);
 
@@ -182,6 +208,8 @@ it('pengaturan offline penarikan langsung selesai nonaktif mengembalikan ke antr
         ->set('nominal', '50000')
         ->set('lokasi', 'rumah_kolektor')
         ->set('catatan', 'Pengaturan langsung selesai dimatikan.')
+        ->set('buktiBase64', buktiD14())
+        ->set('buktiJenis', 'tanda_tangan')
         ->call('submit')
         ->assertSee('Menunggu persetujuan admin');
 
@@ -192,7 +220,9 @@ it('pengaturan offline penarikan langsung selesai nonaktif mengembalikan ke antr
 });
 
 it('kas tidak cukup menjatuhkan penarikan langsung ke antrian approval (guard D13, D14)', function () {
+    Storage::fake('local');
     $fix = offlineKasP24(kas: 0);
+    AdminSetting::set('offline_penarikan_batas_langsung', '100000');
 
     $this->actingAs($fix['kolektor']);
 
@@ -202,6 +232,8 @@ it('kas tidak cukup menjatuhkan penarikan langsung ke antrian approval (guard D1
         ->set('nominal', '50000')
         ->set('lokasi', 'rumah_kolektor')
         ->set('catatan', 'Kas kolektor belum diisi.')
+        ->set('buktiBase64', buktiD14())
+        ->set('buktiJenis', 'tanda_tangan')
         ->call('submit')
         ->assertSee('masuk antrian approval admin');
 
@@ -233,8 +265,10 @@ it('mewajibkan catatan pada penarikan nasabah offline (D14)', function () {
     expect(TransaksiPenarikan::count())->toBe(0);
 });
 
-it('penarikan offline langsung di kantor tidak menggerakkan kas kolektor (D14)', function () {
+it('penarikan offline di kantor tidak menggerakkan kas kolektor dan selalu masuk antrian (D14)', function () {
+    Storage::fake('local');
     $fix = offlineKasP24();
+    AdminSetting::set('offline_penarikan_batas_langsung', '100000');
 
     $this->actingAs($fix['kolektor']);
 
@@ -244,12 +278,14 @@ it('penarikan offline langsung di kantor tidak menggerakkan kas kolektor (D14)',
         ->set('nominal', '50000')
         ->set('lokasi', 'kantor')
         ->set('catatan', 'Diambil langsung di kantor.')
+        ->set('buktiBase64', buktiD14())
+        ->set('buktiJenis', 'tanda_tangan')
         ->call('submit')
-        ->assertSee('Penarikan offline langsung diselesaikan');
+        ->assertSee('Menunggu persetujuan admin');
 
     $penarikan = TransaksiPenarikan::sole();
 
-    expect($penarikan->status)->toBe('selesai')
+    expect($penarikan->status)->toBe('pending')
         ->and($penarikan->mempengaruhi_kas)->toBeFalse()
         ->and(KasKolektorHitung::kasDiTangan($fix['kolektor']->id))->toBe('100000.00');
 });

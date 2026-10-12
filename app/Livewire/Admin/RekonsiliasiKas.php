@@ -38,6 +38,17 @@ class RekonsiliasiKas extends Component
     /** Penarikan tunai kolektor yang belum direkonsiliasi (memotong kas). */
     public float $totalPenarikanTunai = 0;
 
+    /**
+     * Rincian penarikan offline langsung kolektor terpilih (D25).
+     *
+     * @var array{belum: array{jumlah: int, nominal: float}, sesuai: array{jumlah: int, nominal: float}, bermasalah: array{jumlah: int, nominal: float}}
+     */
+    public array $rincianLangsung = [
+        'belum' => ['jumlah' => 0, 'nominal' => 0.0],
+        'sesuai' => ['jumlah' => 0, 'nominal' => 0.0],
+        'bermasalah' => ['jumlah' => 0, 'nominal' => 0.0],
+    ];
+
     public string $totalDiterima = '';
 
     public string $keterangan = '';
@@ -253,6 +264,8 @@ class RekonsiliasiKas extends Component
             // D13: pratinjau memakai kas net — sumber yang sama dengan halaman lain.
             $this->totalSeharusnya = (float) KasKolektorHitung::kasDiTangan((int) $this->kolektorId);
 
+            $this->rincianLangsung = KasKolektorHitung::rincianLangsung((int) $this->kolektorId);
+
             $this->detailTransaksi = TransaksiSetoran::belumDisetor()
                 ->where('input_by', $this->kolektorId)
                 ->whereNull('setoran_kolektor_id')
@@ -264,6 +277,11 @@ class RekonsiliasiKas extends Component
             $this->totalSeharusnya = 0;
             $this->totalSetoranMasuk = 0;
             $this->totalPenarikanTunai = 0;
+            $this->rincianLangsung = [
+                'belum' => ['jumlah' => 0, 'nominal' => 0.0],
+                'sesuai' => ['jumlah' => 0, 'nominal' => 0.0],
+                'bermasalah' => ['jumlah' => 0, 'nominal' => 0.0],
+            ];
             $this->detailTransaksi = [];
             $this->showForm = false;
         }

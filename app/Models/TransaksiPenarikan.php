@@ -29,6 +29,13 @@ class TransaksiPenarikan extends Model
         'waktu_pencairan',
         'diverifikasi_oleh',
         'metode_verifikasi',
+        'bukti_path',
+        'bukti_jenis',
+        'catatan_kolektor',
+        'ditinjau_oleh',
+        'ditinjau_pada',
+        'hasil_tinjauan',
+        'catatan_tinjauan',
         'percobaan_verifikasi_gagal',
         'terkunci_hingga',
         'dibayar_oleh',
@@ -48,6 +55,7 @@ class TransaksiPenarikan extends Model
             'nominal_diterima' => 'decimal:2',
             'waktu_approval' => 'datetime',
             'waktu_pencairan' => 'datetime',
+            'ditinjau_pada' => 'datetime',
             'terkunci_hingga' => 'datetime',
             'mempengaruhi_kas' => 'boolean',
             'waktu_dibatalkan' => 'datetime',
@@ -80,6 +88,14 @@ class TransaksiPenarikan extends Model
     public function diverifikasiOleh(): BelongsTo
     {
         return $this->belongsTo(User::class, 'diverifikasi_oleh');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function ditinjauOleh(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'ditinjau_oleh');
     }
 
     /**
