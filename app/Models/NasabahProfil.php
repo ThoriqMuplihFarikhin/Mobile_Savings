@@ -24,6 +24,7 @@ class NasabahProfil extends Model
         'status_pendaftaran',
         'diverifikasi_oleh',
         'tanggal_verifikasi',
+        'rekap_dicetak_pada',
     ];
 
     protected function casts(): array
@@ -31,6 +32,7 @@ class NasabahProfil extends Model
         return [
             'tanggal_lahir' => 'date',
             'tanggal_verifikasi' => 'datetime',
+            'rekap_dicetak_pada' => 'datetime',
         ];
     }
 

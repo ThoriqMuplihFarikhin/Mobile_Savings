@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ActivityLogger;
 use App\Models\KolektorNasabah;
+use App\Models\NasabahProfil;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -19,21 +22,7 @@ class RekapMutasiController extends Controller
      */
     public function show(User $user): View
     {
-        $nasabah = $user;
-
-        abort_unless($nasabah->role === 'nasabah', 404);
-
-        $pemohon = Auth::user();
-
-        abort_unless($pemohon !== null, 403);
-
-        $berwenang = $pemohon->isAdmin()
-            || KolektorNasabah::where('kolektor_id', $pemohon->id)
-                ->where('nasabah_id', $nasabah->id)
-                ->where('status', 'aktif')
-                ->exists();
-
-        abort_unless($berwenang, 403);
+        $nasabah = $this->wajibBerwenang($user);
 
         $setoran = TransaksiSetoran::with('produk')
             ->where('nasabah_id', $nasabah->id)
@@ -88,6 +77,10 @@ class RekapMutasiController extends Controller
             ->with('produk')
             ->get();
 
+        $kolektorId = KolektorNasabah::where('nasabah_id', $nasabah->id)
+            ->where('status', 'aktif')
+            ->value('kolektor_id');
+
         return view('rekap-mutasi', [
             'nasabah' => $nasabah,
             'kronologi' => $kronologi,
@@ -95,7 +88,57 @@ class RekapMutasiController extends Controller
             'totalSetoran' => $totalSetoran,
             'totalPenarikan' => $totalPenarikan,
             'saldoSekarang' => $saldoSekarang,
+            'namaKolektor' => $kolektorId !== null
+                ? (string) User::whereKey($kolektorId)->value('name')
+                : '-',
+            'tanggalCetak' => now()->format('d-m-Y'),
         ]);
+    }
+
+    /**
+     * Tombol "Cetak Rekap" (F5/D30): setiap cetak meninggalkan jejak —
+     * log aktivitas `cetak_rekap_nasabah` dan stempel waktu pada
+     * `nasabah_profil.rekap_dicetak_pada` yang menjadi kolom laporan.
+     */
+    public function cetak(User $user): RedirectResponse
+    {
+        $nasabah = $this->wajibBerwenang($user);
+
+        ActivityLogger::log('cetak_rekap_nasabah', 'users', (int) $nasabah->id, [
+            'nasabah_id' => (int) $nasabah->id,
+            'nasabah' => (string) $nasabah->name,
+            'oleh' => (string) Auth::user()?->name,
+        ]);
+
+        NasabahProfil::where('user_id', $nasabah->id)
+            ->update(['rekap_dicetak_pada' => now()]);
+
+        return redirect()->route('rekap.nasabah', $nasabah)->with('siapCetak', true);
+    }
+
+    /**
+     * Guard bersama show()/cetak(): target harus nasabah, pemohon admin
+     * atau kolektor penanggung jawab yang masih aktif.
+     */
+    private function wajibBerwenang(User $user): User
+    {
+        $nasabah = $user;
+
+        abort_unless($nasabah->role === 'nasabah', 404);
+
+        $pemohon = Auth::user();
+
+        abort_unless($pemohon !== null, 403);
+
+        $berwenang = $pemohon->isAdmin()
+            || KolektorNasabah::where('kolektor_id', $pemohon->id)
+                ->where('nasabah_id', $nasabah->id)
+                ->where('status', 'aktif')
+                ->exists();
+
+        abort_unless($berwenang, 403);
+
+        return $nasabah;
     }
 
     /**

@@ -1186,7 +1186,7 @@
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-gray-900">Definisi angka</p>
-                    <p class="mt-0.5">Status = status pendaftaran nasabah pada posisi terkini (tanpa filter periode). Mode Akses = Digital atau Offline sesuai akun nasabah. Kolektor = penanggung jawab aktif dari nasabah tersebut; tanda &minus; berarti belum ditangani kolektor mana pun.</p>
+                    <p class="mt-0.5">Status = status pendaftaran nasabah pada posisi terkini (tanpa filter periode). Mode Akses = Digital atau Offline sesuai akun nasabah. Kolektor = penanggung jawab aktif dari nasabah tersebut; tanda &minus; berarti belum ditangani kolektor mana pun. Rekap Terakhir Dicetak = tanggal terakhir tombol Cetak Rekap ditekan untuk nasabah tersebut (Belum pernah = belum pernah dicetak); baris diurutkan dari yang paling lama agar siklus cetak nasabah offline mudah dipantau. Kolom ini murni informasi, tanpa ambang angka.</p>
                 </div>
             </div>
             <div class="mb-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -1223,6 +1223,7 @@
                                 <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Status Pendaftaran</th>
                                 <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Mode Akses</th>
                                 <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Kolektor</th>
+                                <th class="px-3 py-2 font-mono text-xs uppercase tracking-wider text-gray-500">Rekap Terakhir Dicetak</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-[#ebebeb]">
@@ -1233,9 +1234,10 @@
                                     <td class="px-3 py-2 text-sm {{ in_array($baris['status_pendaftaran'], ['Ditolak'], true) ? 'text-[#ee0000]' : 'text-gray-900' }}">{{ $baris['status_pendaftaran'] }}</td>
                                     <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['mode_akses'] }}</td>
                                     <td class="px-3 py-2 text-sm text-gray-600">{{ $baris['kolektor'] }}</td>
+                                    <td class="px-3 py-2 font-mono text-sm text-gray-600">{{ $baris['rekap_terakhir_dicetak'] }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="px-3 py-4 text-sm text-gray-500">Belum ada nasabah terdaftar.</td></tr>
+                                <tr><td colspan="6" class="px-3 py-4 text-sm text-gray-500">Belum ada nasabah terdaftar.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -1258,6 +1260,10 @@
                                 <div>
                                     <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Kolektor</span>
                                     <span class="font-mono text-sm text-gray-600">{{ $baris['kolektor'] }}</span>
+                                </div>
+                                <div>
+                                    <span class="block text-[10px] font-mono uppercase tracking-wider text-gray-500">Rekap Dicetak</span>
+                                    <span class="font-mono text-sm text-gray-600">{{ $baris['rekap_terakhir_dicetak'] }}</span>
                                 </div>
                             </div>
                         </div>

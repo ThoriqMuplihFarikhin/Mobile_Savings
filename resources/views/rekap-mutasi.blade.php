@@ -73,6 +73,7 @@
         .keluar { color: #b91c1c; }
         .kosong { padding: 16px; text-align: center; color: #71717a; font-size: 13px; }
         .aksi { margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end; }
+        .aksi form { margin: 0; }
         .aksi button, .aksi a {
             font: inherit;
             font-size: 13px;
@@ -86,6 +87,11 @@
             text-decoration: none;
         }
         .aksi button { background: #18181b; border-color: #18181b; color: #fff; }
+        .tanda-tangan { display: flex; gap: 16px; margin-top: 26px; }
+        .tanda-tangan > div { flex: 1; text-align: center; }
+        .tanda-tangan .label { margin: 0; font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #52525b; }
+        .tanda-tangan .garis { display: block; height: 54px; border-bottom: 1px dashed #a1a1aa; }
+        .tanda-tangan .nama { margin: 6px 0 0; font-size: 13px; font-weight: 600; color: #18181b; }
         @media print {
             body { background: #fff; padding: 0; }
             .lembar { border: none; box-shadow: none; padding: 0; max-width: none; border-radius: 0; }
@@ -172,10 +178,34 @@
             </table>
         @endif
 
+        <div class="tanda-tangan">
+            <div>
+                <p class="label">Tanda Tangan Nasabah</p>
+                <span class="garis"></span>
+                <p class="nama">{{ $nasabah->name }}</p>
+            </div>
+            <div>
+                <p class="label">Tanggal Cetak</p>
+                <span class="garis"></span>
+                <p class="nama">{{ $tanggalCetak }}</p>
+            </div>
+            <div>
+                <p class="label">Nama Kolektor</p>
+                <span class="garis"></span>
+                <p class="nama">{{ $namaKolektor }}</p>
+            </div>
+        </div>
+
         <div class="aksi">
             <a href="{{ route('dashboard') }}">Kembali</a>
-            <button type="button" onclick="window.print()">Cetak</button>
+            <form method="POST" action="{{ route('rekap.nasabah.cetak', $nasabah) }}">
+                @csrf
+                <button type="submit">Cetak Rekap</button>
+            </form>
         </div>
     </div>
+    @if (session('siapCetak'))
+        <script>window.print();</script>
+    @endif
 </body>
 </html>

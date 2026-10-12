@@ -1149,11 +1149,13 @@ class Laporan extends Component
     }
 
     /**
-     * Posisi terkini nasabah: status pendaftaran, mode akses, dan kolektor
-     * penanggung jawab (tanpa filter periode).
+     * Posisi terkini nasabah: status pendaftaran, mode akses, kolektor
+     * penanggung jawab, dan jejak cetak rekap (tanpa filter periode).
+     * Baris diurutkan rekap terakhir dicetak paling lama dahulu — yang
+     * belum pernah dicetak berada di urutan paling atas (F5/D30).
      *
      * @return array{
-     *     nasabahRows: array<int, array{id: int, nama: string, no_hp: string, status_pendaftaran: string, mode_akses: string, kolektor: string}>,
+     *     nasabahRows: array<int, array{id: int, nama: string, no_hp: string, status_pendaftaran: string, mode_akses: string, kolektor: string, rekap_terakhir_dicetak: string}>,
      *     nasabahRekap: array{aktif: int, pending: int, ditolak: int, digital: int, offline: int}
      * }
      */
@@ -1173,9 +1175,23 @@ class Laporan extends Component
             ->where('role', 'nasabah')
             ->orderBy('name')
             ->get()
+            ->sortBy(
+                // Kolom datetime: null menjadi '' agar nasabah yang belum
+                // pernah dicetak naik ke urutan paling atas, sementara string
+                // tanggal ISO terurut kronologis secara leksikografis sehingga
+                // yang paling lama didahulukan.
+                function (User $nasabah): string {
+                    $rekap = $nasabah->nasabahProfil?->rekap_dicetak_pada;
+
+                    return $rekap === null ? '' : Carbon::parse($rekap)->format('Y-m-d H:i:s');
+                },
+                SORT_STRING
+            )
+            ->values()
             ->map(function (User $nasabah) use ($kolektorPerNasabah, $namaKolektor): array {
                 $kolektorId = $kolektorPerNasabah->get((int) $nasabah->id);
                 $profil = $nasabah->nasabahProfil;
+                $rekapDicetak = $profil?->rekap_dicetak_pada;
 
                 return [
                     'id' => (int) $nasabah->id,
@@ -1191,6 +1207,9 @@ class Laporan extends Component
                     'kolektor' => $kolektorId !== null
                         ? (string) ($namaKolektor[$kolektorId] ?? 'Kolektor #'.$kolektorId)
                         : '-',
+                    'rekap_terakhir_dicetak' => $rekapDicetak !== null
+                        ? Carbon::parse($rekapDicetak)->format('d-m-Y')
+                        : 'Belum pernah',
                 ];
             })
             ->all();
@@ -1598,7 +1617,7 @@ class Laporan extends Component
         fputcsv($file, ['Pending Verifikasi', $data['nasabahRekap']['pending']]);
         fputcsv($file, ['Ditolak', $data['nasabahRekap']['ditolak']]);
         fputcsv($file, []);
-        fputcsv($file, ['Nama', 'No HP', 'Status Pendaftaran', 'Mode Akses', 'Kolektor Penanggung Jawab']);
+        fputcsv($file, ['Nama', 'No HP', 'Status Pendaftaran', 'Mode Akses', 'Kolektor Penanggung Jawab', 'Rekap Terakhir Dicetak']);
 
         foreach ($data['nasabahRows'] as $baris) {
             fputcsv($file, [
@@ -1607,6 +1626,7 @@ class Laporan extends Component
                 $baris['status_pendaftaran'],
                 $baris['mode_akses'],
                 $safe($baris['kolektor']),
+                $baris['rekap_terakhir_dicetak'],
             ]);
         }
     }

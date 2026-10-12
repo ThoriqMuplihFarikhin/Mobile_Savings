@@ -82,6 +82,10 @@ Route::middleware(['auth', 'active', 'idle'])->group(function () {
         ->middleware('role:admin|kolektor')
         ->name('rekap.nasabah');
 
+    Route::post('/rekap/nasabah/{user}/cetak', [RekapMutasiController::class, 'cetak'])
+        ->middleware('role:admin|kolektor')
+        ->name('rekap.nasabah.cetak');
+
     // Admin Routes
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         Route::get('/nasabah', [NasabahController::class, 'index'])->name('nasabah.index');
