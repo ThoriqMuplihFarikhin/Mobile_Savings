@@ -72,6 +72,9 @@
         "types:check": [
             "phpstan analyse"
         ],
+        "deploy:check": [
+            "@php artisan deploy:check"
+        ],
         "test": [
             "@php artisan config:clear --ansi",
             "@lint:check",

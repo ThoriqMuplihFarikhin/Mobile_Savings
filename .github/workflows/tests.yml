@@ -58,3 +58,9 @@ jobs:
 
       - name: Run CI Checks
         run: composer ci:check
+
+      # Langkah dokumentasi: .env CI bukan environment produksi, jadi hasilnya
+      # tidak pernah menjatuhkan workflow.
+      - name: Deploy readiness check (dokumentasi)
+        continue-on-error: true
+        run: composer deploy:check

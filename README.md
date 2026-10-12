@@ -19,6 +19,14 @@ Checklist `.env` production (HTTPS):
 - `TRUSTED_PROXIES=<ip-load-balancer>` — isi hanya jika di belakang proxy tepercaya; kosong = tidak percaya proxy sama sekali. `*` hanya bila seluruh trafik melewati load balancer tepercaya.
 - `ADMIN_IDLE_MINUTES=30` — batas menit tidak aktif sebelum sesi admin otomatis keluar dan kembali ke `/login/admin` (F2/D26); `0` menonaktifkan batasnya.
 
+Sebelum deploy, jalankan pemeriksaan kesiapan produksi (exit code ≠ 0 bila ada butir yang gagal):
+
+```bash
+composer deploy:check
+```
+
+Butirnya: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL` ber-`https://`, `SESSION_SECURE_COOKIE=true`, driver DB `mysql`, `CACHE_STORE`/`QUEUE_CONNECTION` bukan `array`/`sync`, `public/hot` dan `public/fonts-manifest.dev.json` tidak ada, `public/build/manifest.json` ada, `APP_KEY` terisi, penjadwal terdaftar (`penarikan:kedaluwarsakan`, `jadwal:generate`, `paket:hitung-ulang`), `storage` dan `bootstrap/cache` dapat ditulis. Setelan `izinkan_kas_minus` dan `offline_penarikan_batas_langsung` dicatat sebagai info, bukan gagal.
+
 Setelah deploy, jalankan:
 ```bash
 php artisan migrate --force
