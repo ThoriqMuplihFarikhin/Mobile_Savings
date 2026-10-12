@@ -114,4 +114,17 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Idle Timeout
+    |--------------------------------------------------------------------------
+    |
+    | Berapa menit sesi admin boleh tidak aktif sebelum otomatis keluar dan
+    | diarahkan ke portal login admin (F2 / D26). Nilai 0 menonaktifkan
+    | batas idle.
+    |
+    */
+
+    'admin_idle_minutes' => env('ADMIN_IDLE_MINUTES', 30),
+
 ];

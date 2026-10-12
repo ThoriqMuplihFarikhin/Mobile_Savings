@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\AdminIdleTimeout;
 use App\Http\Middleware\EnsureAccountIsActive;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -43,14 +44,15 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Jalankan middleware active & role terhadap route halaman asal
-     * setiap request /livewire/update (bukan hanya saat muat halaman).
+     * Jalankan middleware active, role, dan idle timeout terhadap route halaman
+     * asal setiap request /livewire/update (bukan hanya saat muat halaman).
      */
     protected function configureLivewire(): void
     {
         Livewire::addPersistentMiddleware([
             EnsureAccountIsActive::class,
             RoleMiddleware::class,
+            AdminIdleTimeout::class,
         ]);
     }
 

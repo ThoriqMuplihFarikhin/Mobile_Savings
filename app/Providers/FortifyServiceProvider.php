@@ -125,8 +125,24 @@ class FortifyServiceProvider extends ServiceProvider
 
             Cookie::queue(cookie(PortalLogin::COOKIE, $portal, 43200));
 
+            // F2 / D26: sesi admin tidak pernah memakai cookie remember.
+            if ($user->isAdmin()) {
+                $this->paksaTanpaRemember($request);
+            }
+
             return $user;
         });
+    }
+
+    /**
+     * Paksa remember=false untuk admin. Closure authenticateUsing dijalankan
+     * AttemptToAuthenticate::handleUsingCustomCallback sebelum
+     * SessionGuard::login($user, $request->boolean('remember')), sehingga
+     * input yang ditulis ulang di sini berlaku tanpa bergantung pada UI.
+     */
+    private function paksaTanpaRemember(Request $request): void
+    {
+        $request->merge(['remember' => false]);
     }
 
     private function configureViews(): void

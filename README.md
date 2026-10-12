@@ -17,6 +17,7 @@ Checklist `.env` production (HTTPS):
 - `SESSION_SECURE_COOKIE=true` — wajib, agar cookie sesi hanya dikirim lewat HTTPS.
 - `APP_URL=https://<domain-produksi>` — wajib memakai HTTPS dan domain final; menentukan seluruh URL yang dibuat aplikasi (rute, aset, manifest PWA) serta rujukan `server.url` pada APK Capacitor (P8).
 - `TRUSTED_PROXIES=<ip-load-balancer>` — isi hanya jika di belakang proxy tepercaya; kosong = tidak percaya proxy sama sekali. `*` hanya bila seluruh trafik melewati load balancer tepercaya.
+- `ADMIN_IDLE_MINUTES=30` — batas menit tidak aktif sebelum sesi admin otomatis keluar dan kembali ke `/login/admin` (F2/D26); `0` menonaktifkan batasnya.
 
 Setelah deploy, jalankan:
 ```bash

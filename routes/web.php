@@ -58,7 +58,7 @@ Route::get('/login/admin', fn (Request $request) => view('pages.auth.login', [
     'portal' => PortalLogin::dariUri($request),
 ]))->name('login.admin');
 
-Route::middleware(['auth', 'active'])->group(function () {
+Route::middleware(['auth', 'active', 'idle'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::get('/absensi/{absensi}/{jenis}', [AbsensiFotoController::class, 'show'])

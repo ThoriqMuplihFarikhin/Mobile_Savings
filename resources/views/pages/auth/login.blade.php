@@ -24,6 +24,13 @@
             </div>
         @endif
 
+        @if (session('idle_expired'))
+            <div class="flex items-center gap-2.5 rounded-lg bg-[#f7d4d6] px-4 py-3 text-sm text-[#c50000]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                {{ __('Sesi berakhir karena tidak aktif. Silakan masuk kembali.') }}
+            </div>
+        @endif
+
         @error('no_hp')
             <div class="flex items-center gap-2.5 rounded-lg bg-[#f7d4d6] px-4 py-3 text-sm text-[#c50000]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -49,11 +56,13 @@
             </div>
 
             <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <input type="checkbox" name="remember" id="remember" class="h-4 w-4 rounded border-[#ebebeb] text-[#171717] focus:ring-[#171717]/10" {{ old('remember') ? 'checked' : '' }} />
-                    <label for="remember" class="text-sm text-[#4d4d4d]">Ingat saya</label>
-                </div>
-                <a href="{{ route('home') }}" class="text-xs text-[#0070f3] hover:underline">Kembali ke Beranda</a>
+                @unless ($portal === 'admin')
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" name="remember" id="remember" class="h-4 w-4 rounded border-[#ebebeb] text-[#171717] focus:ring-[#171717]/10" {{ old('remember') ? 'checked' : '' }} />
+                        <label for="remember" class="text-sm text-[#4d4d4d]">Ingat saya</label>
+                    </div>
+                @endunless
+                <a href="{{ route('home') }}" class="ms-auto text-xs text-[#0070f3] hover:underline">Kembali ke Beranda</a>
             </div>
 
             <button type="submit" data-test="login-button"
