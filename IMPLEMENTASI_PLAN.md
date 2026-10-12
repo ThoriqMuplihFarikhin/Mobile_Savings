@@ -119,11 +119,12 @@ Tiap syarat D23 sebagai kasus tersendiri (default `batas_langsung=0` → semua k
 **Dokumentasi:** tambah FR-41..45 di `prd.md` (bukti & batas penarikan offline, tinjauan admin, sesi admin, `deploy:check`, smoke store nyata); perbarui README (setelan baru, default aman, `ADMIN_IDLE_MINUTES`, `composer deploy:check`); `docs/plan-log.md` entri P10.1–P10.5 dengan RED/GREEN dan "Keputusan yang diambil agent".
 
 **Definition of Done (seluruh P10):**
-- [ ] `composer ci:check` hijau; PHPStan tanpa entri baseline baru (idealnya turun).
-- [ ] Default setelan: tidak ada penarikan offline selesai tanpa admin; semua tes lama tetap hijau.
-- [ ] Migrasi naik/turun/naik (`MigrasiNaikTurunP94Test`) hijau.
-- [ ] Tes IDOR untuk `penarikan.bukti`; tidak ada berkas bukti di disk publik.
-- [ ] `php artisan deploy:check` pada `.env` produksi contoh menghasilkan exit 0.
-- [ ] Tidak ada `public/hot` di artefak yang diserahkan.
+
+- [x] `composer ci:check` hijau; PHPStan tanpa entri baseline baru (idealnya turun). — pint ok, phpstan 0 galat baru, baseline **tetap 226** (tidak bertambah), **798/798 tes, 3209 asersi**.
+- [x] Default setelan: tidak ada penarikan offline selesai tanpa admin; semua tes lama tetap hijau. — `php artisan deploy:check` mencetak `[INFO] offline_penarikan_batas_langsung=0` (0 = penarikan langsung nonaktif, semua lewat approval) dan `[INFO] izinkan_kas_minus=false`; 798 tes hijau tanpa ada tes lama yang diubah atau dihapus.
+- [x] Migrasi naik/turun/naik (`MigrasiNaikTurunP94Test`) hijau. — dijalankan terpisah: 1 tes, 7 asersi, lulus tanpa di-skip (MySQL aktif); mencakup migrasi `2026_10_12_141348` (bukti/tinjauan) dan `2026_10_12_223210` (`rekap_dicetak_pada`).
+- [x] Tes IDOR untuk `penarikan.bukti`; tidak ada berkas bukti di disk publik. — `TinjauanPenarikanOfflineD25Test` menguji admin & `dibayar_oleh` (200) melawan nasabah/kolektor lain/tamu (403), berkas hilang (404), serta `Cache-Control: private, no-store`; bukti tersimpan pada disk privat `local` (`storage/app/private`) dengan nama acak, dan `git ls-files public` tidak memuat satu pun berkas gambar/bukti.
+- [x] `php artisan deploy:check` pada `.env` produksi contoh menghasilkan exit 0. — dibuktikan skenario konfigurasi produksi yang baik pada `DeployCheckD28Test` (exit 0). Pada `.env` mesin dev perintah exit 1 dengan tepat 6 kegagalan yang memang diharapkan di lingkungan dev: `APP_ENV`, `APP_DEBUG`, `APP_URL`, `SESSION_SECURE_COOKIE`, `PUBLIC_HOT`, `FONTS_MANIFEST_DEV`.
+- [x] Tidak ada `public/hot` di artefak yang diserahkan. — `git ls-files public/hot` kosong, dan `/public/hot` serta `/public/fonts-manifest.dev.json` tercantum di `.gitignore` (terpasang sebagai garda pada tes `DeployCheckD28Test`).
 
 **Pertanyaan terbuka untuk pemilik (catat di plan-log, jangan ditunggu):** (1) nilai awal `offline_penarikan_batas_langsung` dan `offline_penarikan_batas_harian`; (2) apakah nasabah offline perlu menerima rekap cetak dalam periode tetap; (3) apakah kolektor boleh membatalkan penarikan offline langsung yang salah catat (saat ini tidak ada jalur pembalikan setelah `selesai`; bila dibutuhkan, rancang sebagai koreksi oleh admin dengan jejak audit — di luar P10).
