@@ -310,20 +310,20 @@
                         <div>
                             <label class="block text-sm font-bold text-slate-800 mb-3">Pilih Jenis Tabungan / Paket:</label>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="productSelectorContainer">
-                                @if(isset($produkList) && $produkList->count() > 0)
+                                @if(isset($produkList) && count($produkList) > 0)
                                     @foreach($produkList as $idx => $p)
-                                        <button id="btnProduct{{ $p->id }}" onclick="selectDbProduct({{ $p->id }}, this)" class="product-btn flex flex-col items-center justify-center rounded-2xl border-2 {{ $idx === 0 ? 'border-brand-600 bg-emerald-50/60' : 'border-stone-200 bg-white' }} p-4 text-center transition hover:bg-emerald-50 active:scale-98">
+                                        <button id="btnProduct{{ $p['id'] }}" onclick="selectDbProduct({{ $p['id'] }}, this)" class="product-btn flex flex-col items-center justify-center rounded-2xl border-2 {{ $idx === 0 ? 'border-brand-600 bg-emerald-50/60' : 'border-stone-200 bg-white' }} p-4 text-center transition hover:bg-emerald-50 active:scale-98">
                                             <span class="text-brand-600 mb-1">
-                                                @if($p->isPaket())
+                                                @if(($p['tipe'] ?? null) === 'paket')
                                                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                                                 @else
                                                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
                                                 @endif
                                             </span>
-                                            <span class="text-sm font-bold text-slate-900">{{ $p->nama }}</span>
+                                            <span class="text-sm font-bold text-slate-900">{{ $p['nama'] ?? '' }}</span>
                                             <span class="text-xs text-slate-500 mt-0.5">
-                                                @if($p->isPaket())
-                                                    Rp {{ number_format($p->harga_per_hari ?? $p->minimal_setor, 0, ',', '.') }}/hari
+                                                @if(($p['tipe'] ?? null) === 'paket')
+                                                    Rp {{ number_format(($p['harga_per_hari'] ?? null) ?? ($p['minimal_setor'] ?? 0), 0, ',', '.') }}/hari
                                                 @else
                                                     Setor Bebas &amp; Tarik Kapan Saja
                                                 @endif

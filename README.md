@@ -86,6 +86,15 @@ Test selalu berjalan pada database terpisah `tabungan_digital_test` (di-`force` 
 mysql -uroot -e "CREATE DATABASE IF NOT EXISTS tabungan_digital_test CHARACTER SET utf8mb4"
 ```
 
+### Store cache pada pengujian
+
+Tes inti memakai `CACHE_STORE=array` (cepat, tidak menyentuh database). Dua hal yang justru tidak terlihat dari store `array` diuji terpisah (F4/D29):
+
+- `tests/Feature/SmokeStoreNyataTest.php` — halaman kunci untuk tiga peran diakses dua kali dengan `cache.default=database` dan `queue.default=database`, sekaligus memastikan tidak ada baris `cache` yang menyimpan objek.
+- `tests/Feature/CacheTanpaObjekD29Test.php` — arsitektur: sensus seluruh `Cache::put|remember|rememberForever|forever|add` di `app/` dan `routes/`, dan nilai yang disimpan wajib skalar/array.
+
+Nilai cache aplikasi seluruhnya skalar/array, sehingga `config/cache.php` memakai `serializable_classes = false` tanpa allowlist objek.
+
 ## Integrasi Berkelanjutan (CI)
 
 Workflow `.github/workflows/tests.yml` menjalankan `composer ci:check` pada setiap push ke `main` dan setiap pull request:

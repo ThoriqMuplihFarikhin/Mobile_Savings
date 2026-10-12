@@ -62,6 +62,24 @@ it('landing tetap tampil pada request kedua saat cache memakai store database', 
         ->assertSee('Tabungan Cadangan');
 });
 
+it('baris cache landing hanya memuat array publik: tanpa objek dan tanpa kata harga (D29)', function () {
+    config(['cache.default' => 'database']);
+    buatProdukLanding(['nama' => 'Tabungan Cadangan', 'tipe' => 'bebas', 'minimal_setor' => 5000]);
+
+    $this->get('/')->assertOk();
+
+    $baris = DB::table('cache')->where('key', 'like', '%landing:produk%')->first();
+    $payload = (string) ($baris->value ?? '');
+
+    expect($baris)->not->toBeNull()
+        ->and($payload)->not->toContain('"harga"')
+        ->and($payload)->not->toMatch('/(?:^|[;{])O:\d+:"/');
+});
+
+it('serializable_classes kembali false tanpa allowlist objek (D29)', function () {
+    expect(config('cache.serializable_classes'))->toBeFalse();
+});
+
 it('pengguna login tetap dapat membuka halaman landing', function () {
     $user = User::factory()->kolektor()->create();
 

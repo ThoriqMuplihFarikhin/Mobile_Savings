@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\ProdukTabungan;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 return [
@@ -131,16 +129,13 @@ return [
     | storage. By default, no PHP classes will be unserialized from your
     | cache to prevent gadget chain attacks if your APP_KEY is leaked.
     |
-    | Aplikasi ini hanya menyimpan objek landing (koleksi produk) di cache;
-    | daftarkan eksplisit agar unserialize store database tidak membuat
-    | __PHP_Incomplete_Class pada request kedua (landing 500).
+    | Dibiarkan `false`: seluruh nilai cache aplikasi kini skalar/array
+    | (koleksi produk landing pun dirapikan jadi array - F4/D29), sehingga
+    | allowlist objek tidak lagi diperlukan dan risiko gadget chain
+    | tetap tertutup.
     |
     */
 
-    'serializable_classes' => [
-        Illuminate\Database\Eloquent\Collection::class,
-        Collection::class,
-        ProdukTabungan::class,
-    ],
+    'serializable_classes' => false,
 
 ];
