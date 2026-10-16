@@ -1,8 +1,11 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <script>
-  if (localStorage.getItem('td-theme') === 'dark' ||
-     (!('td-theme' in localStorage) && matchMedia('(prefers-color-scheme: dark)').matches)) {
+  // Halaman auth memakai data-scheme="light" (selalu terang, mengikuti
+  // perilaku lama); layar lain mengikuti preferensi pengguna.
+  if (document.documentElement.getAttribute('data-scheme') !== 'light' &&
+      (localStorage.getItem('td-theme') === 'dark' ||
+       (!('td-theme' in localStorage) && matchMedia('(prefers-color-scheme: dark)').matches))) {
     document.documentElement.classList.add('dark');
   }
 </script>
@@ -43,10 +46,6 @@
         });
     }
 </script>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
 
 @fonts
 

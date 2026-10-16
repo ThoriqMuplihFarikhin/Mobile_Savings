@@ -49,7 +49,9 @@ it('komponen x-ui.tanggal merender atribut picker dan nilai server', function ()
         ->toContain('class="kelas-uji"')
         ->toContain('Tanggal Lahir')
         ->toContain('placeholder="Pilih tanggal"')
-        ->toContain('for="tanggal-');
+        ->toContain('for="tanggal-')
+        ->toContain('text-sm font-medium text-body')
+        ->toContain('class="text-danger"');
 });
 
 it('komponen x-ui.tanggal mode bulan memakai placeholder bulan', function () {

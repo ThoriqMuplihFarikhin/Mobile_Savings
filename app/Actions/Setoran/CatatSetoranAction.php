@@ -7,6 +7,7 @@ use App\Helpers\ActivityLogger;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiSetoran;
+use App\Support\JenisNotifikasi;
 use DomainException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -133,7 +134,7 @@ class CatatSetoranAction
                 'Setoran Rp '.number_format((float) $nominal, 0, ',', '.').' ke produk '
                     .(string) (ProdukTabungan::whereKey($data['produk_id'])->value('nama') ?? '-')
                     .' telah dicatat.',
-                'both'
+                JenisNotifikasi::Both
             );
         } catch (\Throwable $e) {
             report($e);

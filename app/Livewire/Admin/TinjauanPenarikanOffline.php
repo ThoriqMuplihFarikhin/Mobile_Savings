@@ -111,7 +111,7 @@ class TinjauanPenarikanOffline extends Component
         $admin = Auth::user();
 
         if (! $admin instanceof User) {
-            session()->flash('error', 'Sesi berakhir. Silakan login kembali.');
+            session()->flash('error', 'Sesi berakhir karena tidak aktif. Silakan masuk kembali.');
 
             return;
         }

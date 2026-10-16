@@ -6,6 +6,7 @@ use App\Jobs\KirimPinAwalWhatsApp;
 use App\Models\LogNotifikasi;
 use App\Models\User;
 use App\Services\WhatsAppService;
+use App\Support\JenisNotifikasi;
 use App\Support\Pin;
 use Illuminate\Support\Facades\Hash;
 
@@ -49,7 +50,7 @@ class KirimPinAwalAction
             'nasabah_id' => $nasabah->id,
             'judul' => 'PIN Awal',
             'pesan' => 'PIN awal dikirim ke nomor Anda. Hubungi admin bila tidak menerimanya.',
-            'jenis_notifikasi' => 'pin_awal',
+            'jenis_notifikasi' => JenisNotifikasi::PinAwal->value,
             'channel' => 'whatsapp',
             'status_kirim' => 'antri',
             'is_read' => false,

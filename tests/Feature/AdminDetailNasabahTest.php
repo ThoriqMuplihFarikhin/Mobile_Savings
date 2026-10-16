@@ -100,6 +100,26 @@ it('keeps ending balance curve equal to current balance', function () {
     expect(abs($chart['saldoAkhir'] - $saldoSekarang))->toBeLessThan(0.01);
 });
 
+it('memberi padanan teks pada grafik perkembangan saldo', function () {
+    [$admin, $nasabah] = createDetailNasabahFixture();
+
+    $this->actingAs($admin);
+
+    $component = Livewire::test(DetailNasabah::class, ['user' => $nasabah]);
+
+    $component
+        ->assertSee('role="img"', false)
+        ->assertSee('aria-label="Grafik perkembangan saldo', false);
+
+    $chart = $component->viewData('chartData');
+
+    expect($chart['ariaLabel'])
+        ->toContain('Awal')
+        ->toContain('Tertinggi')
+        ->toContain('terendah')
+        ->toContain('rupiah');
+});
+
 it('allows admin to access detail nasabah via Livewire', function () {
     $admin = User::factory()->admin()->create();
     $nasabah = User::factory()->nasabah()->create();

@@ -419,9 +419,9 @@ it('halaman setor kantor dan rekonsiliasi menampilkan rincian setoran masuk dan 
 
     $this->actingAs($k);
     Livewire::test(SetorKantor::class)
-        ->assertSee('Setoran Masuk')
-        ->assertSee('Penarikan Tunai')
-        ->assertSee('Total Seharusnya');
+        ->assertSee('Setoran masuk')
+        ->assertSee('Penarikan tunai')
+        ->assertSee('Total seharusnya');
 
     $admin = User::factory()->admin()->create();
     $this->actingAs($admin);

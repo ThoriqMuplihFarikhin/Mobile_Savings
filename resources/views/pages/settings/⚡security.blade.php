@@ -64,11 +64,11 @@ new #[Title('Security settings')] class extends Component {
 
     {{-- Header --}}
     <div class="flex items-center gap-3 mb-6">
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ffefcf] text-[#ab570a]">
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#ffefcf] text-[#ab570a]">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
         </div>
         <div>
-            <h1 class="text-lg font-bold text-[#171717] dark:text-white">Ganti PIN</h1>
+            <h1 class="text-lg font-semibold text-[#171717] dark:text-white">Ganti PIN</h1>
             <p class="text-sm text-[#888888] dark:text-zinc-400">Pastikan PIN Anda aman dan mudah diingat.</p>
         </div>
     </div>
@@ -80,7 +80,7 @@ new #[Title('Security settings')] class extends Component {
             <label class="mb-1.5 block text-sm font-medium text-[#171717] dark:text-zinc-200">PIN Saat Ini</label>
             <input type="password" wire:model="current_pin" required
                    maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="off"
-                   class="h-11 w-full rounded-xl border border-[#ebebeb] bg-[#fafafa] px-4 text-sm tracking-[0.5em] text-[#171717] focus:border-[#ab570a] focus:outline-none focus:ring-2 focus:ring-[#ab570a]/10 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white dark:focus:border-[#ab570a] dark:focus:ring-[#ab570a]/20" />
+                   class="h-11 w-full rounded-md border border-[#ebebeb] bg-[#fafafa] px-4 text-sm tracking-[0.5em] text-[#171717] focus:border-[#ab570a] focus:outline-none focus:ring-2 focus:ring-[#ab570a]/10 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white dark:focus:border-[#ab570a] dark:focus:ring-[#ab570a]/20" />
             @error('current_pin') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
         </div>
 
@@ -89,7 +89,7 @@ new #[Title('Security settings')] class extends Component {
             <label class="mb-1.5 block text-sm font-medium text-[#171717] dark:text-zinc-200">PIN Baru</label>
             <input type="password" wire:model="pin" required
                    maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="off"
-                   class="h-11 w-full rounded-xl border border-[#ebebeb] bg-[#fafafa] px-4 text-sm tracking-[0.5em] text-[#171717] focus:border-[#ab570a] focus:outline-none focus:ring-2 focus:ring-[#ab570a]/10 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white dark:focus:border-[#ab570a] dark:focus:ring-[#ab570a]/20" />
+                   class="h-11 w-full rounded-md border border-[#ebebeb] bg-[#fafafa] px-4 text-sm tracking-[0.5em] text-[#171717] focus:border-[#ab570a] focus:outline-none focus:ring-2 focus:ring-[#ab570a]/10 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white dark:focus:border-[#ab570a] dark:focus:ring-[#ab570a]/20" />
             @error('pin') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
         </div>
 
@@ -98,13 +98,13 @@ new #[Title('Security settings')] class extends Component {
             <label class="mb-1.5 block text-sm font-medium text-[#171717] dark:text-zinc-200">Konfirmasi PIN Baru</label>
             <input type="password" wire:model="pin_confirmation" required
                    maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="off"
-                   class="h-11 w-full rounded-xl border border-[#ebebeb] bg-[#fafafa] px-4 text-sm tracking-[0.5em] text-[#171717] focus:border-[#ab570a] focus:outline-none focus:ring-2 focus:ring-[#ab570a]/10 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white dark:focus:border-[#ab570a] dark:focus:ring-[#ab570a]/20" />
+                   class="h-11 w-full rounded-md border border-[#ebebeb] bg-[#fafafa] px-4 text-sm tracking-[0.5em] text-[#171717] focus:border-[#ab570a] focus:outline-none focus:ring-2 focus:ring-[#ab570a]/10 dark:border-zinc-600 dark:bg-zinc-700 dark:text-white dark:focus:border-[#ab570a] dark:focus:ring-[#ab570a]/20" />
             @error('pin_confirmation') <p class="mt-1.5 text-xs text-[#ee0000]">{{ $message }}</p> @enderror
         </div>
 
         {{-- Tombol Update --}}
         <button type="submit"
-                class="w-full rounded-xl bg-[#ffefcf] py-3 text-sm font-semibold text-[#ab570a] transition hover:bg-[#ffe4b5] dark:bg-[#ab570a]/20 dark:text-[#ffefcf] dark:hover:bg-[#ab570a]/30">
+                class="w-full rounded-md bg-[#ffefcf] py-3 text-sm font-semibold text-[#ab570a] transition hover:bg-[#ffe4b5] dark:bg-[#ab570a]/20 dark:text-[#ffefcf] dark:hover:bg-[#ab570a]/30">
             Update PIN
         </button>
     </form>

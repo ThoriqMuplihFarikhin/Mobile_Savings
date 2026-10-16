@@ -3,7 +3,7 @@
         "applicationId": "id.tabungan.nasabah",
         "name": "Tabungan",
         "startPath": "/login",
-        "accent": "#059669"
+        "accent": "#15803d"
     },
     "kolektor": {
         "applicationId": "id.tabungan.kolektor",

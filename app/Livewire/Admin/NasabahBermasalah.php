@@ -7,6 +7,7 @@ use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KepesertaanPaket;
 use App\Models\ProdukTabungan;
+use App\Support\JenisNotifikasi;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -179,7 +180,7 @@ class NasabahBermasalah extends Component
                 (int) $this->selectedKepesertaan->nasabah_id,
                 'Keputusan Kepesertaan Paket',
                 'Kepesertaan paket Anda dilanjutkan dan ditunda hingga '.Carbon::parse($this->ditunda_hingga)->translatedFormat('d M Y').'.',
-                'both',
+                JenisNotifikasi::Both,
             );
         } catch (\Throwable $e) {
             report($e);

@@ -12,7 +12,7 @@
         || request()->routeIs('admin.verifikasi.*');
 
     $gayaTab = fn (bool $aktif): string => $aktif
-        ? 'bg-white text-[#171717] dark:bg-zinc-100 dark:text-zinc-900 shadow-md'
+        ? 'bg-white text-ink dark:bg-zinc-100 dark:text-zinc-900 shadow-[0_1px_2px_rgb(0_0_0/0.06)]'
         : 'text-white/60 hover:text-white';
 
     $iconBeranda = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-[17px] h-[17px]"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3m10-11v11a1 1 0 01-1 1h-3m-4 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>';
@@ -48,18 +48,18 @@
      class="fixed inset-x-0 bottom-0 z-40 lg:hidden">
 
     {{-- Latar belakang sheet --}}
-    <div class="absolute inset-0 bg-navy-950/45" x-show="bukaMenu" style="display:none"
+    <div class="absolute inset-0 bg-black/40" x-show="bukaMenu" style="display:none"
          @click="bukaMenu = false"></div>
 
     {{-- Sheet menu (di atas tab) --}}
     <div x-show="bukaMenu" style="display:none" data-test="sheet-menu"
          class="absolute inset-x-0 bottom-full mb-2 px-3">
-        <div class="max-h-[70vh] overflow-y-auto rounded-3xl bg-white dark:bg-zinc-800 p-4 shadow-2xl border border-zinc-200 dark:border-zinc-700">
-            <p class="mb-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-slate-500">Semua Halaman</p>
+        <div class="max-h-[70vh] overflow-y-auto rounded-lg bg-white dark:bg-zinc-800 p-4 shadow-[0_8px_24px_rgb(0_0_0/0.12)] border border-zinc-200 dark:border-zinc-700">
+            <p class="mb-2 text-xs font-medium text-mute">Semua Halaman</p>
             <div class="grid grid-cols-2 gap-1.5">
                 @foreach ($halamanMenu as $m)
                     <a href="{{ $m['url'] }}" wire:navigate @click="bukaMenu = false"
-                       class="rounded-xl px-3 py-2.5 text-xs font-medium text-zinc-700 dark:text-slate-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition">
+                       class="rounded-lg px-3 py-2.5 text-xs font-medium text-body hover:bg-inset dark:hover:bg-zinc-700 transition">
                         {{ $m['label'] }}
                     </a>
                 @endforeach
@@ -67,7 +67,7 @@
             <form method="POST" action="{{ route('logout') }}" class="mt-3 border-t border-zinc-200 dark:border-zinc-700 pt-3">
                 @csrf
                 <button type="submit"
-                        class="w-full rounded-xl px-3 py-2.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">
+                        class="w-full rounded-md px-3 py-2.5 text-xs font-semibold text-body hover:bg-inset dark:hover:bg-zinc-700 transition">
                     Logout
                 </button>
             </form>
@@ -76,38 +76,38 @@
 
     {{-- Bar bawah dengan safe-area --}}
     <div class="px-3" style="padding-bottom: calc(env(safe-area-inset-bottom) + 0.75rem)">
-        <div class="flex items-center gap-1 bg-[#171717]/95 dark:bg-zinc-950/95 backdrop-blur-xl rounded-full p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.3)] border border-white/10 dark:border-zinc-800">
+        <div class="flex items-center gap-1 bg-ink/95 dark:bg-zinc-950/95 rounded-full p-1.5 shadow-[0_1px_2px_rgb(0_0_0/0.06)] border border-white/10 dark:border-zinc-800">
             <a href="{{ route('dashboard') }}" wire:navigate data-test="tab-beranda"
                class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 rounded-full transition active:scale-95 {{ $gayaTab($aktifBeranda) }}">
                 <span class="shrink-0">{!! $iconBeranda !!}</span>
-                <span class="text-[9px] font-semibold whitespace-nowrap">Beranda</span>
+                <span class="whitespace-nowrap text-xs font-semibold">Beranda</span>
             </a>
 
             <a href="{{ route('admin.persetujuan.index') }}" wire:navigate data-test="tab-persetujuan"
                class="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2 rounded-full transition active:scale-95 {{ $gayaTab($aktifPersetujuan) }}">
                 <span class="shrink-0">{!! $iconPersetujuan !!}</span>
-                <span class="text-[9px] font-semibold whitespace-nowrap">Persetujuan</span>
+                <span class="whitespace-nowrap text-xs font-semibold">Persetujuan</span>
                 @if ($totalAntrean > 0)
-                    <span class="absolute -top-0.5 right-2 min-w-[16px] rounded-full bg-rose-500 px-1 text-center text-[9px] font-bold leading-4 text-white shadow" data-test="bottom-nav-badge">{{ $totalAntrean }}</span>
+                    <span class="absolute -top-0.5 right-2 min-w-[18px] rounded-full bg-warning-soft px-1 text-center text-xs font-medium leading-[18px] text-warning-deep" data-test="bottom-nav-badge">{{ $totalAntrean }}</span>
                 @endif
             </a>
 
             <a href="{{ route('admin.rekonsiliasi.index') }}" wire:navigate data-test="tab-keuangan"
                class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 rounded-full transition active:scale-95 {{ $gayaTab($aktifKeuangan) }}">
                 <span class="shrink-0">{!! $iconKeuangan !!}</span>
-                <span class="text-[9px] font-semibold whitespace-nowrap">Keuangan</span>
+                <span class="whitespace-nowrap text-xs font-semibold">Keuangan</span>
             </a>
 
             <a href="{{ route('admin.nasabah.index') }}" wire:navigate data-test="tab-nasabah"
                class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 rounded-full transition active:scale-95 {{ $gayaTab($aktifNasabah) }}">
                 <span class="shrink-0">{!! $iconNasabah !!}</span>
-                <span class="text-[9px] font-semibold whitespace-nowrap">Nasabah</span>
+                <span class="whitespace-nowrap text-xs font-semibold">Nasabah</span>
             </a>
 
             <button type="button" @click="bukaMenu = !bukaMenu" data-test="tab-menu"
-                    class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 rounded-full transition active:scale-95 {{ $gayaTab(false) }}">
+                    class="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 rounded-md transition active:scale-95 {{ $gayaTab(false) }}">
                 <span class="shrink-0">{!! $iconMenu !!}</span>
-                <span class="text-[9px] font-semibold whitespace-nowrap">Menu</span>
+                <span class="whitespace-nowrap text-xs font-semibold">Menu</span>
             </button>
         </div>
     </div>

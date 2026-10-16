@@ -8,6 +8,7 @@ use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\LogHandoverKolektor;
 use App\Models\User;
+use App\Support\JenisNotifikasi;
 use App\Support\KasKolektorHitung;
 use DomainException;
 use Illuminate\Support\Collection;
@@ -216,7 +217,7 @@ class HandoverKolektor extends Component
                     $nasabah['nasabah_id'],
                     'Pergantian Kolektor',
                     'Halo '.$nasabah['name'].', mulai hari ini Anda ditangani oleh kolektor baru: '.$kolektorBaru->name.'. Terima kasih.',
-                    'in_app'
+                    JenisNotifikasi::InApp
                 );
             } catch (\Exception $e) {
                 \Log::error('Gagal kirim notifikasi handover', [

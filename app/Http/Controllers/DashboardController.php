@@ -244,6 +244,8 @@ class DashboardController extends Controller
 
         $streak = $this->hitungStreak($user->id);
 
+        $streakMingguIni = $this->streakMingguan($user->id);
+
         return view('dashboard', compact(
             'user',
             'saldoPerProduk',
@@ -252,6 +254,7 @@ class DashboardController extends Controller
             'unreadNotifikasi',
             'kepesertaanAktif',
             'streak',
+            'streakMingguIni',
         ));
     }
 
@@ -283,5 +286,39 @@ class DashboardController extends Controller
         }
 
         return $streak;
+    }
+
+    /**
+     * Tujuh titik streak mingguan (Senin–Minggu) untuk beranda nasabah
+     * (DESIGN.md §7 "Streak" dan §14 baris Beranda). Hari tanpa setoran tetap
+     * terkirim agar dirender sebagai lingkaran kosong; setoran ber-tanggal
+     * masa depan diabaikan, sama seperti hitungStreak.
+     *
+     * @return Collection<int, array{label: string, tanggal: string, ada_setoran: bool}>
+     */
+    private function streakMingguan(int $nasabahId): Collection
+    {
+        $hariIni = Carbon::today();
+        $awalMinggu = $hariIni->copy()->startOfWeek(Carbon::MONDAY);
+
+        $tanggalSetor = TransaksiSetoran::where('nasabah_id', $nasabahId)
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
+            ->whereBetween('tanggal_transaksi', [$awalMinggu->toDateString(), $hariIni->toDateString()])
+            ->pluck('tanggal_transaksi')
+            ->map(fn ($t) => Carbon::parse($t)->toDateString())
+            ->unique()
+            ->flip();
+
+        $label = ['S', 'S', 'R', 'K', 'J', 'S', 'M'];
+
+        return collect(range(0, 6))->map(function (int $i) use ($awalMinggu, $tanggalSetor, $label) {
+            $tanggal = $awalMinggu->copy()->addDays($i)->toDateString();
+
+            return [
+                'label' => $label[$i],
+                'tanggal' => $tanggal,
+                'ada_setoran' => $tanggalSetor->has($tanggal),
+            ];
+        })->values();
     }
 }

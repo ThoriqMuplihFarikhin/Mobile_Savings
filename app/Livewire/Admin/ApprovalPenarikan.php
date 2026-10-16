@@ -10,6 +10,7 @@ use App\Models\SaldoProduk;
 use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiPenarikan;
 use App\Models\User;
+use App\Support\JenisNotifikasi;
 use App\Support\KasKolektorHitung;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -184,7 +185,7 @@ class ApprovalPenarikan extends Component
                     $penarikan->nasabah_id,
                     'Penarikan Disetujui',
                     'Penarikan Rp '.number_format($penarikan->nominal_diminta, 0, ',', '.').' telah disetujui admin.',
-                    'both'
+                    JenisNotifikasi::Both
                 );
             } catch (\Exception $e) {
                 \Log::error('Gagal kirim notifikasi penarikan disetujui', [
@@ -225,7 +226,7 @@ class ApprovalPenarikan extends Component
                     $penarikan->nasabah_id,
                     'Penarikan Ditolak',
                     'Pengajuan penarikan Rp '.number_format($penarikan->nominal_diminta, 0, ',', '.').' ditolak oleh admin.',
-                    'both'
+                    JenisNotifikasi::Both
                 );
             } catch (\Exception $e) {
                 \Log::error('Gagal kirim notifikasi penarikan ditolak', [

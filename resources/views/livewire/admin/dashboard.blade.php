@@ -27,6 +27,26 @@
 
     $donutRadius = 40;
     $donutCircumference = 2 * 3.14159 * $donutRadius;
+
+    // DESIGN.md §10 "padanan teks": ringkasan awal/akhir/tertinggi/terendah
+    // untuk pembaca layar (E-a). Segmen Paket memakai teal §612–614 (E-b).
+    $ariaTrenSetoran = '';
+    if ($hasTrenData) {
+        $nominalTren = $trenSetoran->pluck('nominal');
+        $idxTertinggi = (int) $nominalTren->search($nominalTren->max());
+        $idxTerendah = (int) $nominalTren->search($nominalTren->min());
+        $ariaTrenSetoran = 'Grafik tren setoran 30 hari terakhir. '
+            .'Awal '.number_format((float) $nominalTren->first(), 0, ',', '.').' rupiah pada '.$trenSetoran->first()['tanggal'].', '
+            .'akhir '.number_format((float) $nominalTren->last(), 0, ',', '.').' rupiah pada '.$trenSetoran->last()['tanggal'].'. '
+            .'Tertinggi '.number_format((float) $nominalTren->max(), 0, ',', '.').' rupiah pada '.$trenSetoran[$idxTertinggi]['tanggal'].', '
+            .'terendah '.number_format((float) $nominalTren->min(), 0, ',', '.').' rupiah pada '.$trenSetoran[$idxTerendah]['tanggal'].'.';
+    }
+
+    $ariaKomposisi = $totalAll > 0
+        ? 'Komposisi saldo seluruh nasabah. Bebas '.number_format((float) $totalBebas, 0, ',', '.').' rupiah ('.$persenBebas.' persen), '
+            .'Paket '.number_format((float) $totalPaket, 0, ',', '.').' rupiah ('.$persenPaket.' persen). '
+            .'Total '.number_format((float) $totalAll, 0, ',', '.').' rupiah.'
+        : '';
 @endphp
 
 <div class="mx-auto max-w-7xl space-y-6">
@@ -79,26 +99,22 @@
         <div class="lg:col-span-2 card">
             <div class="mb-4 flex items-center justify-between">
                 <div class="mx-auto max-w-7xl space-y-6">
-                    <h3 class="font-serif text-base font-semibold text-text dark:text-white">Tren Setoran</h3>
-                    <p class="text-xs text-text-muted dark:text-slate-400">30 hari terakhir</p>
+                    <h3 class="text-base font-semibold text-ink">Tren Setoran</h3>
+                    <p class="text-xs text-mute dark:text-subtle">30 hari terakhir</p>
                 </div>
             </div>
             @if($hasTrenData)
                 <div class="overflow-hidden">
-                    <svg viewBox="0 0 {{ $chartWidth }} {{ $chartHeight }}" class="h-40 w-full">
-                        <defs>
-                            <linearGradient id="gradientArea" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" style="stop-color:#0A1626;stop-opacity:0.15" />
-                                <stop offset="100%" style="stop-color:#0A1626;stop-opacity:0.01" />
-                            </linearGradient>
-                        </defs>
+                    <svg viewBox="0 0 {{ $chartWidth }} {{ $chartHeight }}" class="h-40 w-full" role="img" aria-label="{{ $ariaTrenSetoran }}">
+                        {{-- DESIGN.md §5 & §10: tanpa gradien; warna mengikuti
+                             teks (currentColor) agar ikut mode gelap. --}}
                         @foreach([0.25, 0.5, 0.75, 1] as $ratio)
-                            <line x1="{{ $padding }}" y1="{{ $padding + $graphHeight * (1 - $ratio) }}" x2="{{ $chartWidth - $padding }}" y2="{{ $padding + $graphHeight * (1 - $ratio) }}" stroke="#e5e5e5" stroke-width="0.5" />
+                            <line x1="{{ $padding }}" y1="{{ $padding + $graphHeight * (1 - $ratio) }}" x2="{{ $chartWidth - $padding }}" y2="{{ $padding + $graphHeight * (1 - $ratio) }}" stroke="currentColor" stroke-opacity="0.15" stroke-width="0.5" />
                         @endforeach
-                        <path d="{{ $areaD }}" fill="url(#gradientArea)" />
-                        <path d="{{ $pathD }}" fill="none" stroke="#0A1626" stroke-width="2" stroke-linejoin="round" />
+                        <path d="{{ $areaD }}" fill="currentColor" fill-opacity="0.12" />
+                        <path d="{{ $pathD }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
                         @if($points->isNotEmpty())
-                            <circle cx="{{ $points->last()['x'] }}" cy="{{ $points->last()['y'] }}" r="3" fill="#0A1626" />
+                            <circle cx="{{ $points->last()['x'] }}" cy="{{ $points->last()['y'] }}" r="3" fill="currentColor" />
                         @endif
                     </svg>
                 </div>
@@ -112,29 +128,29 @@
 
         {{-- Komposisi Produk --}}
         <div class="card">
-            <h3 class="mb-4 font-serif text-base font-semibold text-text dark:text-white">Komposisi Produk</h3>
+            <h3 class="mb-4 text-base font-semibold text-ink">Komposisi Produk</h3>
             @if($totalAll > 0)
                 <div class="flex flex-col items-center">
-                    <svg viewBox="0 0 100 100" class="h-32 w-32 -rotate-90">
-                        <circle cx="50" cy="50" r="{{ $donutRadius }}" fill="none" stroke="#e5e5e5" stroke-width="12" />
-                        <circle cx="50" cy="50" r="{{ $donutRadius }}" fill="none" stroke="#0A1626" stroke-width="12"
+                    <svg viewBox="0 0 100 100" class="h-32 w-32 -rotate-90" role="img" aria-label="{{ $ariaKomposisi }}">
+                        <circle cx="50" cy="50" r="{{ $donutRadius }}" fill="none" stroke="currentColor" stroke-opacity="0.15" stroke-width="12" />
+                        <circle cx="50" cy="50" r="{{ $donutRadius }}" fill="none" stroke="currentColor" stroke-width="12"
                                 stroke-dasharray="{{ ($persenBebas / 100) * $donutCircumference }} {{ $donutCircumference }}"
                                 stroke-linecap="round" />
-                        <circle cx="50" cy="50" r="{{ $donutRadius }}" fill="none" stroke="#B8862E" stroke-width="12"
+                        <circle cx="50" cy="50" r="{{ $donutRadius }}" fill="none" stroke="currentColor" class="text-tile-teal-fg" stroke-width="12"
                                 stroke-dasharray="{{ ($persenPaket / 100) * $donutCircumference }} {{ $donutCircumference }}"
                                 stroke-dashoffset="-{{ ($persenBebas / 100) * $donutCircumference }}"
                                 stroke-linecap="round" />
                     </svg>
                     <div class="mt-4 flex flex-col gap-2">
                         <div class="flex items-center gap-2 text-sm">
-                            <span class="h-2.5 w-2.5 rounded-full bg-navy-950"></span>
-                            <span class="text-text-muted dark:text-slate-400">Bebas</span>
-                            <span class="ml-auto font-semibold text-text dark:text-white">{{ $persenBebas }}%</span>
+                            <span class="h-2.5 w-2.5 rounded-full bg-accent"></span>
+                            <span class="text-mute dark:text-subtle">Bebas</span>
+                            <span class="ml-auto font-semibold text-ink">{{ $persenBebas }}%</span>
                         </div>
                         <div class="flex items-center gap-2 text-sm">
-                            <span class="h-2.5 w-2.5 rounded-full bg-gold"></span>
-                            <span class="text-text-muted dark:text-slate-400">Paket</span>
-                            <span class="ml-auto font-semibold text-text dark:text-white">{{ $persenPaket }}%</span>
+                            <span class="h-2.5 w-2.5 rounded-full bg-tile-teal-fg"></span>
+                            <span class="text-mute dark:text-subtle">Paket</span>
+                            <span class="ml-auto font-semibold text-ink">{{ $persenPaket }}%</span>
                         </div>
                     </div>
                 </div>
@@ -152,13 +168,13 @@
         {{-- Tabel Transaksi Terbaru --}}
         <div class="lg:col-span-2 card">
             <div class="border-b border-border px-5 py-4">
-                <h3 class="font-serif text-base font-semibold text-text dark:text-white">Transaksi Terbaru</h3>
+                <h3 class="text-base font-semibold text-ink">Transaksi Terbaru</h3>
             </div>
             @if($transaksiTerbaru->isNotEmpty())
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead>
-                            <tr class="border-b border-border text-xs text-text-muted dark:text-slate-400">
+                            <tr class="border-b border-border text-xs text-mute dark:text-subtle">
                                 <th class="px-5 py-3 font-medium">Nasabah</th>
                                 <th class="px-5 py-3 font-medium">Produk</th>
                                 <th class="px-5 py-3 font-medium text-right">Nominal</th>
@@ -168,11 +184,11 @@
                         </thead>
                         <tbody class="divide-y divide-border">
                             @foreach($transaksiTerbaru as $trx)
-                                <tr class="text-text dark:text-white">
+                                <tr class="text-ink">
                                     <td class="whitespace-nowrap px-5 py-3 font-medium">{{ $trx->nasabah_name }}</td>
-                                    <td class="whitespace-nowrap px-5 py-3 text-text-muted dark:text-slate-400">{{ $trx->produk_name ?? '-' }}</td>
-                                    <td class="whitespace-nowrap px-5 py-3 text-right font-mono text-sm">Rp {{ number_format($trx->nominal, 0, ',', '.') }}</td>
-                                    <td class="whitespace-nowrap px-5 py-3 text-text-muted dark:text-slate-400">{{ \Carbon\Carbon::parse($trx->tanggal_transaksi)->format('d M Y') }}</td>
+                                    <td class="whitespace-nowrap px-5 py-3 text-mute dark:text-subtle">{{ $trx->produk_name ?? '-' }}</td>
+                                    <td class="whitespace-nowrap px-5 py-3 text-right tabular-nums text-sm">Rp {{ number_format($trx->nominal, 0, ',', '.') }}</td>
+                                    <td class="whitespace-nowrap px-5 py-3 text-mute dark:text-subtle">{{ \Carbon\Carbon::parse($trx->tanggal_transaksi)->format('d M Y') }}</td>
                                     <td class="whitespace-nowrap px-5 py-3">
                                         <span class="inline-flex items-center rounded-full bg-success-soft px-2 py-0.5 text-xs font-medium text-success">Berhasil</span>
                                     </td>
@@ -192,21 +208,21 @@
         {{-- Kolektor Teratas --}}
         <div class="card">
             <div class="border-b border-border px-5 py-4">
-                <h3 class="font-serif text-base font-semibold text-text dark:text-white">Kolektor Teratas</h3>
-                <p class="text-xs text-text-muted dark:text-slate-400">30 hari terakhir</p>
+                <h3 class="text-base font-semibold text-ink">Kolektor Teratas</h3>
+                <p class="text-xs text-mute dark:text-subtle">30 hari terakhir</p>
             </div>
             @if($kolektorTeratas->isNotEmpty())
                 <div class="divide-y divide-border">
                     @foreach($kolektorTeratas as $i => $k)
                         <div class="flex items-center gap-3 px-5 py-3.5">
-                            <span class="flex h-7 w-7 items-center justify-center rounded-full {{ $i === 0 ? 'bg-gold-soft text-gold font-semibold' : 'bg-zinc-100 dark:bg-slate-800 text-zinc-500 dark:text-slate-400' }} text-xs">
+                            <span class="flex h-7 w-7 items-center justify-center rounded-full {{ $i === 0 ? 'bg-primary-soft text-primary font-semibold' : 'bg-inset dark:bg-inset text-subtle dark:text-subtle' }} text-xs">
                                 {{ $i + 1 }}
                             </span>
                             <div class="min-w-0 flex-1">
-                                <p class="truncate text-sm font-medium text-text dark:text-white">{{ $k->name }}</p>
-                                <p class="text-xs text-text-muted dark:text-slate-400">{{ $k->jumlah_setoran }} setoran</p>
+                                <p class="truncate text-sm font-medium text-ink">{{ $k->name }}</p>
+                                <p class="text-xs text-mute dark:text-subtle">{{ $k->jumlah_setoran }} setoran</p>
                             </div>
-                            <span class="whitespace-nowrap font-mono text-sm font-semibold text-text dark:text-white">
+                            <span class="whitespace-nowrap tabular-nums text-sm font-semibold text-ink">
                                 Rp {{ number_format($k->total_nominal, 0, ',', '.') }}
                             </span>
                         </div>

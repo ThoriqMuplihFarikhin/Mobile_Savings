@@ -185,7 +185,7 @@ it('tautan ajukan izin kembali tampil di pengaturan kolektor', function () {
     $this->actingAs($kolektor);
 
     Livewire::test(Pengaturan::class)
-        ->assertSee('Ajukan Izin / Cuti');
+        ->assertSee('Ajukan izin / cuti');
 });
 
 it('halaman ajukan izin dapat diakses kolektor', function () {

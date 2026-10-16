@@ -7,6 +7,7 @@ use App\Models\KolektorNasabah;
 use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiPenarikan;
 use App\Models\User;
+use App\Support\JenisNotifikasi;
 use App\Support\KasKolektorHitung;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -170,7 +171,7 @@ class VerifikasiPenarikanOfflineAction
                 $penarikan->nasabah_id,
                 'Penarikan Terverifikasi',
                 'Penarikan Rp '.number_format($penarikan->nominal_diminta, 0, ',', '.').' telah diverifikasi dengan PIN Anda dan dinyatakan selesai.',
-                'both'
+                JenisNotifikasi::Both
             );
         } catch (\Throwable $e) {
             report($e);

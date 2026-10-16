@@ -35,8 +35,8 @@
 
 <div @if ($label !== null && $label !== '') class="flex flex-col gap-1.5" @endif>
     @if ($label !== null && $label !== '')
-        <label for="{{ $id }}" class="text-sm font-medium text-[#171717]">
-            {{ $label }}@if ($wajib) <span aria-hidden="true" class="text-rose-600">*</span>@endif
+        <label for="{{ $id }}" class="text-sm font-medium text-body">
+            {{ $label }}@if ($wajib) <span aria-hidden="true" class="text-danger">*</span>@endif
         </label>
     @endif
 

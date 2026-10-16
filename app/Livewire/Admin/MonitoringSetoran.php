@@ -7,6 +7,7 @@ use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiSetoran;
+use App\Support\JenisNotifikasi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -166,7 +167,7 @@ class MonitoringSetoran extends Component
                 $hasil['setoran']->nasabah_id,
                 'Setoran Dikoreksi',
                 'Setoran Rp '.number_format($hasil['nominalLama'], 0, ',', '.').' telah dikoreksi menjadi Rp '.number_format($hasil['nominalBaru'], 0, ',', '.').'.',
-                'both'
+                JenisNotifikasi::Both
             );
         } catch (\Throwable $e) {
             report($e);
@@ -249,7 +250,7 @@ class MonitoringSetoran extends Component
                 $setoran->nasabah_id,
                 'Setoran Dibatalkan',
                 'Setoran Rp '.number_format($setoran->nominal, 0, ',', '.').' telah dibatalkan oleh admin.',
-                'both'
+                JenisNotifikasi::Both
             );
         } catch (\Throwable $e) {
             report($e);

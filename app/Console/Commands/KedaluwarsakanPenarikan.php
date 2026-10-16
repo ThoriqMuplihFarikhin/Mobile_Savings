@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Helpers\ActivityLogger;
 use App\Models\AdminSetting;
 use App\Models\TransaksiPenarikan;
+use App\Support\JenisNotifikasi;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -55,7 +56,7 @@ class KedaluwarsakanPenarikan extends Command
                     'Pengajuan penarikan kedaluwarsa',
                     'Pengajuan penarikan sebesar Rp '.number_format((float) $penarikan->nominal_diminta, 0, ',', '.')
                         .' melewati batas '.(int) $hari.' hari dan ditandai kedaluwarsa. Ajukan pengajuan baru bila masih diperlukan.',
-                    'both'
+                    JenisNotifikasi::Both
                 );
             } catch (\Exception $e) {
                 report($e);

@@ -8,6 +8,7 @@ use App\Models\KepesertaanPaket;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\User;
+use App\Support\JenisNotifikasi;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -104,7 +105,7 @@ class IkutiPaketAction
                 (int) $nasabah->id,
                 'Berhasil Ikut Paket',
                 'Anda resmi mengikuti paket '.$produk->nama.'. Mulai menabung sesuai aturan paket.',
-                'both'
+                JenisNotifikasi::Both
             );
         } catch (\Throwable $e) {
             report($e);

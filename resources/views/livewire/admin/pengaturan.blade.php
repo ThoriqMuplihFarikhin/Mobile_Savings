@@ -15,7 +15,7 @@
     @endif
 
     {{-- Tab Navigation --}}
-    <div class="mb-6 flex gap-1 rounded-xl bg-gray-50 dark:bg-zinc-800 p-1 shadow-[inset_0_0_0_1px_#ebebeb] dark:shadow-[inset_0_0_0_1px_#3f3f46]">
+    <div class="mb-6 flex gap-1 rounded-lg bg-inset dark:bg-inset p-1 shadow-[inset_0_0_0_1px_#e5e5e5] dark:shadow-[inset_0_0_0_1px_#404040]">
         @php
             $tabs = [
                 'umum' => 'Umum',
@@ -27,10 +27,10 @@
         @endphp
         @foreach ($tabs as $key => $label)
             <button wire:click="setTab('{{ $key }}')"
-                    class="flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition
+                    class="flex-1 rounded-md px-4 py-2.5 text-sm font-medium transition
                            {{ $activeTab === $key
-                              ? 'bg-indigo-800 text-white shadow-sm dark:bg-zinc-600'
-                              : 'text-gray-500 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-white' }}">
+                              ? 'bg-accent text-accent-foreground  dark:bg-accent'
+                              : 'text-mute hover:text-ink dark:text-subtle dark:hover:text-accent-foreground' }}">
                 {{ $label }}
             </button>
         @endforeach
@@ -70,7 +70,7 @@
                 />
 
                 @if ($peringatanDuaApprover)
-                    <div class="flex items-start gap-2.5 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700 border border-amber-200">
+                    <div class="flex items-start gap-2.5 rounded-lg bg-warning-soft px-4 py-3 text-sm text-warning-deep border border-warning">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
                         <span>Fitur persetujuan ganda tidak berlaku karena jumlah admin aktif belum memenuhi syarat. Minimal {{ \App\Livewire\Admin\ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA }} admin diperlukan agar persetujuan ganda dapat berjalan.</span>
                     </div>
@@ -110,7 +110,7 @@
                 />
 
                 @if ($peringatanOfflineLangsung)
-                    <div class="flex items-start gap-2.5 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700 border border-amber-200">
+                    <div class="flex items-start gap-2.5 rounded-lg bg-warning-soft px-4 py-3 text-sm text-warning-deep border border-warning">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
                         <span>Penarikan offline langsung aktif, tetapi batas persetujuan ganda nonaktif atau jumlah admin kurang dari {{ \App\Livewire\Admin\ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA }}. Penarikan besar bisa selesai tanpa pengawasan ganda.</span>
                     </div>
@@ -135,12 +135,12 @@
             <flux:heading size="lg">Akun Admin</flux:heading>
             <flux:subheading>Daftar pengguna dengan peran admin di sistem ini.</flux:subheading>
 
-            <div class="rounded-2xl shadow-[inset_0_0_0_1px_#ebebeb] dark:shadow-[inset_0_0_0_1px_#3f3f46]">
+            <div class="rounded-lg shadow-[inset_0_0_0_1px_#e5e5e5] dark:shadow-[inset_0_0_0_1px_#404040]">
                 @foreach ($daftarAdmin as $admin)
-                    <div class="flex items-center justify-between px-5 py-3 border-b border-[#ebebeb] dark:border-zinc-600 last:border-b-0">
+                    <div class="flex items-center justify-between px-5 py-3 border-b border-hairline dark:border-hairline-strong last:border-b-0">
                         <div>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $admin->name }}</p>
-                            <p class="text-xs text-gray-500 dark:text-zinc-400">{{ $admin->no_hp }}</p>
+                            <p class="text-sm font-medium text-ink dark:text-white">{{ $admin->name }}</p>
+                            <p class="text-xs text-mute dark:text-subtle">{{ $admin->no_hp }}</p>
                         </div>
                         @if ($admin->id === auth()->id())
                             <flux:badge size="sm">Anda</flux:badge>
@@ -211,10 +211,10 @@
         <flux:card class="space-y-4">
             <flux:heading size="lg">Backup Database</flux:heading>
 
-            <div class="rounded-xl bg-gray-50 dark:bg-zinc-700/50 p-4 shadow-[inset_0_0_0_1px_#ebebeb] dark:shadow-[inset_0_0_0_1px_#3f3f46]">
-                <p class="text-sm text-gray-500 dark:text-zinc-400">
+            <div class="rounded-lg bg-inset dark:bg-inset/50 p-4 shadow-[inset_0_0_0_1px_#e5e5e5] dark:shadow-[inset_0_0_0_1px_#404040]">
+                <p class="text-sm text-mute dark:text-subtle">
                     @if ($backupTerakhir)
-                        Backup terakhir: <span class="font-medium text-gray-900 dark:text-white">{{ $backupTerakhir }}</span>
+                        Backup terakhir: <span class="font-medium text-ink dark:text-white">{{ $backupTerakhir }}</span>
                     @else
                         Belum pernah backup
                     @endif
@@ -227,7 +227,7 @@
                 </flux:button>
             </div>
 
-            <p class="text-xs text-gray-500 dark:text-zinc-500">
+            <p class="text-xs text-mute dark:text-subtle">
                 File backup akan diunduh dalam format .sql. Pastikan mysqldump tersedia di server.
             </p>
         </flux:card>
@@ -258,41 +258,43 @@
 
             <div class="space-y-3">
                 <a href="{{ route('admin.settings.profile') }}" wire:navigate
-                   class="flex items-center gap-4 rounded-xl border border-[#ebebeb] dark:border-zinc-600 p-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.05]">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                   class="flex items-center gap-4 rounded-lg border border-hairline dark:border-hairline-strong p-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.05]">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-info-soft text-info">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">Edit Profil Saya</p>
-                        <p class="text-xs text-gray-500 dark:text-zinc-400">Ubah nama dan foto profil</p>
+                        <p class="text-sm font-medium text-ink dark:text-white">Edit Profil Saya</p>
+                        <p class="text-xs text-mute dark:text-subtle">Ubah nama dan foto profil</p>
                     </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#a1a1a1] dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle dark:text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
                 </a>
 
                 <a href="{{ route('admin.settings.security') }}" wire:navigate
-                   class="flex items-center gap-4 rounded-xl border border-[#ebebeb] dark:border-zinc-600 p-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.05]">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-[#ab570a]">
+                   class="flex items-center gap-4 rounded-lg border border-hairline dark:border-hairline-strong p-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.05]">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning-soft text-warning-deep">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">Ganti PIN Saya</p>
-                        <p class="text-xs text-gray-500 dark:text-zinc-400">Perbarui PIN keamanan akun</p>
+                        <p class="text-sm font-medium text-ink dark:text-white">Ganti PIN Saya</p>
+                        <p class="text-xs text-mute dark:text-subtle">Perbarui PIN keamanan akun</p>
                     </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#a1a1a1] dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle dark:text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
                 </a>
 
                 <a href="{{ route('admin.settings.appearance') }}" wire:navigate
-                   class="flex items-center gap-4 rounded-xl border border-[#ebebeb] dark:border-zinc-600 p-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.05]">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#e8dff5] text-[#7c3aed]">
+                   class="flex items-center gap-4 rounded-lg border border-hairline dark:border-hairline-strong p-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.05]">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-info-soft text-info">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">Tampilan (Terang/Gelap)</p>
-                        <p class="text-xs text-gray-500 dark:text-zinc-400">Ubah tema tampilan aplikasi</p>
+                        <p class="text-sm font-medium text-ink dark:text-white">Tampilan (Terang/Gelap)</p>
+                        <p class="text-xs text-mute dark:text-subtle">Ubah tema tampilan aplikasi</p>
                     </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#a1a1a1] dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle dark:text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
                 </a>
             </div>
         </flux:card>
     @endif
+
+    <p class="mt-6 text-center text-xs text-mute dark:text-subtle">Tabungan Digital · versi alpha</p>
 </div>

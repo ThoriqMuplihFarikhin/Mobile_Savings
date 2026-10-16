@@ -1,75 +1,79 @@
 <div class="mx-auto max-w-2xl pb-24">
     {{-- Header --}}
     <div class="mb-5">
-        <h1 class="text-xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-2xl">Nasabah Binaan</h1>
-        <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Daftar nasabah tabungan yang Anda tangani di lapangan.</p>
+        <h1 class="text-2xl font-semibold tracking-tight text-ink">Nasabah binaan</h1>
+        <p class="mt-1 text-sm text-mute">Daftar nasabah tabungan yang Anda tangani di lapangan.</p>
     </div>
 
     {{-- Summary Cards --}}
     <div class="mb-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-        <div class="rounded-2xl bg-white p-3.5 shadow-sm border border-zinc-200/80 dark:bg-zinc-800/90 dark:border-zinc-700/80">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Total Binaan</p>
-            <p class="mt-1 font-mono text-lg font-bold text-zinc-900 dark:text-white">{{ $totalNasabah }}</p>
-            <p class="mt-0.5 text-[10px] text-zinc-400">Nasabah aktif</p>
+        <div class="rounded-2xl border border-hairline bg-white p-4 dark:bg-surface">
+            <p class="text-xs text-mute">Total binaan</p>
+            <p class="mt-1 text-xl font-semibold tabular-nums text-ink">{{ $totalNasabah }}</p>
+            <p class="mt-0.5 text-xs text-subtle">Nasabah aktif</p>
         </div>
 
-        <div class="rounded-2xl bg-white p-3.5 shadow-sm border border-zinc-200/80 dark:bg-zinc-800/90 dark:border-zinc-700/80">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Saldo Dikelola</p>
-            <p class="mt-1 font-mono text-sm font-bold text-blue-600 dark:text-blue-400 truncate">
-                Rp {{ number_format($totalSaldoDikelola, 0, ',', '.') }}
+        <div class="rounded-2xl border border-hairline bg-white p-4 dark:bg-surface">
+            <p class="text-xs text-mute">Saldo dikelola</p>
+            <p class="mt-1 text-xl font-semibold">
+                <x-ui.rupiah :nilai="$totalSaldoDikelola" />
             </p>
-            <p class="mt-0.5 text-[10px] text-zinc-400">Total simpanan</p>
+            <p class="mt-0.5 text-xs text-subtle">Total simpanan</p>
         </div>
 
-        <div class="rounded-2xl bg-white p-3.5 shadow-sm border border-zinc-200/80 dark:bg-zinc-800/90 dark:border-zinc-700/80">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Ada Tunggakan</p>
-            <p class="mt-1 font-mono text-lg font-bold text-amber-600 dark:text-amber-400">{{ $totalNasabahTunggakan }}</p>
-            <p class="mt-0.5 text-[10px] text-amber-500 font-medium">Perlu ditagih</p>
+        <div class="rounded-2xl border border-hairline bg-white p-4 dark:bg-surface">
+            <p class="text-xs text-mute">Ada tunggakan</p>
+            <p class="mt-1 text-xl font-semibold tabular-nums text-warning-deep">{{ $totalNasabahTunggakan }}</p>
+            <p class="mt-0.5 flex items-center gap-1 text-xs font-medium text-warning-deep">
+                <flux:icon.exclamation-triangle class="size-3.5" aria-hidden="true" />
+                Perlu ditagih
+            </p>
         </div>
 
-        <div class="rounded-2xl bg-white p-3.5 shadow-sm border border-zinc-200/80 dark:bg-zinc-800/90 dark:border-zinc-700/80">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">Binaan Offline</p>
-            <p class="mt-1 font-mono text-lg font-bold text-zinc-900 dark:text-white">{{ $totalNasabahOffline }}</p>
-            <p class="mt-0.5 text-[10px] text-zinc-400">Tanpa aplikasi</p>
+        <div class="rounded-2xl border border-hairline bg-white p-4 dark:bg-surface">
+            <p class="text-xs text-mute">Binaan offline</p>
+            <p class="mt-1 text-xl font-semibold tabular-nums text-ink">{{ $totalNasabahOffline }}</p>
+            <p class="mt-0.5 text-xs text-subtle">Tanpa aplikasi</p>
         </div>
     </div>
 
     {{-- Search & Filter Section --}}
     <div class="mb-5 space-y-3">
-        <div class="flex items-center rounded-xl border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 px-3 py-2 text-xs shadow-2xs focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10">
-            <flux:icon.magnifying-glass class="size-4 text-zinc-400 shrink-0 mr-2" />
+        <div class="flex items-center rounded-xl border border-hairline-strong bg-white px-3 py-3 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:bg-surface">
+            <flux:icon.magnifying-glass class="mr-2 size-4 shrink-0 text-mute" aria-hidden="true" />
             <input type="text" wire:model.live.debounce.300ms="search"
                    placeholder="Cari nama nasabah, alamat, atau no HP..."
-                   class="w-full bg-transparent text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none border-none p-0">
+                   class="w-full border-none bg-transparent p-0 text-sm text-ink placeholder:text-subtle focus:outline-none">
             @if($search)
-                <button type="button" wire:click="$set('search', '')" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+                <button type="button" wire:click="$set('search', '')" aria-label="Hapus pencarian" class="text-mute hover:text-ink">
                     <flux:icon.x-mark class="size-4" />
                 </button>
             @endif
         </div>
 
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-2">
             <button type="button" wire:click="$set('filterTunggakan', 'semua')"
-                class="rounded-full px-3 py-1 text-[11px] font-semibold transition {{ $filterTunggakan === 'semua' ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-2xs' : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50' }}">
-                Semua Nasabah ({{ $totalNasabah }})
+                class="rounded-full px-3 py-1.5 text-sm font-medium transition {{ $filterTunggakan === 'semua' ? 'border border-primary bg-primary-soft text-on-primary-soft' : 'border border-hairline bg-white text-body hover:bg-inset dark:bg-surface' }}">
+                Semua nasabah ({{ $totalNasabah }})
             </button>
             <button type="button" wire:click="$set('filterTunggakan', 'tunggakan')"
-                class="rounded-full px-3 py-1 text-[11px] font-semibold transition {{ $filterTunggakan === 'tunggakan' ? 'bg-amber-600 text-white shadow-2xs' : 'bg-white dark:bg-zinc-800 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-50' }}">
-                ⚠️ Ada Tunggakan ({{ $totalNasabahTunggakan }})
+                class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition {{ $filterTunggakan === 'tunggakan' ? 'border border-warning bg-warning-soft text-warning-deep' : 'border border-hairline bg-white text-body hover:bg-inset dark:bg-surface' }}">
+                <flux:icon.exclamation-triangle class="size-3.5" aria-hidden="true" />
+                Ada tunggakan ({{ $totalNasabahTunggakan }})
             </button>
         </div>
 
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-2">
             <button type="button" wire:click="$set('filterMode', 'semua')"
-                class="rounded-full px-3 py-1 text-[11px] font-semibold transition {{ $filterMode === 'semua' ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-2xs' : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50' }}">
-                Semua Mode
+                class="rounded-full px-3 py-1.5 text-sm font-medium transition {{ $filterMode === 'semua' ? 'border border-primary bg-primary-soft text-on-primary-soft' : 'border border-hairline bg-white text-body hover:bg-inset dark:bg-surface' }}">
+                Semua mode
             </button>
             <button type="button" wire:click="$set('filterMode', 'digital')"
-                class="rounded-full px-3 py-1 text-[11px] font-semibold transition {{ $filterMode === 'digital' ? 'bg-blue-600 text-white shadow-2xs' : 'bg-white dark:bg-zinc-800 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900 hover:bg-blue-50' }}">
+                class="rounded-full px-3 py-1.5 text-sm font-medium transition {{ $filterMode === 'digital' ? 'border border-info bg-info-soft text-info' : 'border border-hairline bg-white text-body hover:bg-inset dark:bg-surface' }}">
                 Digital
             </button>
             <button type="button" wire:click="$set('filterMode', 'offline')"
-                class="rounded-full px-3 py-1 text-[11px] font-semibold transition {{ $filterMode === 'offline' ? 'bg-zinc-900 text-white shadow-2xs' : 'bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50' }}">
+                class="rounded-full px-3 py-1.5 text-sm font-medium transition {{ $filterMode === 'offline' ? 'border border-hairline-strong bg-inset text-ink' : 'border border-hairline bg-white text-body hover:bg-inset dark:bg-surface' }}">
                 Offline
             </button>
         </div>
@@ -83,33 +87,34 @@
                 $totalSaldoNasabah = $userNasabah ? $userNasabah->saldoProduks->sum('saldo') : 0;
                 $tunggakanActive = $userNasabah ? $userNasabah->kepesertaanPakets->whereNull('keputusan_akhir')->first() : null;
             @endphp
-            <div class="rounded-2xl bg-white p-4 shadow-sm border border-zinc-200/80 dark:bg-zinc-800/90 dark:border-zinc-700/80 transition hover:border-zinc-300 dark:hover:border-zinc-600">
-                <div class="flex items-start justify-between gap-3 mb-3">
-                    <div class="flex items-start gap-3 min-w-0">
-                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 text-xs font-bold shadow-2xs">
+            <div class="rounded-2xl border border-hairline bg-white p-4 transition hover:border-hairline-strong dark:bg-surface">
+                <div class="mb-3 flex items-start justify-between gap-3">
+                    <div class="flex min-w-0 items-start gap-3">
+                        <div class="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-on-primary-soft" aria-hidden="true">
                             {{ strtoupper(substr($profil->nama, 0, 2)) }}
                         </div>
                         <div class="min-w-0">
-                            <div class="flex items-center gap-2">
-                                <h3 class="text-xs font-bold text-zinc-900 dark:text-white truncate">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h3 class="truncate text-sm font-semibold text-ink">
                                     {{ $profil->nama }}
                                 </h3>
-                                <span class="rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
-                                    Aktif
-                                </span>
+                                <x-ui.status-chip domain="pendaftaran" status="{{ $profil->status_pendaftaran }}" />
                                 @if($userNasabah && $userNasabah->isOffline())
-                                    <span class="rounded-full bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:text-zinc-200">
+                                    <span class="inline-flex items-center gap-1 rounded-full bg-inset px-2 py-1 text-xs font-medium text-body">
+                                        <flux:icon.signal-slash class="size-3.5" aria-hidden="true" />
                                         Mode Offline
                                     </span>
                                 @endif
                             </div>
-                            <p class="text-[11px] text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
-                                📍 {{ $profil->alamat ?? 'Alamat belum diisi' }}
+                            <p class="mt-0.5 flex items-center gap-1 truncate text-sm text-mute">
+                                <flux:icon.map-pin class="size-4 shrink-0" aria-hidden="true" />
+                                <span class="truncate">{{ $profil->alamat ?? 'Alamat belum diisi' }}</span>
                             </p>
                             @if($userNasabah && $userNasabah->no_hp)
-                                <div class="flex items-center gap-2 mt-1">
-                                    <a href="tel:{{ $userNasabah->no_hp }}" class="inline-flex items-center gap-1 text-[11px] text-blue-600 dark:text-blue-400 hover:underline">
-                                        📞 {{ $userNasabah->no_hp }}
+                                <div class="mt-1 flex items-center gap-3">
+                                    <a href="tel:{{ $userNasabah->no_hp }}" class="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                                        <flux:icon.device-phone-mobile class="size-4" aria-hidden="true" />
+                                        <span class="tabular-nums">{{ $userNasabah->no_hp }}</span>
                                     </a>
                                     @php
                                         $cleanHp = preg_replace('/[^0-9]/', '', $userNasabah->no_hp);
@@ -117,8 +122,9 @@
                                             $cleanHp = '62' . substr($cleanHp, 1);
                                         }
                                     @endphp
-                                    <a href="https://wa.me/{{ $cleanHp }}" target="_blank" class="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
-                                        💬 WA
+                                    <a href="https://wa.me/{{ $cleanHp }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                                        <flux:icon.chat-bubble-left-right class="size-4" aria-hidden="true" />
+                                        WA
                                     </a>
                                 </div>
                             @endif
@@ -126,33 +132,34 @@
                     </div>
 
                     {{-- Saldo Nasabah Badge --}}
-                    <div class="text-right shrink-0">
-                        <span class="text-[10px] text-zinc-400 block">Total Saldo</span>
-                        <span class="font-mono text-xs font-bold text-zinc-900 dark:text-white">
-                            Rp {{ number_format($totalSaldoNasabah, 0, ',', '.') }}
+                    <div class="shrink-0 text-right">
+                        <span class="block text-xs text-mute">Total saldo</span>
+                        <span class="text-sm font-semibold">
+                            <x-ui.rupiah :nilai="$totalSaldoNasabah" />
                         </span>
                     </div>
                 </div>
 
                 {{-- Products & Tunggakan Info --}}
                 @if($userNasabah && ($userNasabah->saldoProduks->count() > 0 || ($tunggakanActive && $tunggakanActive->tunggakan > 0)))
-                    <div class="mb-3 space-y-1.5 pt-2 border-t border-zinc-100 dark:border-zinc-700/50">
+                    <div class="mb-3 space-y-1.5 border-t border-hairline pt-3">
                         @if($tunggakanActive && $tunggakanActive->tunggakan > 0)
-                            <div class="flex items-center justify-between rounded-xl bg-amber-50 dark:bg-amber-950/40 p-2 border border-amber-200 dark:border-amber-800/60">
-                                <span class="text-[11px] font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1">
-                                    ⚠️ Tunggakan {{ $tunggakanActive->produk->nama ?? 'Paket' }}
+                            <div class="flex items-center justify-between gap-3 rounded-xl border border-warning-soft bg-warning-soft p-2.5">
+                                <span class="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-warning-deep">
+                                    <flux:icon.exclamation-triangle class="size-4 shrink-0" aria-hidden="true" />
+                                    <span class="truncate">Tunggakan {{ $tunggakanActive->produk->nama ?? 'Paket' }}</span>
                                 </span>
-                                <span class="font-mono text-xs font-bold text-amber-700 dark:text-amber-300">
+                                <span class="shrink-0 text-sm font-semibold tabular-nums text-warning-deep">
                                     {{ $tunggakanActive->tunggakan }} hari
                                 </span>
                             </div>
                         @endif
 
                         @if($userNasabah->saldoProduks->count() > 0)
-                            <div class="flex flex-wrap gap-1">
+                            <div class="flex flex-wrap gap-1.5">
                                 @foreach($userNasabah->saldoProduks as $sp)
-                                    <span class="rounded-lg bg-zinc-100 dark:bg-zinc-700/60 px-2 py-0.5 text-[10px] font-medium text-zinc-600 dark:text-zinc-300">
-                                        {{ $sp->produk->nama }}: <strong>Rp {{ number_format($sp->saldo, 0, ',', '.') }}</strong>
+                                    <span class="rounded-full bg-inset px-2.5 py-1 text-xs text-body">
+                                        {{ $sp->produk->nama }}: <strong class="font-semibold text-ink"><x-ui.rupiah :nilai="$sp->saldo" /></strong>
                                     </span>
                                 @endforeach
                             </div>
@@ -161,9 +168,9 @@
                 @endif
 
                 {{-- Atur Hari Kunjungan --}}
-                <div class="mt-3 pt-2 border-t border-zinc-100 dark:border-zinc-700/50 flex items-center justify-between gap-2">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 shrink-0">Hari Kunjungan</span>
-                    <div class="flex gap-1">
+                <div class="mt-3 border-t border-hairline pt-3">
+                    <p class="text-xs text-mute">Hari kunjungan</p>
+                    <div class="mt-2 flex flex-wrap gap-1.5">
                         @foreach (['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as $index => $namaHari)
                             @php
                                 $nomorHari = $index + 1;
@@ -172,7 +179,9 @@
                             <button type="button"
                                     wire:click="toggleHariKunjungan({{ $profil->user_id }}, {{ $nomorHari }})"
                                     title="{{ $namaHari }}"
-                                    class="h-6 w-6 rounded-full text-[10px] font-bold transition {{ $terpilih ? 'bg-blue-600 text-white shadow-2xs' : 'bg-zinc-100 text-zinc-400 dark:bg-zinc-700/60 dark:hover:bg-zinc-600' }}">
+                                    aria-label="{{ $namaHari }}"
+                                    aria-pressed="{{ $terpilih ? 'true' : 'false' }}"
+                                    class="flex size-11 items-center justify-center rounded-full text-xs font-medium transition {{ $terpilih ? 'bg-primary text-on-primary' : 'bg-inset text-body hover:bg-hairline' }}">
                                 {{ substr($namaHari, 0, 1) }}
                             </button>
                         @endforeach
@@ -180,36 +189,36 @@
                 </div>
 
                 {{-- Action Bar --}}
-                <div class="pt-2 border-t border-zinc-100 dark:border-zinc-700/50 flex items-center justify-between">
-                    <span class="text-[10px] text-zinc-400">
+                <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-hairline pt-3">
+                    <span class="text-xs text-subtle">
                         @if($profil->tanggal_lahir)
                             Lahir: {{ \Carbon\Carbon::parse($profil->tanggal_lahir)->translatedFormat('d M Y') }}
                         @else
-                            Terdaftar Aktif
+                            Terdaftar aktif
                         @endif
                     </span>
 
-                    <div class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-2">
                         <button type="button"
                                 wire:click="bukaDaftarPaket({{ $profil->user_id }})"
-                                class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-xs font-bold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition flex items-center gap-1">
-                            <flux:icon.plus class="size-3.5" />
-                            Daftar Paket
+                                class="inline-flex items-center gap-1.5 rounded-full border border-hairline-strong bg-white px-3 py-2 text-sm font-medium text-ink transition hover:bg-inset dark:bg-surface">
+                            <flux:icon.plus class="size-4" aria-hidden="true" />
+                            Daftar paket
                         </button>
 
                         <a href="{{ route('kolektor.setoran.index') }}" wire:navigate
-                           class="rounded-xl bg-zinc-900 dark:bg-white px-3 py-1.5 text-xs font-bold text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition flex items-center gap-1">
-                            <flux:icon.plus-circle class="size-3.5" />
-                            Input Setoran
+                           class="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-2 text-sm font-medium text-on-primary transition hover:bg-primary-hover">
+                            <flux:icon.plus-circle class="size-4" aria-hidden="true" />
+                            Input setoran
                         </a>
                     </div>
                 </div>
             </div>
         @empty
-            <div class="py-16 text-center rounded-2xl bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80">
-                <flux:icon.users class="size-10 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-                <p class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Belum ada nasabah binaan</p>
-                <p class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">Nasabah yang ditugaskan oleh admin akan muncul di sini.</p>
+            <div class="rounded-2xl border border-hairline bg-white py-16 text-center dark:bg-surface">
+                <flux:icon.users class="mx-auto mb-2 size-10 text-mute" aria-hidden="true" />
+                <p class="text-sm font-semibold text-ink">Belum ada nasabah binaan</p>
+                <p class="mt-1 text-sm text-mute">Nasabah yang ditugaskan oleh admin akan muncul di sini.</p>
             </div>
         @endforelse
     </div>
@@ -220,46 +229,60 @@
     @endif
 
     @if($tampilDaftarPaket)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-zinc-800">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Daftarkan ke Paket</h3>
-                <p class="mt-2 text-sm text-gray-500 dark:text-zinc-400">Pendaftaran dicatat atas nama kolektor (via kolektor) dengan persetujuan dan catatan wajib (D16).</p>
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div class="w-full max-w-md rounded-2xl border border-hairline bg-white p-5 dark:bg-surface">
+                <h3 class="text-lg font-semibold text-ink">Daftarkan ke paket</h3>
+                <p class="mt-1 text-sm text-mute">Pendaftaran dicatat atas nama kolektor (via kolektor) dengan persetujuan dan catatan wajib (D16).</p>
 
-                <div class="mt-4 space-y-3">
+                <div class="mt-4 space-y-4">
                     <div>
-                        <label for="produkDaftarId" class="block text-xs font-medium text-gray-700 dark:text-zinc-300">Pilih Paket</label>
-                        <select id="produkDaftarId" wire:model.live="produkDaftarId" class="mt-1 w-full rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none">
+                        <label for="produkDaftarId" class="mb-1.5 block text-sm font-medium text-body">Pilih paket</label>
+                        <select id="produkDaftarId" wire:model.live="produkDaftarId"
+                            class="mt-0 w-full rounded-xl border border-hairline-strong bg-white px-3 py-3 text-base text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface">
                             <option value="0">— Pilih paket —</option>
                             @foreach($paketTerbuka as $paket)
                                 <option value="{{ $paket->id }}">{{ $paket->nama }} — Rp {{ number_format((float) ($paket->harga_per_hari ?? 0), 0, ',', '.') }}/hari</option>
                             @endforeach
                         </select>
-                        @error('produkDaftarId') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        @error('produkDaftarId') <p class="mt-1.5 flex items-center gap-1 text-sm text-danger"><flux:icon.exclamation-circle class="size-4 shrink-0" aria-hidden="true" />{{ $message }}</p> @enderror
                         @if($paketTerbuka->isEmpty())
-                            <p class="mt-1 text-xs text-amber-600">Tidak ada paket terbuka untuk nasabah ini (sudah diikuti atau pendaftaran ditutup).</p>
+                            <p class="mt-2 flex items-start gap-1.5 rounded-xl border border-warning-soft bg-warning-soft px-3 py-2 text-sm text-warning-deep">
+                                <flux:icon.exclamation-triangle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                                <span>Tidak ada paket terbuka untuk nasabah ini (sudah diikuti atau pendaftaran ditutup).</span>
+                            </p>
                         @endif
                     </div>
 
                     <div>
-                        <label for="catatanDaftar" class="block text-xs font-medium text-gray-700 dark:text-zinc-300">Catatan Pendaftaran</label>
-                        <textarea id="catatanDaftar" wire:model="catatanDaftar" rows="2" placeholder="Contoh: nasabah setuju saat kunjungan, membaca komitmen." class="mt-1 w-full rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none"></textarea>
-                        @error('catatanDaftar') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                        <label for="catatanDaftar" class="mb-1.5 block text-sm font-medium text-body">Catatan pendaftaran</label>
+                        <textarea id="catatanDaftar" wire:model="catatanDaftar" rows="2" placeholder="Contoh: nasabah setuju saat kunjungan, membaca komitmen."
+                            class="mt-0 w-full rounded-xl border border-hairline-strong bg-white px-3 py-3 text-base text-ink placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface"></textarea>
+                        @error('catatanDaftar') <p class="mt-1.5 flex items-center gap-1 text-sm text-danger"><flux:icon.exclamation-circle class="size-4 shrink-0" aria-hidden="true" />{{ $message }}</p> @enderror
                     </div>
 
-                    <label class="flex items-start gap-2 text-sm text-gray-700 dark:text-zinc-300">
-                        <input type="checkbox" wire:model="setujuDaftar" class="mt-0.5 h-4 w-4 rounded border-gray-300" />
+                    <label class="flex items-start gap-2 text-sm text-body">
+                        <input type="checkbox" wire:model="setujuDaftar" class="mt-0.5 size-4 shrink-0 rounded accent-primary" />
                         <span>Nasabah telah membaca, memahami, dan menyetujui komitmen paket ini (D16).</span>
                     </label>
-                    @error('setujuDaftar') <p class="text-xs text-red-600">{{ $message }}</p> @enderror
+                    @error('setujuDaftar') <p class="flex items-center gap-1 text-sm text-danger"><flux:icon.exclamation-circle class="size-4 shrink-0" aria-hidden="true" />{{ $message }}</p> @enderror
 
                     @if($pesanErrorDaftar)
-                        <p class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/50 dark:text-red-300">{{ $pesanErrorDaftar }}</p>
+                        <p class="flex items-start gap-1.5 rounded-xl border border-danger-soft bg-danger-soft px-3 py-2 text-sm text-danger-deep dark:border-dark-danger-soft dark:bg-dark-danger-soft dark:text-dark-danger-text">
+                            <flux:icon.exclamation-circle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                            <span>{{ $pesanErrorDaftar }}</span>
+                        </p>
                     @endif
                 </div>
 
                 <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="tutupDaftarPaket" class="rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white transition hover:bg-zinc-50 dark:hover:bg-zinc-800">Batal</button>
-                    <button wire:click="daftarkanKePaket" wire:loading.attr="disabled" class="rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Daftarkan</button>
+                    <button wire:click="tutupDaftarPaket"
+                        class="inline-flex h-11 items-center rounded-full border border-hairline-strong bg-white px-5 text-sm font-medium text-ink transition hover:bg-inset dark:bg-surface">
+                        Batal
+                    </button>
+                    <button wire:click="daftarkanKePaket" wire:loading.attr="disabled"
+                        class="inline-flex h-11 items-center rounded-full bg-primary px-5 text-sm font-medium text-on-primary transition hover:bg-primary-hover disabled:opacity-50">
+                        Daftarkan
+                    </button>
                 </div>
             </div>
         </div>

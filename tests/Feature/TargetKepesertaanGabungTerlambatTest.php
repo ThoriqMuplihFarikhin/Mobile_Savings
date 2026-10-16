@@ -66,6 +66,6 @@ it('menampilkan target kepesertaan pada halaman progres nasabah', function () {
 
     $this->actingAs($data['nasabah']);
     Livewire::test(ProgresPaket::class)
-        ->assertSee('Rp 210.000')
-        ->assertDontSee('Rp 300.000');
+        ->assertSee('Rp&nbsp;210.000', false)
+        ->assertDontSee('Rp&nbsp;300.000', false);
 });

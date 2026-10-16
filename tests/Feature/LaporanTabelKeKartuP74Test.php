@@ -47,5 +47,5 @@ it('tetap menampilkan tabel laporan untuk layar besar', function () {
 
     expect($html)->toContain('hidden md:table');
     expect($html)->toContain('Detail Penarikan');
-    expect($html)->toContain('data-test="kartu-tabel" class="divide-y divide-[#ebebeb] md:hidden');
+    expect($html)->toContain('data-test="kartu-tabel" class="divide-y divide-hairline md:hidden');
 });

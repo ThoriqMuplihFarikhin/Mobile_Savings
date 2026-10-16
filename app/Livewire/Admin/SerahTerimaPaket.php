@@ -7,6 +7,7 @@ use App\Livewire\Concerns\AuthorizesRoles;
 use App\Livewire\Concerns\ValidatesKolektorNasabah;
 use App\Models\KepesertaanPaket;
 use App\Models\KolektorNasabah;
+use App\Support\JenisNotifikasi;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Http\UploadedFile;
@@ -165,7 +166,7 @@ class SerahTerimaPaket extends Component
                 (int) $kepesertaan->nasabah_id,
                 'Serah Terima Paket',
                 'Paket tabungan Anda sudah diserahkan oleh '.$kepesertaan->diterima_oleh.' pada '.$tanggal->translatedFormat('d M Y').'.',
-                'both'
+                JenisNotifikasi::Both
             );
         } catch (\Throwable $e) {
             report($e);

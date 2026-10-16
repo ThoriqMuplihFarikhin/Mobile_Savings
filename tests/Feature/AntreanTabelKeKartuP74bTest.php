@@ -56,7 +56,7 @@ it('menukarkan tabel antrean persetujuan menjadi kartu dengan tombol aksi besar'
 
         expect(substr_count($html, 'hidden md:table'))->toBe(1);
         expect(substr_count($html, 'data-test="kartu-tabel"'))->toBe(1);
-        expect($html)->toContain('data-test="kartu-tabel" class="divide-y divide-[#ebebeb] md:hidden');
+        expect($html)->toContain('data-test="kartu-tabel" class="divide-y divide-hairline md:hidden');
         expect($html)->toContain('min-h-11');
     }
 });

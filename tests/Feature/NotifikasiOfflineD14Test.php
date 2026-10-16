@@ -7,6 +7,7 @@ use App\Models\LogNotifikasi;
 use App\Models\ProdukTabungan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
+use App\Support\JenisNotifikasi;
 use Illuminate\Support\Facades\Queue;
 
 function konfigurasiWaP23(): void
@@ -31,7 +32,7 @@ it('melewatkan notifikasi nasabah offline tanpa baris log dan tanpa antrean what
 
     $offline = nasabahOfflineP23();
 
-    ActivityLogger::notify($offline->id, 'Judul Offline', 'Isi pesan untuk nasabah offline.', 'both');
+    ActivityLogger::notify($offline->id, 'Judul Offline', 'Isi pesan untuk nasabah offline.', JenisNotifikasi::Both);
 
     Queue::assertNothingPushed();
     expect(LogNotifikasi::count())->toBe(0);
@@ -43,7 +44,7 @@ it('notifikasi tetap terkirim untuk nasabah digital', function () {
 
     $digital = User::factory()->nasabah()->create(['no_hp' => '081234567890']);
 
-    ActivityLogger::notify($digital->id, 'Judul Digital', 'Isi pesan untuk nasabah digital.', 'both');
+    ActivityLogger::notify($digital->id, 'Judul Digital', 'Isi pesan untuk nasabah digital.', JenisNotifikasi::Both);
 
     Queue::assertPushed(KirimNotifikasiWhatsApp::class);
     expect(LogNotifikasi::where('nasabah_id', $digital->id)->count())->toBe(2);

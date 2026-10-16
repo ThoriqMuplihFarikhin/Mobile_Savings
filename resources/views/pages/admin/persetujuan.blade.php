@@ -13,8 +13,8 @@
 
     <div class="mx-auto max-w-7xl space-y-6">
         <div class="mb-8">
-            <h1 class="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Persetujuan</h1>
-            <p class="mt-1 text-sm text-gray-500 dark:text-slate-400">
+            <h1 class="text-2xl font-semibold tracking-tight text-ink dark:text-white">Persetujuan</h1>
+            <p class="mt-1 text-sm text-mute dark:text-subtle">
                 Antrean yang menunggu keputusan admin. Ketuk kartu untuk membuka halaman antreiannya.
             </p>
         </div>
@@ -22,17 +22,17 @@
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @foreach ($kartu as $k)
                 <a href="{{ $k['url'] }}" wire:navigate data-test="kartu-antrean-{{ $k['kode'] }}"
-                   class="flex items-start justify-between gap-3 rounded-2xl bg-white dark:bg-zinc-800 p-5 shadow-lg transition hover:ring-2 hover:ring-emerald-500/40">
+                   class="flex items-start justify-between gap-3 rounded-lg bg-white dark:bg-inset p-5 transition hover:ring-2 hover:ring-ink/40">
                     <div class="min-w-0">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
+                        <p class="text-xs font-medium text-mute dark:text-subtle">
                             {{ $k['label'] }}
                         </p>
-                        <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white" data-test="hitung-{{ $k['kode'] }}">
+                        <p class="mt-2 text-3xl font-semibold text-ink dark:text-white" data-test="hitung-{{ $k['kode'] }}">
                             {{ $antrean[$k['kode']] }}
                         </p>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-slate-400">{{ $k['ket'] }}</p>
+                        <p class="mt-1 text-xs text-mute dark:text-subtle">{{ $k['ket'] }}</p>
                     </div>
-                    <span class="shrink-0 rounded-full bg-emerald-50 dark:bg-emerald-950 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                    <span class="shrink-0 rounded-full bg-primary-soft dark:bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary dark:text-primary">
                         Buka
                     </span>
                 </a>

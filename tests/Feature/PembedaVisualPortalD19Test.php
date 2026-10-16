@@ -112,3 +112,34 @@ it('judul tab dan chip peran di header memuat peran pengguna', function () {
         ->assertSee('· Nasabah')
         ->assertSee('>Nasabah</span>', false);
 });
+
+it('html memuat data-portal sesuai peran pengguna dan tidak diisi untuk tamu', function () {
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertDontSee('data-portal=', false);
+
+    foreach (PortalLogin::semua() as $portal) {
+        $pengguna = (match ($portal) {
+            PortalLogin::KOLEKTOR => User::factory()->kolektor(),
+            PortalLogin::ADMIN => User::factory()->admin(),
+            default => User::factory()->nasabah(),
+        })->create();
+
+        $this->actingAs($pengguna)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('data-portal="'.$portal.'"', false);
+    }
+});
+
+it('warna aksen nasabah disatukan di aksen portal, manifest, dan flavors', function () {
+    $manifest = json_decode((string) file_get_contents(public_path('manifest-nasabah.webmanifest')), true);
+    $flavors = json_decode((string) file_get_contents(base_path('mobile/flavors.json')), true);
+
+    expect(json_last_error())->toBe(JSON_ERROR_NONE)
+        ->and(PortalLogin::aksen(PortalLogin::NASABAH))->toBe('#15803d')
+        ->and($manifest['theme_color'] ?? null)->toBe('#15803d')
+        ->and($flavors['nasabah']['accent'] ?? null)->toBe('#15803d')
+        ->and(PortalLogin::aksen(PortalLogin::KOLEKTOR))->toBe('#2563eb')
+        ->and(PortalLogin::aksen(PortalLogin::ADMIN))->toBe('#171717');
+});

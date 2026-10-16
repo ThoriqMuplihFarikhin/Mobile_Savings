@@ -7,6 +7,7 @@ use App\Models\KepesertaanPaket;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
+use App\Support\JenisNotifikasi;
 use Illuminate\Support\Facades\DB;
 
 class ProsesKegagalanPaketAction
@@ -74,7 +75,7 @@ class ProsesKegagalanPaketAction
                 $hasil['kepesertaan']->nasabah_id,
                 'Keputusan Kepesertaan Paket',
                 'Kepesertaan paket Anda dinyatakan gagal dan akan dikembalikan Rp '.number_format($hasil['nominal'], 0, ',', '.').' melalui pencairan offline.',
-                'both',
+                JenisNotifikasi::Both,
             );
         } catch (\Throwable $e) {
             report($e);
@@ -165,7 +166,7 @@ class ProsesKegagalanPaketAction
                 $hasil['kepesertaan']->nasabah_id,
                 'Keputusan Kepesertaan Paket',
                 'Sisa saldo paket Anda Rp '.number_format($hasil['nominal'], 0, ',', '.').' telah dialihkan ke produk '.$hasil['produkTujuan']->nama.'.',
-                'both',
+                JenisNotifikasi::Both,
             );
         } catch (\Throwable $e) {
             report($e);

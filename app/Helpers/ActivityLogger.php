@@ -6,6 +6,7 @@ use App\Jobs\KirimNotifikasiWhatsApp;
 use App\Models\LogAktivitas;
 use App\Models\LogNotifikasi;
 use App\Models\User;
+use App\Support\JenisNotifikasi;
 use Illuminate\Support\Facades\Request;
 
 class ActivityLogger
@@ -23,7 +24,7 @@ class ActivityLogger
         ]);
     }
 
-    public static function notify(int $nasabahId, string $judul, string $pesan, string $jenis = 'in_app'): void
+    public static function notify(int $nasabahId, string $judul, string $pesan, JenisNotifikasi $jenis = JenisNotifikasi::InApp): void
     {
         $user = User::find($nasabahId);
 
@@ -31,12 +32,12 @@ class ActivityLogger
             return;
         }
 
-        if (in_array($jenis, ['in_app', 'both'])) {
+        if ($jenis->keAplikasi()) {
             LogNotifikasi::create([
                 'nasabah_id' => $nasabahId,
                 'judul' => $judul,
                 'pesan' => $pesan,
-                'jenis_notifikasi' => $jenis,
+                'jenis_notifikasi' => $jenis->value,
                 'channel' => 'in_app',
                 'status_kirim' => 'terkirim',
                 'is_read' => false,
@@ -44,7 +45,7 @@ class ActivityLogger
             ]);
         }
 
-        if (! in_array($jenis, ['whatsapp', 'both'])) {
+        if (! $jenis->keWhatsapp()) {
             return;
         }
 
@@ -53,7 +54,7 @@ class ActivityLogger
                 'nasabah_id' => $nasabahId,
                 'judul' => $judul,
                 'pesan' => $pesan,
-                'jenis_notifikasi' => $jenis,
+                'jenis_notifikasi' => $jenis->value,
                 'channel' => 'whatsapp',
                 'status_kirim' => 'gagal',
                 'is_read' => false,
@@ -71,7 +72,7 @@ class ActivityLogger
             'nasabah_id' => $nasabahId,
             'judul' => $judul,
             'pesan' => $pesan,
-            'jenis_notifikasi' => $jenis,
+            'jenis_notifikasi' => $jenis->value,
             'channel' => 'whatsapp',
             'status_kirim' => 'antri',
             'is_read' => false,

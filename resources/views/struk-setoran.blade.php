@@ -12,16 +12,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #f4f4f5;
+            background: #f5f5f5;
             font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-            color: #18181b;
+            color: #171717;
             padding: 24px;
         }
         .struk {
             width: 100%;
             max-width: 380px;
             background: #fff;
-            border: 1px solid #e4e4e7;
+            border: 1px solid #e5e5e5;
             border-radius: 16px;
             padding: 28px 24px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
@@ -29,7 +29,7 @@
         h1 {
             margin: 0;
             font-size: 18px;
-            font-weight: 800;
+            font-weight: 600;
             text-align: center;
             letter-spacing: 0.02em;
         }
@@ -38,11 +38,11 @@
             text-align: center;
             font-family: ui-monospace, monospace;
             font-size: 13px;
-            color: #52525b;
+            color: #525252;
         }
         .garis {
             border: 0;
-            border-top: 1px dashed #d4d4d8;
+            border-top: 1px dashed #d4d4d4;
             margin: 18px 0;
         }
         dl { margin: 0; }
@@ -53,31 +53,31 @@
             padding: 5px 0;
             font-size: 13px;
         }
-        dt { color: #71717a; }
+        dt { color: #737373; }
         dd {
             margin: 0;
             font-weight: 600;
             text-align: right;
         }
         .nominal {
-            font-family: ui-monospace, monospace;
+            font-variant-numeric: tabular-nums;
             font-size: 16px;
-            font-weight: 800;
+            font-weight: 600;
         }
         .status {
             margin: 16px 0 0;
             text-align: center;
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 600;
             padding: 6px 10px;
             border-radius: 999px;
-            background: #f4f4f5;
+            background: #f5f5f5;
         }
         .status-koreksi {
             margin: 8px 0 0;
             text-align: center;
             font-size: 12px;
-            color: #b45309;
+            color: #525252;
         }
         .aksi {
             display: flex;
@@ -90,14 +90,14 @@
             padding: 10px 12px;
             border-radius: 12px;
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 600;
             text-align: center;
             text-decoration: none;
             cursor: pointer;
-            border: 1px solid #e4e4e7;
+            border: 1px solid #e5e5e5;
         }
-        .aksi button { background: #18181b; color: #fff; border-color: #18181b; }
-        .aksi a { background: #fff; color: #18181b; }
+        .aksi button { background: #171717; color: #fff; border-color: #171717; }
+        .aksi a { background: #fff; color: #171717; }
         @media print {
             body { background: #fff; padding: 0; }
             .struk { border: 0; box-shadow: none; max-width: 100%; }

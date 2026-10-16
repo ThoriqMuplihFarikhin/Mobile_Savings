@@ -26,7 +26,7 @@ it('menukarkan tabel kas kolektor menjadi kartu di layar kecil', function () {
         ->assertOk()
         ->assertSee('hidden md:table', false)
         ->assertSee('data-test="kartu-kas"', false)
-        ->assertSee('data-test="kartu-kas" class="divide-y divide-[#ebebeb] md:hidden"', false);
+        ->assertSee('data-test="kartu-kas" class="divide-y divide-hairline md:hidden"', false);
 });
 
 it('melipat baris pengajuan pending rekonsiliasi dan menukarkan riwayatnya jadi kartu', function () {

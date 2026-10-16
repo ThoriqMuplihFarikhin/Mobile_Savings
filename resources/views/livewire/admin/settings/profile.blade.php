@@ -12,7 +12,7 @@
                 <img src="{{ asset('storage/'.auth()->user()->foto_profil_path) }}" alt="Foto Profil"
                      class="h-16 w-16 rounded-full object-cover">
             @else
-                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800 text-lg font-semibold text-white dark:bg-zinc-700">
+                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-accent text-accent-foreground text-lg font-semibold dark:bg-inset dark:text-ink">
                     {{ auth()->user()->initials() }}
                 </div>
             @endif
@@ -27,7 +27,7 @@
             <flux:input wire:model="name" label="Nama" required />
 
             <flux:input :value="$no_hp" label="No. HP" disabled readonly />
-            <flux:text size="sm" class="text-zinc-500">No. HP tidak dapat diubah karena digunakan untuk login.</flux:text>
+            <flux:text size="sm" class="text-subtle">No. HP tidak dapat diubah karena digunakan untuk login.</flux:text>
 
             <flux:button type="submit" variant="primary">Simpan Perubahan</flux:button>
         </form>

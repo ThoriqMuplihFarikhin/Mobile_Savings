@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Helpers\ActivityLogger;
 use App\Models\KepesertaanPaket;
+use App\Support\JenisNotifikasi;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -42,7 +43,7 @@ class KirimPengingatTunggakan extends Command
                         $kepesertaan->nasabah_id,
                         'Pengingat Tunggakan',
                         "Tunggakan {$kepesertaan->tunggakan} hari pada paket {$produkNama}. Mohon segera menabung kembali agar status kepesertaan tetap baik.",
-                        'both',
+                        JenisNotifikasi::Both,
                     );
                     $dikirim++;
                 }

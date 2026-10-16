@@ -273,7 +273,7 @@ class PenarikanOffline extends Component
         $kolektor = Auth::user();
 
         if (! $kolektor instanceof User) {
-            session()->flash('error', 'Sesi berakhir. Silakan login kembali.');
+            session()->flash('error', 'Sesi berakhir karena tidak aktif. Silakan masuk kembali.');
 
             return;
         }

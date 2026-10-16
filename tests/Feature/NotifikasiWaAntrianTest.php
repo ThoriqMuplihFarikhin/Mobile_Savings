@@ -6,6 +6,7 @@ use App\Models\AdminSetting;
 use App\Models\LogNotifikasi;
 use App\Models\User;
 use App\Services\WhatsAppService;
+use App\Support\JenisNotifikasi;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
@@ -21,7 +22,7 @@ it('mengantrikan pengiriman whatsapp ke job tanpa http saat request', function (
 
     $nasabah = User::factory()->nasabah()->create();
 
-    ActivityLogger::notify($nasabah->id, 'Judul', 'Pesan uji', 'whatsapp');
+    ActivityLogger::notify($nasabah->id, 'Judul', 'Pesan uji', JenisNotifikasi::Whatsapp);
 
     Queue::assertPushed(KirimNotifikasiWhatsApp::class);
     Http::assertNothingSent();
@@ -43,7 +44,7 @@ it('gateway down tidak menggagalkan request pemanggil dan log menjadi gagal sete
 
     $nasabah = User::factory()->nasabah()->create();
 
-    ActivityLogger::notify($nasabah->id, 'Judul', 'Pesan uji', 'whatsapp');
+    ActivityLogger::notify($nasabah->id, 'Judul', 'Pesan uji', JenisNotifikasi::Whatsapp);
 
     $log = LogNotifikasi::where('nasabah_id', $nasabah->id)
         ->where('channel', 'whatsapp')
@@ -82,7 +83,7 @@ it('notify driver sync tetap berjalan walau gateway down', function () {
 
     $nasabah = User::factory()->nasabah()->create();
 
-    ActivityLogger::notify($nasabah->id, 'Judul', 'Pesan uji', 'whatsapp');
+    ActivityLogger::notify($nasabah->id, 'Judul', 'Pesan uji', JenisNotifikasi::Whatsapp);
 
     $log = LogNotifikasi::where('nasabah_id', $nasabah->id)
         ->where('channel', 'whatsapp')
@@ -98,7 +99,7 @@ it('menghormati notifikasi_wa_aktif', function () {
 
     $nasabah = User::factory()->nasabah()->create(['notifikasi_wa_aktif' => false]);
 
-    ActivityLogger::notify($nasabah->id, 'Judul', 'Pesan uji', 'both');
+    ActivityLogger::notify($nasabah->id, 'Judul', 'Pesan uji', JenisNotifikasi::Both);
 
     Queue::assertNothingPushed();
 
@@ -116,7 +117,7 @@ it('menandai log terkirim setelah job sukses', function () {
 
     $nasabah = User::factory()->nasabah()->create();
 
-    ActivityLogger::notify($nasabah->id, 'Judul', 'Pesan uji', 'whatsapp');
+    ActivityLogger::notify($nasabah->id, 'Judul', 'Pesan uji', JenisNotifikasi::Whatsapp);
 
     $job = null;
     Queue::assertPushed(KirimNotifikasiWhatsApp::class, function ($kirim) use (&$job) {

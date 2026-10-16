@@ -7,7 +7,10 @@ use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AdminSetting;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -15,6 +18,13 @@ use Livewire\Component;
 class AjukanPenarikan extends Component
 {
     use AuthorizesRole;
+
+    /**
+     * Batas percobaan PIN mengikuti pola IkutiPaketAction (5 kali / 15 menit).
+     */
+    private const MAX_PERCOBAAN = 5;
+
+    private const RATELIMIT_DECAY_DETIK = 900;
 
     protected function requiredRole(): string
     {
@@ -40,6 +50,24 @@ class AjukanPenarikan extends Component
     public $nominalDiterima = 0;
 
     public string $nominalMinimal = '10000';
+
+    public bool $tampilKonfirmasi = false;
+
+    public string $pin = '';
+
+    public ?string $pesanError = null;
+
+    public bool $tampilSukses = false;
+
+    public string $suksesProduk = '';
+
+    public string $suksesNominalDiminta = '0.00';
+
+    public string $suksesKomisi = '0.00';
+
+    public string $suksesDiterima = '0.00';
+
+    public string $suksesLokasi = 'kantor';
 
     public function mount()
     {
@@ -112,7 +140,11 @@ class AjukanPenarikan extends Component
         $this->nominalDiterima = $hasil['diterima'];
     }
 
-    public function submit(AjukanPenarikanAction $action)
+    /**
+     * Langkah 1 (DESIGN.md §8): validasi formulir lalu buka sheet konfirmasi.
+     * Eksekusi pengajuan pindah ke konfirmasi() setelah PIN diverifikasi.
+     */
+    public function submit(): void
     {
         $this->validate([
             'produkId' => 'required|exists:produk_tabungan,id',
@@ -120,8 +152,64 @@ class AjukanPenarikan extends Component
             'lokasi_pengambilan' => 'required|in:rumah_kolektor,kantor',
         ]);
 
+        $this->pin = '';
+        $this->pesanError = null;
+        $this->tampilKonfirmasi = true;
+    }
+
+    public function tutupKonfirmasi(): void
+    {
+        $this->tampilKonfirmasi = false;
+        $this->pin = '';
+        $this->pesanError = null;
+    }
+
+    /**
+     * Langkah 2: verifikasi PIN ber-rate-limit lalu eksekusi pengajuan.
+     * Pesan kesalahan PIN mengikuti pola domain IkutiPaketAction; kesalahan
+     * eksekusi tampil di sheet (pesanError). Sukses membuka layar sukses §7.
+     */
+    public function konfirmasi(AjukanPenarikanAction $action): void
+    {
+        $this->validate([
+            'produkId' => 'required|exists:produk_tabungan,id',
+            'nominal' => 'required|numeric|decimal:0,2|gt:0',
+            'lokasi_pengambilan' => 'required|in:rumah_kolektor,kantor',
+            'pin' => 'required|string',
+        ]);
+
         $nasabah = Auth::user();
-        $produk = ProdukTabungan::findOrFail($this->produkId);
+        if (! $nasabah instanceof User) {
+            abort(403);
+        }
+
+        $key = 'ajukan-penarikan:nasabah:'.$nasabah->id;
+
+        if (RateLimiter::tooManyAttempts($key, self::MAX_PERCOBAAN)) {
+            $this->pesanError = 'Terlalu banyak percobaan PIN. Coba lagi nanti atau hubungi admin.';
+
+            return;
+        }
+
+        if ($nasabah->harus_ganti_pin) {
+            $this->pesanError = 'Anda belum mengganti PIN awal. Silakan ganti PIN terlebih dahulu di halaman Pengaturan.';
+
+            return;
+        }
+
+        if (! Hash::check($this->pin, $nasabah->pin_hash)) {
+            RateLimiter::hit($key, self::RATELIMIT_DECAY_DETIK);
+
+            $sisa = self::MAX_PERCOBAAN - RateLimiter::attempts($key);
+
+            $this->pesanError = "PIN salah. Sisa percobaan: {$sisa}.";
+
+            return;
+        }
+
+        RateLimiter::clear($key);
+
+        $produk = ProdukTabungan::whereKey($this->produkId)->firstOrFail();
 
         try {
             $action->execute(
@@ -132,12 +220,18 @@ class AjukanPenarikan extends Component
                 $this->lokasi_pengambilan
             );
 
+            $this->suksesProduk = $produk->nama;
+            $this->suksesNominalDiminta = number_format((float) $this->nominal, 2, '.', '');
+            $this->suksesKomisi = (string) $this->nominalKomisi;
+            $this->suksesDiterima = (string) $this->nominalDiterima;
+            $this->suksesLokasi = $this->lokasi_pengambilan;
+
             $this->reset(['produkId', 'nominal', 'lokasi_pengambilan']);
             $this->selectedProduk = null;
-
-            session()->flash('success', 'Pengajuan penarikan berhasil dikirim! Menunggu persetujuan admin.');
+            $this->tutupKonfirmasi();
+            $this->tampilSukses = true;
         } catch (\Exception $e) {
-            session()->flash('error', $e->getMessage());
+            $this->pesanError = $e->getMessage();
         }
     }
 

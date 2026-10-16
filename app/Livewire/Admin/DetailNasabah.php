@@ -173,7 +173,7 @@ class DetailNasabah extends Component
     /**
      * @param  Collection<int, TransaksiSetoran>  $setoran
      * @param  Collection<int, TransaksiPenarikan>  $penarikan
-     * @return array{hasData: bool, pathD: string, areaD: string, saldoAkhir: float, lastPoint: array{x: float, y: float}|null, chartWidth: int, chartHeight: int, padding: int, graphHeight: int}
+     * @return array{hasData: bool, pathD: string, areaD: string, saldoAkhir: float, ariaLabel: string, lastPoint: array{x: float, y: float}|null, chartWidth: int, chartHeight: int, padding: int, graphHeight: int}
      */
     protected function buildChartData(Collection $setoran, Collection $penarikan, CarbonInterface $start, CarbonInterface $end): array
     {
@@ -219,11 +219,25 @@ class DetailNasabah extends Component
 
         $areaD = $pathD.' L'.round($points->last()['x'] ?? 0, 1).','.($padding + $graphHeight).' L'.round($points->first()['x'] ?? 0, 1).','.($padding + $graphHeight).' Z';
 
+        // DESIGN.md §10 "padanan teks": ringkasan awal/akhir/tertinggi/terendah
+        // untuk pembaca layar (butir E grafik).
+        $saldoPerHari = collect($perHari)->pluck('saldo');
+        $idxTertinggi = (int) $saldoPerHari->search($saldoPerHari->max());
+        $idxTerendah = (int) $saldoPerHari->search($saldoPerHari->min());
+        $tanggalLabel = fn (int $idx): string => Carbon::parse($perHari[$idx]['tanggal'])->format('d M');
+
+        $ariaLabel = 'Grafik perkembangan saldo. '
+            .'Awal '.number_format((float) $saldoPerHari->first(), 0, ',', '.').' rupiah pada '.$tanggalLabel(0).', '
+            .'akhir '.number_format((float) $saldoPerHari->last(), 0, ',', '.').' rupiah pada '.$tanggalLabel($count - 1).'. '
+            .'Tertinggi '.number_format((float) $saldoPerHari->max(), 0, ',', '.').' rupiah pada '.$tanggalLabel($idxTertinggi).', '
+            .'terendah '.number_format((float) $saldoPerHari->min(), 0, ',', '.').' rupiah pada '.$tanggalLabel($idxTerendah).'.';
+
         return [
             'hasData' => $count > 0,
             'pathD' => $pathD,
             'areaD' => $areaD,
             'saldoAkhir' => $count > 0 ? (float) $perHari[$count - 1]['saldo'] : 0.0,
+            'ariaLabel' => $ariaLabel,
             'lastPoint' => $points->last(),
             'chartWidth' => $chartWidth,
             'chartHeight' => $chartHeight,

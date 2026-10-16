@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @if ($portalHtml = \App\Support\PortalLogin::dariPeran(auth()->user()?->role)) data-portal="{{ $portalHtml }}" @endif class="dark">
     <head>
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-surface">
             <flux:sidebar.header>
                 <div class="flex items-center gap-2">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
@@ -140,7 +140,7 @@
                                     ->count();
                             @endphp
                             @if($unreadCount > 0)
-                                <span class="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#ee0000] px-1 font-mono text-[10px] font-medium text-white">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
+                                <span class="ml-auto inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-info-soft px-1 text-xs font-medium text-info">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
                             @endif
                         </flux:sidebar.item>
                         <flux:sidebar.item icon="cog-6-tooth" href="/nasabah/pengaturan" :current="request()->routeIs('nasabah.pengaturan.*')" wire:navigate>
@@ -157,7 +157,7 @@
                     @csrf
                     <button type="submit"
                         class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm w-full
-                               text-sidebar-text hover:text-navy-900 dark:hover:text-white transition-colors cursor-pointer">
+                               text-sidebar-text hover:text-ink dark:hover:text-white transition-colors cursor-pointer">
                         {{ __('Logout') }}
                     </button>
                 </form>

@@ -82,13 +82,27 @@ class PortalLogin
 
     /**
      * Warna aksen portal (D19 butir 4): nasabah hijau, kolektor biru, admin gelap.
+     * Nasabah memakai {colors.primary} #15803d — #16a34a hanya 3,30:1 di atas putih.
      */
     public static function aksen(string $portal): string
     {
         return match ($portal) {
             self::KOLEKTOR => '#2563eb',
             self::ADMIN => '#171717',
-            default => '#16a34a',
+            default => '#15803d',
         };
+    }
+
+    /**
+     * Portal untuk atribut data-portal <html> (DESIGN.md §11): role pengguna
+     * bila merupakan portal yang dikenal, selain itu null (tamu).
+     */
+    public static function dariPeran(mixed $peran): ?string
+    {
+        if (is_string($peran) && in_array($peran, self::semua(), true)) {
+            return $peran;
+        }
+
+        return null;
     }
 }

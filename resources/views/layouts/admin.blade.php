@@ -1,11 +1,11 @@
 @props(['title' => null])
 
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @if ($portalHtml = \App\Support\PortalLogin::dariPeran(auth()->user()?->role)) data-portal="{{ $portalHtml }}" @endif>
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-surface-alt dark:bg-slate-950 text-text dark:text-white font-sans transition-colors">
+    <body class="min-h-screen bg-canvas dark:bg-surface text-ink font-sans transition-colors">
         <div class="flex h-screen overflow-hidden">
             <x-admin.sidebar />
 

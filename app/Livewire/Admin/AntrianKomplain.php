@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\Komplain;
+use App\Support\JenisNotifikasi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
@@ -95,7 +96,7 @@ class AntrianKomplain extends Component
                     $komplain->nasabah_id,
                     'Komplain Diproses',
                     'Komplain Anda sedang diproses oleh tim kami. Mohon tunggu informasi selanjutnya.',
-                    'in_app'
+                    JenisNotifikasi::InApp
                 );
             } catch (\Exception $e) {
                 \Log::error('Gagal kirim notifikasi komplain diproses', [
@@ -154,7 +155,7 @@ class AntrianKomplain extends Component
                     $komplain->nasabah_id,
                     'Komplain Selesai',
                     'Komplain Anda telah diselesaikan. Catatan: '.$this->catatan,
-                    'both'
+                    JenisNotifikasi::Both
                 );
             } catch (\Exception $e) {
                 \Log::error('Gagal kirim notifikasi komplain selesai', [
