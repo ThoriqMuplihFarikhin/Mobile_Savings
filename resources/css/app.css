@@ -497,7 +497,61 @@ html.text-enlarged {
     animation: authPinChecking 0.6s ease-in-out infinite;
 }
 
-/* Wajib menghormati preferensi pengguna untuk tidak memakai animasi */
+/* Namespace Animasi td-anim-* (U1.3) */
+@keyframes tdAnimFall {
+    0% { transform: translateY(-30px); opacity: 0; }
+    40% { opacity: 1; }
+    80% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(0); opacity: 0; }
+}
+
+@keyframes tdAnimLevel {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.08); }
+}
+
+@keyframes tdAnimTwinkle {
+    0%, 100% { opacity: 0.3; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.15); }
+}
+
+@keyframes tdAnimRise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tdAnimPop {
+    0% { transform: scale(0.8); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@keyframes tdAnimShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+@keyframes tdAnimBounceDots {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+@keyframes tdAnimDraw {
+    from { stroke-dashoffset: 48; }
+    to { stroke-dashoffset: 0; }
+}
+
+.td-anim-fall { animation: tdAnimFall 2.4s ease-in infinite; }
+.td-anim-level { animation: tdAnimLevel 3.6s ease-in-out infinite; transform-origin: bottom; }
+.td-anim-twinkle { animation: tdAnimTwinkle 2s ease-in-out infinite; }
+.td-anim-rise { animation: tdAnimRise 0.35s ease-out forwards; }
+.td-anim-pop { animation: tdAnimPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.td-anim-shake { animation: tdAnimShake 0.4s ease-in-out; }
+.td-anim-bounce-dots { animation: tdAnimBounceDots 1.2s infinite ease-in-out both; }
+.td-anim-draw { stroke-dasharray: 48; animation: tdAnimDraw 0.6s ease-out forwards; }
+
+/* Wajib menghormati preferensi pengguna untuk mematikan motion */
 @media (prefers-reduced-motion: reduce) {
     .auth-coin-1,
     .auth-coin-2,
@@ -506,9 +560,19 @@ html.text-enlarged {
     .auth-toast-float,
     .auth-pin-pop,
     .auth-pin-shake,
-    .auth-pin-checking {
+    .auth-pin-checking,
+    .td-anim-fall,
+    .td-anim-level,
+    .td-anim-twinkle,
+    .td-anim-rise,
+    .td-anim-pop,
+    .td-anim-shake,
+    .td-anim-bounce-dots,
+    .td-anim-draw {
         animation: none !important;
-        transition: none !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
         transform: none !important;
     }
 }
