@@ -344,3 +344,172 @@ span.flatpickr-weekday {
 .flatpickr-tombol-hapus:hover {
     background: var(--color-danger-soft);
 }
+
+/* Alpine x-cloak utility */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Aksesibilitas: Pembesar ukuran teks (tombol A+) */
+html.text-enlarged {
+    font-size: 112.5%;
+}
+
+/* ==========================================================================
+   Animasi Halaman Login Ber-namespace auth- (IMPLEMENTASI_PLAN.md)
+   ========================================================================== */
+
+@keyframes authCoinDropOne {
+    0% {
+        transform: translateY(-24px) scale(0.85);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    60% {
+        transform: translateY(22px) scale(1);
+        opacity: 1;
+    }
+    85% {
+        transform: translateY(34px) scale(0.95);
+        opacity: 0.85;
+    }
+    100% {
+        transform: translateY(42px) scale(0.9);
+        opacity: 0;
+    }
+}
+
+@keyframes authCoinDropTwo {
+    0% {
+        transform: translateY(-26px) scale(0.85);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    60% {
+        transform: translateY(24px) scale(1);
+        opacity: 1;
+    }
+    85% {
+        transform: translateY(36px) scale(0.95);
+        opacity: 0.85;
+    }
+    100% {
+        transform: translateY(44px) scale(0.9);
+        opacity: 0;
+    }
+}
+
+@keyframes authJarFillRising {
+    0%, 100% {
+        transform: scaleY(1);
+    }
+    50% {
+        transform: scaleY(1.04);
+    }
+}
+
+@keyframes authSparkleTwinkle {
+    0%, 100% {
+        transform: scale(0.6) rotate(0deg);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1.15) rotate(45deg);
+        opacity: 1;
+    }
+}
+
+@keyframes authToastFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes authPinPop {
+    0% {
+        transform: scale(0.85);
+    }
+    60% {
+        transform: scale(1.12);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes authPinShake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    15%, 45%, 75% {
+        transform: translateX(-6px);
+    }
+    30%, 60%, 90% {
+        transform: translateX(6px);
+    }
+}
+
+@keyframes authPinChecking {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.auth-coin-1 {
+    animation: authCoinDropOne 2.8s ease-in infinite;
+}
+
+.auth-coin-2 {
+    animation: authCoinDropTwo 2.8s ease-in 1.4s infinite;
+}
+
+.auth-jar-fill {
+    animation: authJarFillRising 4s ease-in-out infinite;
+}
+
+.auth-sparkle {
+    animation: authSparkleTwinkle 2.4s ease-in-out infinite;
+}
+
+.auth-toast-float {
+    animation: authToastFloat 5s ease-in-out infinite;
+}
+
+.auth-pin-pop {
+    animation: authPinPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.auth-pin-shake {
+    animation: authPinShake 0.45s ease-in-out;
+}
+
+.auth-pin-checking {
+    animation: authPinChecking 0.6s ease-in-out infinite;
+}
+
+/* Wajib menghormati preferensi pengguna untuk tidak memakai animasi */
+@media (prefers-reduced-motion: reduce) {
+    .auth-coin-1,
+    .auth-coin-2,
+    .auth-jar-fill,
+    .auth-sparkle,
+    .auth-toast-float,
+    .auth-pin-pop,
+    .auth-pin-shake,
+    .auth-pin-checking {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
