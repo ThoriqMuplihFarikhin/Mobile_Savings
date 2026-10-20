@@ -33,8 +33,8 @@
     <section aria-labelledby="label-grafik-7-hari"
         class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
         <div class="flex items-baseline justify-between gap-2">
-            <h2 id="label-grafik-7-hari" class="text-sm font-medium text-body">Setoran 7 hari terakhir</h2>
-            <span class="text-sm font-medium"><x-ui.rupiah :nilai="$total7Hari" tanda="+" /></span>
+            <h2 id="label-grafik-7-hari" class="text-xs font-semibold text-body">Setoran 7 hari terakhir</h2>
+            <span class="text-xs font-semibold"><x-ui.rupiah :nilai="$total7Hari" tanda="+" /></span>
         </div>
 
         <figure class="mt-3" role="img" aria-label="{{ $deskripsiGrafik7Hari }}">
@@ -58,10 +58,10 @@
     {{-- Filter produk --}}
     <section aria-labelledby="label-filter-produk">
         <div class="mb-2 flex items-center justify-between gap-2">
-            <h2 id="label-filter-produk" class="text-sm font-medium text-body">Produk tabungan</h2>
+            <h2 id="label-filter-produk" class="text-xs font-semibold text-body">Produk tabungan</h2>
             @if($produkFilter)
                 <button type="button" wire:click="$set('produkFilter', '')"
-                    class="text-sm font-medium text-primary underline underline-offset-4">
+                    class="text-xs font-medium text-primary underline underline-offset-4">
                     Lihat semua
                 </button>
             @endif
@@ -69,9 +69,9 @@
 
         <div class="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
             <button type="button" wire:click="$set('produkFilter', '')"
-                class="inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition {{ !$produkFilter ? 'border-primary-soft bg-primary-soft text-on-primary-soft' : 'border-hairline-warm bg-white text-body dark:bg-surface' }}">
+                class="inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition {{ !$produkFilter ? 'border-primary-soft bg-primary-soft text-on-primary-soft' : 'border-hairline-warm bg-white text-body dark:bg-surface' }}">
                 <span>Semua produk</span>
-                <span class="rounded-full px-2 py-0.5 text-xs {{ !$produkFilter ? 'bg-white text-on-primary-soft' : 'bg-inset text-mute' }}">
+                <span class="rounded-full px-2 py-0.5 text-xs {{ !$produkFilter ? 'bg-white text-on-primary-soft' : 'bg-surface-inset text-mute' }}">
                     {{ $grandCount }}
                 </span>
             </button>
@@ -81,7 +81,7 @@
                     $isMatched = (string)$produkFilter === (string)($produkList->firstWhere('nama', $summary['nama'])->id ?? '');
                 @endphp
                 <button type="button" wire:click="$set('produkFilter', '{{ $produkList->firstWhere('nama', $summary['nama'])->id ?? '' }}')"
-                    class="inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition {{ $isMatched ? 'border-primary-soft bg-primary-soft text-on-primary-soft' : 'border-hairline-warm bg-white text-body dark:bg-surface' }}">
+                    class="inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition {{ $isMatched ? 'border-primary-soft bg-primary-soft text-on-primary-soft' : 'border-hairline-warm bg-white text-body dark:bg-surface' }}">
                     <span>{{ $summary['nama'] }}</span>
                     <span class="text-xs {{ $isMatched ? 'text-on-primary-soft' : 'text-mute' }}">
                         (<x-ui.rupiah :nilai="$summary['total']" />)
@@ -96,22 +96,22 @@
         <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 overflow-x-auto">
                 <button type="button" wire:click="resetFilters"
-                    class="rounded-full px-3 py-1.5 text-sm font-medium transition {{ !$dariTanggal && !$sampaiTanggal ? 'bg-primary-soft text-on-primary-soft' : 'border border-hairline-warm bg-white text-body dark:bg-surface' }}">
+                    class="rounded-full px-3 py-1.5 text-xs font-medium transition {{ !$dariTanggal && !$sampaiTanggal ? 'bg-primary-soft text-on-primary-soft' : 'border border-hairline-warm bg-white text-body dark:bg-surface' }}">
                     Semua
                 </button>
                 <button type="button" wire:click="filterThisMonth"
-                    class="rounded-full px-3 py-1.5 text-sm font-medium transition {{ $dariTanggal === now()->startOfMonth()->format('Y-m-d') ? 'bg-primary-soft text-on-primary-soft' : 'border border-hairline-warm bg-white text-body dark:bg-surface' }}">
+                    class="rounded-full px-3 py-1.5 text-xs font-medium transition {{ $dariTanggal === now()->startOfMonth()->format('Y-m-d') ? 'bg-primary-soft text-on-primary-soft' : 'border border-hairline-warm bg-white text-body dark:bg-surface' }}">
                     Bulan ini
                 </button>
                 <button type="button" wire:click="filterLastMonth"
-                    class="rounded-full px-3 py-1.5 text-sm font-medium transition {{ $dariTanggal === now()->subMonth()->startOfMonth()->format('Y-m-d') ? 'bg-primary-soft text-on-primary-soft' : 'border border-hairline-warm bg-white text-body dark:bg-surface' }}">
+                    class="rounded-full px-3 py-1.5 text-xs font-medium transition {{ $dariTanggal === now()->subMonth()->startOfMonth()->format('Y-m-d') ? 'bg-primary-soft text-on-primary-soft' : 'border border-hairline-warm bg-white text-body dark:bg-surface' }}">
                     Bulan lalu
                 </button>
             </div>
 
             <button type="button" x-on:click="showDatePicker = !showDatePicker"
-                class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-hairline-strong bg-white px-3 py-1.5 text-sm font-medium text-ink transition dark:bg-surface">
-                <flux:icon.calendar class="size-4 text-mute" />
+                class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-hairline-strong bg-white px-3 py-1.5 text-xs font-medium text-ink transition hover:bg-surface-inset dark:bg-surface">
+                <flux:icon.calendar class="size-3.5 text-mute" />
                 <span>Filter tanggal</span>
             </button>
         </div>
@@ -119,14 +119,14 @@
         <div x-show="showDatePicker" x-collapse class="mt-3 border-t border-hairline-warm pt-3">
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-body">Dari tanggal</label>
+                    <label class="mb-1 block text-xs font-semibold text-body">Dari tanggal</label>
                     <x-ui.tanggal wire:model.live="dariTanggal"
-                        class="w-full rounded-xl border border-hairline-strong bg-white px-3 py-3 text-base text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface" />
+                        class="w-full rounded-xl border border-hairline-strong bg-white px-3 py-2 text-xs text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-body">Sampai tanggal</label>
+                    <label class="mb-1 block text-xs font-semibold text-body">Sampai tanggal</label>
                     <x-ui.tanggal wire:model.live="sampaiTanggal" :min="$dariTanggal"
-                        class="w-full rounded-xl border border-hairline-strong bg-white px-3 py-3 text-base text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface" />
+                        class="w-full rounded-xl border border-hairline-strong bg-white px-3 py-2 text-xs text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface" />
                 </div>
             </div>
         </div>
@@ -143,67 +143,41 @@
         @forelse($groupedSetoran as $dateLabel => $items)
             <section>
                 <div class="mb-2 flex items-center justify-between gap-2 px-1">
-                    <h2 class="text-sm font-medium text-mute">{{ $dateLabel }}</h2>
-                    <span class="text-sm font-medium">
+                    <h2 class="text-xs font-semibold text-mute">{{ $dateLabel }}</h2>
+                    <span class="text-xs font-semibold">
                         <x-ui.rupiah :nilai="$items->where('status', '!=', 'dibatalkan')->sum('nominal')" tanda="+" />
                     </span>
                 </div>
 
-                <div class="divide-y divide-hairline-warm overflow-hidden rounded-[20px] border border-hairline-warm bg-white shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
+                <div class="overflow-hidden rounded-[20px] border border-hairline-warm bg-white p-2 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
                     @foreach($items as $item)
-                        <div class="flex min-h-16 items-center justify-between gap-3 px-4 py-3">
-                            <div class="flex min-w-0 items-center gap-3">
-                                <x-ui.tile kategori="{{ $item->status === 'tercatat' ? 'hijau' : ($item->status === 'dikoreksi' ? 'kuning' : 'netral') }}" ukuran="40" aria-hidden="true">
-                                    @if($item->status === 'tercatat')
-                                        <flux:icon.arrow-down-left class="size-4" />
-                                    @elseif($item->status === 'dikoreksi')
-                                        <flux:icon.pencil-square class="size-4" />
-                                    @else
-                                        <flux:icon.x-mark class="size-4" />
-                                    @endif
-                                </x-ui.tile>
-
-                                <div class="min-w-0">
-                                    <div class="flex flex-wrap items-center gap-2">
-                                        <p class="truncate text-base font-medium text-ink">{{ $item->produk->nama ?? 'Setoran tabungan' }}</p>
-                                        <span class="inline-flex items-center gap-1 rounded-full bg-inset px-2 py-0.5 text-xs text-body">
-                                            @if($item->sumber_input === 'real_time')
-                                                <flux:icon.bolt class="size-3.5" aria-hidden="true" />
-                                                Real-time
-                                            @else
-                                                <flux:icon.clock class="size-3.5" aria-hidden="true" />
-                                                Susulan
-                                            @endif
-                                        </span>
-                                    </div>
-                                    <p class="mt-0.5 text-sm text-mute">
-                                        {{ $item->created_at ? $item->created_at->format('H:i').' WIB' : 'Setoran harian' }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="shrink-0 text-right">
-                                @if($item->status === 'dibatalkan')
-                                    <p class="text-base font-semibold text-mute line-through">
-                                        <x-ui.rupiah :nilai="$item->nominal" />
-                                    </p>
-                                @elseif($item->status === 'dikoreksi' && $item->nominal_asli !== null)
-                                    <p class="text-sm text-mute line-through">
-                                        <x-ui.rupiah :nilai="$item->nominal_asli" />
-                                    </p>
-                                    <p class="text-base font-semibold">
-                                        <x-ui.rupiah :nilai="$item->nominal" tanda="+" />
-                                    </p>
-                                @else
-                                    <p class="text-base font-semibold">
-                                        <x-ui.rupiah :nilai="$item->nominal" tanda="+" />
-                                    </p>
-                                @endif
-
-                                <div class="mt-1 flex justify-end">
-                                    <x-ui.status-chip domain="setoran" status="{{ $item->status }}" />
-                                </div>
-                            </div>
+                        @php
+                            $tanda = $item->status === 'dibatalkan' ? null : '+';
+                            $kategori = $item->status === 'tercatat' ? 'hijau' : ($item->status === 'dikoreksi' ? 'kuning' : 'netral');
+                            $waktu = $item->created_at ? $item->created_at->format('H:i').' WIB' : 'Setoran harian';
+                            $keterangan = $waktu . ($item->sumber_input === 'real_time' ? ' · Real-time' : ' · Susulan');
+                        @endphp
+                        <x-ui.baris-riwayat
+                            :judul="$item->produk->nama ?? 'Setoran tabungan'"
+                            :keterangan="$keterangan"
+                            :nominal="$item->nominal"
+                            :tanda="$tanda"
+                            :kategori="$kategori"
+                            status-domain="setoran"
+                            :status-nilai="$item->status">
+                            @if($item->status === 'tercatat')
+                                <flux:icon.arrow-down-left class="size-4" />
+                            @elseif($item->status === 'dikoreksi')
+                                <flux:icon.pencil-square class="size-4" />
+                            @else
+                                <flux:icon.x-mark class="size-4" />
+                            @endif
+                        </x-ui.baris-riwayat>
+                        <div class="flex justify-end px-3 pb-2 -mt-1">
+                            <a href="{{ route('struk.setoran', $item) }}" target="_blank" class="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                                <flux:icon.document-text class="size-3" />
+                                <span>Lihat struk</span>
+                            </a>
                         </div>
                     @endforeach
                 </div>
@@ -214,7 +188,7 @@
                     <x-ui.ilustrasi nama="tunas" :ukuran="96" />
                 </span>
                 <h3 class="mt-4 text-base font-semibold text-ink">Belum ada setoran</h3>
-                <p class="mt-1 text-sm text-mute">Setoran tabungan Anda pada periode ini belum ditemukan.</p>
+                <p class="mt-1 text-xs text-mute">Setoran tabungan Anda pada periode ini belum ditemukan.</p>
             </div>
         @endforelse
     </div>
