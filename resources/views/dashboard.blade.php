@@ -238,12 +238,7 @@
             </div>
 
             {{-- 2. Kartu saldo utama (hero-card §7) --}}
-            <x-ui.hero-card>
-                <p class="text-sm text-on-hero-mute">Total saldo Anda</p>
-                <p class="mt-1 text-[34px] font-semibold leading-10 tracking-[-0.64px]">
-                    <x-ui.rupiah :nilai="$totalSaldo" />
-                </p>
-
+            <x-ui.kartu-saldo-hero :total-saldo="$totalSaldo">
                 @if($saldoPerProduk->count() > 0)
                     <div class="mt-3 flex flex-wrap gap-1.5">
                         @foreach($saldoPerProduk as $sp)
@@ -260,7 +255,7 @@
                         Setoran hari ini sudah tercatat. Terima kasih!
                     </p>
                 @endif
-            </x-ui.hero-card>
+            </x-ui.kartu-saldo-hero>
 
             {{-- 3. Kartu streak nabung (DESIGN.md §7 "Streak": tujuh lingkaran 30px Senin–Minggu) --}}
             <div class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
@@ -351,34 +346,18 @@
             <div class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
                 <span class="mb-3 block text-base font-semibold text-ink">Mau apa hari ini?</span>
                 <div class="grid grid-cols-4 gap-2">
-                    <a href="{{ route('nasabah.penarikan.index') }}" wire:navigate
-                       class="flex flex-col items-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                        <x-ui.tile kategori="hijau" ukuran="56" aria-hidden="true">
-                            <flux:icon.arrow-up-tray class="size-6" />
-                        </x-ui.tile>
-                        <span class="text-xs font-medium text-body">Tarik</span>
-                    </a>
-                    <a href="{{ route('nasabah.riwayat-tabungan.index') }}" wire:navigate
-                       class="flex flex-col items-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                        <x-ui.tile kategori="biru" ukuran="56" aria-hidden="true">
-                            <flux:icon.clock class="size-6" />
-                        </x-ui.tile>
-                        <span class="text-xs font-medium text-body">Riwayat</span>
-                    </a>
-                    <a href="{{ route('nasabah.progres-paket.index') }}" wire:navigate
-                       class="flex flex-col items-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                        <x-ui.tile kategori="teal" ukuran="56" aria-hidden="true">
-                            <flux:icon.shopping-bag class="size-6" />
-                        </x-ui.tile>
-                        <span class="text-xs font-medium text-body">Paket</span>
-                    </a>
-                    <a href="{{ route('nasabah.komplain.index') }}" wire:navigate
-                       class="flex flex-col items-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                        <x-ui.tile kategori="kuning" ukuran="56" aria-hidden="true">
-                            <flux:icon.chat-bubble-left-right class="size-6" />
-                        </x-ui.tile>
-                        <span class="text-xs font-medium text-body">Bantuan</span>
-                    </a>
+                    <x-ui.ubin-aksi :href="route('nasabah.penarikan.index')" label="Tarik" kategori="hijau">
+                        <flux:icon.arrow-up-tray class="size-6" />
+                    </x-ui.ubin-aksi>
+                    <x-ui.ubin-aksi :href="route('nasabah.riwayat-tabungan.index')" label="Riwayat" kategori="biru">
+                        <flux:icon.clock class="size-6" />
+                    </x-ui.ubin-aksi>
+                    <x-ui.ubin-aksi :href="route('nasabah.progres-paket.index')" label="Paket" kategori="teal">
+                        <flux:icon.shopping-bag class="size-6" />
+                    </x-ui.ubin-aksi>
+                    <x-ui.ubin-aksi :href="route('nasabah.komplain.index')" label="Bantuan" kategori="kuning">
+                        <flux:icon.chat-bubble-left-right class="size-6" />
+                    </x-ui.ubin-aksi>
                 </div>
             </div>
 
@@ -388,34 +367,26 @@
             {{-- 7. Aktivitas terakhir --}}
             @if($riwayatGabungan->count() > 0)
                 <div class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
-                    <div class="mb-3 flex items-center justify-between border-b border-hairline-warm pb-3">
+                    <div class="mb-1 flex items-center justify-between border-b border-hairline-warm pb-3">
                         <h3 class="text-base font-semibold text-ink">Aktivitas terakhir</h3>
                         <a href="{{ route('nasabah.riwayat-tabungan.index') }}" wire:navigate class="text-xs font-medium text-primary hover:underline">
                             Lihat Semua
                         </a>
                     </div>
-                    <div class="divide-y divide-hairline-warm">
-                        @foreach($riwayatGabungan as $trx)
-                            <div class="flex items-center justify-between py-3">
-                                <div class="flex items-center gap-3">
-                                    <x-ui.tile :kategori="$trx['type'] === 'setoran' ? 'hijau' : 'netral'" ukuran="40" aria-hidden="true">
-                                        @if($trx['type'] === 'setoran')
-                                            <flux:icon.arrow-down-left class="size-4" />
-                                        @else
-                                            <flux:icon.arrow-up-right class="size-4" />
-                                        @endif
-                                    </x-ui.tile>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-medium text-ink truncate">{{ $trx['nama'] }}</p>
-                                        <p class="mt-1 text-xs text-mute">
-                                            {{ $trx['tanggal']->isToday() ? 'Hari ini, '.$trx['tanggal']->format('H:i') : $trx['tanggal']->diffForHumans() }}
-                                        </p>
-                                    </div>
-                                </div>
-                                <span class="shrink-0 text-base font-semibold">
-                                    <x-ui.rupiah :nilai="$trx['nominal']" :tanda="$trx['type'] === 'setoran' ? '+' : '-'" />
-                                </span>
-                            </div>
+                    <div>
+                        @foreach($riwayatGabungan->take(3) as $trx)
+                            <x-ui.baris-riwayat
+                                :judul="$trx['nama']"
+                                :keterangan="$trx['tanggal']->isToday() ? 'Hari ini, '.$trx['tanggal']->format('H:i') : $trx['tanggal']->diffForHumans()"
+                                :nominal="$trx['nominal']"
+                                :tanda="$trx['type'] === 'setoran' ? '+' : '-'"
+                                :kategori="$trx['type'] === 'setoran' ? 'hijau' : 'netral'">
+                                @if($trx['type'] === 'setoran')
+                                    <flux:icon.arrow-down-left class="size-4" />
+                                @else
+                                    <flux:icon.arrow-up-right class="size-4" />
+                                @endif
+                            </x-ui.baris-riwayat>
                         @endforeach
                     </div>
                 </div>
