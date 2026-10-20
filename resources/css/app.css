@@ -513,3 +513,53 @@ html.text-enlarged {
     }
 }
 
+/* Styling Khusus Desain Halaman Login Portal (Dua Panel: Hijau/Biru & Gelap) */
+.auth-bg-nasabah {
+    background-color: #14472f !important;
+}
+
+.auth-bg-kolektor {
+    background-color: #1a3e9c !important;
+}
+
+.auth-bg-dark {
+    background-color: #111317 !important;
+}
+
+.auth-card-dark {
+    background-color: #181a20 !important;
+    border-color: #282c38 !important;
+}
+
+.auth-pill-bar {
+    background-color: #1c1f26 !important;
+    border-color: #2b303c !important;
+}
+
+.auth-btn-nasabah {
+    background-color: #22c55e !important;
+    color: #ffffff !important;
+}
+
+.auth-btn-nasabah:hover {
+    background-color: #16a34a !important;
+}
+
+.auth-btn-kolektor {
+    background-color: #3b82f6 !important;
+    color: #ffffff !important;
+}
+
+.auth-btn-kolektor:hover {
+    background-color: #2563eb !important;
+}
+
+.auth-indicator-nasabah {
+    background-color: #22c55e !important;
+}
+
+.auth-indicator-kolektor {
+    background-color: #3b82f6 !important;
+}
+
+
