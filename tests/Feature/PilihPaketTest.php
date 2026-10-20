@@ -85,7 +85,11 @@ it('menampilkan halaman dan hanya paket yang masih bisa diikuti', function () {
         'tanggal_mulai_ikut' => now()->subDay()->toDateString(),
     ]);
 
-    $this->actingAs($data['nasabah'])->get(route('nasabah.paket.pilih'))->assertOk();
+    $this->actingAs($data['nasabah'])->get(route('nasabah.paket.pilih'))
+        ->assertOk()
+        ->assertSee('data-test="kartu-paket"', false)
+        ->assertSee('data-test="tombol-pilih-paket"', false)
+        ->assertSee('Bebas Biaya Admin');
 
     $this->actingAs($data['nasabah']);
     $daftar = collect(Livewire::test(PilihPaket::class)->viewData('paketTersedia'));
