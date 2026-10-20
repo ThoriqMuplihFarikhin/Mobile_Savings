@@ -7,15 +7,37 @@
 
     {{-- Pesan sistem --}}
     @if (session('success'))
-        <div class="flex items-start gap-2 rounded-xl bg-primary-soft p-3 text-sm text-on-primary-soft">
+        <div class="flex items-start gap-2 rounded-xl bg-primary-soft p-3 text-xs text-on-primary-soft">
             <flux:icon.check-circle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             <span>{{ session('success') }}</span>
         </div>
     @endif
     @if (session('error'))
-        <div class="flex items-start gap-2 rounded-xl bg-danger-soft p-3 text-sm text-danger-deep dark:bg-dark-danger-soft dark:text-dark-danger-text">
+        <div class="flex items-start gap-2 rounded-xl bg-danger-soft p-3 text-xs text-danger-deep dark:bg-dark-danger-soft dark:text-dark-danger-text">
             <flux:icon.exclamation-triangle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             <span>{{ session('error') }}</span>
+        </div>
+    @endif
+
+    {{-- Ringkasan statistik cepat --}}
+    @php
+        $totalDitarik = $penarikan->where('status', 'selesai')->sum('nominal_diterima');
+        $totalDiajukan = $penarikan->whereIn('status', ['pending', 'approved'])->sum('nominal_diminta');
+    @endphp
+    @if($penarikan->isNotEmpty())
+        <div class="grid grid-cols-2 gap-3">
+            <div class="rounded-2xl border border-hairline-warm bg-white p-3.5 dark:bg-surface">
+                <span class="text-xs text-mute">Selesai ditarik</span>
+                <p class="mt-1 text-base font-semibold text-primary">
+                    <x-ui.rupiah :nilai="$totalDitarik" />
+                </p>
+            </div>
+            <div class="rounded-2xl border border-hairline-warm bg-white p-3.5 dark:bg-surface">
+                <span class="text-xs text-mute">Sedang diajukan</span>
+                <p class="mt-1 text-base font-semibold text-info">
+                    <x-ui.rupiah :nilai="$totalDiajukan" />
+                </p>
+            </div>
         </div>
     @endif
 
@@ -37,13 +59,13 @@
                     default => null,
                 };
             @endphp
-            <article class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
+            <article class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface" data-test="kartu-riwayat-penarikan">
                 <div class="flex items-start gap-3">
                     <x-ui.tile kategori="biru" ukuran="40" aria-hidden="true">
-                        <flux:icon.arrow-up-tray class="size-5" />
+                        <flux:icon.arrow-up-tray class="size-4" />
                     </x-ui.tile>
                     <div class="min-w-0 flex-1">
-                        <h2 class="text-base font-medium text-ink">{{ $item->produk->nama ?? '-' }}</h2>
+                        <h2 class="text-sm font-semibold text-ink truncate">{{ $item->produk->nama ?? '-' }}</h2>
                         <p class="mt-0.5 text-xs text-mute">
                             {{ $item->created_at->translatedFormat('d M Y, H:i') }}
                             · {{ $item->lokasi_pengambilan === 'kantor' ? 'Ambil di kantor' : 'Via rumah kolektor' }}
@@ -59,22 +81,22 @@
                 @endif
 
                 {{-- Rincian nominal (DESIGN.md §8) --}}
-                <div class="mt-4 space-y-2">
-                    <div class="flex items-center justify-between gap-3 border-b border-hairline-warm pb-2">
-                        <span class="text-sm text-body">Diminta</span>
-                        <span class="text-base font-semibold tabular-nums">
+                <div class="mt-4 space-y-2 rounded-xl bg-surface-inset p-3.5 border border-hairline">
+                    <div class="flex items-center justify-between gap-3 border-b border-hairline pb-2">
+                        <span class="text-xs text-body">Nominal diminta</span>
+                        <span class="text-sm font-semibold tabular-nums text-ink">
                             <x-ui.rupiah :nilai="$item->nominal_diminta" />
                         </span>
                     </div>
-                    <div class="flex items-center justify-between gap-3 border-b border-hairline-warm pb-2">
-                        <span class="text-sm text-body">Biaya admin</span>
-                        <span class="text-base font-semibold tabular-nums">
+                    <div class="flex items-center justify-between gap-3 border-b border-hairline pb-2">
+                        <span class="text-xs text-body">Biaya admin</span>
+                        <span class="text-sm font-semibold tabular-nums">
                             <x-ui.rupiah :nilai="$item->nominal_komisi" tanda="-" />
                         </span>
                     </div>
-                    <div class="flex items-center justify-between gap-3">
-                        <span class="text-sm text-body">Diterima</span>
-                        <span class="text-base font-semibold tabular-nums">
+                    <div class="flex items-center justify-between gap-3 pt-0.5">
+                        <span class="text-xs font-semibold text-ink">Total diterima</span>
+                        <span class="text-sm font-semibold tabular-nums text-ink">
                             <x-ui.rupiah :nilai="$item->nominal_diterima" />
                         </span>
                     </div>
@@ -82,10 +104,10 @@
 
                 @if (in_array($item->status, ['pending', 'approved'], true))
                     <div class="mt-4 border-t border-hairline-warm pt-3">
-                        <label for="alasan-batal" class="block text-sm font-medium text-body">Alasan pembatalan (opsional)</label>
-                        <input type="text" id="alasan-batal" wire:model.defer class="mt-1 w-full rounded-xl border border-hairline-strong bg-white px-3 py-3 text-base text-ink focus:ring-2 focus:ring-primary/20 dark:bg-surface dark:text-zinc-100" placeholder="Contoh: dana tidak jadi dipakai" />
-                        <button type="button" wire:click="batalkan({{ $item->id }})" wire:confirm="Batalkan pengajuan penarikan ini?" class="mt-3 inline-flex h-11 items-center rounded-full bg-danger px-5 text-sm font-medium text-on-primary dark:text-white">
-                            Batalkan pengajuan
+                        <label for="alasan-batal-{{ $item->id }}" class="block text-xs font-semibold text-body">Alasan pembatalan (opsional)</label>
+                        <input type="text" id="alasan-batal-{{ $item->id }}" wire:model.defer="alasanBatal" class="mt-1 w-full rounded-xl border border-hairline-strong bg-white px-3 py-2 text-xs text-ink placeholder:text-mute focus:border-danger focus:outline-none focus:ring-2 focus:ring-danger/20 dark:bg-surface" placeholder="Contoh: dana tidak jadi dipakai" />
+                        <button type="button" wire:click="batalkan({{ $item->id }})" wire:confirm="Batalkan pengajuan penarikan ini?" class="mt-3 inline-flex h-10 items-center justify-center rounded-full border border-danger/40 bg-white px-4 text-xs font-medium text-danger transition hover:bg-danger-soft active:scale-95 dark:bg-surface">
+                            Batalkan
                         </button>
                     </div>
                 @endif
@@ -96,7 +118,7 @@
                     <x-ui.ilustrasi nama="tunas" :ukuran="96" />
                 </span>
                 <p class="mt-4 text-base font-semibold text-ink">Belum ada riwayat penarikan.</p>
-                <p class="mt-1 text-sm text-mute">Setiap pengajuan penarikan yang Anda buat akan tercatat di sini.</p>
+                <p class="mt-1 text-xs text-mute">Setiap pengajuan penarikan yang Anda buat akan tercatat di sini.</p>
             </div>
         @endforelse
     </div>
