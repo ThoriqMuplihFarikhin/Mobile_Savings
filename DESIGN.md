@@ -754,8 +754,26 @@ Dipakai setelah pengajuan penarikan terkirim. Lingkaran centang 104px `{colors.p
 ### Kondisi kosong
 `empty-state` memakai ilustrasi tunas 96px di dalam lingkaran `{colors.primary-soft}`, judul 16/600 yang menyebut ruangnya, dan satu kalimat ajakan. Selalu ada, tidak pernah hanya ikon kecil.
 
-### Panel login
-Panel hijau tua `login-panel` setinggi 300px, sudut bawah 40px, ilustrasi tunas dan koin, chip "Portal Nasabah" berlatar putih di atas judul "Tabungan Digital" dan sapaan "Selamat datang kembali". Kartu form menumpuk 24px ke atas panel. Pesan galat tetap generik.
+### Panel login (D38, D40, D42)
+Halaman login portal mobile memakai tata letak responsif dua kolom pada layar desktop/tablet (≥ 900px) dan kolom bertumpuk dengan header panel di layar ponsel. Panel identitas di sisi kiri/atas memakai warna brand masing-masing portal (`{colors.primary-deep}` untuk nasabah, `{colors.portal-kolektor}` untuk kolektor) dengan ilustrasi toples celengan datar SVG. Panel form di kanan/bawah **selalu terang** (`{colors.surface}` dan `{colors.canvas-warm}`, keputusan D42). Form login dua langkah (D38) memisahkan masukan Nomor HP dan Keypad PIN 6 digit dengan opsi fallback no-JS. Tombol aksi utama (Lanjut, Masuk) **selalu berwarna hijau `{colors.primary}`** terlepas dari portal nasabah atau kolektor (keputusan D40).
+
+### Keypad PIN & Titik PIN
+- **Keypad PIN** (`pin-pad`): Tombol angka berukuran tinggi 62px, sudut membulat `rounded-2xl`, latar `{colors.surface-inset}` dengan border `{colors.hairline}`, teks 24px/600 `tabular-nums`. Tombol hapus dan tombol lihat PIN (peek 1,2 detik).
+- **Titik PIN** (`pin-dots`): Enam lingkaran 20px berjarak 12px. Belum terisi = lingkaran kosong border `{colors.hairline-strong}`; terisi = bulatan penuh `{colors.ink}` (atau `{colors.primary}`) dengan animasi pop lembut. Ketika input gagal/salah, titik PIN bergetar secara horizontal (animasi `shake`).
+
+### Kartu Toast & Notifikasi
+Kartu mengambang halus di pojok kanan bawah atau atas layar untuk umpan balik instan (durasi 3 detik). Menggunakan border hairline, tanpa shadow tebal, teks pendek jelas.
+
+### Ilustrasi Toples Celengan
+Ilustrasi toples kaca tabungan datar SVG dengan koin emas jatuh dan permukaan koin di dalam toples yang naik bertahap sesuai tingkat tabungan atau interaksi pengguna.
+
+### Aturan Gerakan & Animasi (Motion, D39)
+- **Lingkup**: Animasi dekoratif (koin jatuh, level toples, konfeti berhamburan) **hanya diizinkan di halaman login dan layar sukses penarikan/setoran** (D39). Seluruh layar kerja harian hanya memakai transisi halus ≤ 200ms pada penekanan tombol dan pergantian elemen.
+- **Teknis**: Hanya menganimasikan `transform` dan `opacity` untuk efisiensi render GPU.
+- **Aksesibilitas**: Seluruh animasi wajib menghormati kueri media `@media (prefers-reduced-motion: reduce)` yang mematikan durasi dan iterasi (durasi 0.01ms tanpa loop).
+
+### Mode Teks Besar (A+, D37)
+Tersedia tombol pengubah ukuran teks "A+" di sudut kanan atas halaman login dan menu pengaturan portal nasabah/kolektor. Menambahkan kelas `.big` pada elemen `<html>` yang menaikkan ukuran font dasar sebesar 118% (1.18em/rem). Preferensi disimpan di `localStorage` dengan kunci `td-text-size` (`try/catch` aman).
 
 ### Baris daftar (riwayat, produk, nasabah)
 Tinggi ≥ 64px. Kiri: ikon dalam lingkaran 36px berwarna `primary-soft` + judul + keterangan satu baris. Kanan: nominal (`money-md`, rata kanan, `tabular-nums`) + chip status di bawahnya bila perlu. Pembatas antar baris memakai hairline. Seluruh baris bisa disentuh.
