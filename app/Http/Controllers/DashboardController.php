@@ -2,19 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Livewire\Admin\KasKolektor;
 use App\Models\AbsensiKolektor;
 use App\Models\KepesertaanPaket;
 use App\Models\LogNotifikasi;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
+use App\Models\User;
+use App\Support\KasKolektorHitung;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): View
     {
         $user = $request->user();
 
@@ -26,9 +31,10 @@ class DashboardController extends Controller
         };
     }
 
-    private function adminDashboard($user)
+    private function adminDashboard(User $user): View
     {
         $totalNasabah = DB::table('users')->where('role', 'nasabah')->count();
+        $nasabahOffline = DB::table('users')->where('role', 'nasabah')->where('mode_akses', 'offline')->count();
         $totalKolektor = DB::table('users')->where('role', 'kolektor')->count();
         $totalSaldo = DB::table('saldo_produk')->sum('saldo');
         $setoranHariIni = DB::table('transaksi_setoran')
@@ -40,13 +46,16 @@ class DashboardController extends Controller
             ->whereIn('status', ['approved', 'selesai'])
             ->sum('nominal_komisi');
 
-        $trenSetoran = collect(range(29, 0))->map(fn ($i) => [
-            'tanggal' => Carbon::today()->subDays($i)->format('d M'),
-            'nominal' => (float) DB::table('transaksi_setoran')
-                ->where('tanggal_transaksi', Carbon::today()->subDays($i))
-                ->whereIn('status', ['tercatat', 'dikoreksi'])
-                ->sum('nominal'),
-        ])->values();
+        $perluReview = KepesertaanPaket::whereNull('keputusan_akhir')
+            ->where('status_alert', 'perlu_review')
+            ->where('status_serah_terima', 'belum')
+            ->count();
+
+        $ringkasKasKolektor = KasKolektor::ringkasUntukDashboard();
+        $totalKasKolektor = $ringkasKasKolektor['total_kas'];
+        $kolektorLewatBatas = $ringkasKasKolektor['lewat_batas'];
+
+        $trenSetoran = $this->trenSetoranHarian();
 
         $komposisiProduk = DB::table('saldo_produk')
             ->join('produk_tabungan', 'saldo_produk.produk_id', '=', 'produk_tabungan.id')
@@ -80,10 +89,14 @@ class DashboardController extends Controller
         return view('dashboard', compact(
             'user',
             'totalNasabah',
+            'nasabahOffline',
             'totalKolektor',
             'totalSaldo',
             'setoranHariIni',
             'totalKomisi',
+            'perluReview',
+            'totalKasKolektor',
+            'kolektorLewatBatas',
             'trenSetoran',
             'komposisiProduk',
             'transaksiTerbaru',
@@ -91,7 +104,33 @@ class DashboardController extends Controller
         ));
     }
 
-    private function kolektorDashboard($user)
+    /**
+     * Tren setoran 30 hari terakhir dalam satu query agregat; hari tanpa setoran diisi 0 di PHP.
+     *
+     * @return Collection<int, array{tanggal: string, nominal: float}>
+     */
+    private function trenSetoranHarian(): Collection
+    {
+        $hariIni = Carbon::today();
+        $rentang = collect(range(29, 0))->map(fn (int $i) => $hariIni->copy()->subDays($i));
+
+        $perTanggal = DB::table('transaksi_setoran')
+            ->selectRaw('tanggal_transaksi, SUM(nominal) as total')
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
+            ->whereBetween('tanggal_transaksi', [
+                $hariIni->copy()->subDays(29)->toDateString(),
+                $hariIni->toDateString(),
+            ])
+            ->groupBy('tanggal_transaksi')
+            ->pluck('total', 'tanggal_transaksi');
+
+        return $rentang->map(fn (Carbon $tanggal) => [
+            'tanggal' => $tanggal->format('d M'),
+            'nominal' => (float) ($perTanggal[$tanggal->toDateString()] ?? 0),
+        ])->values();
+    }
+
+    private function kolektorDashboard(User $user): View
     {
         $sudahAbsenHariIni = AbsensiKolektor::where('kolektor_id', $user->id)
             ->where('tanggal', today())
@@ -112,6 +151,7 @@ class DashboardController extends Controller
         $kepesertaanTerpilih = KepesertaanPaket::with('produk')
             ->whereIn('nasabah_id', $jadwalHariIni->pluck('nasabah_id')->unique()->values())
             ->whereNull('keputusan_akhir')
+            ->where('status_serah_terima', 'belum')
             ->orderByDesc('tunggakan')
             ->get()
             ->groupBy('nasabah_id')
@@ -129,11 +169,9 @@ class DashboardController extends Controller
         $jadwalSelesai = $jadwalHariIni->where('status_kunjungan', 'dikunjungi')->count();
 
         $stats = [
-            'setoran_belum_disetor' => DB::table('transaksi_setoran')
-                ->where('input_by', $user->id)
-                ->where('sudah_disetor_ke_kantor', false)
-                ->whereIn('status', ['tercatat', 'dikoreksi'])
-                ->sum('nominal'),
+            // D13: kas net di tangan kolektor — setoran belum disetor dikurangi
+            // penarikan tunai yang belum direkonsiliasi (sumber tunggal).
+            'setoran_belum_disetor' => (float) KasKolektorHitung::kasDiTangan((int) $user->id),
             'kunjungan_selesai' => $jadwalSelesai,
             'kunjungan_total' => $jadwalTotal,
         ];
@@ -153,10 +191,15 @@ class DashboardController extends Controller
             ->where('status', 'aktif')
             ->count();
 
-        return view('dashboard', compact('user', 'stats', 'jadwalHariIni', 'sudahAbsenHariIni', 'nasabahTunggakParah', 'totalNasabahBinaan'));
+        $penarikanMenungguDiantar = TransaksiPenarikan::where('lokasi_pengambilan', 'rumah_kolektor')
+            ->where('status', 'approved')
+            ->whereIn('nasabah_id', $nasabahIds)
+            ->count();
+
+        return view('dashboard', compact('user', 'stats', 'jadwalHariIni', 'sudahAbsenHariIni', 'nasabahTunggakParah', 'totalNasabahBinaan', 'penarikanMenungguDiantar'));
     }
 
-    private function nasabahDashboard($user)
+    private function nasabahDashboard(User $user): View
     {
         $saldoPerProduk = SaldoProduk::where('nasabah_id', $user->id)
             ->with('produk')
@@ -182,7 +225,7 @@ class DashboardController extends Controller
             'nama' => $t->produk->nama ?? '-',
             'tanggal' => $t->tanggal_transaksi,
             'nominal' => $t->nominal,
-        ])->concat($riwayatPenarikan->filter(fn ($t) => $t->waktu_pencairan)->map(fn ($t) => [
+        ])->concat($riwayatPenarikan->filter(fn (TransaksiPenarikan $t) => $t->waktu_pencairan !== null)->map(fn ($t) => [
             'type' => 'penarikan',
             'nama' => $t->produk->nama ?? '-',
             'tanggal' => $t->waktu_pencairan,
@@ -195,10 +238,13 @@ class DashboardController extends Controller
 
         $kepesertaanAktif = KepesertaanPaket::where('nasabah_id', $user->id)
             ->whereNull('keputusan_akhir')
+            ->where('status_serah_terima', 'belum')
             ->with('produk')
             ->first();
 
         $streak = $this->hitungStreak($user->id);
+
+        $streakMingguIni = $this->streakMingguan($user->id);
 
         return view('dashboard', compact(
             'user',
@@ -208,6 +254,7 @@ class DashboardController extends Controller
             'unreadNotifikasi',
             'kepesertaanAktif',
             'streak',
+            'streakMingguIni',
         ));
     }
 
@@ -239,5 +286,39 @@ class DashboardController extends Controller
         }
 
         return $streak;
+    }
+
+    /**
+     * Tujuh titik streak mingguan (Senin–Minggu) untuk beranda nasabah
+     * (DESIGN.md §7 "Streak" dan §14 baris Beranda). Hari tanpa setoran tetap
+     * terkirim agar dirender sebagai lingkaran kosong; setoran ber-tanggal
+     * masa depan diabaikan, sama seperti hitungStreak.
+     *
+     * @return Collection<int, array{label: string, tanggal: string, ada_setoran: bool}>
+     */
+    private function streakMingguan(int $nasabahId): Collection
+    {
+        $hariIni = Carbon::today();
+        $awalMinggu = $hariIni->copy()->startOfWeek(Carbon::MONDAY);
+
+        $tanggalSetor = TransaksiSetoran::where('nasabah_id', $nasabahId)
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
+            ->whereBetween('tanggal_transaksi', [$awalMinggu->toDateString(), $hariIni->toDateString()])
+            ->pluck('tanggal_transaksi')
+            ->map(fn ($t) => Carbon::parse($t)->toDateString())
+            ->unique()
+            ->flip();
+
+        $label = ['S', 'S', 'R', 'K', 'J', 'S', 'M'];
+
+        return collect(range(0, 6))->map(function (int $i) use ($awalMinggu, $tanggalSetor, $label) {
+            $tanggal = $awalMinggu->copy()->addDays($i)->toDateString();
+
+            return [
+                'label' => $label[$i],
+                'tanggal' => $tanggal,
+                'ada_setoran' => $tanggalSetor->has($tanggal),
+            ];
+        })->values();
     }
 }

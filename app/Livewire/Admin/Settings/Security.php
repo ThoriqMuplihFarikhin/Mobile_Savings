@@ -6,6 +6,7 @@ use App\Actions\Pin\UbahPinAction;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -42,7 +43,7 @@ class Security extends Component
         Flux::toast(variant: 'success', text: 'PIN berhasil diperbarui.');
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.admin.settings.security');
     }

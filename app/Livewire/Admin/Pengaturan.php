@@ -8,6 +8,8 @@ use App\Models\AdminSetting;
 use App\Models\User;
 use App\Services\WhatsAppService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Features\SupportRedirects\Redirector;
@@ -31,10 +33,25 @@ class Pengaturan extends Component
 
     public string $batasToleransiHari = '';
 
+    public string $penarikanMinimal = '';
+
+    public string $penarikanBatasDuaApprover = '0';
+
+    public string $batasKasKolektor = '0';
+
+    public string $batasHariKas = '0';
+
+    public string $izinkanKasMinus = 'false';
+
+    public string $offlineBatasLangsung = '0';
+
+    public string $offlineBatasHarian = '0';
+
     public string $nomorWaBantuan = '';
 
     // Tab 2: Admin & Peran
-    public $daftarAdmin = [];
+    /** @var Collection<int, User> */
+    public $daftarAdmin;
 
     // Tab 3: Integrasi WhatsApp
     public string $waProvider = '';
@@ -55,6 +72,13 @@ class Pengaturan extends Component
         // Tab 1: Umum
         $this->namaProdukDefault = AdminSetting::get('nama_koperasi', '');
         $this->batasToleransiHari = AdminSetting::get('batas_toleransi_hari', '3');
+        $this->penarikanMinimal = (string) AdminSetting::get('penarikan_minimal', '10000');
+        $this->penarikanBatasDuaApprover = (string) AdminSetting::get('penarikan_batas_dua_approver', '0');
+        $this->batasKasKolektor = (string) AdminSetting::get('batas_kas_kolektor', '0');
+        $this->batasHariKas = (string) AdminSetting::get('batas_hari_kas', '0');
+        $this->izinkanKasMinus = (string) AdminSetting::get('izinkan_kas_minus', 'false');
+        $this->offlineBatasLangsung = (string) AdminSetting::get('offline_penarikan_batas_langsung', '0');
+        $this->offlineBatasHarian = (string) AdminSetting::get('offline_penarikan_batas_harian', '0');
         $this->nomorWaBantuan = AdminSetting::get('nomor_wa_bantuan', '');
 
         // Tab 2: Admin & Peran
@@ -81,11 +105,25 @@ class Pengaturan extends Component
         $this->validate([
             'namaProdukDefault' => ['nullable', 'string', 'max:100'],
             'batasToleransiHari' => ['nullable', 'integer', 'min:0', 'max:30'],
+            'penarikanMinimal' => ['required', 'integer', 'min:0', 'max:9999999999999'],
+            'penarikanBatasDuaApprover' => ['required', 'integer', 'min:0', 'max:9999999999999'],
+            'batasKasKolektor' => ['nullable', 'integer', 'min:0', 'max:9999999999999'],
+            'batasHariKas' => ['nullable', 'integer', 'min:0', 'max:365'],
+            'izinkanKasMinus' => ['required', 'in:true,false'],
+            'offlineBatasLangsung' => ['required', 'integer', 'min:0', 'max:9999999999999'],
+            'offlineBatasHarian' => ['required', 'integer', 'min:0', 'max:9999999999999'],
             'nomorWaBantuan' => ['nullable', 'string', 'max:20'],
         ]);
 
         AdminSetting::set('nama_koperasi', $this->namaProdukDefault);
         AdminSetting::set('batas_toleransi_hari', (string) $this->batasToleransiHari);
+        AdminSetting::set('penarikan_minimal', (string) $this->penarikanMinimal);
+        AdminSetting::set('penarikan_batas_dua_approver', (string) ((int) $this->penarikanBatasDuaApprover));
+        AdminSetting::set('batas_kas_kolektor', (string) ((int) $this->batasKasKolektor));
+        AdminSetting::set('batas_hari_kas', (string) ((int) $this->batasHariKas));
+        AdminSetting::set('izinkan_kas_minus', $this->izinkanKasMinus === 'true' ? 'true' : 'false');
+        AdminSetting::set('offline_penarikan_batas_langsung', (string) ((int) $this->offlineBatasLangsung));
+        AdminSetting::set('offline_penarikan_batas_harian', (string) ((int) $this->offlineBatasHarian));
         AdminSetting::set('nomor_wa_bantuan', $this->nomorWaBantuan);
 
         session()->flash('status', 'Konfigurasi umum berhasil disimpan.');
@@ -222,8 +260,17 @@ class Pengaturan extends Component
         return app(Logout::class)();
     }
 
-    public function render()
+    public function render(): View
     {
-        return view('livewire.admin.pengaturan');
+        $peringatanDuaApprover = (int) AdminSetting::get('penarikan_batas_dua_approver', '0') > 0
+            && User::where('role', 'admin')->count() < ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA;
+
+        // D23: penarikan langsung tanpa ambang dua approver aktif (atau admin
+        // kurang) berarti transaksi besar bisa selesai tanpa pengawasan ganda.
+        $peringatanOfflineLangsung = (int) AdminSetting::get('offline_penarikan_batas_langsung', '0') > 0
+            && ((int) AdminSetting::get('penarikan_batas_dua_approver', '0') <= 0
+                || User::where('role', 'admin')->count() < ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA);
+
+        return view('livewire.admin.pengaturan', compact('peringatanDuaApprover', 'peringatanOfflineLangsung'));
     }
 }

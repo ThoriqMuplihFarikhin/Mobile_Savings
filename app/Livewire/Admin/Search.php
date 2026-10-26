@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\User;
+use Illuminate\View\View;
 use Livewire\Component;
 
 class Search extends Component
@@ -15,13 +16,14 @@ class Search extends Component
         return 'admin';
     }
 
-    public $search = '';
+    public string $search = '';
 
-    public $results = [];
+    /** @var array<int, array{id: int, name: string}> */
+    public array $results = [];
 
-    public $showResults = false;
+    public bool $showResults = false;
 
-    public function updatedSearch()
+    public function updatedSearch(): void
     {
         if (strlen($this->search) < 2) {
             $this->results = [];
@@ -43,12 +45,12 @@ class Search extends Component
         $this->showResults = count($this->results) > 0;
     }
 
-    public function closeResults()
+    public function closeResults(): void
     {
         $this->showResults = false;
     }
 
-    public function render()
+    public function render(): View
     {
         return view('livewire.admin.search');
     }

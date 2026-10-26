@@ -45,7 +45,12 @@ it('allows nasabah to submit withdrawal request', function () {
         ->set('nominal', 50000)
         ->set('lokasi_pengambilan', 'kantor')
         ->call('submit')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->assertSet('tampilKonfirmasi', true)
+        ->set('pin', '123456')
+        ->call('konfirmasi')
+        ->assertHasNoErrors()
+        ->assertSet('tampilKonfirmasi', false);
 
     $this->assertDatabaseHas('transaksi_penarikan', [
         'nasabah_id' => $nasabah->id,
@@ -90,7 +95,12 @@ it('rejects withdrawal when saldo is insufficient', function () {
         ->set('nominal', 50000)
         ->set('lokasi_pengambilan', 'kantor')
         ->call('submit')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->set('pin', '123456')
+        ->call('konfirmasi')
+        ->assertHasNoErrors()
+        ->assertSet('tampilKonfirmasi', true)
+        ->assertNotSet('pesanError', null);
 
     $this->assertDatabaseMissing('transaksi_penarikan', [
         'nasabah_id' => $nasabah->id,
@@ -246,7 +256,12 @@ it('blocks withdrawal for paket before tanggal_boleh_cair', function () {
         ->set('nominal', 100000)
         ->set('lokasi_pengambilan', 'kantor')
         ->call('submit')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->set('pin', '123456')
+        ->call('konfirmasi')
+        ->assertHasNoErrors()
+        ->assertSet('tampilKonfirmasi', true)
+        ->assertNotSet('pesanError', null);
 
     $this->assertDatabaseMissing('transaksi_penarikan', [
         'nasabah_id' => $nasabah->id,

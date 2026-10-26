@@ -7,11 +7,14 @@ use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\LogHandoverKolektor;
-use App\Models\TransaksiSetoran;
 use App\Models\User;
+use App\Support\JenisNotifikasi;
+use App\Support\KasKolektorHitung;
 use DomainException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -26,32 +29,34 @@ class HandoverKolektor extends Component
         return 'admin';
     }
 
-    public $kolektorLamaId = '';
+    public string $kolektorLamaId = '';
 
-    public $kolektorBaruId = '';
+    public string $kolektorBaruId = '';
 
+    /** @var array<int, User>|Collection<int, User> */
     public $kolektorList = [];
 
-    public $selectedKolektorLama = null;
+    public ?User $selectedKolektorLama = null;
 
+    /** @var array<int, KolektorNasabah>|Collection<int, KolektorNasabah> */
     public $nasabahList = [];
 
     #[Locked]
-    public $unsettledCash = 0;
+    public float $unsettledCash = 0;
 
     #[Locked]
-    public $hasUnsettledCash = false;
+    public bool $hasUnsettledCash = false;
 
-    public $showConfirmation = false;
+    public bool $showConfirmation = false;
 
-    public function mount()
+    public function mount(): void
     {
         $this->kolektorList = User::where('role', 'kolektor')
             ->where('status_akun', 'aktif')
             ->get();
     }
 
-    public function updatedKolektorLamaId()
+    public function updatedKolektorLamaId(): void
     {
         $this->kolektorBaruId = '';
         $this->selectedKolektorLama = null;
@@ -63,9 +68,8 @@ class HandoverKolektor extends Component
         if ($this->kolektorLamaId) {
             $this->selectedKolektorLama = User::find($this->kolektorLamaId);
 
-            $this->unsettledCash = TransaksiSetoran::belumDisetor()
-                ->where('input_by', $this->kolektorLamaId)
-                ->sum('nominal');
+            // D13: kas net yang menghalangi handover — sumber tunggal.
+            $this->unsettledCash = (float) KasKolektorHitung::kasDiTangan((int) $this->kolektorLamaId);
 
             $this->hasUnsettledCash = $this->unsettledCash > 0;
 
@@ -76,12 +80,12 @@ class HandoverKolektor extends Component
         }
     }
 
-    public function updatedKolektorBaruId()
+    public function updatedKolektorBaruId(): void
     {
-        $this->showConfirmation = $this->kolektorBaruId !== '' && ! $this->hasUnsettledCash && $this->nasabahList->count() > 0;
+        $this->showConfirmation = $this->kolektorBaruId !== '' && ! $this->hasUnsettledCash && count($this->nasabahList) > 0;
     }
 
-    public function processHandover()
+    public function processHandover(): void
     {
         if ($this->hasUnsettledCash) {
             session()->flash('error', 'Handover diblokir! Kolektor masih memiliki kas yang belum disetor ke kantor.');
@@ -101,7 +105,7 @@ class HandoverKolektor extends Component
             return;
         }
 
-        if ($this->nasabahList->count() == 0) {
+        if (count($this->nasabahList) == 0) {
             session()->flash('error', 'Tidak ada nasabah yang perlu dipindahkan!');
 
             return;
@@ -119,10 +123,11 @@ class HandoverKolektor extends Component
         try {
             $today = now()->toDateString();
 
-            $adaKas = TransaksiSetoran::belumDisetor()
-                ->where('input_by', $this->kolektorLamaId)
-                ->lockForUpdate()
-                ->exists();
+            // D13: baca kas net dengan baris terkunci — kunci tidak boleh
+            // jatuh saat masih ada uang yang dipegang kolektor lama.
+            KasKolektorHitung::kunciBarisKas((int) $this->kolektorLamaId);
+            $kasDiTangan = KasKolektorHitung::kasDiTangan((int) $this->kolektorLamaId);
+            $adaKas = bccomp($kasDiTangan, '0', 2) > 0;
 
             $nasabahIds = KolektorNasabah::where('kolektor_id', $this->kolektorLamaId)
                 ->where('status', 'aktif')
@@ -132,9 +137,7 @@ class HandoverKolektor extends Component
             if ($adaKas) {
                 DB::rollBack();
                 $this->hasUnsettledCash = true;
-                $this->unsettledCash = (float) TransaksiSetoran::belumDisetor()
-                    ->where('input_by', $this->kolektorLamaId)
-                    ->sum('nominal');
+                $this->unsettledCash = (float) $kasDiTangan;
                 session()->flash('error', 'Handover diblokir! Kolektor masih memiliki kas yang belum disetor ke kantor.');
 
                 return;
@@ -214,7 +217,7 @@ class HandoverKolektor extends Component
                     $nasabah['nasabah_id'],
                     'Pergantian Kolektor',
                     'Halo '.$nasabah['name'].', mulai hari ini Anda ditangani oleh kolektor baru: '.$kolektorBaru->name.'. Terima kasih.',
-                    'in_app'
+                    JenisNotifikasi::InApp
                 );
             } catch (\Exception $e) {
                 \Log::error('Gagal kirim notifikasi handover', [
@@ -239,7 +242,7 @@ class HandoverKolektor extends Component
         session()->flash('success', 'Handover kolektor berhasil diproses! '.$jumlahNasabah.' nasabah telah dipindahkan.');
     }
 
-    public function render()
+    public function render(): View
     {
         $riwayat = LogHandoverKolektor::with(['kolektorLama', 'kolektorBaru', 'diprosesOleh'])
             ->latest()

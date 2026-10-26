@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
+@import 'flatpickr/dist/flatpickr.min.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -23,6 +24,16 @@
     --color-zinc-800: #262626;
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
+
+    --color-brand-50: #f0fdf4;
+    --color-brand-100: #dcfce7;
+    --color-brand-200: #bbf7d0;
+    --color-brand-300: #86efac;
+    --color-brand-500: #22c55e;
+    --color-brand-600: #16a34a;
+    --color-brand-700: #15803d;
+    --color-brand-800: #166534;
+    --color-brand-900: #14532d;
 
     --color-navy-950: #0A1626;
     --color-navy-900: #0F2340;
@@ -54,12 +65,64 @@
     --color-accent: var(--color-neutral-800);
     --color-accent-content: var(--color-neutral-800);
     --color-accent-foreground: var(--color-white);
+
+    /* Tahap 1 DESIGN.md: token baru (aditif, tidak mengubah token lama) */
+    --color-primary: #15803d;
+    --color-primary-hover: #166534;
+    --color-on-primary: #ffffff;
+    --color-primary-soft: #dcfce7;
+    --color-on-primary-soft: #14532d;
+    --color-ink: #171717;
+    --color-body: #404040;
+    --color-mute: #525252;
+    --color-subtle: #737373;
+    --color-hairline: #e5e5e5;
+    /* Border input & kontrol interaktif: dinaikkan dari #d4d4d4 (≈1,5:1 di
+       putih) agar pasangan latar terang memegang ≥3:1 — WCAG 1.4.11. */
+    --color-hairline-strong: #858585;
+    --color-inset: #f5f5f5;
+    --color-canvas: #fafafa;
+
+    /* Token semantik & portal DESIGN.md (aditif: --color-success dan --color-danger
+       lama tidak disentuh karena masih dipakai portal admin). */
+    --color-warning: #d97706;
+    --color-warning-soft: #fef3c7;
+    --color-warning-deep: #92400e;
+    --color-info: #1d4ed8;
+    --color-info-soft: #dbeafe;
+    --color-danger-deep: #8f2b21;
+
+    --color-portal-nasabah: #15803d;
+    --color-portal-kolektor: #2563eb;
+    --color-portal-admin: #171717;
+
+    /* Pasangan gelap chip danger: --color-danger-soft lama harus tetap terang
+       untuk admin, jadi pasangan gelapnya memakai token tersendiri. */
+    --color-dark-danger-soft: #450a0a;
+    --color-dark-danger-text: #fca5a5;
+
+    /* Kanvas hangat, hero, dan ubin teal (DESIGN.md §11 — aditif). */
+    --color-primary-deep: #166534;
+    --color-on-hero: #ecfdf5;
+    --color-on-hero-mute: #bbf7d0;
+    --color-canvas-warm: #f3f7f1;
+    --color-hairline-warm: #e1eadd;
+    --color-tile-teal-bg: #ccfbf1;
+    --color-tile-teal-fg: #0f766e;
+
+    /* Dekor hero (DESIGN.md §2): hiasan aria-hidden saja, bukan token status. */
+    --color-decor-gold: #fbbf24;
+    --color-decor-green: #1b8f47;
 }
 
 @layer theme {
     .dark {
-        --color-surface: #131C2E;
-        --color-surface-alt: #0B1220;
+        /* Permukaan gelap netral (DESIGN.md §permukaan "Tidak ada lagi navy"
+           #131C2E/#0B1220/#0A1626 dan tabel konversi §navy → Netral dark-*):
+           surface = dark-surface #171717; alt = dark-canvas #0a0a0a agar tetap
+           satu tingkat di bawah surface seperti #F3F5F8 di mode terang. */
+        --color-surface: #171717;
+        --color-surface-alt: #0a0a0a;
         --color-border: #233047;
         --color-text: #E7ECF3;
         --color-text-muted: #8A98AC;
@@ -74,7 +137,48 @@
         --color-accent: var(--color-white);
         --color-accent-content: var(--color-white);
         --color-accent-foreground: var(--color-neutral-800);
+
+        --color-primary: #22c55e;
+        --color-primary-hover: #4ade80;
+        --color-on-primary: #052e16;
+        --color-primary-soft: #0f2e1a;
+        --color-on-primary-soft: #86efac;
+        --color-ink: #fafafa;
+        --color-body: #d4d4d4;
+        --color-mute: #a3a3a3;
+        --color-subtle: #a3a3a3;
+        --color-hairline: #2e2e2e;
+        /* Border kontrol interaktif gelap: dinaikkan dari #404040 (≈1,6:1 di
+           kartu #171717) agar ≥3:1 di semua latar gelap termasuk inset #262626. */
+        --color-hairline-strong: #808080;
+        --color-inset: #262626;
+
+        /* Token baru DESIGN.md — aman di mode gelap karena belum dipakai di tempat lain.
+           Token lama (--color-success, --color-danger, --color-danger-soft) tidak diubah. */
+        --color-warning-soft: #422006;
+        --color-warning-deep: #fcd34d;
+        --color-info-soft: #172554;
+        --color-info: #bfdbfe;
+
+        /* Kanvas hangat dan ubin teal mode gelap (DESIGN.md §11). Hero tetap
+           primary-deep dan teks hero tetap on-hero/on-hero-mute di mode gelap. */
+        --color-canvas-warm: #0a0a0a;
+        --color-hairline-warm: #2e2e2e;
+        --color-tile-teal-bg: #042f2e;
+        --color-tile-teal-fg: #5eead4;
     }
+}
+
+/* DESIGN.md §11: varian aksen admin — tombol/aksi memakai tinta portal,
+   bukan hijau. Aktif setelah <html data-portal="admin"> dipasang di layout. */
+html[data-portal="admin"] {
+    --color-accent: var(--color-portal-admin);
+    --color-accent-content: var(--color-portal-admin);
+}
+
+html.dark[data-portal="admin"] {
+    --color-accent: #fafafa;
+    --color-accent-foreground: #171717;
 }
 
 @layer base {
@@ -107,10 +211,419 @@ select:focus[data-flux-control] {
 } */
 
 @layer components {
+  /* §7 Kartu: putih, border hairline, radius 16px, padding 16px. Tanpa bayangan (§13).
+     Tidak memakai latar dark sendiri: di layouts.app body juga dark:bg-zinc-800, jadi
+     latar yang sama membuat kartu tidak terlihat tanpa bayangan (larangan §13). */
   .card {
-    @apply rounded-3xl bg-white dark:bg-zinc-800 shadow-lg p-6;
+    @apply rounded-2xl border border-hairline bg-white p-4;
+  }
+  /* §6 bentuk admin = 6-8px, jadi kartu admin memakai radius md (8px). */
+  html[data-portal="admin"] .card {
+    @apply rounded-lg;
+  }
+  /* §7: tombol admin (button-admin-primary) radius 6px; pil hanya untuk portal mobile. */
+  html[data-portal="admin"] .btn-primary {
+    @apply rounded-md;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
   }
 }
+
+/* Flatpickr: palet brand + tema terang/gelap (D22/P4) */
+.flatpickr-calendar {
+    border-radius: 0.75rem;
+    border-color: var(--color-border);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+    font-family: var(--font-sans);
+}
+
+/* §6: kalender di portal admin (dropdown) memakai radius md 8px. */
+html[data-portal="admin"] .flatpickr-calendar {
+    border-radius: 0.5rem;
+}
+
+.flatpickr-months .flatpickr-month,
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+.flatpickr-current-month input.cur-year {
+    color: var(--color-text);
+}
+
+span.flatpickr-weekday {
+    color: var(--color-text-muted);
+}
+
+.flatpickr-day {
+    border-radius: 0.5rem;
+    color: var(--color-text);
+}
+
+.flatpickr-day:hover,
+.flatpickr-day.flatpickr-day.today:hover {
+    background: var(--color-brand-100);
+    border-color: var(--color-brand-100);
+}
+
+.flatpickr-day.flatpickr-day.today {
+    border-color: var(--color-brand-600);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover,
+.flatpickr-day.selected.startRange,
+.flatpickr-day.selected.endRange {
+    background: var(--color-brand-600);
+    border-color: var(--color-brand-600);
+    color: #fff;
+}
+
+.flatpickr-day.disabled,
+.flatpickr-day.prevMonthDay,
+.flatpickr-day.nextMonthDay {
+    color: var(--color-text-muted);
+    opacity: 0.5;
+}
+
+.flatpickr-calendar.dark {
+    background: var(--color-surface-alt);
+    border-color: var(--color-border);
+}
+
+.flatpickr-calendar.dark .flatpickr-day {
+    color: var(--color-text);
+}
+
+.flatpickr-calendar.dark .flatpickr-day:hover,
+.flatpickr-calendar.dark .flatpickr-day.flatpickr-day.today:hover {
+    background: color-mix(in srgb, var(--color-brand-600) 25%, transparent);
+    border-color: transparent;
+}
+
+.flatpickr-calendar.dark .flatpickr-day.selected,
+.flatpickr-calendar.dark .flatpickr-day.selected:hover {
+    background: var(--color-brand-600);
+    border-color: var(--color-brand-600);
+    color: #fff;
+}
+
+.flatpickr-calendar.dark select.flatpickr-monthDropdown-months,
+.flatpickr-calendar.dark input.cur-year,
+.flatpickr-calendar.dark span.flatpickr-weekday {
+    color: var(--color-text);
+}
+
+.flatpickr-tombol-baris {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    padding: 0.5rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.flatpickr-tombol {
+    flex: 1;
+    border-radius: 0.5rem;
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--color-brand-600);
+    color: #fff;
+    cursor: pointer;
+}
+
+.flatpickr-tombol:hover {
+    background: var(--color-brand-700);
+}
+
+.flatpickr-tombol-hapus {
+    background: var(--color-surface-alt);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+}
+
+.flatpickr-tombol-hapus:hover {
+    background: var(--color-danger-soft);
+}
+
+/* Alpine x-cloak utility */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Aksesibilitas: Pembesar ukuran teks (tombol A+) */
+html.text-enlarged {
+    font-size: 112.5%;
+}
+
+/* ==========================================================================
+   Animasi Halaman Login Ber-namespace auth- (IMPLEMENTASI_PLAN.md)
+   ========================================================================== */
+
+@keyframes authCoinDropOne {
+    0% {
+        transform: translateY(-24px) scale(0.85);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    60% {
+        transform: translateY(22px) scale(1);
+        opacity: 1;
+    }
+    85% {
+        transform: translateY(34px) scale(0.95);
+        opacity: 0.85;
+    }
+    100% {
+        transform: translateY(42px) scale(0.9);
+        opacity: 0;
+    }
+}
+
+@keyframes authCoinDropTwo {
+    0% {
+        transform: translateY(-26px) scale(0.85);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    60% {
+        transform: translateY(24px) scale(1);
+        opacity: 1;
+    }
+    85% {
+        transform: translateY(36px) scale(0.95);
+        opacity: 0.85;
+    }
+    100% {
+        transform: translateY(44px) scale(0.9);
+        opacity: 0;
+    }
+}
+
+@keyframes authJarFillRising {
+    0%, 100% {
+        transform: scaleY(1);
+    }
+    50% {
+        transform: scaleY(1.04);
+    }
+}
+
+@keyframes authSparkleTwinkle {
+    0%, 100% {
+        transform: scale(0.6) rotate(0deg);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1.15) rotate(45deg);
+        opacity: 1;
+    }
+}
+
+@keyframes authToastFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes authPinPop {
+    0% {
+        transform: scale(0.85);
+    }
+    60% {
+        transform: scale(1.12);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes authPinShake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    15%, 45%, 75% {
+        transform: translateX(-6px);
+    }
+    30%, 60%, 90% {
+        transform: translateX(6px);
+    }
+}
+
+@keyframes authPinChecking {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.auth-coin-1 {
+    animation: authCoinDropOne 2.8s ease-in infinite;
+}
+
+.auth-coin-2 {
+    animation: authCoinDropTwo 2.8s ease-in 1.4s infinite;
+}
+
+.auth-jar-fill {
+    animation: authJarFillRising 4s ease-in-out infinite;
+}
+
+.auth-sparkle {
+    animation: authSparkleTwinkle 2.4s ease-in-out infinite;
+}
+
+.auth-toast-float {
+    animation: authToastFloat 5s ease-in-out infinite;
+}
+
+.auth-pin-pop {
+    animation: authPinPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.auth-pin-shake {
+    animation: authPinShake 0.45s ease-in-out;
+}
+
+.auth-pin-checking {
+    animation: authPinChecking 0.6s ease-in-out infinite;
+}
+
+/* Namespace Animasi td-anim-* (U1.3) */
+@keyframes tdAnimFall {
+    0% { transform: translateY(-30px); opacity: 0; }
+    40% { opacity: 1; }
+    80% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(0); opacity: 0; }
+}
+
+@keyframes tdAnimLevel {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.08); }
+}
+
+@keyframes tdAnimTwinkle {
+    0%, 100% { opacity: 0.3; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.15); }
+}
+
+@keyframes tdAnimRise {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tdAnimPop {
+    0% { transform: scale(0.8); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@keyframes tdAnimShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+@keyframes tdAnimBounceDots {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+@keyframes tdAnimDraw {
+    from { stroke-dashoffset: 48; }
+    to { stroke-dashoffset: 0; }
+}
+
+.td-anim-fall { animation: tdAnimFall 2.4s ease-in infinite; }
+.td-anim-level { animation: tdAnimLevel 3.6s ease-in-out infinite; transform-origin: bottom; }
+.td-anim-twinkle { animation: tdAnimTwinkle 2s ease-in-out infinite; }
+.td-anim-rise { animation: tdAnimRise 0.35s ease-out forwards; }
+.td-anim-pop { animation: tdAnimPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.td-anim-shake { animation: tdAnimShake 0.4s ease-in-out; }
+.td-anim-bounce-dots { animation: tdAnimBounceDots 1.2s infinite ease-in-out both; }
+.td-anim-draw { stroke-dasharray: 48; animation: tdAnimDraw 0.6s ease-out forwards; }
+
+/* Wajib menghormati preferensi pengguna untuk mematikan motion */
+@media (prefers-reduced-motion: reduce) {
+    .auth-coin-1,
+    .auth-coin-2,
+    .auth-jar-fill,
+    .auth-sparkle,
+    .auth-toast-float,
+    .auth-pin-pop,
+    .auth-pin-shake,
+    .auth-pin-checking,
+    .td-anim-fall,
+    .td-anim-level,
+    .td-anim-twinkle,
+    .td-anim-rise,
+    .td-anim-pop,
+    .td-anim-shake,
+    .td-anim-bounce-dots,
+    .td-anim-draw {
+        animation: none !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        transform: none !important;
+    }
+}
+
+/* Styling Khusus Desain Halaman Login Portal (Dua Panel: Hijau/Biru & Gelap) */
+.auth-bg-nasabah {
+    background-color: #14472f !important;
+}
+
+.auth-bg-kolektor {
+    background-color: #1a3e9c !important;
+}
+
+.auth-bg-dark {
+    background-color: #111317 !important;
+}
+
+.auth-card-dark {
+    background-color: #181a20 !important;
+    border-color: #282c38 !important;
+}
+
+.auth-pill-bar {
+    background-color: #1c1f26 !important;
+    border-color: #2b303c !important;
+}
+
+.auth-btn-nasabah {
+    background-color: #22c55e !important;
+    color: #ffffff !important;
+}
+
+.auth-btn-nasabah:hover {
+    background-color: #16a34a !important;
+}
+
+.auth-btn-kolektor {
+    background-color: #3b82f6 !important;
+    color: #ffffff !important;
+}
+
+.auth-btn-kolektor:hover {
+    background-color: #2563eb !important;
+}
+
+.auth-indicator-nasabah {
+    background-color: #22c55e !important;
+}
+
+.auth-indicator-kolektor {
+    background-color: #3b82f6 !important;
+}
+
+

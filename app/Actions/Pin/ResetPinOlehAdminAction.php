@@ -26,9 +26,7 @@ class ResetPinOlehAdminAction
             ]);
         }
 
-        do {
-            $pin = (string) random_int(100000, 999999);
-        } while (Pin::lemah($pin));
+        $pin = Pin::acak();
 
         $target->update([
             'pin_hash' => Hash::make($pin),

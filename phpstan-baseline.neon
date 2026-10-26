@@ -1,0 +1,1345 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pin_hash\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/Penarikan/VerifikasiPenarikanOfflineAction.php
+
+		-
+			message: '#^Method App\\Actions\\Tabungan\\HitungTunggakanAction\:\:execute\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/Tabungan/HitungTunggakanAction.php
+
+		-
+			message: '#^Trait App\\Concerns\\ProfileValidationRules is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Concerns/ProfileValidationRules.php
+
+		-
+			message: '#^Variable \$columnRole on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Console/Commands/CheckRoleConsistency.php
+
+		-
+			message: '#^Method App\\Helpers\\ActivityLogger\:\:log\(\) has parameter \$detail with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Helpers/ActivityLogger.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\Absen\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\Absen\:\:setLokasi\(\) has parameter \$lat with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\Absen\:\:setLokasi\(\) has parameter \$lng with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\Absen\:\:setLokasiError\(\) has parameter \$kode with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\Absen\:\:setLokasiError\(\) has parameter \$pesan with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\Absen\:\:setSelfieBase64\(\) has parameter \$base64 with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\Absen\:\:setTandaTanganBase64\(\) has parameter \$base64 with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\Absen\:\:\$latitude has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\Absen\:\:\$lokasiDitolak has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\Absen\:\:\$lokasiError has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\Absen\:\:\$longitude has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\Absen\:\:\$selfieBase64 has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\Absen\:\:\$sudahAbsenHariIni has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\Absen\:\:\$sudahAbsenKeluarHariIni has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\Absen\:\:\$tandaTanganBase64 has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\Absen\:\:\$waktuAbsenHariIni has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\Absen\:\:\$waktuKeluarHariIni has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/Absen.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\DaftarNasabah\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/DaftarNasabah.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\DaftarNasabah\:\:submit\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/DaftarNasabah.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\DaftarNasabah\:\:toggleForm\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/DaftarNasabah.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\DaftarNasabah\:\:\$alamat has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/DaftarNasabah.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\DaftarNasabah\:\:\$jenisKelamin has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/DaftarNasabah.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\DaftarNasabah\:\:\$nama has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/DaftarNasabah.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\DaftarNasabah\:\:\$pekerjaan has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/DaftarNasabah.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\DaftarNasabah\:\:\$showForm has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/DaftarNasabah.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\DaftarNasabah\:\:\$tanggalLahir has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/DaftarNasabah.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:hitungTunggakan\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:loadNasabah\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:loadProduk\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:mount\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:pilihNasabah\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:pilihNasabah\(\) has parameter \$nasabahId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:resetNominal\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:setNominalTunggakan\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:setTanggalToday\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:setTanggalYesterday\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:submit\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:tambahNominal\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:tambahNominal\(\) has parameter \$jumlah with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:updatedNasabahId\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:updatedProdukId\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:updatedSearchNasabah\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$catatan has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$nasabahId has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$nasabahList has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$nominal has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$produkId has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$produkList has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$searchNasabah has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$selectedNasabah has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$showPickerNasabah has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$showSuccess has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$sumber_input has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$tanggal_transaksi has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\InputSetoran\:\:\$tunggakanInfo has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\JadwalKunjungan\:\:loadJadwal\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\JadwalKunjungan\:\:mount\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\JadwalKunjungan\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\JadwalKunjungan\:\:setTanggalToday\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\JadwalKunjungan\:\:setTanggalTomorrow\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\JadwalKunjungan\:\:setTanggalYesterday\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\JadwalKunjungan\:\:updateStatus\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\JadwalKunjungan\:\:updateStatus\(\) has parameter \$nasabahId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\JadwalKunjungan\:\:updateStatus\(\) has parameter \$status with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\JadwalKunjungan\:\:updatedFilterStatus\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\JadwalKunjungan\:\:updatedSearch\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\JadwalKunjungan\:\:updatedTanggal\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\JadwalKunjungan\:\:\$filterStatus has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\JadwalKunjungan\:\:\$jadwalHari has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\JadwalKunjungan\:\:\$search has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\JadwalKunjungan\:\:\$tanggal has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\NasabahBinaan\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/NasabahBinaan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\NasabahBinaan\:\:updatedFilterTunggakan\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/NasabahBinaan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\NasabahBinaan\:\:updatedSearch\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/NasabahBinaan.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\NasabahBinaan\:\:\$filterTunggakan has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/NasabahBinaan.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\NasabahBinaan\:\:\$search has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/NasabahBinaan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\PenarikanOffline\:\:hitungKomisi\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\PenarikanOffline\:\:mount\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\PenarikanOffline\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\PenarikanOffline\:\:submit\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\PenarikanOffline\:\:updatedNasabahId\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\PenarikanOffline\:\:updatedNominal\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\PenarikanOffline\:\:updatedProdukId\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\PenarikanOffline\:\:\$jumlahMenungguVerifikasi has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\PenarikanOffline\:\:\$lokasi has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\PenarikanOffline\:\:\$nasabahId has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\PenarikanOffline\:\:\$nasabahList has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\PenarikanOffline\:\:\$nominal has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\PenarikanOffline\:\:\$nominalDiterima has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\PenarikanOffline\:\:\$nominalKomisi has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\PenarikanOffline\:\:\$persenKomisi has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\PenarikanOffline\:\:\$produkId has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\PenarikanOffline\:\:\$produkList has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\PenarikanOffline\:\:\$selectedNasabah has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/PenarikanOffline.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\Pengaturan\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/Pengaturan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\RiwayatAbsensi\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/RiwayatAbsensi.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\SetorKantor\:\:loadData\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/SetorKantor.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\SetorKantor\:\:mount\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/SetorKantor.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\SetorKantor\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/SetorKantor.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\SetorKantor\:\:submit\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/SetorKantor.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\SetorKantor\:\:\$catatan has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/SetorKantor.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\SetorKantor\:\:\$jumlahTransaksi has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/SetorKantor.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\SetorKantor\:\:\$totalBelumDisetor has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/SetorKantor.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\VerifikasiPenarikan\:\:bukaModal\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/VerifikasiPenarikan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\VerifikasiPenarikan\:\:konfirmasi\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/VerifikasiPenarikan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\VerifikasiPenarikan\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/VerifikasiPenarikan.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\VerifikasiPenarikan\:\:tutupModal\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Kolektor/VerifikasiPenarikan.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\VerifikasiPenarikan\:\:\$pin has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/VerifikasiPenarikan.php
+
+		-
+			message: '#^Property App\\Livewire\\Kolektor\\VerifikasiPenarikan\:\:\$showModal has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Kolektor/VerifikasiPenarikan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\AjukanPenarikan\:\:hitungKomisi\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\AjukanPenarikan\:\:loadProduk\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\AjukanPenarikan\:\:loadSaldo\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\AjukanPenarikan\:\:mount\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\AjukanPenarikan\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\AjukanPenarikan\:\:updatedNominal\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\AjukanPenarikan\:\:updatedProdukId\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\AjukanPenarikan\:\:\$lokasi_pengambilan has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\AjukanPenarikan\:\:\$nominal has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\AjukanPenarikan\:\:\$nominalDiterima has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\AjukanPenarikan\:\:\$nominalKomisi has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\AjukanPenarikan\:\:\$persenKomisi has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\AjukanPenarikan\:\:\$produkId has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\AjukanPenarikan\:\:\$produkList has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\AjukanPenarikan\:\:\$saldoList has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\AjukanPenarikan\:\:\$selectedProduk has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/AjukanPenarikan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\Komplain\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/Komplain.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\Komplain\:\:submit\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/Komplain.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\Komplain\:\:toggleForm\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/Komplain.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\Komplain\:\:\$deskripsi has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/Komplain.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\Komplain\:\:\$kategori has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/Komplain.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\Komplain\:\:\$riwayatPage has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/Komplain.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\Komplain\:\:\$showForm has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/Komplain.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\Komplain\:\:\$transaksiTerkaitId has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/Komplain.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\Notifikasi\:\:markAllRead\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/Notifikasi.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\Notifikasi\:\:markAsRead\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/Notifikasi.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\Notifikasi\:\:markAsRead\(\) has parameter \$id with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Livewire/Nasabah/Notifikasi.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\Notifikasi\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/Notifikasi.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\Pengaturan\:\:logout\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/Pengaturan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\Pengaturan\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/Pengaturan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\ProgresPaket\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/ProgresPaket.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\RiwayatPenarikan\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/RiwayatPenarikan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\RiwayatTabungan\:\:filterLastMonth\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/RiwayatTabungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\RiwayatTabungan\:\:filterThisMonth\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/RiwayatTabungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\RiwayatTabungan\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/RiwayatTabungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\RiwayatTabungan\:\:resetFilters\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/RiwayatTabungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\RiwayatTabungan\:\:updatedDariTanggal\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/RiwayatTabungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\RiwayatTabungan\:\:updatedProdukFilter\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/RiwayatTabungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\RiwayatTabungan\:\:updatedSampaiTanggal\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/RiwayatTabungan.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\RiwayatTabungan\:\:\$dariTanggal has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/RiwayatTabungan.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\RiwayatTabungan\:\:\$produkFilter has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/RiwayatTabungan.php
+
+		-
+			message: '#^Property App\\Livewire\\Nasabah\\RiwayatTabungan\:\:\$sampaiTanggal has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Livewire/Nasabah/RiwayatTabungan.php
+
+		-
+			message: '#^Method App\\Livewire\\Nasabah\\Saldo\:\:render\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Livewire/Nasabah/Saldo.php
+
+		-
+			message: '#^Class App\\Models\\AbsensiKolektor uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AbsensiKolektor.php
+
+		-
+			message: '#^Method App\\Models\\AbsensiKolektor\:\:kolektor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/AbsensiKolektor.php
+
+		-
+			message: '#^Property App\\Models\\AdminSetting\:\:\$encryptedKeys type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/AdminSetting.php
+
+		-
+			message: '#^Class App\\Models\\JadwalKunjungan uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Models\\JadwalKunjungan\:\:kolektor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/JadwalKunjungan.php
+
+		-
+			message: '#^Method App\\Models\\JadwalKunjungan\:\:nasabah\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/JadwalKunjungan.php
+
+		-
+			message: '#^Class App\\Models\\KepesertaanPaket uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/KepesertaanPaket.php
+
+		-
+			message: '#^Method App\\Models\\KepesertaanPaket\:\:hitungUlangKepesertaan\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Models/KepesertaanPaket.php
+
+		-
+			message: '#^Method App\\Models\\KepesertaanPaket\:\:nasabah\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/KepesertaanPaket.php
+
+		-
+			message: '#^Class App\\Models\\KolektorNasabah uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/KolektorNasabah.php
+
+		-
+			message: '#^Method App\\Models\\KolektorNasabah\:\:kolektor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/KolektorNasabah.php
+
+		-
+			message: '#^Method App\\Models\\KolektorNasabah\:\:nasabah\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/KolektorNasabah.php
+
+		-
+			message: '#^Class App\\Models\\Komplain uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Komplain.php
+
+		-
+			message: '#^Method App\\Models\\Komplain\:\:ditanganiOleh\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Komplain.php
+
+		-
+			message: '#^Method App\\Models\\Komplain\:\:nasabah\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Komplain.php
+
+		-
+			message: '#^Method App\\Models\\Komplain\:\:transaksiTerkait\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Komplain.php
+
+		-
+			message: '#^Class App\\Models\\LogAktivitas uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LogAktivitas.php
+
+		-
+			message: '#^Method App\\Models\\LogAktivitas\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LogAktivitas.php
+
+		-
+			message: '#^Class App\\Models\\LogHandoverKolektor uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LogHandoverKolektor.php
+
+		-
+			message: '#^Method App\\Models\\LogHandoverKolektor\:\:diprosesOleh\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LogHandoverKolektor.php
+
+		-
+			message: '#^Method App\\Models\\LogHandoverKolektor\:\:kolektorBaru\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LogHandoverKolektor.php
+
+		-
+			message: '#^Method App\\Models\\LogHandoverKolektor\:\:kolektorLama\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LogHandoverKolektor.php
+
+		-
+			message: '#^Class App\\Models\\LogNotifikasi uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LogNotifikasi.php
+
+		-
+			message: '#^Method App\\Models\\LogNotifikasi\:\:nasabah\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/LogNotifikasi.php
+
+		-
+			message: '#^Class App\\Models\\NasabahProfil uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/NasabahProfil.php
+
+		-
+			message: '#^Cannot call method diffInDays\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Models/ProdukTabungan.php
+
+		-
+			message: '#^Class App\\Models\\ProdukTabungan uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ProdukTabungan.php
+
+		-
+			message: '#^Method App\\Models\\ProdukTabungan\:\:kepesertaanPakets\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ProdukTabungan.php
+
+		-
+			message: '#^Method App\\Models\\ProdukTabungan\:\:saldoProduks\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ProdukTabungan.php
+
+		-
+			message: '#^Method App\\Models\\ProdukTabungan\:\:transaksiPenarikans\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ProdukTabungan.php
+
+		-
+			message: '#^Method App\\Models\\ProdukTabungan\:\:transaksiSetorans\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ProdukTabungan.php
+
+		-
+			message: '#^Class App\\Models\\SaldoProduk uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SaldoProduk.php
+
+		-
+			message: '#^Method App\\Models\\SaldoProduk\:\:nasabah\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SaldoProduk.php
+
+		-
+			message: '#^Method App\\Models\\SaldoProduk\:\:produk\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SaldoProduk.php
+
+		-
+			message: '#^Class App\\Models\\SetoranKolektorKantor uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SetoranKolektorKantor.php
+
+		-
+			message: '#^Method App\\Models\\SetoranKolektorKantor\:\:diterimaOleh\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SetoranKolektorKantor.php
+
+		-
+			message: '#^Method App\\Models\\SetoranKolektorKantor\:\:kolektor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SetoranKolektorKantor.php
+
+		-
+			message: '#^Method App\\Models\\SetoranKolektorKantor\:\:transaksiSetorans\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/SetoranKolektorKantor.php
+
+		-
+			message: '#^Class App\\Models\\TransaksiPenarikan uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiPenarikan.php
+
+		-
+			message: '#^Method App\\Models\\TransaksiPenarikan\:\:disetujuiOleh\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiPenarikan.php
+
+		-
+			message: '#^Method App\\Models\\TransaksiPenarikan\:\:diverifikasiOleh\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiPenarikan.php
+
+		-
+			message: '#^Method App\\Models\\TransaksiPenarikan\:\:nasabah\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiPenarikan.php
+
+		-
+			message: '#^Method App\\Models\\TransaksiPenarikan\:\:produk\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiPenarikan.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:masihAktif\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/TransaksiSetoran.php
+
+		-
+			message: '#^Class App\\Models\\TransaksiSetoran uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiSetoran.php
+
+		-
+			message: '#^Method App\\Models\\TransaksiSetoran\:\:dikoreksiOleh\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiSetoran.php
+
+		-
+			message: '#^Method App\\Models\\TransaksiSetoran\:\:inputBy\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiSetoran.php
+
+		-
+			message: '#^Method App\\Models\\TransaksiSetoran\:\:nasabah\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiSetoran.php
+
+		-
+			message: '#^Method App\\Models\\TransaksiSetoran\:\:scopeBelumDisetor\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiSetoran.php
+
+		-
+			message: '#^Method App\\Models\\TransaksiSetoran\:\:scopeBelumDisetor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiSetoran.php
+
+		-
+			message: '#^Method App\\Models\\TransaksiSetoran\:\:scopeMasihAktif\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiSetoran.php
+
+		-
+			message: '#^Method App\\Models\\TransaksiSetoran\:\:scopeMasihAktif\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiSetoran.php
+
+		-
+			message: '#^Method App\\Models\\TransaksiSetoran\:\:setoranKolektor\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/TransaksiSetoran.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:jadwalKunjungans\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:kepesertaanPakets\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:kolektorNasabahs\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:komplains\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:logAktivitas\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:logNotifikasis\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:saldoProduks\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:setoranKolektorKantors\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:transaksiPenarikans\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:transaksiSetorans\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Property App\\Models\\User\:\:\$guard_name has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Parameter \#1 \$string of function base64_decode expects string, array\<string\>\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: database/migrations/2026_09_08_033519_migrate_tanda_tangan_to_file.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Schema\\ForeignKeyDefinition\:\:comment\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: database/migrations/2026_09_15_040000_add_verifikasi_columns_to_transaksi_penarikan_table.php

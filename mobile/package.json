@@ -1,0 +1,18 @@
+{
+    "private": true,
+    "name": "tabungan-mobile",
+    "version": "1.0.0",
+    "description": "Shell Android (Capacitor) untuk aplikasi Tabungan - tiga flavor: nasabah, kolektor, admin.",
+    "scripts": {
+        "build:flavor": "bash scripts/build-flavor.sh"
+    },
+    "dependencies": {
+        "@capacitor/app": "^8.1.2",
+        "@capacitor/android": "^8.5.3",
+        "@capacitor/core": "^8.5.3"
+    },
+    "devDependencies": {
+        "@capacitor/assets": "^3.0.5",
+        "@capacitor/cli": "^8.5.3"
+    }
+}

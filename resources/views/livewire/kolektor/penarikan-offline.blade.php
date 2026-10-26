@@ -1,166 +1,276 @@
-<div class="mx-auto max-w-2xl space-y-5">
+<div x-data="{
+    signaturePad: null,
+    ttdTimer: null,
+    tab: @js(in_array($buktiJenis, ['tanda_tangan', 'foto'], true) ? $buktiJenis : 'tanda_tangan'),
+    initBukti() {
+        const canvas = document.getElementById('canvas-bukti-penarikan');
+        if (!canvas) return;
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        this.signaturePad = new SignaturePad(canvas);
+        const kirim = () => this.kirimTandaTangan();
+        canvas.addEventListener('mouseup', kirim);
+        canvas.addEventListener('touchend', kirim);
+    },
+    kirimTandaTangan() {
+        if (!this.signaturePad) return;
+        clearTimeout(this.ttdTimer);
+        this.ttdTimer = setTimeout(() => {
+            const kosong = this.signaturePad.isEmpty();
+            $wire.setBuktiBase64(kosong ? '' : this.signaturePad.toDataURL());
+            if (!kosong) $wire.setBuktiJenis('tanda_tangan');
+        }, 300);
+    },
+    pilihJenis(jenis) {
+        this.tab = jenis;
+        if (this.signaturePad) this.signaturePad.clear();
+        $wire.setBuktiBase64('');
+        $wire.setBuktiJenis(jenis);
+    },
+    hapusTandaTangan() {
+        if (this.signaturePad) this.signaturePad.clear();
+        $wire.setBuktiBase64('');
+    },
+    pilihFoto(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        if (file.size > 1572864) {
+            $wire.setBuktiBase64('');
+            alert('Ukuran foto maksimal 1,5 MB.');
+            event.target.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            $wire.setBuktiBase64(reader.result);
+            $wire.setBuktiJenis('foto');
+        };
+        reader.readAsDataURL(file);
+    },
+    async prosesPenarikan() {
+        if (this.tab === 'tanda_tangan' && this.signaturePad && !this.signaturePad.isEmpty()) {
+            await $wire.setBuktiBase64(this.signaturePad.toDataURL());
+            await $wire.setBuktiJenis('tanda_tangan');
+        }
+        await $wire.call('submit');
+    }
+}" x-init="$nextTick(() => initBukti())" class="mx-auto max-w-2xl space-y-5 pb-8">
     {{-- Header --}}
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between gap-3">
         <div>
-            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Penarikan Offline</h1>
-            <p class="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">Proses permintaan penarikan tabungan nasabah secara langsung.</p>
+            <h1 class="text-2xl font-semibold tracking-tight text-ink">Penarikan offline</h1>
+            <p class="mt-1 text-sm text-mute">Proses permintaan penarikan tabungan nasabah secara langsung.</p>
         </div>
-        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/40">
-            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-            </svg>
+        <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-on-primary-soft" aria-hidden="true">
+            <flux:icon.arrow-down class="size-5" />
         </div>
     </div>
 
     {{-- Flash Messages --}}
     @if (session('success'))
-        <div class="flex items-center gap-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 p-4 text-sm text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40">
-            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-            <span class="font-medium">{{ session('success') }}</span>
+        <div class="flex items-center gap-3 rounded-xl border border-hairline bg-primary-soft px-4 py-3 text-sm font-medium text-on-primary-soft">
+            <flux:icon.check-circle class="size-5 shrink-0" aria-hidden="true" />
+            <span>{{ session('success') }}</span>
         </div>
     @endif
     @if (session('error'))
-        <div class="flex items-center gap-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 p-4 text-sm text-rose-700 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800/40">
-            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            <span class="font-medium">{{ session('error') }}</span>
+        <div class="flex items-center gap-3 rounded-xl border border-danger-soft bg-danger-soft px-4 py-3 text-sm font-medium text-danger-deep dark:border-dark-danger-soft dark:bg-dark-danger-soft dark:text-dark-danger-text">
+            <flux:icon.x-circle class="size-5 shrink-0" aria-hidden="true" />
+            <span>{{ session('error') }}</span>
         </div>
     @endif
 
     {{-- Card Verifikasi Penarikan --}}
     <a href="{{ route('kolektor.verifikasi-penarikan.index') }}" wire:navigate
-        class="flex items-center justify-between rounded-3xl bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 p-4.5 shadow-sm hover:border-emerald-300 dark:hover:border-emerald-700 transition group">
-        <div class="flex items-center gap-3.5">
-            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50 group-hover:scale-105 transition-transform">
-                <svg class="h-5.5 w-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+        class="group flex items-center justify-between rounded-2xl border border-hairline bg-white p-4 transition hover:border-hairline-strong dark:bg-surface">
+        <div class="flex min-w-0 items-center gap-3.5">
+            <div class="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-soft text-on-primary-soft transition-transform group-hover:scale-105" aria-hidden="true">
+                <flux:icon.check-badge class="size-5" />
             </div>
-            <div>
+            <div class="min-w-0">
                 <div class="flex items-center gap-2">
-                    <p class="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">Verifikasi penarikan</p>
+                    <p class="truncate text-sm font-semibold text-ink transition group-hover:text-primary">Verifikasi penarikan</p>
                     @if ($jumlahMenungguVerifikasi > 0)
-                        <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[11px] font-bold text-white">
+                        <span class="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-on-primary">
                             {{ $jumlahMenungguVerifikasi }}
                         </span>
                     @endif
                 </div>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Serahkan uang dan verifikasi pin nasabah</p>
+                <p class="mt-0.5 truncate text-xs text-mute">Serahkan uang dan verifikasi PIN nasabah</p>
             </div>
         </div>
-        <svg class="h-5 w-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-0.5 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-        </svg>
+        <flux:icon.chevron-right class="size-5 shrink-0 text-mute transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
     </a>
 
     {{-- Form Ajukan Penarikan Baru --}}
-    <div class="rounded-3xl bg-white dark:bg-zinc-800 shadow-sm border border-zinc-200/80 dark:border-zinc-700/80 p-6 space-y-5">
+    <div class="rounded-2xl border border-hairline bg-white p-5 space-y-5 dark:bg-surface">
         <div>
-            <h2 class="text-base font-bold text-zinc-900 dark:text-white">Ajukan penarikan baru</h2>
-            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Isi formulir di bawah ini untuk memproses penarikan tabungan.</p>
+            <h2 class="text-base font-semibold text-ink">Ajukan penarikan baru</h2>
+            <p class="mt-0.5 text-xs text-mute">Isi formulir di bawah ini untuk memproses penarikan tabungan.</p>
         </div>
 
         <form wire:submit="submit" class="space-y-5">
             {{-- Pilih Nasabah --}}
             <div>
-                <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Nasabah</label>
+                <label class="mb-1.5 block text-sm font-medium text-body">Nasabah</label>
                 <select wire:model.live="nasabahId"
-                    class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-sm font-medium text-zinc-900 dark:text-white focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition">
-                    <option value="">-- Pilih Nasabah --</option>
+                    class="w-full rounded-xl border border-hairline-strong bg-white px-3 py-3 text-base text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface">
+                    <option value="">-- Pilih nasabah --</option>
                     @foreach($nasabahList as $nasabah)
-                        <option value="{{ $nasabah->user_id }}">{{ $nasabah->nama }} ({{ $nasabah->user->no_hp }})</option>
+                        <option value="{{ $nasabah->user_id }}">{{ $nasabah->nama }} ({{ $nasabah->user->no_hp ?? '— (offline)' }})</option>
                     @endforeach
                 </select>
-                @error('nasabahId') <p class="mt-1.5 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
+                @error('nasabahId') <p class="mt-1.5 flex items-center gap-1 text-sm text-danger"><flux:icon.exclamation-circle class="size-4 shrink-0" aria-hidden="true" />{{ $message }}</p> @enderror
             </div>
 
             {{-- Saldo Saat Ini --}}
             @if($selectedNasabah)
-                <div class="rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 p-4 border border-zinc-200/80 dark:border-zinc-700/80">
-                    <p class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2">Saldo Nasabah</p>
+                <div class="rounded-xl border border-hairline bg-inset p-4">
+                    <p class="mb-2 text-sm font-medium text-mute">Saldo nasabah</p>
                     @if($selectedNasabah->user->saldoProduks->count() > 0)
                         <div class="space-y-2">
                             @foreach($selectedNasabah->user->saldoProduks as $s)
-                                <div class="flex items-center justify-between">
-                                    <span class="text-sm text-zinc-600 dark:text-zinc-400">{{ $s->produk->nama }}</span>
-                                    <span class="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">Rp {{ number_format($s->saldo, 0, ',', '.') }}</span>
+                                <div class="flex items-center justify-between gap-3">
+                                    <span class="text-sm text-body">{{ $s->produk->nama }}</span>
+                                    <span class="text-sm font-semibold"><x-ui.rupiah :nilai="$s->saldo" /></span>
                                 </div>
                             @endforeach
                         </div>
                     @else
-                        <p class="text-sm text-zinc-400">Nasabah belum memiliki saldo.</p>
+                        <p class="text-sm text-mute">Nasabah belum memiliki saldo.</p>
                     @endif
                 </div>
             @endif
 
             {{-- Produk --}}
             <div>
-                <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Produk Tabungan</label>
+                <label class="mb-1.5 block text-sm font-medium text-body">Produk tabungan</label>
                 <select wire:model.live="produkId"
-                    class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-sm font-medium text-zinc-900 dark:text-white focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition">
-                    <option value="">-- Pilih Produk --</option>
+                    class="w-full rounded-xl border border-hairline-strong bg-white px-3 py-3 text-base text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface">
+                    <option value="">-- Pilih produk --</option>
                     @foreach($produkList as $produk)
-                        <option value="{{ $produk->id }}">{{ $produk->nama }} ({{ $produk->tipe === 'paket' ? 'Paket' : 'Bebas' }})</option>
+                        <option value="{{ $produk->id }}">{{ $produk->nama }} ({{ $produk->tipe === 'paket' ? 'Paket' : 'Bebas' }}){{ $produk->status !== 'aktif' ? ' (nonaktif)' : '' }}</option>
                     @endforeach
                 </select>
-                @error('produkId') <p class="mt-1.5 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
+                @error('produkId') <p class="mt-1.5 flex items-center gap-1 text-sm text-danger"><flux:icon.exclamation-circle class="size-4 shrink-0" aria-hidden="true" />{{ $message }}</p> @enderror
             </div>
 
             {{-- Nominal --}}
             <div>
-                <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Nominal Penarikan</label>
+                <label class="mb-1.5 block text-sm font-medium text-body">Nominal penarikan</label>
                 <div class="relative">
-                    <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-mono text-base font-semibold text-zinc-400">Rp</span>
-                    <input type="number" wire:model.live="nominal" min="10000"
-                        class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 py-3.5 pl-12 pr-4 text-lg font-mono font-bold text-zinc-900 dark:text-white focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition"
+                    <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-semibold text-mute">Rp</span>
+                    <input type="number" wire:model.live="nominal" min="0" step="0.01"
+                        class="h-16 w-full rounded-xl border border-hairline-strong bg-white pr-4 pl-16 text-2xl font-semibold tabular-nums text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface"
                         placeholder="0" />
                 </div>
-                @error('nominal') <p class="mt-1.5 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
+                @error('nominal') <p class="mt-1.5 flex items-center gap-1 text-sm text-danger"><flux:icon.exclamation-circle class="size-4 shrink-0" aria-hidden="true" />{{ $message }}</p> @enderror
             </div>
 
             {{-- Rincian Penarikan --}}
             @if($selectedNasabah && $nominal > 0)
-                <div class="rounded-2xl bg-zinc-50 dark:bg-zinc-900/80 p-4 border border-zinc-200/80 dark:border-zinc-700/80 space-y-2">
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-zinc-600 dark:text-zinc-400">Nominal ditarik</span>
-                        <span class="font-mono font-medium text-zinc-900 dark:text-white">Rp {{ number_format($nominal, 0, ',', '.') }}</span>
+                <div class="rounded-xl border border-hairline bg-inset p-4">
+                    <div class="flex items-center justify-between gap-3 text-sm">
+                        <span class="text-mute">Nominal ditarik</span>
+                        <span class="font-medium text-ink"><x-ui.rupiah :nilai="$nominal" /></span>
                     </div>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-zinc-600 dark:text-zinc-400">Komisi ({{ $persenKomisi }}%)</span>
-                        <span class="font-mono text-rose-500 font-medium">−Rp {{ number_format($nominalKomisi, 0, ',', '.') }}</span>
+                    <div class="mt-2 flex items-center justify-between gap-3 text-sm">
+                        <span class="text-mute">Komisi ({{ $persenKomisi }}%)</span>
+                        <span class="font-medium"><x-ui.rupiah :nilai="$nominalKomisi" tanda="-" /></span>
                     </div>
-                    <div class="flex items-center justify-between border-t border-zinc-200 dark:border-zinc-800 pt-2">
-                        <span class="text-sm font-bold text-zinc-900 dark:text-white">Nasabah Terima</span>
-                        <span class="font-mono text-base font-bold text-emerald-600 dark:text-emerald-400">Rp {{ number_format($nominalDiterima, 0, ',', '.') }}</span>
+                    <div class="mt-3 flex items-center justify-between gap-3 border-t border-hairline pt-3">
+                        <span class="text-sm font-medium text-ink">Nasabah terima</span>
+                        <span class="text-base font-semibold"><x-ui.rupiah :nilai="$nominalDiterima" /></span>
                     </div>
                 </div>
             @endif
 
             {{-- Lokasi --}}
             <div>
-                <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Lokasi Pengambilan</label>
+                <label class="mb-1.5 block text-sm font-medium text-body">Lokasi pengambilan</label>
                 <div class="grid grid-cols-2 gap-3">
-                    <label class="flex flex-col items-center justify-center p-3.5 rounded-2xl border cursor-pointer transition text-center
-                        {{ ($lokasi ?? 'kantor') === 'kantor' ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 font-bold' : 'border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400' }}">
+                    <label class="flex cursor-pointer flex-col items-center justify-center rounded-xl border p-3.5 text-center transition
+                        {{ ($lokasi ?? 'kantor') === 'kantor' ? 'border-primary bg-primary-soft font-semibold text-on-primary-soft' : 'border-hairline bg-inset text-body' }}">
                         <input type="radio" wire:model.live="lokasi" value="kantor" class="sr-only">
-                        <span class="text-sm">Kantor Utama</span>
+                        <span class="text-sm">Kantor utama</span>
                     </label>
-                    <label class="flex flex-col items-center justify-center p-3.5 rounded-2xl border cursor-pointer transition text-center
-                        {{ ($lokasi ?? '') === 'rumah_kolektor' ? 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 font-bold' : 'border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400' }}">
+                    <label class="flex cursor-pointer flex-col items-center justify-center rounded-xl border p-3.5 text-center transition
+                        {{ ($lokasi ?? '') === 'rumah_kolektor' ? 'border-primary bg-primary-soft font-semibold text-on-primary-soft' : 'border-hairline bg-inset text-body' }}">
                         <input type="radio" wire:model.live="lokasi" value="rumah_kolektor" class="sr-only">
-                        <span class="text-sm">Rumah Kolektor</span>
+                        <span class="text-sm">Rumah kolektor</span>
                     </label>
                 </div>
             </div>
 
+            {{-- Catatan --}}
+            <div>
+                <label class="mb-1.5 block text-sm font-medium text-body">Catatan</label>
+                <textarea wire:model="catatan" rows="2" maxlength="500"
+                    placeholder="mis. buku tabungan dicoret, tanda tangan di buku"
+                    class="w-full rounded-xl border border-hairline-strong bg-white px-3 py-3 text-base text-ink placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface"></textarea>
+                <p class="mt-1 text-xs text-subtle">Wajib diisi untuk nasabah offline.</p>
+                @error('catatan') <p class="mt-1.5 flex items-center gap-1 text-sm text-danger"><flux:icon.exclamation-circle class="size-4 shrink-0" aria-hidden="true" />{{ $message }}</p> @enderror
+            </div>
+
+            {{-- Bukti Penarikan (D24) --}}
+            @if($selectedNasabah && $selectedNasabah->user->isOffline())
+                <div class="rounded-xl border border-hairline bg-inset p-4">
+                    <div class="flex items-center justify-between gap-3">
+                        <p class="text-sm font-medium text-body">Bukti penarikan</p>
+                        <div class="flex gap-1">
+                            <button type="button" x-on:click="pilihJenis('tanda_tangan')"
+                                class="rounded-full px-3 py-1.5 text-xs font-medium transition {{ $buktiJenis !== 'foto' ? 'bg-primary text-on-primary' : 'border border-hairline bg-white text-body hover:bg-hairline dark:bg-surface' }}">
+                                Tanda tangan
+                            </button>
+                            <button type="button" x-on:click="pilihJenis('foto')"
+                                class="rounded-full px-3 py-1.5 text-xs font-medium transition {{ $buktiJenis === 'foto' ? 'bg-primary text-on-primary' : 'border border-hairline bg-white text-body hover:bg-hairline dark:bg-surface' }}">
+                                Foto
+                            </button>
+                        </div>
+                    </div>
+
+                    <div x-show="tab === 'tanda_tangan'" x-cloak class="mt-3 space-y-2">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="text-xs text-mute">Minta nasabah menggambar tanda tangan di layar.</p>
+                            <button type="button" x-on:click="hapusTandaTangan()"
+                                class="text-xs font-medium text-primary underline underline-offset-4 hover:opacity-80">Hapus</button>
+                        </div>
+                        <canvas id="canvas-bukti-penarikan"
+                            style="width:100%;height:176px;background:white;"
+                            class="rounded-xl border-2 border-dashed border-hairline-strong"></canvas>
+                    </div>
+
+                    <div x-show="tab === 'foto'" x-cloak class="mt-3 space-y-2">
+                        <label class="flex w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-hairline-strong bg-white p-6 text-center transition hover:border-primary">
+                            <input type="file" accept="image/png,image/jpeg" capture="environment" x-on:change="pilihFoto($event)" class="sr-only">
+                            <span class="text-sm font-medium text-ink">Ambil / pilih foto bukti</span>
+                            <span class="mt-1 text-xs text-subtle">Buku tabungan dicoret atau nasabah menerima uang (maks. 1,5 MB).</span>
+                        </label>
+                        <img x-show="$wire.buktiBase64" :src="$wire.buktiBase64" alt="Preview bukti"
+                            class="h-32 w-full rounded-xl border border-hairline bg-white object-contain">
+                    </div>
+
+                    @error('buktiBase64') <p class="mt-1.5 text-sm text-danger">{{ $message }}</p> @enderror
+                </div>
+            @endif
+
+            {{-- Pratinjau keputusan (D23) --}}
+            @if($teksKeputusan = $this->keputusanTeks())
+                <div class="flex items-start gap-2.5 rounded-xl border border-info-soft bg-info-soft px-3.5 py-3 text-sm font-medium text-info">
+                    <flux:icon.information-circle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                    <span>{{ $teksKeputusan }}</span>
+                </div>
+            @endif
+
             {{-- Actions --}}
             <div class="flex items-center gap-3 pt-2">
                 <a href="{{ route('dashboard') }}" wire:navigate
-                    class="w-1/3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 py-3.5 text-center text-sm font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition">
+                    class="flex h-12 w-1/3 items-center justify-center rounded-full border border-hairline-strong bg-white text-base font-medium text-ink transition hover:bg-inset dark:bg-surface">
                     Batal
                 </a>
-                <button type="submit" wire:loading.attr="disabled"
-                    class="w-2/3 rounded-2xl bg-amber-500 hover:bg-amber-600 py-3.5 text-center text-sm font-bold text-white shadow-md shadow-amber-500/20 transition disabled:opacity-50">
-                    <span wire:loading.remove wire:target="submit">Proses Penarikan</span>
+                <button type="button" wire:loading.attr="disabled" x-on:click="prosesPenarikan()"
+                    class="flex h-12 w-2/3 items-center justify-center rounded-full bg-primary text-base font-medium text-on-primary transition hover:bg-primary-hover active:scale-[0.98] disabled:opacity-50">
+                    <span wire:loading.remove wire:target="submit">Proses penarikan</span>
                     <span wire:loading wire:target="submit">Memproses...</span>
                 </button>
             </div>

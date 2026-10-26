@@ -70,59 +70,55 @@
 " class="mx-auto max-w-2xl">
     {{-- Flash Messages --}}
     @if (session('success'))
-        <div class="mb-4 flex items-center gap-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3.5 text-sm text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shadow-sm">
-            <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-            </div>
+        <div class="mb-4 flex items-center gap-3 rounded-xl border border-hairline bg-primary-soft px-4 py-3 text-sm font-medium text-on-primary-soft">
+            <flux:icon.check-circle class="size-5 shrink-0" aria-hidden="true" />
             <span>{{ session('success') }}</span>
         </div>
     @endif
     @if (session('error'))
-        <div class="mb-4 flex items-center gap-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 px-4 py-3.5 text-sm text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 shadow-sm">
-            <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-rose-500/20 text-rose-600 dark:text-rose-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            </div>
+        <div class="mb-4 flex items-center gap-3 rounded-xl border border-danger-soft bg-danger-soft px-4 py-3 text-sm font-medium text-danger-deep dark:border-dark-danger-soft dark:bg-dark-danger-soft dark:text-dark-danger-text">
+            <flux:icon.x-circle class="size-5 shrink-0" aria-hidden="true" />
             <span>{{ session('error') }}</span>
         </div>
     @endif
 
     {{-- Lokasi Error Card --}}
     @if($lokasiError)
-        <div class="mb-6 rounded-3xl bg-rose-50 dark:bg-rose-950/40 p-6 text-center border border-rose-200 dark:border-rose-800/60 shadow-sm">
+        <div class="mb-6 rounded-2xl border border-danger-soft bg-danger-soft p-6 text-center dark:border-dark-danger-soft dark:bg-dark-danger-soft">
             <div class="mb-3 flex justify-center">
-                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-600 dark:text-rose-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                <div class="flex size-12 items-center justify-center rounded-full bg-inset" aria-hidden="true">
+                    <flux:icon.map-pin class="size-6 text-danger-deep dark:text-dark-danger-text" />
                 </div>
             </div>
-            <h3 class="text-base font-bold text-rose-900 dark:text-rose-200">
-                {{ $lokasiDitolak ? 'Akses Lokasi Ditolak' : 'Gagal Mendapatkan Lokasi GPS' }}
-            </h3>
-            <p class="mt-1 text-xs text-rose-700/80 dark:text-rose-300/80 max-w-sm mx-auto">
+            <h2 class="text-base font-semibold text-danger-deep dark:text-dark-danger-text">
+                {{ $lokasiDitolak ? 'Akses lokasi ditolak' : 'Gagal mendapatkan lokasi GPS' }}
+            </h2>
+            <p class="mx-auto mt-1 max-w-sm text-sm text-danger-deep dark:text-dark-danger-text">
                 Absensi wajib menyalakan lokasi GPS agar admin dapat memverifikasi keberadaan Anda di lapangan.
             </p>
             <button type="button" x-on:click="mintaLokasi()"
-                    class="mt-4 w-full rounded-2xl bg-rose-600 hover:bg-rose-700 py-3 text-sm font-semibold text-white transition shadow-sm active:scale-95">
-                Coba Lagi
+                    class="mt-4 flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-medium text-danger-deep transition hover:bg-inset active:scale-[0.98]">
+                Coba lagi
             </button>
             @if($lokasiDitolak)
                 <div x-data="{ showPanduan: false }" class="mt-3">
                     <button type="button" x-on:click="showPanduan = !showPanduan"
-                            class="text-xs font-semibold text-rose-600 underline dark:text-rose-400">
+                            class="text-sm font-medium text-danger-deep underline underline-offset-4 dark:text-dark-danger-text">
                         Cara mengaktifkan lokasi di HP
                     </button>
-                    <div x-show="showPanduan" x-collapse class="mt-3 rounded-2xl bg-white/80 dark:bg-zinc-800/80 p-4 text-left border border-rose-100 dark:border-zinc-700">
-                        <p class="mb-2 text-xs font-bold text-rose-700 dark:text-rose-400">Izin lokasi diblokir oleh browser.</p>
-                        <p class="mb-2 text-xs text-zinc-600 dark:text-zinc-400">Langkah untuk mengaktifkan:</p>
+                    <div x-show="showPanduan" x-collapse class="mt-3 rounded-xl bg-white p-4 text-left dark:bg-surface">
+                        <p class="mb-2 text-sm font-semibold text-danger-deep dark:text-dark-danger-text">Izin lokasi diblokir oleh browser.</p>
+                        <p class="mb-2 text-sm text-body">Langkah untuk mengaktifkan:</p>
 
-                        <p class="mt-2 text-xs font-bold text-zinc-900 dark:text-white">Chrome / Edge (Android):</p>
-                        <ol class="mb-2 list-inside list-decimal text-xs text-zinc-600 dark:text-zinc-400 space-y-0.5">
+                        <p class="mt-2 text-sm font-semibold text-ink">Chrome / Edge (Android):</p>
+                        <ol class="mb-2 list-inside list-decimal space-y-1 text-sm text-body">
                             <li>Tap ikon gembok di sebelah kiri address bar</li>
                             <li>Cari "Lokasi" atau "Location", ubah ke "Izinkan"</li>
                             <li>Refresh/muat ulang halaman ini</li>
                         </ol>
 
-                        <p class="mt-2 text-xs font-bold text-zinc-900 dark:text-white">Safari (iPhone):</p>
-                        <ol class="list-inside list-decimal text-xs text-zinc-600 dark:text-zinc-400 space-y-0.5">
+                        <p class="mt-2 text-sm font-semibold text-ink">Safari (iPhone):</p>
+                        <ol class="list-inside list-decimal space-y-1 text-sm text-body">
                             <li>Buka Pengaturan HP &gt; Safari &gt; Lokasi</li>
                             <li>Pilih "Izinkan"</li>
                             <li>Kembali ke browser dan refresh halaman</li>
@@ -135,44 +131,42 @@
 
     {{-- Page Header --}}
     <div class="mb-6">
-        <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Absensi Harian</h1>
-        <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Catat kehadiran kerja Anda setiap hari.</p>
+        <h1 class="text-2xl font-semibold tracking-tight text-ink">Absensi harian</h1>
+        <p class="mt-1 text-sm text-mute">Catat kehadiran kerja Anda setiap hari.</p>
     </div>
 
-    {{-- Kartu Waktu Hero --}}
-    <div class="mb-6 relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 p-6 text-center shadow-xl dark:from-zinc-950 dark:to-zinc-900 border border-zinc-800">
-        <div class="absolute -left-10 -bottom-10 h-40 w-40 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none"></div>
-
+    {{-- Kartu Waktu --}}
+    <div class="relative mb-6 rounded-2xl p-6 text-center {{ $sudahAbsenHariIni && !$sudahAbsenKeluarHariIni ? 'border border-warning-soft bg-warning-soft text-warning-deep' : ($sudahAbsenHariIni ? 'border border-hairline bg-primary-soft text-on-primary-soft' : 'border border-hairline bg-inset text-ink') }}">
         @if($sudahAbsenHariIni && $sudahAbsenKeluarHariIni)
             {{-- Kondisi 3: Sudah masuk & keluar --}}
-            <div class="relative flex flex-col items-center">
-                <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-400 ring-4 ring-emerald-500/10 shadow-lg shadow-emerald-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div class="flex flex-col items-center">
+                <div class="mb-3 flex size-14 items-center justify-center rounded-full bg-inset" aria-hidden="true">
+                    <flux:icon.check-circle class="size-8" />
                 </div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-emerald-400">Absensi Hari Ini Selesai</p>
-                <p class="mt-1 text-lg font-bold text-white">Masuk {{ \Carbon\Carbon::parse($waktuAbsenHariIni)->setTimezone('Asia/Jakarta')->format('H:i') }} - Keluar {{ \Carbon\Carbon::parse($waktuKeluarHariIni)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB</p>
-                <p class="mt-1 text-xs text-zinc-400">Semua data absensi hari ini sudah tercatat.</p>
+                <p class="text-sm font-medium">Absensi hari ini selesai</p>
+                <p class="mt-1 text-lg font-semibold tabular-nums">Masuk {{ \Carbon\Carbon::parse($waktuAbsenHariIni)->setTimezone('Asia/Jakarta')->format('H:i') }} &ndash; Keluar {{ \Carbon\Carbon::parse($waktuKeluarHariIni)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB</p>
+                <p class="mt-1 text-sm opacity-80">Semua data absensi hari ini sudah tercatat.</p>
             </div>
 
         @elseif($sudahAbsenHariIni && !$sudahAbsenKeluarHariIni)
             {{-- Kondisi 2: Sudah masuk, belum keluar --}}
-            <div class="relative flex flex-col items-center">
-                <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 ring-4 ring-amber-500/10 shadow-lg shadow-amber-500/20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div class="flex flex-col items-center">
+                <div class="mb-3 flex size-14 items-center justify-center rounded-full bg-inset" aria-hidden="true">
+                    <flux:icon.clock class="size-8" />
                 </div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-amber-400">Sudah Absen Masuk</p>
-                <p class="mt-1 text-2xl font-bold text-white">Pukul {{ \Carbon\Carbon::parse($waktuAbsenHariIni)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB</p>
-                <p class="mt-1 text-xs text-zinc-400 font-medium">Silakan lakukan Absen Keluar saat jam kerja selesai.</p>
+                <p class="text-sm font-medium">Sudah absen masuk</p>
+                <p class="mt-1 text-2xl font-semibold tabular-nums">Pukul {{ \Carbon\Carbon::parse($waktuAbsenHariIni)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB</p>
+                <p class="mt-1 text-sm opacity-80">Silakan lakukan absen keluar saat jam kerja selesai.</p>
             </div>
 
         @else
             {{-- Kondisi 1: Belum absen --}}
-            <div class="relative">
-                <p class="text-xs font-bold uppercase tracking-wider text-zinc-400">Waktu Operasional Sekarang</p>
-                <p class="mt-2 text-4xl font-bold tracking-tight text-white font-mono" x-data="{ time: '' }" x-init="setInterval(() => time = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, timeZone: 'Asia/Jakarta'}), 1000)">
+            <div>
+                <p class="text-sm font-medium">Waktu operasional sekarang</p>
+                <p class="mt-2 text-4xl font-semibold tabular-nums" x-data="{ time: '' }" x-init="setInterval(() => time = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, timeZone: 'Asia/Jakarta'}), 1000)">
                     <span x-text="time">--:--:--</span>
                 </p>
-                <p class="mt-2 text-xs text-zinc-400 font-medium">{{ now()->translatedFormat('l, d F Y') }}</p>
+                <p class="mt-2 text-sm text-mute">{{ now()->translatedFormat('l, d F Y') }}</p>
             </div>
         @endif
     </div>
@@ -181,159 +175,159 @@
     @if(!$sudahAbsenHariIni)
         {{-- Peta Lokasi --}}
         @if($latitude && $longitude)
-            <div class="mb-5 overflow-hidden rounded-3xl bg-white dark:bg-zinc-800 p-4 shadow-sm border border-zinc-100 dark:border-zinc-700/60">
-                <div class="flex items-center gap-2 mb-3">
-                    <svg class="h-4 w-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
-                    </svg>
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">Lokasi GPS Terdeteksi</h3>
+            <div class="mb-5 rounded-2xl border border-hairline bg-white p-4 dark:bg-surface">
+                <div class="mb-3 flex items-center gap-2">
+                    <flux:icon.map-pin class="size-4 text-primary" aria-hidden="true" />
+                    <h2 class="text-sm font-medium text-ink">Lokasi GPS terdeteksi</h2>
                 </div>
-                <div id="peta-lokasi" style="height:160px;border-radius:18px;" class="overflow-hidden border border-zinc-200 dark:border-zinc-700"></div>
+                <div id="peta-lokasi" style="height:160px;" class="overflow-hidden rounded-xl border border-hairline"></div>
             </div>
         @endif
 
         {{-- Foto Selfie --}}
-        <div class="mb-5 rounded-3xl bg-white dark:bg-zinc-800 p-5 shadow-sm border border-zinc-100 dark:border-zinc-700/60">
-            <h3 class="mb-3 text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">Foto Selfie Presensi</h3>
+        <div class="mb-5 rounded-2xl border border-hairline bg-white p-5 dark:bg-surface">
+            <h2 class="mb-3 text-sm font-medium text-ink">Foto selfie presensi</h2>
 
             {{-- Kamera aktif (live preview) --}}
-            <div x-show="kameraAktif" class="relative overflow-hidden rounded-2xl bg-black" style="aspect-ratio: 3/4;">
+            <div x-show="kameraAktif" class="relative overflow-hidden rounded-xl bg-black" style="aspect-ratio: 3/4;">
                 <video x-ref="videoSelfie" autoplay playsinline muted class="h-full w-full object-cover [transform:scaleX(-1)]"></video>
-                <button type="button" x-on:click="ambilFoto()"
-                        class="absolute bottom-4 left-1/2 -translate-x-1/2 flex h-14 w-14 items-center justify-center rounded-full border-4 border-white bg-white/30 hover:scale-105 transition-transform">
-                    <span class="h-11 w-11 rounded-full bg-white shadow-lg"></span>
+                <button type="button" x-on:click="ambilFoto()" aria-label="Ambil foto"
+                        class="absolute bottom-4 left-1/2 flex h-16 w-16 -translate-x-1/2 items-center justify-center rounded-full border-4 border-white bg-white/30 transition-transform hover:scale-105">
+                    <span class="size-11 rounded-full bg-white"></span>
                 </button>
             </div>
 
             {{-- Belum ada foto & kamera belum dibuka --}}
             <button type="button" x-show="!kameraAktif && !$wire.selfieBase64" x-on:click="bukaKamera()"
-                    class="flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/50 p-8 transition hover:border-emerald-500 hover:bg-emerald-50/20 dark:hover:border-emerald-500">
-                <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
-                    </svg>
+                    class="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-hairline-strong bg-inset p-8 transition hover:border-primary">
+                <div class="mb-3 flex size-12 items-center justify-center rounded-full bg-primary-soft text-on-primary-soft" aria-hidden="true">
+                    <flux:icon.camera class="size-6" />
                 </div>
-                <p class="text-sm font-semibold text-zinc-900 dark:text-white">Ambil Foto Selfie</p>
-                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Tap untuk membuka kamera depan</p>
+                <p class="text-sm font-semibold text-ink">Ambil foto selfie</p>
+                <p class="mt-1 text-sm text-mute">Tap untuk membuka kamera depan</p>
             </button>
 
-            {{-- Preview hasil foto + tombol ulangi --}}
+            {{-- Preview hasil foto --}}
             <div x-show="!kameraAktif && $wire.selfieBase64" class="flex flex-col items-center">
-                <img id="preview-selfie" :src="$wire.selfieBase64" alt="Preview Selfie"
-                     class="mb-3 h-44 w-44 rounded-2xl object-cover [transform:scaleX(-1)] shadow-md border-2 border-emerald-500">
-                <button type="button" x-on:click="bukaKamera()" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
-                    Foto Ulang
+                <img id="preview-selfie" :src="$wire.selfieBase64" alt="Pratinjau selfie"
+                     class="mb-3 h-44 w-44 rounded-xl border-2 border-hairline-strong object-cover [transform:scaleX(-1)]">
+                <button type="button" x-on:click="bukaKamera()" class="inline-flex h-11 items-center rounded-full border border-hairline-strong bg-white px-5 text-sm font-medium text-ink transition hover:bg-inset dark:bg-surface">
+                    Ulangi
                 </button>
+                <p class="mt-2 text-sm text-mute">Foto ini dipakai untuk presensi.</p>
             </div>
 
             {{-- Error kamera --}}
-            <p x-show="errorKamera" x-text="errorKamera" class="mt-2 text-xs text-rose-600 dark:text-rose-400 font-medium"></p>
+            <p x-show="errorKamera" x-text="errorKamera" class="mt-2 text-sm font-medium text-danger"></p>
         </div>
 
         {{-- Tanda Tangan --}}
-        <div class="mb-5 rounded-3xl bg-white dark:bg-zinc-800 p-5 shadow-sm border border-zinc-100 dark:border-zinc-700/60">
-            <div class="mb-3 flex items-center justify-between">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">Tanda Tangan Digital</h3>
+        <div class="mb-5 rounded-2xl border border-hairline bg-white p-5 dark:bg-surface">
+            <div class="mb-3 flex items-center justify-between gap-2">
+                <h2 class="text-sm font-medium text-ink">Tanda tangan digital</h2>
                 <button type="button" x-on:click="if(signaturePad) signaturePad.clear()"
-                        class="text-xs font-semibold text-rose-600 dark:text-rose-400 hover:underline">Hapus / Reset</button>
+                        class="text-sm font-medium text-primary underline underline-offset-4 hover:opacity-80">Hapus</button>
             </div>
             <canvas id="canvas-ttd"
-                    style="width:100%;height:100px;background:white;"
-                    class="rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900"></canvas>
+                    style="width:100%;height:176px;background:white;"
+                    class="rounded-xl border-2 border-dashed border-hairline-strong"></canvas>
+            <p class="mt-2 text-sm text-mute">Tanda tangan di dalam kotak.</p>
         </div>
 
         {{-- Tombol Absen Masuk --}}
         <button type="button"
                 x-on:click="if (kirimTandaTangan()) $wire.absenMasuk()"
                 @disabled(!$latitude || !$selfieBase64)
-                class="mb-3 w-full rounded-2xl bg-emerald-600 dark:bg-emerald-500 py-4 text-base font-bold text-white transition hover:bg-emerald-700 dark:hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50 shadow-lg shadow-emerald-500/20 active:scale-95">
-            Simpan Absen Masuk
+                class="mb-3 flex h-12 w-full items-center justify-center rounded-full bg-primary text-base font-medium text-on-primary transition hover:bg-primary-hover active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50">
+            Simpan absen masuk
         </button>
 
+        @if(!$latitude || !$selfieBase64 || !$tandaTanganBase64)
+            <p class="mb-4 text-center text-sm text-mute">Lengkapi lokasi GPS, foto selfie, dan tanda tangan dulu.</p>
+        @endif
+
         {{-- Status Syarat Checklist --}}
-        <div class="mb-6 flex items-center justify-center gap-5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 p-3.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 border border-zinc-100 dark:border-zinc-700/60">
+        <div class="mb-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-xl border border-hairline bg-inset p-3.5 text-sm font-medium text-body">
             <span class="flex items-center gap-1.5">
                 @if($latitude && $longitude)
-                    <svg class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                    <flux:icon.check class="size-4 text-primary" aria-hidden="true" />
                 @else
-                    <span class="h-2 w-2 rounded-full bg-zinc-300 dark:bg-zinc-600"></span>
+                    <span class="size-2 rounded-full bg-hairline-strong" aria-hidden="true"></span>
                 @endif
                 Lokasi GPS
             </span>
             <span class="flex items-center gap-1.5">
                 @if($selfieBase64)
-                    <svg class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                    <flux:icon.check class="size-4 text-primary" aria-hidden="true" />
                 @else
-                    <span class="h-2 w-2 rounded-full bg-zinc-300 dark:bg-zinc-600"></span>
+                    <span class="size-2 rounded-full bg-hairline-strong" aria-hidden="true"></span>
                 @endif
-                Foto Selfie
+                Foto selfie
             </span>
             <span class="flex items-center gap-1.5">
                 @if($tandaTanganBase64)
-                    <svg class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+                    <flux:icon.check class="size-4 text-primary" aria-hidden="true" />
                 @else
-                    <span class="h-2 w-2 rounded-full bg-zinc-300 dark:bg-zinc-600"></span>
+                    <span class="size-2 rounded-full bg-hairline-strong" aria-hidden="true"></span>
                 @endif
-                Tanda Tangan
+                Tanda tangan
             </span>
         </div>
     @endif
 
     {{-- Kondisi 2: Checkout --}}
     @if($sudahAbsenHariIni && !$sudahAbsenKeluarHariIni)
-        <div class="mb-6 rounded-3xl bg-white dark:bg-zinc-800 p-6 shadow-sm border border-zinc-100 dark:border-zinc-700/60 text-center">
+        <div class="mb-6 rounded-2xl border border-hairline bg-white p-6 text-center dark:bg-surface">
             <div class="mb-4 flex justify-center">
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
+                <div class="flex size-14 items-center justify-center rounded-full bg-warning-soft text-warning-deep" aria-hidden="true">
+                    <flux:icon.arrow-right-end-on-rectangle class="size-7" />
                 </div>
             </div>
-            <h3 class="text-base font-bold text-zinc-900 dark:text-white">Siap untuk Checkout?</h3>
-            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Jam kerja hari ini akan dicatat sebagai waktu keluar Anda.</p>
+            <h2 class="text-base font-semibold text-ink">Siap absen keluar?</h2>
+            <p class="mt-1 text-sm text-mute">Jam kerja hari ini akan dicatat sebagai waktu keluar Anda.</p>
             <button type="button"
                     x-on:click="$wire.absenKeluar()"
-                    class="mt-5 w-full rounded-2xl bg-amber-600 dark:bg-amber-500 py-4 text-base font-bold text-white transition hover:bg-amber-700 dark:hover:bg-amber-600 shadow-lg shadow-amber-500/20 active:scale-95">
-                Checkout / Absen Keluar
+                    class="mt-5 flex h-12 w-full items-center justify-center rounded-full bg-primary text-base font-medium text-on-primary transition hover:bg-primary-hover active:scale-[0.98]">
+                Absen keluar
             </button>
         </div>
     @endif
 
     {{-- Riwayat Absensi Terakhir --}}
     <div class="space-y-3">
-        <h2 class="text-sm font-bold text-zinc-900 dark:text-white">Riwayat Absensi 7 Hari Terakhir</h2>
-        <div class="space-y-2.5">
+        <h2 class="text-base font-semibold text-ink">Riwayat absensi 7 hari terakhir</h2>
+        <div class="space-y-3">
             @forelse($riwayat as $item)
-                <div class="flex items-center justify-between gap-3 rounded-2xl bg-white dark:bg-zinc-800 p-4 shadow-sm border border-zinc-100 dark:border-zinc-700/60">
-                    <div class="flex items-center gap-3.5">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl {{ $item->waktu_keluar ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400' }}">
+                <div class="flex min-h-16 items-center justify-between gap-3 rounded-2xl border border-hairline bg-white p-4 dark:bg-surface">
+                    <div class="flex min-w-0 items-center gap-3">
+                        <div class="flex size-9 shrink-0 items-center justify-center rounded-full {{ $item->waktu_keluar ? 'bg-primary-soft text-on-primary-soft' : 'bg-warning-soft text-warning-deep' }}" aria-hidden="true">
                             @if($item->waktu_keluar)
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <flux:icon.check class="size-4" />
                             @else
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                                <flux:icon.clock class="size-4" />
                             @endif
                         </div>
-                        <div>
-                            <p class="text-sm font-bold text-zinc-900 dark:text-white">{{ $item->tanggal->translatedFormat('d M Y') }}</p>
-                            <p class="text-xs font-mono text-zinc-500 dark:text-zinc-400">
+                        <div class="min-w-0">
+                            <p class="text-sm font-medium text-ink">{{ $item->tanggal->translatedFormat('d M Y') }}</p>
+                            <p class="text-xs tabular-nums text-mute">
                                 Masuk {{ \Carbon\Carbon::parse($item->waktu_masuk)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB
                                 @if($item->waktu_keluar)
-                                    - Keluar {{ \Carbon\Carbon::parse($item->waktu_keluar)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB
+                                    &ndash; Keluar {{ \Carbon\Carbon::parse($item->waktu_keluar)->setTimezone('Asia/Jakarta')->format('H:i') }} WIB
                                 @endif
                             </p>
                         </div>
                     </div>
                     @if($item->latitude && $item->longitude)
                         <a href="https://www.google.com/maps?q={{ $item->latitude }},{{ $item->longitude }}" target="_blank" rel="noopener noreferrer"
-                           class="inline-flex items-center gap-1 rounded-xl bg-zinc-100 dark:bg-zinc-700 px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition">
+                           class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-inset px-3 py-1.5 text-xs font-medium text-body transition hover:bg-hairline">
                             <span>GPS</span>
-                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                            <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
                         </a>
                     @endif
                 </div>
             @empty
-                <div class="rounded-3xl bg-white dark:bg-zinc-800 p-8 text-center border border-zinc-100 dark:border-zinc-700/60 shadow-sm">
-                    <p class="text-sm text-zinc-500 dark:text-zinc-400">Belum ada riwayat absensi minggu ini.</p>
+                <div class="rounded-2xl border border-hairline bg-white p-8 text-center dark:bg-surface">
+                    <p class="text-sm text-mute">Belum ada riwayat absensi minggu ini.</p>
                 </div>
             @endforelse
         </div>

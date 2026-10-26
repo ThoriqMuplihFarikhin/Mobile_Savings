@@ -3,12 +3,15 @@
 namespace App\Livewire\Admin;
 
 use App\Actions\Kolektor\TugaskanNasabahAction;
+use App\Actions\Pin\KirimPinAwalAction;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
 use App\Models\NasabahProfil;
+use App\Models\User;
 use DomainException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -24,7 +27,7 @@ class VerifikasiNasabah extends Component
         return 'admin';
     }
 
-    public function render()
+    public function render(): View
     {
         $pending = NasabahProfil::with(['user', 'didaftarkanOleh'])
             ->where('status_pendaftaran', 'pending_verifikasi')
@@ -34,7 +37,7 @@ class VerifikasiNasabah extends Component
         return view('livewire.admin.verifikasi-nasabah', compact('pending'));
     }
 
-    public function approve($id)
+    public function approve(int $id): void
     {
         $hasil = DB::transaction(function () use ($id) {
             $profil = NasabahProfil::whereKey($id)->lockForUpdate()->first();
@@ -80,10 +83,23 @@ class VerifikasiNasabah extends Component
         ActivityLogger::log('verifikasi_nasabah', 'nasabah_profil', (int) $id, [
             'user_id' => $hasil['user_id'],
         ]);
-        session()->flash('success', 'Nasabah berhasil diverifikasi!');
+
+        $nasabah = User::find((int) $hasil['user_id']);
+
+        if ($nasabah !== null && $nasabah->isOffline()) {
+            session()->flash('success', 'Nasabah offline berhasil diverifikasi! Tidak ada PIN yang dikirim karena nasabah tidak memakai aplikasi.');
+
+            return;
+        }
+
+        $pin = $nasabah ? app(KirimPinAwalAction::class)->buatDanKirim($nasabah) : null;
+
+        session()->flash('success', $pin === null
+            ? 'Nasabah berhasil diverifikasi! PIN awal dikirim ke WhatsApp nasabah dan tidak ditampilkan di sini. Nasabah wajib mengganti PIN setelah login.'
+            : "Nasabah berhasil diverifikasi! PIN awal: {$pin} — catat sekarang karena hanya ditampilkan sekali, lalu sampaikan ke nasabah. Nasabah wajib mengganti PIN setelah login.");
     }
 
-    public function reject($id)
+    public function reject(int $id): void
     {
         $hasil = DB::transaction(function () use ($id) {
             $profil = NasabahProfil::whereKey($id)->lockForUpdate()->first();

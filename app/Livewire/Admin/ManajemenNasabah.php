@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Pin\KirimPinAwalAction;
 use App\Actions\Pin\ResetPinOlehAdminAction;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
@@ -9,7 +10,6 @@ use App\Models\JadwalKunjungan;
 use App\Models\KepesertaanPaket;
 use App\Models\KolektorNasabah;
 use App\Models\Komplain;
-use App\Models\LogAktivitas;
 use App\Models\LogNotifikasi;
 use App\Models\NasabahProfil;
 use App\Models\SaldoProduk;
@@ -19,6 +19,8 @@ use App\Models\User;
 use App\Support\NomorHp;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -34,36 +36,52 @@ class ManajemenNasabah extends Component
         return 'admin';
     }
 
-    public $search = '';
+    public string $search = '';
 
-    public $showForm = false;
+    public bool $showForm = false;
 
-    public $editId = null;
+    public ?int $editId = null;
 
-    public $nama = '';
+    public string $nama = '';
 
     public string $no_hp = '';
 
-    public $alamat = '';
+    public string $alamat = '';
 
-    public $pin = '';
+    public string $pin = '';
 
-    public $confirmDelete = false;
+    public bool $tampilKonfirmasiHapus = false;
 
-    public $deleteId = null;
+    public ?int $deleteId = null;
 
-    public bool $confirmResetPin = false;
+    public bool $tampilKonfirmasiResetPin = false;
 
     public ?int $resetPinId = null;
 
+    public string $modeFilter = '';
+
+    public bool $tampilKonversiMode = false;
+
+    public ?int $konversiProfilId = null;
+
+    public string $konversiNoHp = '';
+
+    /** @var array<string, string> */
     protected $listeners = ['nasabahCreated' => '$refresh'];
 
-    public function render()
+    public function render(): View
     {
         $nasabah = NasabahProfil::with(['user', 'didaftarkanOleh'])
-            ->where('nama', 'like', "%{$this->search}%")
-            ->orWhereHas('user', function ($query) {
-                $query->where('no_hp', 'like', "%{$this->search}%");
+            ->where(function ($query) {
+                $query->where('nama', 'like', "%{$this->search}%")
+                    ->orWhereHas('user', function ($sub) {
+                        $sub->where('no_hp', 'like', "%{$this->search}%");
+                    });
+            })
+            ->when($this->modeFilter !== '', function ($query) {
+                $query->whereHas('user', function ($sub) {
+                    $sub->where('mode_akses', $this->modeFilter);
+                });
             })
             ->latest()
             ->paginate(10);
@@ -71,13 +89,18 @@ class ManajemenNasabah extends Component
         return view('livewire.admin.manajemen-nasabah', compact('nasabah'));
     }
 
-    public function toggleForm()
+    public function updatedModeFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function toggleForm(): void
     {
         $this->showForm = ! $this->showForm;
         $this->resetForm();
     }
 
-    public function resetForm()
+    public function resetForm(): void
     {
         $this->editId = null;
         $this->nama = '';
@@ -86,7 +109,7 @@ class ManajemenNasabah extends Component
         $this->pin = '';
     }
 
-    public function save()
+    public function save(): void
     {
         $this->no_hp = NomorHp::normalize($this->no_hp);
 
@@ -99,6 +122,13 @@ class ManajemenNasabah extends Component
 
         if ($this->editId) {
             $user = User::find($this->editId);
+
+            if (! $user) {
+                session()->flash('error', 'Nasabah tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+                return;
+            }
+
             $user->update([
                 'name' => $this->nama,
                 'no_hp' => $this->no_hp,
@@ -144,35 +174,42 @@ class ManajemenNasabah extends Component
         session()->flash('success', 'Nasabah berhasil disimpan!');
     }
 
-    public function edit($id)
+    public function edit(int $id): void
     {
-        $profil = NasabahProfil::findOrFail($id);
+        $profil = NasabahProfil::find($id);
+
+        if (! $profil) {
+            session()->flash('error', 'Nasabah tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+            return;
+        }
+
         $this->editId = $profil->user_id;
         $this->nama = $profil->nama;
-        $this->no_hp = $profil->user->no_hp;
+        $this->no_hp = $profil->user->no_hp ?? '';
         $this->alamat = $profil->alamat;
         $this->showForm = true;
     }
 
-    public function confirmDelete($id)
+    public function confirmDelete(int $id): void
     {
         $this->deleteId = $id;
-        $this->confirmDelete = true;
+        $this->tampilKonfirmasiHapus = true;
     }
 
     public function delete(): void
     {
         $profilId = $this->deleteId;
-        $nasabahId = DB::table('nasabah_profil')->where('id', $profilId)->value('user_id');
+        $profilRow = DB::table('nasabah_profil')->where('id', $profilId)->first(['user_id', 'nama']);
 
-        if ($nasabahId === null) {
-            $this->confirmDelete = false;
+        if ($profilRow === null || $profilRow->user_id === null) {
+            $this->tampilKonfirmasiHapus = false;
             $this->deleteId = null;
 
             return;
         }
 
-        $nasabahId = (int) $nasabahId;
+        $nasabahId = (int) $profilRow->user_id;
 
         $punyaRiwayatKeuangan = SaldoProduk::where('nasabah_id', $nasabahId)->where('saldo', '!=', 0)->exists()
             || TransaksiSetoran::where('nasabah_id', $nasabahId)->exists()
@@ -184,13 +221,22 @@ class ManajemenNasabah extends Component
             return;
         }
 
-        DB::transaction(function () use ($nasabahId, $profilId): void {
+        DB::transaction(function () use ($nasabahId, $profilId, $profilRow): void {
+            $nasabah = User::find($nasabahId);
+
+            if ($nasabah !== null) {
+                ActivityLogger::log('hapus_nasabah', 'users', $nasabahId, [
+                    'id_lama' => $nasabahId,
+                    'nama' => $profilRow->nama ?: $nasabah->name,
+                    'no_hp_masked' => $nasabah->no_hp !== null ? Str::mask($nasabah->no_hp, '*', 4, -3) : null,
+                ]);
+            }
+
             KolektorNasabah::where('nasabah_id', $nasabahId)->delete();
             JadwalKunjungan::where('nasabah_id', $nasabahId)->delete();
             Komplain::where('nasabah_id', $nasabahId)->delete();
             KepesertaanPaket::where('nasabah_id', $nasabahId)->delete();
             LogNotifikasi::where('nasabah_id', $nasabahId)->delete();
-            LogAktivitas::where('user_id', $nasabahId)->delete();
             SaldoProduk::where('nasabah_id', $nasabahId)->delete();
             NasabahProfil::where('id', $profilId)->delete();
             DB::table('model_has_roles')
@@ -200,7 +246,7 @@ class ManajemenNasabah extends Component
             User::where('id', $nasabahId)->delete();
         });
 
-        $this->confirmDelete = false;
+        $this->tampilKonfirmasiHapus = false;
         $this->deleteId = null;
         session()->flash('success', 'Nasabah berhasil dihapus!');
     }
@@ -208,7 +254,7 @@ class ManajemenNasabah extends Component
     public function confirmResetPin(int $userId): void
     {
         $this->resetPinId = $userId;
-        $this->confirmResetPin = true;
+        $this->tampilKonfirmasiResetPin = true;
     }
 
     public function resetPin(): void
@@ -216,7 +262,7 @@ class ManajemenNasabah extends Component
         $target = User::find($this->resetPinId);
 
         if (! $target) {
-            $this->confirmResetPin = false;
+            $this->tampilKonfirmasiResetPin = false;
             $this->resetPinId = null;
             session()->flash('error', 'Pengguna tidak ditemukan.');
 
@@ -225,13 +271,13 @@ class ManajemenNasabah extends Component
 
         $pinBaru = app(ResetPinOlehAdminAction::class)->execute($target);
 
-        $this->confirmResetPin = false;
+        $this->tampilKonfirmasiResetPin = false;
         $this->resetPinId = null;
 
         session()->flash('success', "PIN berhasil direset. PIN baru: {$pinBaru}. Catat sekarang karena hanya ditampilkan sekali. Pengguna wajib mengganti PIN setelah login.");
     }
 
-    public function toggleStatus($id)
+    public function toggleStatus(int $id): void
     {
         $hasil = DB::transaction(function () use ($id) {
             $profil = NasabahProfil::whereKey($id)->lockForUpdate()->first();
@@ -307,5 +353,90 @@ class ManajemenNasabah extends Component
         ]);
 
         session()->flash('success', 'Kunci akun nasabah berhasil dibuka!');
+    }
+
+    public function confirmKonversi(int $profilId): void
+    {
+        $profil = NasabahProfil::find($profilId);
+
+        if (! $profil) {
+            session()->flash('error', 'Nasabah tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+            return;
+        }
+
+        $this->konversiProfilId = $profil->id;
+        $this->konversiNoHp = '';
+        $this->tampilKonversiMode = true;
+    }
+
+    /**
+     * Konversi mode akses nasabah dua arah (D14, §5.3.6):
+     * offline -> digital (isi No. HP unik + kirim PIN awal), digital -> offline
+     * (hapus sesi + matikan notifikasi). Keduanya dicatat di log aktivitas.
+     */
+    public function konversiMode(): void
+    {
+        $profil = NasabahProfil::find($this->konversiProfilId);
+        $user = $profil?->user;
+
+        if ($profil === null || ! $user instanceof User) {
+            $this->tampilKonversiMode = false;
+            $this->konversiProfilId = null;
+            session()->flash('error', 'Nasabah tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+            return;
+        }
+
+        $menujuDigital = $user->isOffline();
+
+        if ($menujuDigital) {
+            $this->konversiNoHp = NomorHp::normalize($this->konversiNoHp);
+
+            $this->validate([
+                'konversiNoHp' => 'required|string|max:20|unique:users,no_hp|regex:'.NomorHp::PATTERN,
+            ], [
+                'konversiNoHp.unique' => 'No. HP sudah dipakai oleh pengguna lain.',
+            ]);
+        }
+
+        $modeLama = $user->mode_akses;
+        $modeBaru = $menujuDigital ? 'digital' : 'offline';
+
+        DB::transaction(function () use ($user, $menujuDigital, $modeLama, $modeBaru): void {
+            if ($menujuDigital) {
+                $user->update([
+                    'mode_akses' => 'digital',
+                    'no_hp' => $this->konversiNoHp,
+                ]);
+            } else {
+                $user->update([
+                    'mode_akses' => 'offline',
+                    'notifikasi_wa_aktif' => false,
+                ]);
+
+                DB::table('sessions')->where('user_id', $user->id)->delete();
+            }
+
+            ActivityLogger::log('ubah_mode_akses', 'users', $user->id, [
+                'user_id' => $user->id,
+                'mode_lama' => $modeLama,
+                'mode_baru' => $modeBaru,
+            ]);
+        });
+
+        $this->tampilKonversiMode = false;
+        $this->konversiProfilId = null;
+        $this->konversiNoHp = '';
+
+        if ($menujuDigital) {
+            $pin = app(KirimPinAwalAction::class)->buatDanKirim($user);
+
+            session()->flash('success', $pin === null
+                ? 'Mode akses diubah ke digital. PIN awal dikirim ke WhatsApp nasabah.'
+                : "Mode akses diubah ke digital. PIN awal: {$pin} — catat sekarang karena hanya ditampilkan sekali.");
+        } else {
+            session()->flash('success', 'Mode akses nasabah diubah ke mode offline. Sesi aktif dihapus dan notifikasi dimatikan.');
+        }
     }
 }

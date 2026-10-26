@@ -16,6 +16,7 @@ class NasabahProfil extends Model
         'user_id',
         'nama',
         'alamat',
+        'catatan_offline',
         'tanggal_lahir',
         'jenis_kelamin',
         'pekerjaan',
@@ -23,6 +24,7 @@ class NasabahProfil extends Model
         'status_pendaftaran',
         'diverifikasi_oleh',
         'tanggal_verifikasi',
+        'rekap_dicetak_pada',
     ];
 
     protected function casts(): array
@@ -30,19 +32,29 @@ class NasabahProfil extends Model
         return [
             'tanggal_lahir' => 'date',
             'tanggal_verifikasi' => 'datetime',
+            'rekap_dicetak_pada' => 'datetime',
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function didaftarkanOleh(): BelongsTo
     {
         return $this->belongsTo(User::class, 'didaftarkan_oleh');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function diverifikasiOleh(): BelongsTo
     {
         return $this->belongsTo(User::class, 'diverifikasi_oleh');

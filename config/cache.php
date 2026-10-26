@@ -129,6 +129,11 @@ return [
     | storage. By default, no PHP classes will be unserialized from your
     | cache to prevent gadget chain attacks if your APP_KEY is leaked.
     |
+    | Dibiarkan `false`: seluruh nilai cache aplikasi kini skalar/array
+    | (koleksi produk landing pun dirapikan jadi array - F4/D29), sehingga
+    | allowlist objek tidak lagi diperlukan dan risiko gadget chain
+    | tetap tertutup.
+    |
     */
 
     'serializable_classes' => false,

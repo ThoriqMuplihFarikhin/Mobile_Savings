@@ -17,8 +17,14 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 /auth.json
+/.codebase-memory
+/.codegraph
 /.fleet
 /.idea
 /.nova
 /.vscode
 /.zed
+*.jks
+*.keystore
+mobile/build/
+mobile/node_modules/

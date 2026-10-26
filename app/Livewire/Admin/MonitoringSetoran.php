@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Tabungan\HitungTunggakanAction;
 use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiSetoran;
+use App\Support\JenisNotifikasi;
 use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -22,27 +25,29 @@ class MonitoringSetoran extends Component
         return 'admin';
     }
 
-    public $search = '';
+    public string $search = '';
 
-    public $statusFilter = '';
+    public string $statusFilter = '';
 
-    public $tanggalFilter = '';
+    public string $tanggalFilter = '';
 
-    public $showKoreksi = false;
+    public bool $showKoreksi = false;
 
-    public $selectedId = null;
+    public ?int $selectedId = null;
 
-    public $nominalBaru = '';
+    public string $nominalBaru = '';
 
-    public $alasanKoreksi = '';
+    public string $alasanKoreksi = '';
 
-    public $showBatal = false;
+    public bool $showBatal = false;
 
-    public $selectedBatalId = null;
+    public ?int $selectedBatalId = null;
 
-    public $alasanBatal = '';
+    public string $alasanBatal = '';
 
-    public function render()
+    public bool $sudahDisetorTerpilih = false;
+
+    public function render(): View
     {
         $query = TransaksiSetoran::with(['nasabah', 'produk', 'inputBy', 'dikoreksiOleh']);
 
@@ -66,26 +71,27 @@ class MonitoringSetoran extends Component
         return view('livewire.admin.monitoring-setoran', compact('setoran'));
     }
 
-    public function updatedSearch()
+    public function updatedSearch(): void
     {
         $this->resetPage();
     }
 
-    public function updatedStatusFilter()
+    public function updatedStatusFilter(): void
     {
         $this->resetPage();
     }
 
-    public function toggleKoreksi($id)
+    public function toggleKoreksi(int $id): void
     {
         $this->showKoreksi = true;
         $this->selectedId = $id;
         $setoran = TransaksiSetoran::find($id);
-        $this->nominalBaru = $setoran->nominal ?? '';
+        $this->nominalBaru = (string) ($setoran->nominal ?? '');
         $this->alasanKoreksi = '';
+        $this->sudahDisetorTerpilih = (bool) ($setoran->sudah_disetor_ke_kantor ?? false);
     }
 
-    public function koreksi()
+    public function koreksi(): void
     {
         $this->validate([
             'nominalBaru' => 'required|numeric|min:1|max:1000000000',
@@ -96,8 +102,8 @@ class MonitoringSetoran extends Component
             $hasil = DB::transaction(function () {
                 $setoran = TransaksiSetoran::whereKey($this->selectedId)->lockForUpdate()->first();
 
-                if (! $setoran || $setoran->status !== 'tercatat') {
-                    throw new \DomainException('Setoran tidak valid atau sudah dikoreksi/dibatalkan.');
+                if (! $setoran || ! in_array($setoran->status, ['tercatat', 'dikoreksi'], true)) {
+                    throw new \DomainException('Setoran tidak valid atau sudah dibatalkan.');
                 }
 
                 $nominalLama = (float) $setoran->nominal;
@@ -115,7 +121,7 @@ class MonitoringSetoran extends Component
 
                 $setoran->update([
                     'status' => 'dikoreksi',
-                    'nominal_asli' => $nominalLama,
+                    'nominal_asli' => $setoran->nominal_asli ?? $nominalLama,
                     'nominal' => $nominalBaruVal,
                     'dikoreksi_oleh' => auth()->id(),
                     'alasan_koreksi' => $this->alasanKoreksi,
@@ -125,6 +131,10 @@ class MonitoringSetoran extends Component
                     $saldo->increment('saldo', $selisih);
                 } elseif ($saldo && $selisih < 0) {
                     $saldo->decrement('saldo', abs($selisih));
+                }
+
+                if ($setoran->produk?->tipe === 'paket') {
+                    app(HitungTunggakanAction::class)->perbarui($setoran->nasabah_id, $setoran->produk_id);
                 }
 
                 return [
@@ -150,13 +160,14 @@ class MonitoringSetoran extends Component
                 'nominal_lama' => $hasil['nominalLama'],
                 'nominal_baru' => $hasil['nominalBaru'],
                 'alasan' => $this->alasanKoreksi,
+                'sudah_disetor' => (bool) $hasil['setoran']->sudah_disetor_ke_kantor,
             ]);
 
             ActivityLogger::notify(
                 $hasil['setoran']->nasabah_id,
                 'Setoran Dikoreksi',
                 'Setoran Rp '.number_format($hasil['nominalLama'], 0, ',', '.').' telah dikoreksi menjadi Rp '.number_format($hasil['nominalBaru'], 0, ',', '.').'.',
-                'both'
+                JenisNotifikasi::Both
             );
         } catch (\Throwable $e) {
             report($e);
@@ -170,14 +181,16 @@ class MonitoringSetoran extends Component
         session()->flash('success', 'Setoran berhasil dikoreksi!');
     }
 
-    public function toggleBatal($id)
+    public function toggleBatal(int $id): void
     {
         $this->showBatal = true;
         $this->selectedBatalId = $id;
         $this->alasanBatal = '';
+        $setoran = TransaksiSetoran::find($id);
+        $this->sudahDisetorTerpilih = (bool) ($setoran->sudah_disetor_ke_kantor ?? false);
     }
 
-    public function batal()
+    public function batal(): void
     {
         $this->validate([
             'alasanBatal' => 'required|string|max:500',
@@ -187,8 +200,8 @@ class MonitoringSetoran extends Component
             $setoran = DB::transaction(function () {
                 $setoran = TransaksiSetoran::whereKey($this->selectedBatalId)->lockForUpdate()->first();
 
-                if (! $setoran || $setoran->status !== 'tercatat') {
-                    throw new \DomainException('Setoran tidak valid atau sudah diproses.');
+                if (! $setoran || ! in_array($setoran->status, ['tercatat', 'dikoreksi'], true)) {
+                    throw new \DomainException('Setoran tidak valid atau sudah dibatalkan.');
                 }
 
                 $saldo = SaldoProduk::where('nasabah_id', $setoran->nasabah_id)
@@ -208,6 +221,10 @@ class MonitoringSetoran extends Component
 
                 $saldo->decrement('saldo', $setoran->nominal);
 
+                if ($setoran->produk?->tipe === 'paket') {
+                    app(HitungTunggakanAction::class)->perbarui($setoran->nasabah_id, $setoran->produk_id);
+                }
+
                 return $setoran;
             });
         } catch (\DomainException $e) {
@@ -226,13 +243,14 @@ class MonitoringSetoran extends Component
                 'nasabah_id' => $setoran->nasabah_id,
                 'nominal' => $setoran->nominal,
                 'alasan' => $this->alasanBatal,
+                'sudah_disetor' => (bool) $setoran->sudah_disetor_ke_kantor,
             ]);
 
             ActivityLogger::notify(
                 $setoran->nasabah_id,
                 'Setoran Dibatalkan',
                 'Setoran Rp '.number_format($setoran->nominal, 0, ',', '.').' telah dibatalkan oleh admin.',
-                'both'
+                JenisNotifikasi::Both
             );
         } catch (\Throwable $e) {
             report($e);

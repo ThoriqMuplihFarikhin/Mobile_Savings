@@ -1,49 +1,77 @@
-<div class="mx-auto max-w-3xl space-y-6">
-    {{-- Page Header --}}
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Pusat Bantuan & Komplain</h1>
-            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Ajukan keluhan atau pertanyaan terkait layanan tabungan Anda.</p>
+<div class="space-y-6">
+    {{-- Judul halaman & Tombol Buat Tiket --}}
+    <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+            <h1 class="text-2xl font-semibold tracking-tight text-ink">Pusat bantuan &amp; komplain</h1>
+            <p class="mt-1 text-sm text-mute">Ajukan keluhan atau pertanyaan terkait layanan tabungan Anda.</p>
         </div>
         <button wire:click="toggleForm"
-            class="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-indigo-500/20 transition shrink-0">
-            <flux:icon.plus class="size-4 text-white" />
-            <span>Buat Tiket</span>
+            class="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-hairline-strong bg-white px-4 text-xs font-medium text-ink transition hover:bg-surface-inset active:scale-95 dark:bg-surface">
+            <flux:icon.plus class="size-4 text-primary" aria-hidden="true" />
+            <span>Buat tiket</span>
         </button>
     </div>
 
-    {{-- Flash Message --}}
+    {{-- Pesan sistem --}}
     @if (session('success'))
-        <div class="flex items-center gap-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 p-4 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40">
-            <flux:icon.check-circle class="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <div class="flex items-start gap-2 rounded-xl bg-primary-soft p-3 text-xs text-on-primary-soft">
+            <flux:icon.check-circle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
-    {{-- Form Tiket Komplain --}}
+    {{-- Pintasan Bantuan WhatsApp (D41) --}}
+    @php
+        $nomorWa = \App\Models\AdminSetting::get('nomor_wa_bantuan', config('services.admin_wa', '081234567890'));
+        $nomorWaClean = preg_replace('/[^0-9]/', '', (string)$nomorWa);
+        if (str_starts_with($nomorWaClean, '0')) {
+            $nomorWaClean = '62' . substr($nomorWaClean, 1);
+        }
+    @endphp
+    @if($nomorWaClean)
+        <div class="rounded-2xl border border-hairline-warm bg-primary-soft p-4 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="flex size-10 items-center justify-center rounded-full bg-primary text-on-primary">
+                    <flux:icon.chat-bubble-left-right class="size-5" />
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-ink">Butuh bantuan cepat?</p>
+                    <p class="text-xs text-mute">Hubungi admin resmi melalui WhatsApp</p>
+                </div>
+            </div>
+            <a href="https://wa.me/{{ $nomorWaClean }}?text={{ urlencode('Halo Admin, saya nasabah Tabungan Digital ingin meminta bantuan.') }}"
+               target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-2 text-xs font-medium text-on-primary transition hover:bg-primary-hover active:scale-95 shrink-0">
+                <span>Chat WA</span>
+                <flux:icon.arrow-up-right class="size-3.5" />
+            </a>
+        </div>
+    @endif
+
+    {{-- Formulir tiket --}}
     @if($showForm)
-        <div class="rounded-3xl bg-white dark:bg-zinc-800 p-6 shadow-xs border border-zinc-200/80 dark:border-zinc-700/80 transition-all">
-            <div class="mb-4 flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-700/60">
-                <h3 class="text-sm font-bold text-zinc-900 dark:text-white">Form Pengajuan Tiket</h3>
-                <button type="button" wire:click="toggleForm" class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xs font-semibold">Tutup</button>
+        <div class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
+            <div class="mb-4 flex items-center justify-between gap-3 border-b border-hairline-warm pb-3">
+                <h2 class="text-xs font-semibold text-ink">Form pengajuan tiket</h2>
+                <button type="button" wire:click="toggleForm" class="text-xs font-medium text-primary underline underline-offset-4">Tutup</button>
             </div>
 
             <form wire:submit="submit" class="space-y-4">
                 <div>
-                    <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Kategori Kendala</label>
-                    <select wire:model="kategori"
-                        class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-xs font-bold text-zinc-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
-                        <option value="saldo">Permasalahan Saldo</option>
-                        <option value="barang_paket">Pencairan Paket / Barang</option>
-                        <option value="penarikan">Penarikan Tabungan</option>
+                    <label class="mb-1.5 block text-xs font-semibold text-body" for="kategori-kendala">Kategori kendala</label>
+                    <select id="kategori-kendala" wire:model="kategori"
+                        class="w-full rounded-xl border border-hairline-strong bg-white px-3 py-2.5 text-xs text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface">
+                        <option value="saldo">Permasalahan saldo</option>
+                        <option value="barang_paket">Pencairan paket / barang</option>
+                        <option value="penarikan">Penarikan tabungan</option>
                         <option value="lainnya">Lainnya</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Transaksi Terkait <span class="text-zinc-400 font-normal lowercase">(opsional)</span></label>
-                    <select wire:model="transaksiTerkaitId"
-                        class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-3 text-xs font-bold text-zinc-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                    <label class="mb-1.5 block text-xs font-semibold text-body" for="transaksi-terkait">Transaksi terkait <span class="font-normal text-mute">(opsional)</span></label>
+                    <select id="transaksi-terkait" wire:model="transaksiTerkaitId"
+                        class="w-full rounded-xl border border-hairline-strong bg-white px-3 py-2.5 text-xs text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface">
                         <option value="">Tidak ada transaksi terkait</option>
                         @foreach($riwayatTransaksi as $trx)
                             <option value="{{ $trx->id }}">
@@ -54,88 +82,84 @@
                 </div>
 
                 <div>
-                    <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Deskripsi Detail</label>
-                    <textarea wire:model="deskripsi" rows="4"
-                        class="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 p-4 text-xs font-semibold text-zinc-900 dark:text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    <label class="mb-1.5 block text-xs font-semibold text-body" for="deskripsi-komplain">Deskripsi detail</label>
+                    <textarea id="deskripsi-komplain" wire:model="deskripsi" rows="4"
+                        class="w-full rounded-xl border border-hairline-strong bg-white p-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface"
                         placeholder="Jelaskan kendala Anda secara rinci..."></textarea>
-                    @error('deskripsi') <p class="mt-1 text-xs text-rose-500 font-medium">{{ $message }}</p> @enderror
+                    @error('deskripsi') <p class="mt-1 flex items-center gap-1 text-xs text-danger dark:text-dark-danger-text"><flux:icon.exclamation-circle class="size-4 shrink-0" aria-hidden="true" />{{ $message }}</p> @enderror
                 </div>
 
                 <div class="flex items-center gap-3 pt-2">
                     <button type="button" wire:click="toggleForm"
-                        class="w-1/3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 py-3 text-center text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition">
+                        class="flex h-11 w-1/3 items-center justify-center rounded-full border border-hairline-strong bg-white text-xs font-medium text-ink transition hover:bg-surface-inset dark:bg-surface">
                         Batal
                     </button>
                     <button type="submit"
-                        class="w-2/3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 py-3 text-center text-xs font-bold text-white shadow-lg shadow-indigo-500/20 transition">
-                        Kirim Tiket
+                        class="flex h-11 w-2/3 items-center justify-center rounded-full bg-primary text-xs font-medium text-on-primary transition hover:bg-primary-hover active:scale-[0.98]">
+                        Kirim tiket
                     </button>
                 </div>
             </form>
         </div>
     @endif
 
-    {{-- Lista Tiket Cards --}}
+    {{-- Daftar tiket --}}
     <div class="space-y-3">
         @forelse($komplains as $item)
             @php
                 $kategoriLabel = match($item->kategori) {
                     'saldo'       => 'Saldo',
-                    'barang_paket'=> 'Barang Paket',
+                    'barang_paket'=> 'Barang paket',
                     'penarikan'   => 'Penarikan',
                     default       => 'Lainnya'
                 };
-                $statusBadge = match($item->status) {
-                    'baru'     => ['label' => 'Baru', 'class' => 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800/60'],
-                    'diproses' => ['label' => 'Diproses', 'class' => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/60'],
-                    default    => ['label' => 'Selesai', 'class' => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60'],
-                };
             @endphp
-            <div class="rounded-3xl bg-white dark:bg-zinc-800/90 p-5 shadow-xs border border-zinc-200/80 dark:border-zinc-700/80 transition">
+            <article class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface" data-test="kartu-komplain">
                 <div class="flex items-start justify-between gap-3">
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2">
-                            <span class="inline-flex items-center rounded-lg bg-zinc-100 dark:bg-zinc-700/60 px-2.5 py-0.5 text-[10px] font-bold text-zinc-700 dark:text-zinc-300">
-                                {{ $kategoriLabel }}
-                            </span>
-                            <span class="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">
-                                {{ $item->tanggal_dibuat->translatedFormat('d M Y, H:i') }}
-                            </span>
+                    <div class="min-w-0 flex-1 space-y-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="rounded-full bg-surface-inset px-2 py-0.5 text-xs font-medium text-body">{{ $kategoriLabel }}</span>
+                            <span class="text-xs text-mute">{{ $item->tanggal_dibuat->translatedFormat('d M Y, H:i') }}</span>
                         </div>
-                        <p class="text-xs font-semibold text-zinc-800 dark:text-zinc-200 pt-1 leading-relaxed">
-                            {{ $item->deskripsi }}
-                        </p>
+                        <p class="pt-1 text-xs leading-relaxed text-body">{{ $item->deskripsi }}</p>
                     </div>
-                    <span class="shrink-0 rounded-full px-3 py-1 text-[10px] font-bold border {{ $statusBadge['class'] }}">
-                        {{ $statusBadge['label'] }}
-                    </span>
+                    <x-ui.status-chip class="shrink-0" domain="komplain" status="{{ $item->status }}" />
                 </div>
 
+                @php
+                    $tahapSaatIni = match ($item->status) {
+                        'baru' => 0,
+                        'diproses' => 1,
+                        'selesai' => 2,
+                        default => null,
+                    };
+                @endphp
+                @if ($tahapSaatIni !== null)
+                    <x-ui.stepper class="mt-3" :tahap="['Dikirim', 'Diproses', 'Selesai']" :saat-ini="$tahapSaatIni" />
+                @endif
+
                 @if($item->catatan_penyelesaian)
-                    <div class="mt-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 p-3.5 border border-zinc-200/60 dark:border-zinc-700/40">
-                        <div class="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                            <flux:icon.check-circle class="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                            <span>Tanggapan Admin:</span>
-                        </div>
-                        <p class="mt-1 text-xs text-zinc-600 dark:text-zinc-300 pl-5 leading-relaxed">
-                            {{ $item->catatan_penyelesaian }}
+                    <div class="mt-3 rounded-xl bg-surface-inset p-3 border border-hairline">
+                        <p class="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                            <flux:icon.check-circle class="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+                            Tanggapan admin
                         </p>
+                        <p class="mt-1 pl-5 text-xs leading-relaxed text-body">{{ $item->catatan_penyelesaian }}</p>
                     </div>
                 @endif
-            </div>
+            </article>
         @empty
-            <div class="rounded-3xl bg-white dark:bg-zinc-800 p-10 text-center border border-zinc-200/80 dark:border-zinc-700/80 shadow-xs">
-                <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-700/60 text-zinc-400">
-                    <flux:icon.chat-bubble-left-right class="size-7 text-zinc-400" />
-                </div>
-                <h3 class="mt-4 text-sm font-bold text-zinc-900 dark:text-white">Belum Ada Tiket Komplain</h3>
-                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Jika Anda memiliki kendala, jangan ragu untuk mengajukan tiket di sini.</p>
+            <div class="rounded-[20px] border border-hairline-warm bg-white p-8 text-center shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
+                <span class="mx-auto flex size-32 items-center justify-center rounded-full bg-primary-soft" aria-hidden="true">
+                    <x-ui.ilustrasi nama="tunas" :ukuran="96" />
+                </span>
+                <h2 class="mt-4 text-base font-semibold text-ink">Belum ada tiket komplain</h2>
+                <p class="mt-1 text-xs text-mute">Ajukan tiket bila Anda menemukan kendala pada layanan tabungan.</p>
             </div>
         @endforelse
     </div>
 
     @if($komplains->hasPages())
-        <div class="mt-4">{{ $komplains->links() }}</div>
+        <div>{{ $komplains->links() }}</div>
     @endif
 </div>
-

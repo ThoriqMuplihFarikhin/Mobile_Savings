@@ -1,13 +1,13 @@
 <div class="mx-auto max-w-7xl space-y-6">
     @if (session('success'))
-        <div class="flex items-center gap-2.5 rounded-lg bg-indigo-100 px-4 py-3 text-sm text-indigo-600">
+        <div class="flex items-center gap-2.5 rounded-lg bg-info-soft px-4 py-3 text-sm text-info">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
             {{ session('success') }}
         </div>
     @endif
 
     @if (session('error'))
-        <div class="flex items-center gap-2.5 rounded-lg bg-[#f7d4d6] px-4 py-3 text-sm text-[#c50000]">
+        <div class="flex items-center gap-2.5 rounded-lg bg-danger-soft px-4 py-3 text-sm text-danger">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             {{ session('error') }}
         </div>
@@ -16,32 +16,38 @@
     {{-- Header --}}
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <a href="{{ route('admin.nasabah.index') }}" class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 transition hover:bg-slate-200 dark:hover:bg-slate-700">
+            <a href="{{ route('admin.nasabah.index') }}" class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-inset dark:bg-inset text-mute dark:text-subtle transition hover:bg-hairline dark:hover:bg-inset">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
             </a>
             <div>
-                <h1 class="font-serif text-xl font-semibold text-text dark:text-white">Detail Nasabah</h1>
-                <p class="text-xs text-text-muted dark:text-slate-400">Informasi saldo dan riwayat transaksi</p>
+                <h1 class="text-xl font-semibold text-ink">Detail Nasabah</h1>
+                <p class="text-xs text-mute dark:text-subtle">Informasi saldo dan riwayat transaksi</p>
             </div>
         </div>
-        <button wire:click="confirmResetPin" class="inline-flex items-center gap-2 rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159-.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
-            Reset PIN
-        </button>
+        <div class="flex items-center gap-2">
+            <button wire:click="bukaDaftarPaket" class="inline-flex items-center gap-2 rounded-md border border-hairline bg-white px-4 py-2 text-sm font-medium text-ink transition hover:bg-inset">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                Daftarkan ke Paket
+            </button>
+            <button wire:click="confirmResetPin" class="inline-flex items-center gap-2 rounded-md border border-hairline bg-white px-4 py-2 text-sm font-medium text-ink transition hover:bg-inset">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159-.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
+                Reset PIN
+            </button>
+        </div>
     </div>
 
     {{-- Profile Card --}}
     <div class="card">
         <div class="flex items-center gap-4">
-            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-navy-950 dark:bg-gold/20 text-lg font-bold text-white dark:text-gold">
+            <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-accent text-lg font-semibold text-accent-foreground">
                 {{ $user->initials() }}
             </div>
             <div class="min-w-0 flex-1">
-                <h2 class="font-serif text-lg font-semibold text-text dark:text-white">{{ $user->name }}</h2>
-                <div class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-text-muted dark:text-slate-400">
+                <h2 class="text-lg font-semibold text-ink">{{ $user->name }}</h2>
+                <div class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-mute dark:text-subtle">
                     <span class="inline-flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" /></svg>
-                        {{ $user->no_hp }}
+                        {{ $user->no_hp ?? '— (offline)' }}
                     </span>
                     @if($user->nasabahProfil?->alamat)
                         <span class="inline-flex items-center gap-1">
@@ -63,16 +69,16 @@
 
     {{-- Saldo Per Produk --}}
     <div>
-        <h3 class="mb-3 font-serif text-sm font-semibold text-text dark:text-white">Saldo per Produk</h3>
+        <h3 class="mb-3 text-sm font-semibold text-ink">Saldo per Produk</h3>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @forelse($saldoPerProduk as $sp)
                 <div class="card">
                     <div class="flex items-start justify-between">
                         <div>
-                            <div class="text-sm font-medium text-text-muted dark:text-slate-400">{{ $sp->produk->nama ?? '-' }}</div>
-                            <div class="mt-1 text-2xl font-serif font-semibold text-text dark:text-white">Rp {{ number_format($sp->saldo, 0, ',', '.') }}</div>
+                            <div class="text-sm font-medium text-mute dark:text-subtle">{{ $sp->produk->nama ?? '-' }}</div>
+                            <div class="mt-1 text-2xl font-semibold text-ink">Rp {{ number_format($sp->saldo, 0, ',', '.') }}</div>
                         </div>
-                        <span class="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ ucfirst($sp->produk->tipe ?? '-') }}</span>
+                        <span class="inline-flex items-center rounded-full bg-inset dark:bg-inset px-2 py-0.5 text-xs font-medium text-mute dark:text-subtle">{{ ucfirst($sp->produk->tipe ?? '-') }}</span>
                     </div>
                 </div>
             @empty
@@ -86,12 +92,61 @@
         </div>
     </div>
 
+    {{-- Kepesertaan & Status Komitmen --}}
+    <div>
+        <h3 class="mb-3 text-sm font-semibold text-ink">Kepesertaan Paket</h3>
+        <div class="card p-0">
+            @forelse($kepesertaan as $item)
+                <div class="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4 last:border-b-0">
+                    <div class="min-w-0">
+                        <p class="text-sm font-medium text-ink">{{ $item->produk?->nama ?? '-' }}</p>
+                        <p class="mt-0.5 text-xs text-mute dark:text-subtle">
+                            Gabung {{ $item->tanggal_mulai_ikut?->translatedFormat('d M Y') }}
+                            @if($item->keputusan_akhir)
+                                · {{ ucfirst(str_replace('_', ' ', $item->keputusan_akhir)) }}
+                            @else
+                                · Aktif
+                            @endif
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-medium text-subtle dark:text-subtle">Komitmen</p>
+                        <p class="mt-0.5 text-xs font-semibold text-ink">
+                            @if($item->komitmen_disetujui_pada)
+                                {{ \Carbon\Carbon::parse($item->komitmen_disetujui_pada)->translatedFormat('d M Y') }}
+                                @if($item->komitmen_via)
+                                    · {{ match ($item->komitmen_via) {
+                                        'admin' => 'Admin',
+                                        'kolektor' => 'Kolektor',
+                                        default => 'Mandiri',
+                                    } }}
+                                @endif
+                            @else
+                                —
+                            @endif
+                        </p>
+                    </div>
+                    @if($item->bukti_foto_url)
+                        <div class="w-full">
+                            <a href="{{ route('serah-terima.bukti', $item) }}" target="_blank" rel="noopener noreferrer"
+                                class="text-xs font-semibold text-ink underline-offset-2 hover:underline dark:text-white">
+                                Lihat Foto Bukti Serah Terima
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            @empty
+                <div class="px-5 py-4 text-xs text-mute dark:text-subtle">Belum ada kepesertaan paket.</div>
+            @endforelse
+        </div>
+    </div>
+
     {{-- Perkembangan Saldo --}}
     <div class="card">
         <div class="mb-4 flex items-center justify-between">
             <div>
-                <h3 class="font-serif text-base font-semibold text-text dark:text-white">Perkembangan Saldo</h3>
-                <p class="text-xs text-text-muted dark:text-slate-400">
+                <h3 class="text-base font-semibold text-ink">Perkembangan Saldo</h3>
+                <p class="text-xs text-mute dark:text-subtle">
                     @if($periode === '90hari')
                         90 hari terakhir
                     @elseif($periode === 'tahun_ini')
@@ -102,28 +157,23 @@
                 </p>
             </div>
             <div class="flex gap-1">
-                <button wire:click="$set('periode', '30hari')" class="rounded-full px-3 py-1 text-xs font-medium transition {{ $periode === '30hari' ? 'bg-navy-950 dark:bg-gold/20 text-white dark:text-gold' : 'text-text-muted dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">30 Hari</button>
-                <button wire:click="$set('periode', '90hari')" class="rounded-full px-3 py-1 text-xs font-medium transition {{ $periode === '90hari' ? 'bg-navy-950 dark:bg-gold/20 text-white dark:text-gold' : 'text-text-muted dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">90 Hari</button>
-                <button wire:click="$set('periode', 'tahun_ini')" class="rounded-full px-3 py-1 text-xs font-medium transition {{ $periode === 'tahun_ini' ? 'bg-navy-950 dark:bg-gold/20 text-white dark:text-gold' : 'text-text-muted dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800' }}">Tahun Ini</button>
+                <button wire:click="$set('periode', '30hari')" class="rounded-md px-3 py-1 text-xs font-medium transition {{ $periode === '30hari' ? 'bg-accent text-accent-foreground' : 'text-mute dark:text-subtle hover:bg-inset dark:hover:bg-inset' }}">30 Hari</button>
+                <button wire:click="$set('periode', '90hari')" class="rounded-md px-3 py-1 text-xs font-medium transition {{ $periode === '90hari' ? 'bg-accent text-accent-foreground' : 'text-mute dark:text-subtle hover:bg-inset dark:hover:bg-inset' }}">90 Hari</button>
+                <button wire:click="$set('periode', 'tahun_ini')" class="rounded-md px-3 py-1 text-xs font-medium transition {{ $periode === 'tahun_ini' ? 'bg-accent text-accent-foreground' : 'text-mute dark:text-subtle hover:bg-inset dark:hover:bg-inset' }}">Tahun Ini</button>
             </div>
         </div>
 
         @if($chartData['hasData'])
             <div class="overflow-hidden">
-                <svg viewBox="0 0 {{ $chartData['chartWidth'] }} {{ $chartData['chartHeight'] }}" class="h-40 w-full">
-                    <defs>
-                        <linearGradient id="gradientDetailArea" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" style="stop-color:#0A1626;stop-opacity:0.15" />
-                            <stop offset="100%" style="stop-color:#0A1626;stop-opacity:0.01" />
-                        </linearGradient>
-                    </defs>
+                <svg viewBox="0 0 {{ $chartData['chartWidth'] }} {{ $chartData['chartHeight'] }}" class="h-40 w-full" role="img" aria-label="{{ $chartData['ariaLabel'] }}">
+                    {{-- DESIGN.md §5 & §10: tanpa gradien; warna mengikuti teks. --}}
                     @foreach([0.25, 0.5, 0.75, 1] as $ratio)
-                        <line x1="{{ $chartData['padding'] }}" y1="{{ $chartData['padding'] + $chartData['graphHeight'] * (1 - $ratio) }}" x2="{{ $chartData['chartWidth'] - $chartData['padding'] }}" y2="{{ $chartData['padding'] + $chartData['graphHeight'] * (1 - $ratio) }}" stroke="#e5e5e5" stroke-width="0.5" />
+                        <line x1="{{ $chartData['padding'] }}" y1="{{ $chartData['padding'] + $chartData['graphHeight'] * (1 - $ratio) }}" x2="{{ $chartData['chartWidth'] - $chartData['padding'] }}" y2="{{ $chartData['padding'] + $chartData['graphHeight'] * (1 - $ratio) }}" stroke="currentColor" stroke-opacity="0.15" stroke-width="0.5" />
                     @endforeach
-                    <path d="{{ $chartData['areaD'] }}" fill="url(#gradientDetailArea)" />
-                    <path d="{{ $chartData['pathD'] }}" fill="none" stroke="#0A1626" stroke-width="2" stroke-linejoin="round" />
+                    <path d="{{ $chartData['areaD'] }}" fill="currentColor" fill-opacity="0.12" />
+                    <path d="{{ $chartData['pathD'] }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
                     @if($chartData['lastPoint'])
-                        <circle cx="{{ $chartData['lastPoint']['x'] }}" cy="{{ $chartData['lastPoint']['y'] }}" r="3" fill="#0A1626" />
+                        <circle cx="{{ $chartData['lastPoint']['x'] }}" cy="{{ $chartData['lastPoint']['y'] }}" r="3" fill="currentColor" />
                     @endif
                 </svg>
             </div>
@@ -138,23 +188,23 @@
     {{-- Riwayat Transaksi --}}
     <div class="card p-0">
         <div class="border-b border-border px-5 py-4">
-            <h3 class="font-serif text-base font-semibold text-text dark:text-white">Riwayat Transaksi</h3>
+            <h3 class="text-base font-semibold text-ink">Riwayat Transaksi</h3>
         </div>
         @if(count($riwayat) > 0)
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
                     <thead>
-                        <tr class="border-b border-border text-xs text-text-muted dark:text-slate-400">
+                        <tr class="border-b border-border text-xs text-mute dark:text-subtle">
                             <th class="px-5 py-3 font-medium">Tanggal</th>
                             <th class="px-5 py-3 font-medium">Tipe</th>
-                            <th class="px-5 py-3 font-medium">Nominal</th>
+                            <th class="px-5 py-3 font-medium text-right">Nominal</th>
                             <th class="px-5 py-3 font-medium">Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @foreach($riwayat as $item)
-                            <tr class="text-text dark:text-white">
-                                <td class="whitespace-nowrap px-5 py-3 text-text-muted dark:text-slate-400">{{ $item['tanggal'] }}</td>
+                            <tr class="text-ink">
+                                <td class="whitespace-nowrap px-5 py-3 text-mute dark:text-subtle">{{ $item['tanggal'] }}</td>
                                 <td class="whitespace-nowrap px-5 py-3">
                                     @if($item['tipe'] === 'Setoran')
                                         <span class="inline-flex items-center rounded-full bg-success-soft px-2 py-0.5 text-xs font-medium text-success">Setoran</span>
@@ -162,14 +212,14 @@
                                         <span class="inline-flex items-center rounded-full bg-danger-soft px-2 py-0.5 text-xs font-medium text-danger">Penarikan</span>
                                     @endif
                                 </td>
-                                <td class="whitespace-nowrap px-5 py-3 font-mono text-sm">Rp {{ number_format($item['nominal'], 0, ',', '.') }}</td>
+                                <td class="whitespace-nowrap px-5 py-3 tabular-nums text-right text-sm">Rp {{ number_format($item['nominal'], 0, ',', '.') }}</td>
                                 <td class="whitespace-nowrap px-5 py-3">
                                     @if($item['status'] === 'tercatat' || $item['status'] === 'selesai')
                                         <span class="inline-flex items-center rounded-full bg-success-soft px-2 py-0.5 text-xs font-medium text-success">{{ ucfirst($item['status']) }}</span>
                                     @elseif($item['status'] === 'pending')
-                                        <span class="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">Pending</span>
+                                        <span class="inline-flex items-center rounded-full bg-warning-soft dark:bg-warning-soft/30 px-2 py-0.5 text-xs font-medium text-warning-deep dark:text-warning-deep">Pending</span>
                                     @else
-                                        <span class="text-text-muted dark:text-slate-400">{{ ucfirst($item['status']) }}</span>
+                                        <span class="text-mute dark:text-subtle">{{ ucfirst($item['status']) }}</span>
                                     @endif
                                 </td>
                             </tr>
@@ -185,15 +235,61 @@
         @endif
     </div>
 
-    @if($confirmResetPin)
+    @if($tampilKonfirmasiResetPin)
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div class="mx-4 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-                <h3 class="text-lg font-semibold text-gray-900">Reset PIN?</h3>
-                <p class="mt-2 text-sm text-gray-500">PIN pengguna akan diganti menjadi PIN acak baru dan seluruh sesi aktifnya dihentikan. Pengguna wajib mengganti PIN setelah login berikutnya.</p>
-                @error('reset_pin') <p class="mt-2 text-sm text-[#ee0000]">{{ $message }}</p> @enderror
+            <div class="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-[0_8px_24px_rgb(0_0_0/0.12)]">
+                <h3 class="text-lg font-semibold text-ink">Reset PIN?</h3>
+                <p class="mt-2 text-sm text-mute">PIN pengguna akan diganti menjadi PIN acak baru dan seluruh sesi aktifnya dihentikan. Pengguna wajib mengganti PIN setelah login berikutnya.</p>
+                @error('reset_pin') <p class="mt-2 text-sm text-danger">{{ $message }}</p> @enderror
                 <div class="mt-6 flex justify-end gap-3">
-                    <button wire:click="$set('confirmResetPin', false)" class="rounded-full border border-[#ebebeb] bg-white px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-50">Batal</button>
-                    <button wire:click="resetPin" class="rounded-full bg-[#ee0000] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Reset PIN</button>
+                    <button wire:click="$set('tampilKonfirmasiResetPin', false)" class="rounded-md border border-hairline bg-white px-4 py-2 text-sm font-medium text-ink transition hover:bg-inset">Batal</button>
+                    <button wire:click="resetPin" class="rounded-md bg-danger px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">Reset PIN</button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if($tampilDaftarPaket)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div class="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-[0_8px_24px_rgb(0_0_0/0.12)]">
+                <h3 class="text-lg font-semibold text-ink">Daftarkan ke Paket</h3>
+                <p class="mt-2 text-sm text-mute">Nasabah: <strong>{{ $user->name }}</strong>. Pendaftaran dicatat sebagai dibantu (D16) tanpa PIN, dengan persetujuan dan catatan wajib.</p>
+
+                <div class="mt-4 space-y-3">
+                    <div>
+                        <label for="produkDaftarId" class="block text-xs font-medium text-body">Pilih Paket</label>
+                        <select id="produkDaftarId" wire:model.live="produkDaftarId" class="mt-1 w-full rounded-md border border-hairline-strong px-3 py-2 text-sm focus:border-ink focus:outline-none">
+                            <option value="0">— Pilih paket —</option>
+                            @foreach($paketTerbuka as $paket)
+                                <option value="{{ $paket->id }}">{{ $paket->nama }} — Rp {{ number_format((float) ($paket->harga_per_hari ?? 0), 0, ',', '.') }}/hari</option>
+                            @endforeach
+                        </select>
+                        @error('produkDaftarId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        @if($paketTerbuka->isEmpty())
+                            <p class="mt-1 text-xs text-warning-deep">Semua paket aktif sudah diikuti nasabah ini atau tidak terbuka untuk pendaftaran.</p>
+                        @endif
+                    </div>
+
+                    <div>
+                        <label for="catatanDaftar" class="block text-xs font-medium text-body">Catatan Pendaftaran</label>
+                        <textarea id="catatanDaftar" wire:model="catatanDaftar" rows="2" placeholder="Contoh: nasabah menyetujui di kantor, membawa KTP." class="mt-1 w-full rounded-md border border-hairline-strong px-3 py-2 text-sm focus:border-ink focus:outline-none"></textarea>
+                        @error('catatanDaftar') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <label class="flex items-start gap-2 text-sm text-body">
+                        <input type="checkbox" wire:model="setujuDaftar" class="mt-0.5 h-4 w-4 rounded border-hairline-strong" />
+                        <span>Saya menyatakan nasabah <strong>{{ $user->name }}</strong> telah membaca, memahami, dan menyetujui komitmen paket ini (D16).</span>
+                    </label>
+                    @error('setujuDaftar') <p class="text-xs text-danger">{{ $message }}</p> @enderror
+
+                    @if($pesanErrorDaftar)
+                        <p class="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">{{ $pesanErrorDaftar }}</p>
+                    @endif
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <button wire:click="tutupDaftarPaket" class="rounded-md border border-hairline bg-white px-4 py-2 text-sm font-medium text-ink transition hover:bg-inset">Batal</button>
+                    <button wire:click="daftarkanKePaket" wire:loading.attr="disabled" class="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90">Daftarkan</button>
                 </div>
             </div>
         </div>

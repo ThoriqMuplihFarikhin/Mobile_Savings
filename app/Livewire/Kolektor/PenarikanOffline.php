@@ -3,6 +3,7 @@
 namespace App\Livewire\Kolektor;
 
 use App\Actions\Penarikan\AjukanPenarikanAction;
+use App\Actions\Penarikan\CatatPenarikanOfflineLangsungAction;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Livewire\Concerns\ValidatesKolektorNasabah;
 use App\Models\KolektorNasabah;
@@ -10,6 +11,7 @@ use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
 use App\Models\TransaksiPenarikan;
 use App\Models\User;
+use App\Support\BuktiPenarikan;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -32,6 +34,14 @@ class PenarikanOffline extends Component
     public $nominal = '';
 
     public $lokasi = 'kantor';
+
+    public string $catatan = '';
+
+    /** Gambar bukti penarikan (D24): data URL base64, dikosongkan setelah kirim. */
+    public string $buktiBase64 = '';
+
+    /** Jenis bukti: `tanda_tangan` (kanvas) atau `foto`. */
+    public string $buktiJenis = 'tanda_tangan';
 
     public $nasabahList = [];
 
@@ -61,9 +71,9 @@ class PenarikanOffline extends Component
             ->with('user')
             ->get();
 
-        $this->produkList = ProdukTabungan::where('status', 'aktif')->get();
+        $this->loadProduk();
 
-        $this->jumlahMenungguVerifikasi = TransaksiPenarikan::where('jalur_pengajuan', 'offline')
+        $this->jumlahMenungguVerifikasi = TransaksiPenarikan::where('lokasi_pengambilan', 'rumah_kolektor')
             ->where('status', 'approved')
             ->whereIn('nasabah_id', function ($query) use ($kolektorId) {
                 $query->select('nasabah_id')
@@ -74,11 +84,32 @@ class PenarikanOffline extends Component
             ->count();
     }
 
+    public function loadProduk(?int $nasabahId = null): void
+    {
+        $this->produkList = ProdukTabungan::query()
+            ->when($nasabahId === null, function ($query) {
+                $query->where('status', 'aktif');
+            }, function ($query) use ($nasabahId) {
+                $query->where(function ($inner) use ($nasabahId) {
+                    $inner->where('status', 'aktif')
+                        ->orWhereIn('id', function ($sub) use ($nasabahId) {
+                            $sub->select('produk_id')
+                                ->from('saldo_produk')
+                                ->where('nasabah_id', $nasabahId)
+                                ->where('saldo', '>', 0);
+                        });
+                });
+            })
+            ->orderBy('nama')
+            ->get();
+    }
+
     public function updatedNasabahId()
     {
         if ($this->nasabahId && ! $this->isNasabahBinaan((int) $this->nasabahId)) {
             $this->nasabahId = '';
             $this->selectedNasabah = null;
+            $this->loadProduk();
             session()->flash('error', 'Nasabah tidak valid.');
 
             return;
@@ -88,8 +119,10 @@ class PenarikanOffline extends Component
             $this->selectedNasabah = NasabahProfil::where('user_id', $this->nasabahId)
                 ->with(['user', 'user.saldoProduks.produk'])
                 ->first();
+            $this->loadProduk((int) $this->nasabahId);
         } else {
             $this->selectedNasabah = null;
+            $this->loadProduk();
         }
     }
 
@@ -115,22 +148,93 @@ class PenarikanOffline extends Component
 
     public function hitungKomisi()
     {
-        if ($this->nominal > 0 && $this->persenKomisi > 0) {
-            $this->nominalKomisi = ($this->nominal * $this->persenKomisi) / 100;
-            $this->nominalDiterima = $this->nominal - $this->nominalKomisi;
-        } else {
-            $this->nominalKomisi = 0;
-            $this->nominalDiterima = $this->nominal;
+        $teks = trim((string) $this->nominal);
+
+        if (! is_numeric($teks) || preg_match('/^\d{1,13}(\.\d{1,2})?$/', $teks) !== 1 || (float) $teks <= 0) {
+            $this->nominalKomisi = '0.00';
+            $this->nominalDiterima = $teks;
+
+            return;
         }
+
+        $terbulatkan = bcadd($teks, '0', 2);
+
+        if ($this->persenKomisi <= 0) {
+            $this->nominalKomisi = '0.00';
+            $this->nominalDiterima = $terbulatkan;
+
+            return;
+        }
+
+        $hasil = AjukanPenarikanAction::hitungKomisi($terbulatkan, $this->persenKomisi);
+        $this->nominalKomisi = $hasil['komisi'];
+        $this->nominalDiterima = $hasil['diterima'];
     }
 
-    public function submit(AjukanPenarikanAction $action)
+    public function setBuktiBase64(mixed $base64): void
+    {
+        $this->buktiBase64 = is_string($base64) ? $base64 : '';
+    }
+
+    public function setBuktiJenis(string $jenis): void
+    {
+        $this->buktiJenis = in_array($jenis, BuktiPenarikan::JENIS_SAHIH, true)
+            ? $jenis
+            : 'tanda_tangan';
+    }
+
+    /**
+     * Teks pratinjau keputusan sebelum kirim (D23): memakai metode keputusan
+     * yang sama dengan aksi tanpa menulis apa pun ke database.
+     */
+    public function keputusanTeks(): string
+    {
+        $kolektor = Auth::user();
+        $nasabahId = (int) $this->nasabahId;
+        $nominal = trim((string) $this->nominal);
+
+        if (! $kolektor instanceof User || $nasabahId <= 0
+            || ! is_numeric($nominal) || (float) $nominal <= 0
+            || ! $this->isNasabahBinaan($nasabahId)) {
+            return '';
+        }
+
+        $nasabah = User::query()->find($nasabahId);
+
+        if (! $nasabah instanceof User) {
+            return '';
+        }
+
+        $adaBukti = BuktiPenarikan::decode($this->buktiBase64)['ok'];
+
+        if ($nasabah->isOffline() && ! $adaBukti) {
+            return 'Bukti penarikan wajib dilampirkan sebelum dikirim.';
+        }
+
+        $alasan = CatatPenarikanOfflineLangsungAction::alasanTidakLangsung(
+            $kolektor,
+            $nasabah,
+            $nominal,
+            (string) $this->nominalDiterima,
+            $this->lokasi,
+            $adaBukti,
+        );
+
+        if ($alasan === null) {
+            return 'Penarikan ini akan diproses langsung oleh Anda.';
+        }
+
+        return 'Penarikan ini akan menunggu persetujuan admin: '.CatatPenarikanOfflineLangsungAction::alasanManusia($alasan).'.';
+    }
+
+    public function submit(CatatPenarikanOfflineLangsungAction $action)
     {
         $this->validate([
             'nasabahId' => 'required|exists:users,id',
             'produkId' => 'required|exists:produk_tabungan,id',
-            'nominal' => 'required|numeric|min:10000',
+            'nominal' => 'required|numeric|decimal:0,2|gt:0',
             'lokasi' => 'required|in:kantor,rumah_kolektor',
+            'catatan' => 'nullable|string|max:500',
         ]);
 
         $isTanggungJawab = KolektorNasabah::where('kolektor_id', Auth::id())
@@ -144,25 +248,62 @@ class PenarikanOffline extends Component
             return;
         }
 
-        $nasabah = User::findOrFail($this->nasabahId);
-        $produk = ProdukTabungan::findOrFail($this->produkId);
+        $nasabah = User::query()->whereKey($this->nasabahId)->first();
+        $produk = ProdukTabungan::query()->whereKey($this->produkId)->first();
+
+        if (! $nasabah instanceof User || ! $produk instanceof ProdukTabungan) {
+            session()->flash('error', 'Data penarikan tidak ditemukan.');
+
+            return;
+        }
+
+        if ($nasabah->isOffline()) {
+            $this->validate(['catatan' => 'required|string|max:500']);
+
+            // D24: bukti wajib untuk seluruh penarikan nasabah offline.
+            $bukti = BuktiPenarikan::decode($this->buktiBase64);
+
+            if (! $bukti['ok']) {
+                $this->addError('buktiBase64', 'Bukti penarikan: '.$bukti['error']);
+
+                return;
+            }
+        }
+
+        $kolektor = Auth::user();
+
+        if (! $kolektor instanceof User) {
+            session()->flash('error', 'Sesi berakhir karena tidak aktif. Silakan masuk kembali.');
+
+            return;
+        }
 
         try {
-            $action->execute(
+            $hasil = $action->execute(
+                $kolektor,
                 $nasabah,
                 $produk,
-                (float) $this->nominal,
-                'offline',
-                $this->lokasi
+                (string) $this->nominal,
+                $this->lokasi,
+                (string) $this->catatan,
+                $nasabah->isOffline() ? $this->buktiBase64 : null,
+                $this->buktiJenis,
             );
 
-            $this->reset(['nasabahId', 'produkId', 'nominal', 'lokasi']);
+            $this->reset(['nasabahId', 'produkId', 'nominal', 'lokasi', 'catatan', 'buktiBase64', 'buktiJenis']);
             $this->selectedNasabah = null;
             $this->persenKomisi = 0;
             $this->nominalKomisi = 0;
             $this->nominalDiterima = 0;
+            $this->loadProduk();
 
-            session()->flash('success', 'Penarikan offline berhasil diajukan! Menunggu persetujuan admin.');
+            if ($hasil['langsung']) {
+                session()->flash('success', 'Penarikan offline langsung diselesaikan! Saldo nasabah sudah dipotong.');
+            } elseif ($hasil['alasan'] === 'kas_kurang') {
+                session()->flash('error', 'Kas di tangan tidak mencukupi — penarikan masuk antrian approval admin.');
+            } else {
+                session()->flash('success', 'Penarikan offline berhasil diajukan! Menunggu persetujuan admin.');
+            }
         } catch (\Exception $e) {
             session()->flash('error', $e->getMessage());
         }

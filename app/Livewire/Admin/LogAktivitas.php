@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\LogAktivitas as LogAktivitasModel;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -19,11 +20,11 @@ class LogAktivitas extends Component
         return 'admin';
     }
 
-    public $search = '';
+    public string $search = '';
 
-    public $aksiFilter = '';
+    public string $aksiFilter = '';
 
-    public function render()
+    public function render(): View
     {
         $query = LogAktivitasModel::with('user');
 
@@ -41,12 +42,12 @@ class LogAktivitas extends Component
         return view('livewire.admin.log-aktivitas', compact('logs'));
     }
 
-    public function updatedSearch()
+    public function updatedSearch(): void
     {
         $this->resetPage();
     }
 
-    public function updatedAksiFilter()
+    public function updatedAksiFilter(): void
     {
         $this->resetPage();
     }

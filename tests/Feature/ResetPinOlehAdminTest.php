@@ -49,9 +49,9 @@ it('admin mereset pin nasabah memunculkan pin baru sekali lalu memaksa ganti pin
 
     $halaman = Livewire::actingAs($admin)->test(ManajemenNasabah::class);
     $halaman->call('confirmResetPin', $nasabah->id)
-        ->assertSet('confirmResetPin', true)
+        ->assertSet('tampilKonfirmasiResetPin', true)
         ->call('resetPin')
-        ->assertSet('confirmResetPin', false);
+        ->assertSet('tampilKonfirmasiResetPin', false);
 
     expect(preg_match('/PIN baru: (\d{6})/', $halaman->html(), $cocok))->toBe(1);
 
@@ -129,9 +129,9 @@ it('admin mereset pin nasabah dari halaman detail', function () {
 
     $halaman = Livewire::actingAs($admin)->test(DetailNasabah::class, ['user' => $nasabah]);
     $halaman->call('confirmResetPin')
-        ->assertSet('confirmResetPin', true)
+        ->assertSet('tampilKonfirmasiResetPin', true)
         ->call('resetPin')
-        ->assertSet('confirmResetPin', false);
+        ->assertSet('tampilKonfirmasiResetPin', false);
 
     expect(preg_match('/PIN baru: (\d{6})/', $halaman->html()))->toBe(1);
 

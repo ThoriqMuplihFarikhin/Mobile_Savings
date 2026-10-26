@@ -1,27 +1,27 @@
 {{-- Overlay (mobile drawer backdrop) --}}
 <div x-data x-show="$store.ui.sidebarOpen" x-transition.opacity
      @click="$store.ui.closeSidebar()"
-     class="fixed inset-0 bg-navy-950/45 z-30 lg:hidden"></div>
+     class="fixed inset-0 bg-accent/45 z-30 lg:hidden"></div>
 
 <aside x-data
        :class="$store.ui.sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
        class="fixed lg:sticky top-0 left-0 h-screen w-64 shrink-0 z-40 flex flex-col
-              bg-sidebar text-sidebar-text
-              border-r border-sidebar-border
+              bg-white dark:bg-surface text-mute
+              border-r border-hairline
               transition-transform duration-300 ease-in-out">
 
     {{-- Brand --}}
-    <div class="flex items-center gap-3 px-5 py-5 border-b border-sidebar-border/60">
-        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 shadow-md shadow-emerald-500/20 shrink-0">
+    <div class="flex items-center gap-3 px-5 py-5 border-b border-hairline/60">
+        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
             </svg>
         </div>
         <div>
-            <span class="block text-base font-bold tracking-tight text-navy-900 dark:text-white leading-tight">
+            <span class="block text-base font-semibold tracking-tight text-ink dark:text-white leading-tight">
                 Tabungan Digital
             </span>
-            <span class="block text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            <span class="block text-xs font-medium text-primary dark:text-primary">
                 System Core
             </span>
         </div>
@@ -53,6 +53,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 00-3.7-3.7 48.678 48.678 0 00-7.324 0 4.006 4.006 0 00-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3l-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 003.7 3.7 48.656 48.656 0 007.324 0 4.006 4.006 0 003.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3l-3 3" /></svg>
                 Rekonsiliasi
             </x-admin.nav-item>
+            <x-admin.nav-item href="/admin/kas-kolektor" :active="request()->routeIs('admin.kas-kolektor.*')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7V4a1 1 0 00-1-1H5a2 2 0 000 4h15a1 1 0 011 1v4h-3a2 2 0 000 4h3a1 1 0 001-1v-2a1 1 0 00-1-1M3 5v14a2 2 0 002 2h15a1 1 0 001-1v-4" /></svg>
+                Kas Kolektor
+            </x-admin.nav-item>
             <x-admin.nav-item href="/admin/penarikan" :active="request()->routeIs('admin.penarikan.*')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
                 Penarikan
@@ -62,6 +66,14 @@
             <x-admin.nav-item href="/admin/kolektor" :active="request()->routeIs('admin.kolektor.*')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" /></svg>
                 Kelola Kolektor
+            </x-admin.nav-item>
+            <x-admin.nav-item href="/admin/setoran" :active="request()->routeIs('admin.setoran.*')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                Catat Setoran
+            </x-admin.nav-item>
+            <x-admin.nav-item href="/serah-terima-paket" :active="request()->routeIs('serah-terima.*')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" /></svg>
+                Serah Terima Paket
             </x-admin.nav-item>
             <x-admin.nav-item href="/admin/monitoring-setoran" :active="request()->routeIs('admin.monitoring-setoran.*')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>
@@ -124,6 +136,10 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
                 Penarikan Offline
             </x-admin.nav-item>
+            <x-admin.nav-item href="/serah-terima-paket" :active="request()->routeIs('serah-terima.*')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" /></svg>
+                Serah Terima Paket
+            </x-admin.nav-item>
 
         @else
             <x-admin.nav-section label="Nasabah" />
@@ -172,8 +188,8 @@
             @csrf
             <button type="submit"
                class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm w-full
-                      border-t border-sidebar-border pt-4
-                      text-sidebar-text hover:text-navy-900 dark:hover:text-white transition-colors cursor-pointer">
+                      border-t border-hairline pt-4
+                      text-mute hover:text-ink dark:hover:text-white transition-colors cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" /></svg>
                 Logout
             </button>

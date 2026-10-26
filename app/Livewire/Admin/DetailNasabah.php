@@ -2,12 +2,21 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Paket\DaftarkanKePaketAction;
 use App\Actions\Pin\ResetPinOlehAdminAction;
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Models\KepesertaanPaket;
+use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
+use DomainException;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -25,7 +34,17 @@ class DetailNasabah extends Component
 
     public string $periode = '30hari';
 
-    public bool $confirmResetPin = false;
+    public bool $tampilKonfirmasiResetPin = false;
+
+    public bool $tampilDaftarPaket = false;
+
+    public int $produkDaftarId = 0;
+
+    public bool $setujuDaftar = false;
+
+    public string $catatanDaftar = '';
+
+    public ?string $pesanErrorDaftar = null;
 
     public function mount(User $user): void
     {
@@ -33,7 +52,7 @@ class DetailNasabah extends Component
         $this->user = $user;
     }
 
-    public function render()
+    public function render(): View
     {
         $saldoPerProduk = SaldoProduk::where('nasabah_id', $this->user->id)
             ->with('produk')
@@ -56,7 +75,65 @@ class DetailNasabah extends Component
         $chartData = $this->buildChartData($setoran, $penarikan, $start, $end);
         $riwayat = $this->getRiwayatTransaksi($setoran, $penarikan);
 
-        return view('livewire.admin.detail-nasabah', compact('saldoPerProduk', 'chartData', 'riwayat'));
+        $kepesertaan = KepesertaanPaket::with('produk')
+            ->where('nasabah_id', $this->user->id)
+            ->latest('tanggal_mulai_ikut')
+            ->get();
+
+        return view('livewire.admin.detail-nasabah', compact('saldoPerProduk', 'chartData', 'riwayat', 'kepesertaan'))
+            ->with('paketTerbuka', DaftarkanKePaketAction::paketTerbukaUntuk((int) $this->user->id));
+    }
+
+    public function bukaDaftarPaket(): void
+    {
+        $this->resetDaftarPaket();
+        $this->tampilDaftarPaket = true;
+    }
+
+    public function tutupDaftarPaket(): void
+    {
+        $this->tampilDaftarPaket = false;
+    }
+
+    public function daftarkanKePaket(): void
+    {
+        $this->validate([
+            'produkDaftarId' => 'required|integer|exists:produk_tabungan,id',
+            'setujuDaftar' => 'accepted',
+            'catatanDaftar' => 'required|string|max:255',
+        ]);
+
+        $pelaku = Auth::user();
+        if (! $pelaku instanceof User) {
+            abort(403);
+        }
+
+        $produk = ProdukTabungan::find($this->produkDaftarId);
+        if (! $produk instanceof ProdukTabungan) {
+            $this->pesanErrorDaftar = 'Paket tidak ditemukan.';
+
+            return;
+        }
+
+        try {
+            app(DaftarkanKePaketAction::class)->execute($pelaku, $this->user, $produk, $this->catatanDaftar);
+        } catch (DomainException $e) {
+            $this->pesanErrorDaftar = $e->getMessage();
+
+            return;
+        }
+
+        session()->flash('success', 'Nasabah berhasil didaftarkan ke paket '.$produk->nama.'.');
+        $this->tampilDaftarPaket = false;
+        $this->resetDaftarPaket();
+    }
+
+    private function resetDaftarPaket(): void
+    {
+        $this->produkDaftarId = 0;
+        $this->setujuDaftar = false;
+        $this->catatanDaftar = '';
+        $this->pesanErrorDaftar = null;
     }
 
     public function updatedPeriode(): void
@@ -66,18 +143,21 @@ class DetailNasabah extends Component
 
     public function confirmResetPin(): void
     {
-        $this->confirmResetPin = true;
+        $this->tampilKonfirmasiResetPin = true;
     }
 
     public function resetPin(): void
     {
         $pinBaru = app(ResetPinOlehAdminAction::class)->execute($this->user);
 
-        $this->confirmResetPin = false;
+        $this->tampilKonfirmasiResetPin = false;
 
         session()->flash('success', "PIN berhasil direset. PIN baru: {$pinBaru}. Catat sekarang karena hanya ditampilkan sekali. Pengguna wajib mengganti PIN setelah login.");
     }
 
+    /**
+     * @return array{0: CarbonInterface, 1: CarbonInterface}
+     */
     protected function rentangTanggal(): array
     {
         $end = now()->endOfDay();
@@ -90,7 +170,12 @@ class DetailNasabah extends Component
         return [$start, $end];
     }
 
-    protected function buildChartData($setoran, $penarikan, $start, $end): array
+    /**
+     * @param  Collection<int, TransaksiSetoran>  $setoran
+     * @param  Collection<int, TransaksiPenarikan>  $penarikan
+     * @return array{hasData: bool, pathD: string, areaD: string, saldoAkhir: float, ariaLabel: string, lastPoint: array{x: float, y: float}|null, chartWidth: int, chartHeight: int, padding: int, graphHeight: int}
+     */
+    protected function buildChartData(Collection $setoran, Collection $penarikan, CarbonInterface $start, CarbonInterface $end): array
     {
         $totalSetoranPeriode = $setoran->sum('nominal');
         $totalPenarikanPeriode = $penarikan->sum('nominal_diminta');
@@ -134,11 +219,25 @@ class DetailNasabah extends Component
 
         $areaD = $pathD.' L'.round($points->last()['x'] ?? 0, 1).','.($padding + $graphHeight).' L'.round($points->first()['x'] ?? 0, 1).','.($padding + $graphHeight).' Z';
 
+        // DESIGN.md §10 "padanan teks": ringkasan awal/akhir/tertinggi/terendah
+        // untuk pembaca layar (butir E grafik).
+        $saldoPerHari = collect($perHari)->pluck('saldo');
+        $idxTertinggi = (int) $saldoPerHari->search($saldoPerHari->max());
+        $idxTerendah = (int) $saldoPerHari->search($saldoPerHari->min());
+        $tanggalLabel = fn (int $idx): string => Carbon::parse($perHari[$idx]['tanggal'])->format('d M');
+
+        $ariaLabel = 'Grafik perkembangan saldo. '
+            .'Awal '.number_format((float) $saldoPerHari->first(), 0, ',', '.').' rupiah pada '.$tanggalLabel(0).', '
+            .'akhir '.number_format((float) $saldoPerHari->last(), 0, ',', '.').' rupiah pada '.$tanggalLabel($count - 1).'. '
+            .'Tertinggi '.number_format((float) $saldoPerHari->max(), 0, ',', '.').' rupiah pada '.$tanggalLabel($idxTertinggi).', '
+            .'terendah '.number_format((float) $saldoPerHari->min(), 0, ',', '.').' rupiah pada '.$tanggalLabel($idxTerendah).'.';
+
         return [
             'hasData' => $count > 0,
             'pathD' => $pathD,
             'areaD' => $areaD,
             'saldoAkhir' => $count > 0 ? (float) $perHari[$count - 1]['saldo'] : 0.0,
+            'ariaLabel' => $ariaLabel,
             'lastPoint' => $points->last(),
             'chartWidth' => $chartWidth,
             'chartHeight' => $chartHeight,
@@ -147,7 +246,12 @@ class DetailNasabah extends Component
         ];
     }
 
-    protected function getRiwayatTransaksi($setoran, $penarikan)
+    /**
+     * @param  Collection<int, TransaksiSetoran>  $setoran
+     * @param  Collection<int, TransaksiPenarikan>  $penarikan
+     * @return Collection<int, array{tanggal: string, tipe: string, nominal: float, status: string}>
+     */
+    protected function getRiwayatTransaksi(Collection $setoran, Collection $penarikan): Collection
     {
         $riwayatSetoran = $setoran->map(fn ($s) => [
             'tanggal' => $s->tanggal_transaksi,
@@ -157,7 +261,7 @@ class DetailNasabah extends Component
         ]);
 
         $riwayatPenarikan = $penarikan->map(fn ($p) => [
-            'tanggal' => $p->waktu_approval->format('Y-m-d'),
+            'tanggal' => Carbon::parse($p->waktu_approval)->format('Y-m-d'),
             'tipe' => 'Penarikan',
             'nominal' => $p->nominal_diminta,
             'status' => $p->status,

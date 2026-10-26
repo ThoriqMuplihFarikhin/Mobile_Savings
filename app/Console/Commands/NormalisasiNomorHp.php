@@ -16,7 +16,7 @@ class NormalisasiNomorHp extends Command
     public function handle(): int
     {
         /** @var Collection<int, User> $users */
-        $users = User::orderBy('id')->get(['id', 'name', 'no_hp']);
+        $users = User::whereNotNull('no_hp')->orderBy('id')->get(['id', 'name', 'no_hp']);
 
         $duplikat = $users
             ->groupBy(fn (User $user) => NomorHp::normalize($user->no_hp))

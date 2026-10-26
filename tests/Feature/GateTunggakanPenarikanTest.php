@@ -34,6 +34,8 @@ it('blocks penarikan paket when tunggakan > 0 and tanggal sudah lewat', function
         'total_aktual_terkumpul' => 100000,
         'tunggakan' => 10,
         'status_alert' => 'peringatan',
+        'komitmen_disetujui_pada' => now(),
+        'komitmen_via' => 'migrasi',
     ]);
 
     $action = new AjukanPenarikanAction;
@@ -68,18 +70,7 @@ it('allows penarikan paket when tunggakan = 0 and tanggal sudah lewat', function
     $hariBerjalan = 31;
     $seharusnya = $hariBerjalan * 5000;
 
-    TransaksiSetoran::create([
-        'nasabah_id' => $nasabah->id,
-        'produk_id' => $produk->id,
-        'nominal' => $seharusnya,
-        'status' => 'tercatat',
-        'tanggal_transaksi' => $tanggalMulai->toDateString(),
-        'tanggal_input_sistem' => now(),
-        'input_by' => $nasabah->id,
-        'sumber_input' => 'real_time',
-    ]);
-
-    KepesertaanPaket::create([
+    $kepesertaan = KepesertaanPaket::create([
         'nasabah_id' => $nasabah->id,
         'produk_id' => $produk->id,
         'tanggal_mulai_ikut' => $tanggalMulai->toDateString(),
@@ -87,6 +78,20 @@ it('allows penarikan paket when tunggakan = 0 and tanggal sudah lewat', function
         'total_aktual_terkumpul' => $seharusnya,
         'tunggakan' => 0,
         'status_alert' => 'normal',
+        'komitmen_disetujui_pada' => now(),
+        'komitmen_via' => 'migrasi',
+    ]);
+
+    TransaksiSetoran::create([
+        'nasabah_id' => $nasabah->id,
+        'produk_id' => $produk->id,
+        'kepesertaan_id' => $kepesertaan->id,
+        'nominal' => $seharusnya,
+        'status' => 'tercatat',
+        'tanggal_transaksi' => $tanggalMulai->toDateString(),
+        'tanggal_input_sistem' => now(),
+        'input_by' => $nasabah->id,
+        'sumber_input' => 'real_time',
     ]);
 
     $action = new AjukanPenarikanAction;
@@ -123,12 +128,14 @@ it('blocks penarikan with tanggal message when tanggal belum lewat regardless of
         'total_aktual_terkumpul' => 10000,
         'tunggakan' => 3,
         'status_alert' => 'peringatan',
+        'komitmen_disetujui_pada' => now(),
+        'komitmen_via' => 'migrasi',
     ]);
 
     $action = new AjukanPenarikanAction;
 
     $this->expectException(Exception::class);
-    $this->expectExceptionMessage('belum bisa dilakukan sebelum tanggal');
+    $this->expectExceptionMessage('belum boleh cair');
 
     $action->execute($nasabah, $produk, 50000, 'online');
 });
@@ -215,6 +222,8 @@ it('does not write to database when checking tunggakan (read-only)', function ()
         'total_aktual_terkumpul' => 100000,
         'tunggakan' => 10,
         'status_alert' => 'peringatan',
+        'komitmen_disetujui_pada' => now(),
+        'komitmen_via' => 'migrasi',
     ]);
 
     $originalUpdatedAt = $kepesertaan->updated_at->copy();

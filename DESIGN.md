@@ -1,741 +1,1019 @@
-<design-context>
 ---
 version: alpha
-name: Vercel-Inspired-design-analysis
-description: An inspired interpretation of Vercel's design language — a developer-platform brand whose surface is a stark black-and-ink duet on near-white canvas, broken at hero scale by a multi-color mesh gradient (cyan / blue / magenta / amber) that acts as the entire decorative system, paired with a custom geometric sans for headlines and a monospaced caption face for technical labels.
+name: Tabungan-Digital-design-system
+description: Sistem desain Tabungan Digital (tabungan harian dengan kolektor keliling). Nasabah dan kolektor memakai bahasa visual yang hangat, ramah, dan berpusat pada angka. Kanvas hijau muda, hero hijau tua dengan ilustrasi datar, ubin ikon berwarna per kategori, cincin progres, dan penanda tahap. Admin memakai varian padat, datar, dan berhairline. Tanpa gradien. Semua token lolos kontras WCAG AA.
 
 colors:
-  primary: "#171717"
+  primary: "#15803d"
+  primary-hover: "#166534"
+  primary-soft: "#dcfce7"
+  primary-soft-2: "#f0fdf4"
   on-primary: "#ffffff"
+  on-primary-soft: "#14532d"
   ink: "#171717"
-  body: "#4d4d4d"
-  mute: "#888888"
-  hairline: "#ebebeb"
-  hairline-strong: "#a1a1a1"
-  canvas: "#ffffff"
-  canvas-soft: "#fafafa"
-  canvas-soft-2: "#f5f5f5"
-  link: "#0070f3"
-  link-deep: "#0761d1"
-  link-bg-soft: "#d3e5ff"
-  success: "#0070f3"
-  error: "#ee0000"
-  error-soft: "#f7d4d6"
-  error-deep: "#c50000"
-  warning: "#f5a623"
-  warning-soft: "#ffefcf"
-  warning-deep: "#ab570a"
-  violet: "#7928ca"
-  violet-soft: "#d8ccf1"
-  violet-deep: "#4c2889"
-  cyan: "#50e3c2"
-  cyan-soft: "#aaffec"
-  cyan-deep: "#29bc9b"
-  highlight-pink: "#ff0080"
-  highlight-magenta: "#eb367f"
-  gradient-develop-start: "#007cf0"
-  gradient-develop-end: "#00dfd8"
-  gradient-preview-start: "#7928ca"
-  gradient-preview-end: "#ff0080"
-  gradient-ship-start: "#ff4d4d"
-  gradient-ship-end: "#f9cb28"
-  selection-bg: "#171717"
-  selection-fg: "#f2f2f2"
+  body: "#404040"
+  mute: "#525252"
+  subtle: "#737373"
+  hairline: "#e5e5e5"
+  hairline-strong: "#858585"
+  canvas: "#fafafa"
+  surface: "#ffffff"
+  surface-inset: "#f5f5f5"
+  success: "#15803d"
+  success-soft: "#dcfce7"
+  success-deep: "#14532d"
+  warning: "#d97706"
+  warning-soft: "#fef3c7"
+  warning-deep: "#92400e"
+  danger: "#b23a2e"
+  danger-soft: "#f6e5e2"
+  danger-deep: "#8f2b21"
+  info: "#1d4ed8"
+  info-soft: "#dbeafe"
+  portal-nasabah: "#15803d"
+  portal-kolektor: "#2563eb"
+  portal-admin: "#171717"
+  canvas-warm: "#f3f7f1"
+  hairline-warm: "#e1eadd"
+  primary-deep: "#166534"
+  on-hero: "#ecfdf5"
+  on-hero-mute: "#bbf7d0"
+  decor-gold: "#fbbf24"
+  soft-amber: "#fffbeb"
+  soft-amber-border: "#fde68a"
+  soft-green-border: "#bbf7d0"
+  tile-teal-bg: "#ccfbf1"
+  tile-teal-fg: "#0f766e"
+  dark-canvas: "#0a0a0a"
+  dark-surface: "#171717"
+  dark-raised: "#262626"
+  dark-hairline: "#2e2e2e"
+  dark-hairline-strong: "#808080"
+  dark-ink: "#fafafa"
+  dark-body: "#d4d4d4"
+  dark-mute: "#a3a3a3"
+  dark-primary: "#22c55e"
+  dark-on-primary: "#052e16"
+  dark-primary-text: "#4ade80"
+  dark-primary-soft: "#0f2e1a"
+  dark-success-text: "#86efac"
+  dark-warning-text: "#fcd34d"
+  dark-warning-soft: "#422006"
+  dark-danger-text: "#fca5a5"
+  dark-danger-soft: "#450a0a"
+  dark-info-text: "#bfdbfe"
+  dark-info-soft: "#172554"
+  dark-tile-teal-bg: "#042f2e"
+  dark-tile-teal-fg: "#5eead4"
 
 typography:
-  display-xl:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
-    fontSize: 48px
-    fontWeight: 600
-    lineHeight: 48px
-    letterSpacing: -2.4px
-  display-lg:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
-    fontSize: 32px
+  money-hero:
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
+    fontSize: 34px
     fontWeight: 600
     lineHeight: 40px
-    letterSpacing: -1.28px
-  display-md:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    letterSpacing: -0.64px
+  money-lg:
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
+    fontSize: 24px
+    fontWeight: 600
+    lineHeight: 28px
+    letterSpacing: -0.48px
+  money-md:
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
+    fontSize: 16px
+    fontWeight: 600
+    lineHeight: 24px
+  money-input:
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
+    fontSize: 28px
+    fontWeight: 600
+    lineHeight: 34px
+    letterSpacing: -0.56px
+  title-lg:
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
     fontSize: 24px
     fontWeight: 600
     lineHeight: 32px
-    letterSpacing: -0.96px
-  display-sm:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    letterSpacing: -0.48px
+  title-md:
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
     fontSize: 20px
     fontWeight: 600
     lineHeight: 28px
-    letterSpacing: -0.6px
+    letterSpacing: -0.4px
+  title-sm:
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
+    fontSize: 16px
+    fontWeight: 600
+    lineHeight: 24px
   body-lg:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
-    fontSize: 18px
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
+    fontSize: 16px
     fontWeight: 400
-    lineHeight: 28px
-    letterSpacing: 0px
+    lineHeight: 24px
   body-md:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
-    fontSize: 16px
-    fontWeight: 400
-    lineHeight: 24px
-  body-md-strong:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
-    fontSize: 16px
-    fontWeight: 500
-    lineHeight: 24px
-  body-sm:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
     fontSize: 14px
     fontWeight: 400
     lineHeight: 20px
-    letterSpacing: -0.28px
-  body-sm-strong:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+  label:
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
     fontSize: 14px
     fontWeight: 500
     lineHeight: 20px
-    letterSpacing: -0.28px
   caption:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
     fontSize: 12px
     fontWeight: 400
     lineHeight: 16px
-  caption-mono:
-    fontFamily: Geist Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace
+  chip:
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
     fontSize: 12px
-    fontWeight: 400
+    fontWeight: 500
     lineHeight: 16px
+  button-lg:
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
+    fontSize: 16px
+    fontWeight: 500
+    lineHeight: 24px
+  button-md:
+    fontFamily: Instrument Sans, ui-sans-serif, system-ui, sans-serif
+    fontSize: 14px
+    fontWeight: 500
+    lineHeight: 20px
+  table-head-admin:
+    fontFamily: ui-monospace, SFMono-Regular, Menlo, monospace
+    fontSize: 12px
+    fontWeight: 500
+    lineHeight: 16px
+    letterSpacing: 0.6px
   code:
-    fontFamily: Geist Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, monospace
+    fontFamily: ui-monospace, SFMono-Regular, Menlo, monospace
     fontSize: 13px
     fontWeight: 400
     lineHeight: 20px
-  button-md:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
-    fontSize: 14px
-    fontWeight: 500
-    lineHeight: 20px
-  button-lg:
-    fontFamily: Geist, Inter, system-ui, -apple-system, sans-serif
-    fontSize: 16px
-    fontWeight: 500
-    lineHeight: 24px
 
 rounded:
-  none: 0px
-  xs: 4px
   sm: 6px
   md: 8px
   lg: 12px
   xl: 16px
-  pill-sm: 64px
-  pill: 100px
-  full: 9999px
+  2xl: 24px
+  card: 20px
+  tile: 14px
+  hero: 24px
+  panel: 40px
+  pill: 9999px
 
 spacing:
   xxs: 4px
   xs: 8px
   sm: 12px
   md: 16px
-  lg: 24px
-  xl: 32px
-  2xl: 40px
+  lg: 20px
+  xl: 24px
+  2xl: 32px
   3xl: 48px
-  4xl: 64px
-  5xl: 96px
-  6xl: 128px
-  section: 192px
 
 components:
-  nav-bar:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-sm}"
-    height: 64px
-    padding: "{spacing.sm} {spacing.lg}"
-  nav-link:
-    textColor: "{colors.body}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.full}"
-    padding: "{spacing.xs} {spacing.sm}"
-  nav-cta-signup:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.on-primary}"
-    typography: "{typography.body-sm-strong}"
-    rounded: "{rounded.sm}"
-    padding: "0px {spacing.xs}"
-    height: 28px
-  nav-cta-login:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.body-sm-strong}"
-    rounded: "{rounded.sm}"
-    padding: "0px {spacing.xs}"
-    height: 28px
-  nav-cta-ask-ai:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    borderColor: "{colors.hairline}"
-    typography: "{typography.body-sm-strong}"
-    rounded: "{rounded.sm}"
-    padding: "0px {spacing.xs}"
-    height: 28px
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
     typography: "{typography.button-lg}"
     rounded: "{rounded.pill}"
-    padding: "0px {spacing.sm}"
+    height: 48px
+    padding: "0px {spacing.xl}"
+  button-primary-pressed:
+    backgroundColor: "{colors.primary-hover}"
+    textColor: "{colors.on-primary}"
+    rounded: "{rounded.pill}"
   button-secondary:
-    backgroundColor: "{colors.canvas}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
+    borderColor: "{colors.hairline-strong}"
     typography: "{typography.button-lg}"
     rounded: "{rounded.pill}"
-    padding: "0px {spacing.sm}"
-  button-primary-sm:
-    backgroundColor: "{colors.primary}"
+    height: 48px
+    padding: "0px {spacing.xl}"
+  button-ghost:
+    textColor: "{colors.primary}"
+    typography: "{typography.button-md}"
+    rounded: "{rounded.pill}"
+    height: 44px
+    padding: "0px {spacing.md}"
+  button-danger:
+    backgroundColor: "{colors.danger}"
+    textColor: "{colors.on-primary}"
+    typography: "{typography.button-lg}"
+    rounded: "{rounded.pill}"
+    height: 48px
+    padding: "0px {spacing.xl}"
+  button-admin-primary:
+    backgroundColor: "{colors.portal-admin}"
     textColor: "{colors.on-primary}"
     typography: "{typography.button-md}"
-    rounded: "{rounded.pill}"
-    padding: "0px {spacing.xs}"
-  button-secondary-sm:
-    backgroundColor: "{colors.canvas}"
+    rounded: "{rounded.sm}"
+    height: 36px
+    padding: "0px {spacing.sm}"
+  button-admin-secondary:
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
+    borderColor: "{colors.hairline-strong}"
     typography: "{typography.button-md}"
-    rounded: "{rounded.pill}"
-    padding: "0px {spacing.xs}"
-  tab-ghost:
-    backgroundColor: "{colors.canvas}"
+    rounded: "{rounded.sm}"
+    height: 36px
+    padding: "0px {spacing.sm}"
+  card:
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.pill-sm}"
-    padding: "0px {spacing.md}"
-  icon-button-circular:
-    backgroundColor: "{colors.canvas}"
+    borderColor: "{colors.hairline-warm}"
+    typography: "{typography.body-lg}"
+    rounded: "{rounded.card}"
+    padding: "{spacing.md}"
+  hero-card:
+    backgroundColor: "{colors.primary-deep}"
+    textColor: "{colors.on-hero}"
+    typography: "{typography.money-hero}"
+    rounded: "{rounded.hero}"
+    padding: "{spacing.lg}"
+  list-row:
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     borderColor: "{colors.hairline}"
-    rounded: "{rounded.full}"
-  card-marketing:
-    backgroundColor: "{colors.canvas}"
+    typography: "{typography.body-lg}"
+    height: 64px
+    padding: "{spacing.sm} {spacing.md}"
+  chip-neutral:
+    backgroundColor: "{colors.surface-inset}"
+    textColor: "{colors.body}"
+    typography: "{typography.chip}"
+    rounded: "{rounded.pill}"
+    padding: "{spacing.xxs} {spacing.xs}"
+  chip-success:
+    backgroundColor: "{colors.success-soft}"
+    textColor: "{colors.success-deep}"
+    typography: "{typography.chip}"
+    rounded: "{rounded.pill}"
+    padding: "{spacing.xxs} {spacing.xs}"
+  chip-warning:
+    backgroundColor: "{colors.warning-soft}"
+    textColor: "{colors.warning-deep}"
+    typography: "{typography.chip}"
+    rounded: "{rounded.pill}"
+    padding: "{spacing.xxs} {spacing.xs}"
+  chip-danger:
+    backgroundColor: "{colors.danger-soft}"
+    textColor: "{colors.danger-deep}"
+    typography: "{typography.chip}"
+    rounded: "{rounded.pill}"
+    padding: "{spacing.xxs} {spacing.xs}"
+  chip-info:
+    backgroundColor: "{colors.info-soft}"
+    textColor: "{colors.info}"
+    typography: "{typography.chip}"
+    rounded: "{rounded.pill}"
+    padding: "{spacing.xxs} {spacing.xs}"
+  chip-portal-nasabah:
+    backgroundColor: "{colors.portal-nasabah}"
+    textColor: "{colors.on-primary}"
+    typography: "{typography.chip}"
+    rounded: "{rounded.pill}"
+    padding: "{spacing.xxs} {spacing.xs}"
+  chip-portal-kolektor:
+    backgroundColor: "{colors.portal-kolektor}"
+    textColor: "{colors.on-primary}"
+    typography: "{typography.chip}"
+    rounded: "{rounded.pill}"
+    padding: "{spacing.xxs} {spacing.xs}"
+  chip-portal-admin:
+    backgroundColor: "{colors.portal-admin}"
+    textColor: "{colors.on-primary}"
+    typography: "{typography.chip}"
+    rounded: "{rounded.pill}"
+    padding: "{spacing.xxs} {spacing.xs}"
+  input:
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
+    borderColor: "{colors.hairline-strong}"
+    typography: "{typography.body-lg}"
+    rounded: "{rounded.lg}"
+    height: 48px
+    padding: "0px {spacing.md}"
+  input-amount:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    borderColor: "{colors.hairline-strong}"
+    typography: "{typography.money-input}"
+    rounded: "{rounded.lg}"
+    height: 68px
+    padding: "0px {spacing.md}"
+  input-admin:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    borderColor: "{colors.hairline-strong}"
     typography: "{typography.body-md}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.lg}"
-  card-marketing-large:
-    backgroundColor: "{colors.canvas}"
+    rounded: "{rounded.sm}"
+    height: 40px
+    padding: "0px {spacing.sm}"
+  pin-cell:
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
+    borderColor: "{colors.hairline-strong}"
+    typography: "{typography.money-lg}"
+    rounded: "{rounded.lg}"
+    height: 56px
+  bottom-nav:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.mute}"
+    borderColor: "{colors.hairline}"
+    typography: "{typography.chip}"
+    height: 64px
+  bottom-nav-item-active:
+    textColor: "{colors.primary}"
+    typography: "{typography.chip}"
+  fab-absen:
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.on-primary}"
+    rounded: "{rounded.pill}"
+    height: 56px
+  sheet:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.2xl}"
+    padding: "{spacing.xl} {spacing.md}"
+  banner-warning:
+    backgroundColor: "{colors.warning-soft}"
+    textColor: "{colors.warning-deep}"
     typography: "{typography.body-md}"
     rounded: "{rounded.lg}"
-    padding: "{spacing.xl}"
-  card-soft:
-    backgroundColor: "{colors.canvas-soft}"
-    textColor: "{colors.ink}"
+    padding: "{spacing.sm} {spacing.md}"
+  banner-danger:
+    backgroundColor: "{colors.danger-soft}"
+    textColor: "{colors.danger-deep}"
     typography: "{typography.body-md}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.lg}"
-  template-card:
+    rounded: "{rounded.lg}"
+    padding: "{spacing.sm} {spacing.md}"
+  banner-info:
+    backgroundColor: "{colors.info-soft}"
+    textColor: "{colors.info}"
+    typography: "{typography.body-md}"
+    rounded: "{rounded.lg}"
+    padding: "{spacing.sm} {spacing.md}"
+  empty-state:
+    backgroundColor: "{colors.surface-inset}"
+    textColor: "{colors.mute}"
+    typography: "{typography.body-md}"
+    rounded: "{rounded.xl}"
+    padding: "{spacing.2xl} {spacing.md}"
+  admin-sidebar:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.mute}"
+    borderColor: "{colors.hairline}"
+    typography: "{typography.body-md}"
+  admin-sidebar-item-active:
+    backgroundColor: "{colors.surface-inset}"
+    textColor: "{colors.ink}"
+    typography: "{typography.label}"
+    rounded: "{rounded.sm}"
+  admin-table-head:
     backgroundColor: "{colors.canvas}"
+    textColor: "{colors.mute}"
+    typography: "{typography.table-head-admin}"
+    padding: "{spacing.xs} {spacing.sm}"
+  admin-table-cell:
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
+    borderColor: "{colors.hairline}"
     typography: "{typography.body-md}"
+    height: 44px
+    padding: "{spacing.xs} {spacing.sm}"
+  kpi-card:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    borderColor: "{colors.hairline}"
+    typography: "{typography.money-lg}"
     rounded: "{rounded.md}"
     padding: "{spacing.md}"
-  code-editor-mockup:
+  tile-green:
+    backgroundColor: "{colors.primary-soft}"
+    textColor: "{colors.on-primary-soft}"
+    rounded: "{rounded.tile}"
+    height: 44px
+  tile-teal:
+    backgroundColor: "{colors.tile-teal-bg}"
+    textColor: "{colors.tile-teal-fg}"
+    rounded: "{rounded.tile}"
+    height: 44px
+  tile-blue:
+    backgroundColor: "{colors.info-soft}"
+    textColor: "{colors.info}"
+    rounded: "{rounded.tile}"
+    height: 44px
+  tile-amber:
+    backgroundColor: "{colors.warning-soft}"
+    textColor: "{colors.warning-deep}"
+    rounded: "{rounded.tile}"
+    height: 44px
+  tile-neutral:
+    backgroundColor: "{colors.surface-inset}"
+    textColor: "{colors.body}"
+    rounded: "{rounded.tile}"
+    height: 44px
+  tile-rose:
+    backgroundColor: "{colors.danger-soft}"
+    textColor: "{colors.danger-deep}"
+    rounded: "{rounded.tile}"
+    height: 44px
+  note-amber:
+    backgroundColor: "{colors.soft-amber}"
+    textColor: "{colors.body}"
+    borderColor: "{colors.soft-amber-border}"
+    rounded: "{rounded.card}"
+    padding: "{spacing.md}"
+  note-green:
+    backgroundColor: "{colors.primary-soft-2}"
+    textColor: "{colors.on-primary-soft}"
+    borderColor: "{colors.soft-green-border}"
+    rounded: "{rounded.card}"
+    padding: "{spacing.md}"
+  progress-ring:
+    backgroundColor: "{colors.primary-soft}"
+    textColor: "{colors.primary}"
+    typography: "{typography.title-sm}"
+  stepper-dot-done:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
-    typography: "{typography.code}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.lg}"
-  form-input:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    borderColor: "{colors.hairline}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.sm}"
-    padding: "0px {spacing.sm}"
-    height: 40px
-  form-input-sm:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    borderColor: "{colors.hairline}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.sm}"
-    padding: "0px {spacing.sm}"
-    height: 32px
-  form-input-lg:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    borderColor: "{colors.hairline}"
-    typography: "{typography.body-md}"
-    rounded: "{rounded.sm}"
-    padding: "0px {spacing.sm}"
-    height: 48px
-  badge-secondary:
-    backgroundColor: "{colors.canvas-soft}"
-    textColor: "{colors.body}"
     typography: "{typography.caption}"
-    rounded: "{rounded.full}"
-    padding: "0px {spacing.xs}"
-  pricing-card:
-    backgroundColor: "{colors.canvas}"
+    rounded: "{rounded.pill}"
+    height: 24px
+  stepper-dot-todo:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.mute}"
+    borderColor: "{colors.hairline-strong}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.pill}"
+    height: 24px
+  stepper-dot-bad:
+    backgroundColor: "{colors.danger}"
+    textColor: "{colors.on-primary}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.pill}"
+    height: 24px
+  chip-amount:
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
+    borderColor: "{colors.hairline-strong}"
     typography: "{typography.body-md}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.xl}"
-  pricing-card-featured:
+    rounded: "{rounded.pill}"
+    height: 40px
+    padding: "0px {spacing.md}"
+  chip-amount-active:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
     typography: "{typography.body-md}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.xl}"
-  logo-strip:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.body}"
-    typography: "{typography.body-sm}"
-    padding: "{spacing.lg} {spacing.xl}"
-  hero-band:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.display-xl}"
-    padding: "{spacing.4xl} {spacing.lg}"
-  feature-mesh-band:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
-    typography: "{typography.display-lg}"
-    padding: "{spacing.5xl} {spacing.lg}"
-  showcase-band-light:
-    backgroundColor: "{colors.canvas-soft}"
-    textColor: "{colors.ink}"
-    typography: "{typography.display-lg}"
-    padding: "{spacing.5xl} {spacing.lg}"
-  showcase-band-dark:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.on-primary}"
-    typography: "{typography.display-lg}"
-    padding: "{spacing.5xl} {spacing.lg}"
-  footer:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.body}"
-    typography: "{typography.body-sm}"
-    padding: "{spacing.4xl} {spacing.lg}"
-  link-inline:
-    textColor: "{colors.link}"
-    typography: "{typography.body-md}"
-  banner-marketing:
-    backgroundColor: "{colors.canvas-soft}"
-    textColor: "{colors.body}"
-    typography: "{typography.body-sm}"
-    rounded: "{rounded.full}"
-    padding: "{spacing.xs} {spacing.sm}"
-
-  # ─── Examples (illustrative) — auto-derived; resolve any TO_FILL markers below ───
-  ex-pricing-tier:
-    description: "Default tier card. Mirrors pricing-card chrome on canvas-soft surface with a hairline border."
-    backgroundColor: "{colors.canvas-soft}"
-    textColor: "{colors.ink}"
-    borderColor: "{colors.hairline}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.xl}"
-  ex-pricing-tier-featured:
-    description: "Featured tier — polarity-flipped to ink primary with white text and white CTA."
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.on-primary}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.xl}"
-  ex-product-selector:
-    description: "What's Included summary card — repurposed for the brand's GPU / inference / Pro feature tiers."
-    backgroundColor: "{colors.canvas-soft}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.lg}"
-  ex-cart-drawer:
-    description: "Subscription summary — line items per add-on (NOT a literal e-commerce cart)."
-    backgroundColor: "{colors.canvas}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.lg}"
-    item-divider: "{colors.hairline}"
-  ex-app-shell-row:
-    description: "Sidebar nav row. Active state uses brand primary as a left-edge indicator bar."
-    backgroundColor: "{colors.canvas}"
-    activeIndicator: "{colors.primary}"
-    rounded: "{rounded.sm}"
-    padding: "{spacing.xs} {spacing.sm}"
-  ex-data-table-cell:
-    description: "Mirrors the brand's table chrome. Header uses caption-mono uppercase mono; body uses body-sm."
-    headerBackground: "{colors.canvas-soft}"
-    headerTypography: "{typography.caption-mono}"
-    bodyTypography: "{typography.body-sm}"
-    cellPadding: "{spacing.xs} {spacing.sm}"
-    rowBorder: "{colors.hairline}"
-  ex-auth-form-card:
-    description: "Sign-in / sign-up card. Mirrors card-marketing-large chrome with form-input primitives inside."
-    backgroundColor: "{colors.canvas-soft}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.xl}"
-  ex-modal-card:
-    description: "Modal dialog surface — same chrome as card-marketing-large with Level 5 modal shadow."
-    backgroundColor: "{colors.canvas}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.xl}"
-  ex-empty-state-card:
-    description: "Empty-state illustration frame. Generous padding on canvas-soft."
-    backgroundColor: "{colors.canvas-soft}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.3xl}"
-    captionTypography: "{typography.body-md}"
-  ex-toast:
-    description: "Toast notification surface — flat-cornered card-marketing chrome with Level 4 shadow."
-    backgroundColor: "{colors.canvas}"
-    rounded: "{rounded.md}"
-    padding: "{spacing.sm} {spacing.md}"
-    typography: "{typography.body-sm}"
-
+    rounded: "{rounded.pill}"
+    height: 40px
+    padding: "0px {spacing.md}"
+  login-panel:
+    backgroundColor: "{colors.primary-deep}"
+    textColor: "{colors.on-hero}"
+    typography: "{typography.title-lg}"
+    rounded: "{rounded.panel}"
+    height: 300px
 ---
 
+# Tabungan Digital — Sistem Desain
 
-## Overview
+> Dokumen ini adalah acuan tampilan untuk seluruh UI aplikasi (nasabah, kolektor, admin, landing, login, struk/rekap cetak). Saat membuat atau mengubah UI, ikuti dokumen ini. Bila ada yang bertentangan dengan view lama, dokumen ini yang benar dan view lamalah yang dirapikan.
 
-Vercel is a developer-platform brand — the page is a deployment dashboard's marketing surface, written for engineers who already know the syntax. It earns that posture with one of the cleanest stark systems on the web: near-white `{colors.canvas-soft}` body background, ink-near-black `{colors.ink}` text, a 200-step gray scale that gives every divider, border, and disabled state its own deliberate step. The only place the brand introduces colour at marketing scale is the multi-stop mesh gradient (`{colors.gradient-develop-start}` → `{colors.gradient-preview-end}` → `{colors.gradient-ship-start}` → cyan / magenta / amber) that floats in atmospheric backdrops, never miniaturised to a swatch. That gradient is the entire decoration system.
+## 1. Overview
 
-Type is the second decisive voice. The brand's own custom geometric sans (Geist) carries display, body, button — everything narrative — at weight 600 for display, 500 for buttons, 400 for body. A matching monospaced face (Geist Mono) carries technical labels: terminal mockups, code blocks, sometimes filename captions. Headlines are sentence-case with aggressive negative letter-spacing (`-2.4px` at 48 px hero) — the brand never letter-spaces positively, never goes uppercase outside of mono labels.
+Tabungan Digital menggantikan buku catatan kolektor keliling dengan aplikasi web/PWA/APK. Uangnya tunai dan nyata, penggunanya awam, dan kepercayaan adalah produknya. Karena itu tampilannya harus:
 
-Surfaces use a four-step ladder: `{colors.canvas}` (pure white for cards), `{colors.canvas-soft}` 98% (the page body), `{colors.canvas-soft-2}` 95% (occasional inset region), `{colors.primary}` (the deep ink-near-black used as the polarity-flipped band when a section needs the dark mode treatment). Shadows are exceptionally subtle — every elevated card carries a stacked shadow built from `0px 1px 1px #00000005` + `0px 2px 2px #0000000a` + an inset border. Cards never float on heavy drop-shadow; they sit on the page held by hairline + soft glow.
+1. **Jelas sebelum cantik.** Angka saldo, tunggakan, dan status terbaca dalam satu lirikan, juga oleh orang yang kurang familiar dengan aplikasi.
+2. **Hangat dan menyemangati.** Nasabah harus merasa ditemani menabung, bukan sedang membuka aplikasi bank yang dingin. Karakter datang dari bentuk, warna kategori, ilustrasi datar, dan kata-kata, bukan dari efek.
+3. **Jujur.** Setiap angka punya tanda (+ atau −), waktu, dan sumber. Tidak ada status yang hanya dibedakan oleh warna.
+4. **Satu produk, tiga konteks.** Nasabah, kolektor, dan admin memakai token yang sama, dengan kepadatan, tingkat dekorasi, dan warna identitas yang berbeda.
 
-**Key Characteristics:**
-- A single black-ink primary CTA `{colors.primary}` carries every conversion target, paired with white-on-white `button-secondary` for the secondary action. The brand uses 100 px pill shape for marketing CTAs and a tight 6 px square shape for in-app nav buttons.
-- A multi-stop mesh gradient (cyan-blue-magenta-amber) is the only decorative chrome — used at hero scale and inside feature-band atmospheric backdrops. It is the brand.
-- Every section eyebrow and small label uses the monospace face `{typography.caption-mono}` or `{typography.code}`; everything else is in the geometric sans.
-- Subtle stacked-shadow elevation — three offsets layered with 4-12 % black opacity — never a single heavy drop-shadow.
-- A complete 100–1000 gray + blue + red + amber + green + teal + purple + pink colour scale exists as a system token set, but the marketing surface uses only the `100`, `1000`, and `700`-level tones; the rest stay in the design-system tokens for in-product surfaces.
-- An "Active CPU" pricing rhythm: `pricing-card` lays out 3-up on the pricing page with `pricing-card-featured` (Pro tier) polarity-flipped to `{colors.primary}` against white-card siblings.
+### Karakter visual
 
-## Colors
+- **Nasabah**: paling hangat. Kanvas hijau sangat muda `{colors.canvas-warm}`, kartu putih bulat 20px dengan bayangan halus, **hero hijau tua** `{colors.primary-deep}` berilustrasi datar (tunas dan koin Rp), ubin ikon berwarna per kategori, cincin progres, penanda tahap, sapaan dengan nama depan.
+- **Kolektor**: hangat tetapi fungsional. Memakai token yang sama, tetapi layar kerja (setor, jadwal, verifikasi) **tanpa hero dekoratif dan ilustrasi**, karena dipakai cepat, satu tangan, di bawah matahari. Ilustrasi hanya di login dan kondisi kosong.
+- **Admin**: tidak berubah. Padat, datar, hairline abu, tombol tinta radius 6px, tanpa ilustrasi dan ubin warna-warni.
+- **Prinsip: hangat tanpa berisik.** Satu layar boleh punya satu ilustrasi, dan ilustrasi tidak pernah menutupi angka.
 
-### Brand & Accent
-- **Ink** (`{colors.primary}` — `#171717`): The single primary CTA color. Black-near-pure ink that carries every Sign Up pill, every footer CTA, the dark-band polarity-flip. Used as text color throughout the page on light surfaces. (Resolved from `--ds-gray-1000`.)
-- **Cyan** (`{colors.cyan}` — `#50e3c2`): A signature mint-cyan used in the brand gradient and inside Geist-system spotlight tokens. Visible inside the hero gradient stops.
-- **Highlight Pink** (`{colors.highlight-pink}` — `#ff0080`): The brand's highlight magenta, used as the high-saturation stop in the preview-gradient pair.
-- **Violet** (`{colors.violet}` — `#7928ca`): The deep purple used as the start of the preview-gradient and inside developer-console highlights.
-- **Link Blue** (`{colors.link}` — `#0070f3`): The brand's primary link color and the legacy `--geist-success` semantic.
+### Dekorasi: yang boleh dan yang dilarang
 
-### Surface
-- **Canvas** (`{colors.canvas}` — `#ffffff`): The pure-white card / dialog / modal surface.
-- **Canvas Soft** (`{colors.canvas-soft}` — `#fafafa`): The default page background — 98 % white. Almost every section sits on this tone.
-- **Canvas Soft 2** (`{colors.canvas-soft-2}` — `#f5f5f5`): A slightly deeper inset surface for "code editor inner background", template-card hover states, and dropdown menus.
-- **Hairline** (`{colors.hairline}` — `#ebebeb`): 1 px dividers — table rows, card borders, input borders.
-- **Hairline Strong** (`{colors.hairline-strong}` — `#a1a1a1`): The 500-level gray, used as the slightly-stronger divider on light bands and as the deemphasised text color.
+| Boleh | Dilarang |
+|---|---|
+| Ilustrasi **datar** (tunas, koin Rp, kado), **satu per layar**, hanya di hero, kondisi kosong, login, layar sukses, dan header paket | Gradien, blur/kaca, glow, bayangan tebal |
+| Lingkaran dekoratif datar di hero | Ilustrasi orang atau wajah, emoji |
+| Ubin ikon berwarna per kategori (lihat §2) | Warna kategori di teks, chip, atau banner |
+| Cincin progres, lencana, penanda tahap, titik konfeti di layar sukses | Animasi yang berulang terus-menerus |
+| Sapaan dan kalimat penyemangat (lihat §9) | Dekorasi di layar admin dan layar cetak (struk, rekap) |
 
-### Text
-- **Ink** (`{colors.ink}` — `#171717`): Every heading and body paragraph on light surfaces.
-- **Body** (`{colors.body}` — `#4d4d4d`): Secondary text — sub-headings, body captions, nav-link inactive text, footer column body.
-- **Mute** (`{colors.mute}` — `#888888`): Lowest-priority text — placeholder text, fine print, low-key labels.
-- **On Primary** (`{colors.on-primary}` — `#ffffff`): All text on `{colors.primary}` surfaces.
+### Tiga portal
 
-### Semantic
-- **Success / Link** (`{colors.success}` — `#0070f3`): The brand's legacy success indicator doubles as the primary link color. Visible underline-on-hover for inline body links.
-- **Link Deep** (`{colors.link-deep}` — `#0761d1`): The pressed / visited tone for inline links.
-- **Link Bg Soft** (`{colors.link-bg-soft}` — `#d3e5ff`): Soft pastel blue fill for "what's new" pill banners and informational badges.
-- **Error** (`{colors.error}` — `#ee0000`): Validation red for destructive actions and form errors.
-- **Error Soft** (`{colors.error-soft}` — `#f7d4d6`): Soft pastel red for destructive-state backgrounds.
-- **Error Deep** (`{colors.error-deep}` — `#c50000`): Pressed / deep destructive state.
-- **Warning** (`{colors.warning}` — `#f5a623`): Caution / pending status indicator.
-- **Warning Soft** (`{colors.warning-soft}` — `#ffefcf`) / **Warning Deep** (`{colors.warning-deep}` — `#ab570a`): Background + pressed variants.
+| | Nasabah | Kolektor | Admin |
+|---|---|---|---|
+| Perangkat utama | HP (PWA/APK), kolom maks 480px | HP (PWA/APK), kolom maks 480px | Desktop, konten maks 1280px |
+| Konteks | Cek saldo, ajukan penarikan | Di lapangan: satu tangan, luar ruangan, input uang | Meja kerja: tabel, approval, rekonsiliasi, laporan |
+| Teks dasar | 16px | 16px | 14px |
+| Tinggi kontrol | 48px (tombol utama), 44px minimum sentuh | 48–68px (input nominal 68px) | 36–40px |
+| Warna aksi | `{colors.primary}` hijau | `{colors.primary}` hijau | `{colors.portal-admin}` tinta |
+| Warna identitas portal | `{colors.portal-nasabah}` | `{colors.portal-kolektor}` biru | `{colors.portal-admin}` |
+| Tingkat dekorasi | Tinggi (hero, ilustrasi, ubin) | Rendah (hanya login dan kosong) | Tidak ada |
+| Bentuk | Pil, kartu 20px, hero 24px | Pil, kartu 20px | Radius 6–8px |
+| Navigasi | Bottom nav 4 item | Bottom nav 4 item + tombol Absen | Sidebar + topbar |
 
-### Brand Gradient
-The brand's signature decoration is a three-pair gradient stack:
-- **Develop** (`{colors.gradient-develop-start}` `#007cf0` → `{colors.gradient-develop-end}` `#00dfd8`) — the blue-to-teal pair used to mark the "deploy" / "develop" rhythm.
-- **Preview** (`{colors.gradient-preview-start}` `#7928ca` → `{colors.gradient-preview-end}` `#ff0080`) — the violet-to-pink pair used for "preview" surfaces.
-- **Ship** (`{colors.gradient-ship-start}` `#ff4d4d` → `{colors.gradient-ship-end}` `#f9cb28`) — the coral-to-amber pair used for "ship" surfaces.
+Warna identitas portal hanya muncul di **chip peran**, **pita tipis 4px di atas layar** (kolektor dan admin), `theme_color` manifest, dan ikon APK. Warna aksi (tombol, tautan, fokus) tidak mengikuti warna portal. Dengan begitu pembeda portal (keputusan D19) tetap ada tanpa membuat kolektor memiliki palet sendiri.
 
-The three pairs collapse into a single multi-color mesh gradient when used as the hero atmospheric backdrop. Treat the gradient as one unified object — do not crop down to a single colour, do not reorder the stops, and do not miniaturise. Used at hero scale only.
+## 2. Colors
 
-## Typography
+### Aksi dan merek
+- **Primary** `{colors.primary}` `#15803d`: tombol utama, tautan, tab/nav aktif, fokus. Putih di atasnya 5,02:1.
+- **Primary hover/pressed** `{colors.primary-hover}` `#166534`.
+- **Primary soft** `{colors.primary-soft}` `#dcfce7`: latar catatan hijau, chip sukses, area terpilih. Teks di atasnya wajib `{colors.on-primary-soft}` `#14532d` (8,30:1).
+- Jangan memakai `#16a34a` (green-600) sebagai latar teks putih. Kontrasnya hanya 3,30:1 dan gagal AA. Pakai `#15803d`.
 
-### Font Family
-Two custom faces carry the entire system:
+### Netral
+- **Ink** `{colors.ink}` `#171717`: judul, angka, teks utama (17,93:1).
+- **Body** `{colors.body}` `#404040`: paragraf (10,37:1).
+- **Mute** `{colors.mute}` `#525252`: teks sekunder (7,81:1).
+- **Subtle** `{colors.subtle}` `#737373`: placeholder dan metadata. Ini batas terendah yang boleh dipakai untuk teks (4,74:1 di atas putih). Jangan memakai abu lebih terang untuk teks apa pun.
+- **Canvas** `{colors.canvas}` `#fafafa`: latar halaman. **Surface** `{colors.surface}` `#ffffff`: kartu. **Inset** `{colors.surface-inset}` `#f5f5f5`: area cekung, chip netral, hover baris.
+- **Hairline** `{colors.hairline}` `#e5e5e5`: pembatas dan border kartu. **Hairline strong** `{colors.hairline-strong}` `#858585`: border input dan kontrol interaktif (gelap `{colors.dark-hairline-strong}` `#808080`), dipilih agar pasangan latar terang maupun gelap memegang ≥3:1 — WCAG 1.4.11.
 
-1. **A custom geometric sans** (extracted as `Geist`) for every display, body, button, link, and label. Weights 400 / 500 / 600 are the working set; the face never appears in 700 or heavier. Display sizes are tracked aggressively negative (`-2.4 px` at 48 px hero, `-1.28 px` at 32 px section); body stays at neutral or slightly-negative tracking.
-2. **A custom monospaced face** (extracted as `Geist Mono`) for terminal mockups, code blocks, and small mono-caption labels — anything that wants to signal "technical." Weight 400 only at 12 – 13 px. Tracking neutral.
+### Semantik (makna, bukan dekorasi)
+| Peran | Fill/ikon | Latar lembut | Teks di latar lembut | Dipakai untuk |
+|---|---|---|---|---|
+| Success | `{colors.success}` | `{colors.success-soft}` | `{colors.success-deep}` | Uang masuk, selesai, cocok, lunas |
+| Warning | `{colors.warning}` | `{colors.warning-soft}` | `{colors.warning-deep}` | Menunggu, tunggakan, perlu tindakan |
+| Danger | `{colors.danger}` | `{colors.danger-soft}` | `{colors.danger-deep}` | Ditolak, gagal, kurang, bermasalah, terkunci |
+| Info | `{colors.info}` | `{colors.info-soft}` | `{colors.info}` | Netral-informatif: disetujui, offline, lebih |
 
-A condensed display sans (`Space Grotesk`) is loaded as a third face for occasional editorial moments but does not render as the primary face anywhere in the captured surfaces.
+Aturan penting untuk uang:
+- **Uang masuk (setoran)** = hijau dengan awalan `+`.
+- **Uang keluar (penarikan)** = warna **ink**, awalan `−` (tanda minus sebenarnya, U+2212). Penarikan bukan kesalahan, jadi **jangan merahkan**.
+- **Merah hanya untuk hal yang salah atau berisiko**: tunggakan melewati batas, selisih kas kurang, penolakan, gagal kirim, akun terkunci.
+- **Tidak boleh ada status yang dibedakan hanya oleh warna.** Selalu sertakan teks, dan bila perlu ikon (centang, jam, tanda seru, silang).
 
-### Hierarchy
-
-| Token | Size | Weight | Line Height | Letter Spacing | Use |
-|---|---|---|---|---|---|
-| `{typography.display-xl}` | 48px | 600 | 48px | -2.4px | Hero headline ("Build and deploy on the AI Cloud."). |
-| `{typography.display-lg}` | 32px | 600 | 40px | -1.28px | Section headlines ("Your frontend, delivered.", "A compute model for all workloads."). |
-| `{typography.display-md}` | 24px | 600 | 32px | -0.96px | Card-cluster headlines, pricing-tier names. |
-| `{typography.display-sm}` | 20px | 600 | 28px | -0.6px | Inline display micro-headings. |
-| `{typography.body-lg}` | 18px | 400 | 28px | 0 | Lead paragraphs under section headlines. |
-| `{typography.body-md}` | 16px | 400 | 24px | 0 | Default body paragraph. |
-| `{typography.body-md-strong}` | 16px | 500 | 24px | 0 | Bolded inline body. |
-| `{typography.body-sm}` | 14px | 400 | 20px | -0.28px | Secondary body, nav-link text, button-md labels. |
-| `{typography.body-sm-strong}` | 14px | 500 | 20px | -0.28px | Nav CTA labels, table-row emphasis. |
-| `{typography.caption}` | 12px | 400 | 16px | 0 | Footer secondary lines, badge labels. |
-| `{typography.caption-mono}` | 12px | 400 | 16px | 0 | Section eyebrows and label captions that want a technical voice. |
-| `{typography.code}` | 13px | 400 | 20px | 0 | Inline code, terminal mockups, command snippets. |
-| `{typography.button-md}` | 14px | 500 | 20px | 0 | Small / nav-scale button labels. |
-| `{typography.button-lg}` | 16px | 500 | 24px | 0 | Marketing-scale pill button labels. |
-
-### Principles
-- **Negative tracking is part of the voice.** Display sizes use aggressive `-2.4` to `-0.6` px tracking. Reverting to default tracking breaks the brand.
-- **Sentence-case headlines, period-terminated.** Headlines like "Build and deploy on the AI Cloud." end with a deliberate period — that punctuation is part of the brand's voice.
-- **Mono for the technical layer only.** Section eyebrows, code blocks, terminal mockups. Body paragraphs never set in mono.
-- **Weight 600 is the display ceiling.** The geometric sans never appears at 700 / 800. The brand reads as a calmer system because of this.
-
-### Note on Font Substitutes
-The two primary faces are proprietary (custom-cut for the brand). Open-source substitutes:
-- **Geometric sans** — *Inter* (400 / 500 / 600) is the closest stylistic match; `font-feature-settings: "ss01", "ss02"` enables the geometric alternates. *Satoshi* is a passable second choice.
-- **Monospace** — *JetBrains Mono* (400) at 12 – 13 px matches the technical voice. *IBM Plex Mono* is the second-best option.
-
-## Layout
-
-### Spacing System
-- **Base unit**: 4 px. The brand's `--geist-space` token is exactly 4 px and every captured value is a multiple of 4.
-- **Tokens**: `{spacing.xxs}` 4 px · `{spacing.xs}` 8 px · `{spacing.sm}` 12 px · `{spacing.md}` 16 px · `{spacing.lg}` 24 px · `{spacing.xl}` 32 px · `{spacing.2xl}` 40 px · `{spacing.3xl}` 48 px · `{spacing.4xl}` 64 px · `{spacing.5xl}` 96 px · `{spacing.6xl}` 128 px · `{spacing.section}` 192 px.
-- **Section padding**: marketing bands use `{spacing.4xl}` to `{spacing.5xl}` top/bottom. Hero bands stretch to `{spacing.section}` to give the mesh gradient room to breathe.
-- **Card interior padding**: marketing cards sit at `{spacing.lg}` to `{spacing.xl}`; template-grid cards stay tighter at `{spacing.md}` because they sit in a denser grid.
-- **Inline gap**: button rows, nav rows, and chip rows use `{spacing.sm}` to `{spacing.md}` between siblings. The brand's `--geist-gap` is exactly 24 px.
-
-### Grid & Container
-- **Max width**: ~1400 px (`--ds-page-width`); the legacy `--geist-page-width` is 1200 px and still appears on some marketing surfaces. Content centres with horizontal gutters of `{spacing.lg}` 24 px on desktop, `{spacing.md}` 16 px on mobile.
-- **Column patterns**:
-  - Three-feature row: 3-up at desktop, 1-up at mobile (rows like "Web Apps / Composable Commerce / Multi-tenant Platforms").
-  - Tab pill row: 5-up centred row of `tab-ghost` pills.
-  - Template-grid cluster: 5-up at desktop, scaling to 1-up at mobile.
-  - Pricing tier grid: 3-up at desktop with the middle tier polarity-flipped.
-  - Logo strip: ~5 logos wide, single row.
-
-### Whitespace Philosophy
-The mesh gradient does most of the heavy decorative lifting; whitespace separates the bands. Section spacing is generous — `{spacing.4xl}` to `{spacing.5xl}` between bands lets the gradient breathe. Inside a card, the headline/paragraph stack is tight (`{spacing.xs}` 8 px gap), then a wider gap before the CTA cluster. The page reads as engineered — large gaps + tight interior, never the other way around.
-
-### Responsive Strategy
-
-#### Breakpoints
-
-| Name | Width | Key Changes |
+### Pemetaan status → chip
+| Domain | Nilai (di database) | Chip |
 |---|---|---|
-| Mobile | < 600px | Hero stacks; nav collapses to hamburger; 3-up feature grids drop to 1-up; tab pill row enables horizontal scroll. |
-| Tablet | 600–959px | 3-up grids drop to 2-up; nav still horizontal. |
-| Desktop | 960–1199px | Full 3-up grids; pricing 3-up. |
-| Wide | 1200–1399px | Container caps at 1400 px content width. |
-| Ultra-wide | ≥ 1400px | Content stays centred at 1400 px; bands stretch edge-to-edge in colour but content holds the max-width. |
+| Pendaftaran nasabah | `pending_verifikasi` / `aktif` / `ditolak` | warning / success / danger |
+| Akun | `aktif` / `terkunci` | success / danger |
+| Produk | `aktif` / `nonaktif` | success / neutral |
+| Mode akses | `digital` / `offline` | tanpa chip / neutral dengan ikon |
+| Setoran | `tercatat` / `dikoreksi` / `dibatalkan` | neutral dengan centang / warning / neutral (nominal dicoret) |
+| Penarikan | `pending` / `approved` / `selesai` / `ditolak` / `dibatalkan` / `kedaluwarsa` | warning / info / success / danger / neutral / neutral |
+| Setor kas ke kantor | `pending` / `cocok` / `lebih` / `kurang` / `dibatalkan` | warning / success / info / danger / neutral |
+| Persetujuan | `pending` / `disetujui` / `ditolak` | warning / success / danger |
+| Tinjauan penarikan offline | `sesuai` / `bermasalah` / belum ditinjau | success / danger / warning |
+| Alert tunggakan paket | `normal` / `peringatan` / `perlu_review` | tanpa chip / warning / danger |
+| Komplain | `baru` / `diproses` / `selesai` | info / warning / success |
+| Kunjungan | `dikunjungi` / `dilewati` / `tidak_ada` | success / neutral / warning |
+| Serah terima paket | `belum` / `sudah_diterima` | warning / success |
+| Notifikasi | `antri` / `terkirim` / `gagal` | neutral / success / danger |
+| Kas saat handover | `lunas` / `masih_tunggakan` | success / danger |
 
-#### Touch Targets
-The `button-primary` pill renders at ~32 px tall in nav and ~48 px tall in marketing contexts. Marketing CTAs comfortably meet WCAG AAA at all breakpoints; nav buttons inflate touch area through `{spacing.xs}` padding on mobile to meet the 44 × 44 px floor.
+Satu domain, satu pemetaan. Jangan membuat warna baru untuk status baru. Pilih dari tabel ini.
 
-#### Collapsing Strategy
-- **Nav**: full link row + Ask AI / Log In / Sign Up pills at desktop. Collapses to logo + hamburger at mobile with the menu opening as a full-overlay.
-- **Hero**: mesh gradient stays centred; headline + body stack vertically at all breakpoints (the brand doesn't use a split-hero pattern).
-- **Three-feature row**: 3-up → 2-up → 1-up at the breakpoints above; cards keep their `{rounded.md}` 8 px shape across all viewports.
-- **Pricing card grid**: 3-up at desktop, vertical stack at mobile with `pricing-card-featured` always sitting in the middle.
-- **Template grid**: 5-up → 3-up → 2-up → 1-up. Each `template-card` keeps its 16:9 aspect on the image.
+### Kanvas, kartu, dan hero hangat (nasabah dan kolektor)
+- **Kanvas** `{colors.canvas-warm}` `#f3f7f1` menggantikan `{colors.canvas}` di portal nasabah dan kolektor. Admin tetap `{colors.canvas}` `#fafafa`.
+- **Kartu**: putih, border `{colors.hairline-warm}` `#e1eadd`, radius 20px, bayangan `0 1px 2px rgba(20,83,45,.06)`.
+- **Hero**: latar `{colors.primary-deep}` `#166534`, teks utama `{colors.on-hero}` `#ecfdf5` (6,77:1), teks sekunder `{colors.on-hero-mute}` `#bbf7d0` (5,88:1). Chip di hero: latar putih 16% (`rgba(255,255,255,.16)`) dengan teks `#ecfdf5` (4,64:1). Tombol utama di hero: latar putih, teks `{colors.on-primary-soft}`.
+- **Dekor hero** (lingkaran `#15803d` dan `#1b8f47`, koin `{colors.decor-gold}` `#fbbf24` dengan teks "Rp" `#92400e`) hanyalah hiasan. Bukan token status, tidak pernah membawa informasi, `aria-hidden`.
+- **Catatan lembut**: `{colors.soft-amber}` + border `{colors.soft-amber-border}` untuk "pengajuan sedang menunggu"; `{colors.primary-soft-2}` + border `{colors.soft-green-border}` untuk rincian biaya dan ajakan.
 
-#### Image Behavior
-- **Mesh gradient**: rendered as inline SVG or canvas-painted gradient; scales fluidly with the hero container; never crops, never tiles.
-- **Customer logos**: rendered as monochrome SVGs in the logo strip; consistent 24 px height.
-- **Code editor mockup**: dark `{colors.primary}` rectangle with mono text rendered inside; treated as an image at the layout level.
-- **Template thumbnails**: 16:9 landscape inside `{rounded.md}` card chrome; lazy-loaded; consistent grayscale palette in the placeholder state.
+Pasangan warna baru (semuanya sudah dihitung):
 
-## Elevation & Depth
+| Pasangan | Kontras |
+|---|---|
+| `#0f766e` di `#ccfbf1` (ikon dan teks teal) | 4,86:1 |
+| `#1d4ed8` di `#dbeafe` | 5,49:1 |
+| `#92400e` di `#fef3c7` | 6,37:1 |
+| `#14532d` di `#f0fdf4` | 8,70:1 |
+| `#525252` di kanvas hangat `#f3f7f1` (teks sekunder) | 7,21:1 |
+| `#15803d` di kanvas hangat (tautan) | 4,63:1 |
+| `#404040` di `#fffbeb` | 10,00:1 |
+| `#737373` (subtle) di putih | 4,74:1 |
+| `#737373` (subtle) di kanvas hangat | 4,38:1 |
 
-| Level | Treatment | Use |
+**Aturan akibatnya**: `{colors.subtle}` `#737373` hanya boleh di atas **putih**. Di atas kanvas hangat, pakai `{colors.mute}` `#525252`.
+
+### Ubin kategori
+
+Ubin ikon (kotak 14px, 40–56px) memberi identitas pada kategori supaya daftar mudah dipindai. Ubin **bukan status**: status tetap lewat chip (tabel di atas).
+
+| Kategori | Ubin (latar / ikon) | Dipakai untuk |
 |---|---|---|
-| Level 0 — Flat | No shadow, no border. | Full-bleed hero bands and the polarity-flipped dark sections. |
-| Level 1 — Inset Hairline | `0 0 0 1px #00000014` inset 1 px border. | Default card chrome — the brand's universal "you can see this card" cue. |
-| Level 2 — Subtle Drop | `0px 1px 1px #00000005, 0px 2px 2px #0000000a` plus inset hairline. | Slightly elevated cards (template-grid, marketing-card). |
-| Level 3 — Soft Stack | `0px 2px 2px #0000000a, 0px 8px 8px -8px #0000000a` plus inset hairline. | The "medium" elevation — feature-grid cards. |
-| Level 4 — Float Stack | `0px 2px 2px #0000000a, 0px 8px 16px -4px #0000000a` plus inset hairline. | "Large" elevation — pricing cards, callout panels. |
-| Level 5 — Modal | `0px 1px 1px #00000005, 0px 8px 16px -4px #0000000a, 0px 24px 32px -8px #0000000f` plus inset hairline. | Modal / dialog surfaces and dropdown menus. |
+| Hijau | `{colors.primary-soft}` / `{colors.on-primary-soft}` | Bebas, setoran masuk, Tarik, notifikasi setoran |
+| Biru | `{colors.info-soft}` / `{colors.info}` | Riwayat, penarikan, notifikasi penarikan |
+| Teal | `{colors.tile-teal-bg}` / `{colors.tile-teal-fg}` | Paket, komplain, cincin dan bar paket |
+| Kuning | `{colors.warning-soft}` / `{colors.warning-deep}` | Bantuan, tunggakan, koreksi, bonus |
+| Netral | `{colors.surface-inset}` / `{colors.body}` | Dibatalkan, transaksi keluar biasa, pengaturan |
+| Mawar | `{colors.danger-soft}` / `{colors.danger-deep}` | Keluar (logout), tindakan merusak |
 
-The brand uses STACKED shadows — multiple small offsets layered to fake natural light — never a single 8-px-blur generic drop. Inset hairline rings are always added so the card edge stays crisp.
+Aturan: warna kategori **hanya** di ubin ikon dan di cincin/bar paket (teal). Tidak di teks, chip, atau banner. Ubin selalu berpasangan dengan label teks, jadi kuning pada ubin tidak dibaca sebagai peringatan.
 
-### Decorative Depth
-- **Mesh gradient as atmospheric depth**: the hero's multi-stop gradient is the brand's only "atmospheric" effect — applied as a flat 2-D backdrop rather than a 3-D illustration.
-- **Polarity-flipped dark band as section-depth**: switching the surface from `{colors.canvas-soft}` to `{colors.primary}` (the deep ink) is the brand's chief depth cue between bands.
-- **Inset-shadow + drop-shadow combo**: the cards' combination of an inset 1 px ring and a multi-stop drop produces a "card sits on the page" effect without ever feeling material-heavy.
+### Mode gelap
+Mode gelap memakai kelas `.dark` dan kunci `td-theme` yang sudah ada.
+- Permukaan netral murni: `{colors.dark-canvas}` → `{colors.dark-surface}` → `{colors.dark-raised}`. **Tidak ada lagi navy** (`#131C2E`, `#0B1220`, `#0A1626`).
+- Tombol utama: latar `{colors.dark-primary}` `#22c55e` dengan teks `{colors.dark-on-primary}` (6,54:1). Tautan/teks hijau: `{colors.dark-primary-text}` `#4ade80` (10,29:1 di `#171717`).
+- Chip semantik memakai pasangan `*-soft` gelap dengan teks `dark-*-text` (semuanya ≥ 8,5:1).
+- Teks sekunder hanya satu tingkat: `{colors.dark-mute}` `#a3a3a3` (7,11:1).
 
-## Shapes
+Ubin teal di mode gelap: latar `{colors.dark-tile-teal-bg}` `#042f2e`, ikon `{colors.dark-tile-teal-fg}` `#5eead4` (9,78:1). Ubin lain memakai pasangan `*-soft` gelap yang sudah ada. Hero tetap `{colors.primary-deep}` di mode gelap, dan kanvas hangat menjadi `{colors.dark-canvas}`.
 
-### Border Radius Scale
+## 3. Typography
 
-| Token | Value | Use |
+### Font
+- **Instrument Sans** (sudah dimuat lewat Bunny Fonts, bobot 400/500/600) untuk **semua** teks antarmuka.
+- **Monospace sistem** (`ui-monospace`) hanya untuk: kode, ID transaksi, nomor referensi, dan **header kolom tabel admin**. Tidak pernah untuk saldo atau nominal.
+- **Source Serif 4 dihapus.** Saat ini hanya dipakai di `kpi-card` (±16 tempat) dan memuat permintaan eksternal ke Google Fonts, yang tidak ideal untuk PWA/APK dengan koneksi tidak stabil.
+- Bobot maksimum **600**. Jangan memakai 700 atau 800.
+
+### Angka dan uang
+- Semua angka uang memakai `font-variant-numeric: tabular-nums` (utilitas Tailwind `tabular-nums`) agar kolom rata.
+- Format: **`Rp 1.250.000`**. Pemisah ribuan titik, tanpa desimal, spasi tak-terputus (`&nbsp;`) antara `Rp` dan angka di layar mobile dan admin. Satu helper/komponen untuk semuanya, jangan menulis `number_format` manual di view.
+- **Pengecualian: view cetak** (struk, rekap, komisi) tetap memakai spasi biasa. Beberapa tes (`StrukSetoranTest`, `RekapMutasiNasabahTest`, `KomisiTest`) memakai `assertSee('Rp 100.000')` dengan spasi biasa dan akan gagal bila diganti `&nbsp;`. Sebelum memigrasi view mana pun, cari dulu `assertSee('Rp ` di `tests/`.
+- Setoran: `+Rp 20.000` (hijau). Penarikan: `−Rp 100.000` (ink). Koreksi: nominal lama dicoret, nominal baru di sebelahnya.
+- Angka besar tidak boleh terpotong. Bila `Rp 1.250.000.000` tidak muat, turunkan satu tingkat (`money-hero` → `money-lg`), jangan memotong dengan elipsis.
+
+### Hierarki
+| Token | Ukuran/Bobot | Pemakaian |
 |---|---|---|
-| `{rounded.none}` | 0px | Full-bleed hero / footer bands. |
-| `{rounded.xs}` | 4px | Tightest inline pill — the `nav-cta-signup` 6-px-radius button (mapped to `xs/sm`). |
-| `{rounded.sm}` | 6px | The brand's `--geist-radius` token — base UI radius for in-app buttons, form inputs, dropdown menus. |
-| `{rounded.md}` | 8px | The brand's `--geist-marketing-radius` token — feature cards, template cards. |
-| `{rounded.lg}` | 12px | Slightly larger card chrome (pricing-card variants). |
-| `{rounded.xl}` | 16px | Largest card chrome — when a card hosts a hero image cap. |
-| `{rounded.pill-sm}` | 64px | Tab-ghost pills inside the "AI Apps / Web Apps / Ecommerce / Marketing / Platforms" row. |
-| `{rounded.pill}` | 100px | The marketing CTA pill — `button-primary`, `button-secondary`, "Start Deploying" pill. |
-| `{rounded.full}` | 9999px | Icon-button circular containers, nav-link ghost pills. |
+| `money-hero` | 34/600 | Total saldo di hero |
+| `money-input` | 28/600 | Nominal di input penarikan (berwarna `primary`) |
+| `money-lg` | 24/600 | Nominal di input, KPI admin, PIN |
+| `money-md` | 16/600 | Nominal di baris daftar |
+| `title-lg` | 24/600 | Judul halaman mobile |
+| `title-md` | 20/600 | Judul bagian, judul sheet |
+| `title-sm` | 16/600 | Judul kartu |
+| `body-lg` | 16/400 | Teks dasar nasabah dan kolektor |
+| `body-md` | 14/400 | Teks dasar admin, teks sekunder mobile |
+| `label` | 14/500 | Label form, tombol kecil |
+| `caption` | 12/400 | Metadata, waktu |
+| `chip` | 12/500 | Chip status, label bottom nav |
 
-### Photography Geometry
-- **Mesh gradient**: full-bleed 2-D atmospheric backdrop, never cropped to a frame; treated as the page's wallpaper.
-- **Customer logos**: monochrome SVG, consistent 24 px height in a flex row.
-- **Code editor mockup**: 16:10 dark rectangle, `{rounded.md}` corners.
-- **Template thumbnails**: 16:9 landscape inside `{rounded.md}` chrome.
-- **Showcase imagery**: 2:1 or 16:9 inside `{rounded.lg}` to `{rounded.xl}` chrome with a stacked shadow.
+**Lantai ukuran: 12px.** Tidak ada teks di bawah 12px. Saat ini ada 9,5–11px di bottom nav dan chip, dan itu harus dinaikkan.
 
-## Components
+Judul memakai huruf kapital biasa (sentence case) dengan sedikit tracking negatif di ukuran besar. **Tidak ada teks huruf kapital semua** di UI nasabah dan kolektor. Satu pengecualian: header kolom tabel admin (`table-head-admin`).
 
-### Buttons
+## 4. Layout
 
-**`button-primary`** — the canonical 100-px-radius black pill, marketing scale.
-- Background `{colors.primary}`, text `{colors.on-primary}`, label set in `{typography.button-lg}`, padding `0px {spacing.sm}` 12 px, shape `{rounded.pill}` 100 px. Renders ~48 px tall when paired with the marketing flex layout.
+- Basis 4px. Skala: 4, 8, 12, 16, 20, 24, 32, 48.
+- **Mobile**: kolom satu, lebar maksimum 480px di tengah layar, gutter 16px, jarak antar kartu 12px, jarak antar bagian 24px. Konten diberi ruang bawah ≥ 96px agar tidak tertutup bottom nav. Hormati `safe-area-inset-bottom`.
+- **Admin**: sidebar kiri + topbar, area konten maks 1280px, gutter 24px. Grid KPI 1/2/4/5 kolom sesuai lebar.
+- **Target sentuh ≥ 44×44px** untuk semua kontrol di mobile. Tombol utama 48px. Input nominal kolektor 68px.
+- Satu layar mobile = **satu tindakan utama**. Tombol utama (hijau penuh) maksimal satu per layar; sisanya sekunder atau ghost.
 
-**`button-secondary`** — the white pill paired with the black primary inside marketing bands.
-- Background `{colors.canvas}`, text `{colors.ink}`, same typography + padding as `button-primary`, shape `{rounded.pill}`.
+### Responsif
+| Lebar | Perilaku |
+|---|---|
+| < 480px | Kolom penuh, bottom nav menempel ke tepi |
+| ≥ 480px (portal mobile) | Kolom 480px di tengah, latar luar `{colors.canvas}` |
+| < 1024px (admin) | Sidebar menjadi drawer, tabel boleh digulir horizontal di dalam kontainernya sendiri |
+| ≥ 1024px (admin) | Sidebar tetap |
 
-**`button-primary-sm`** — the smaller-scale primary pill used inside nav and pricing-card CTAs.
-- Background `{colors.primary}`, text `{colors.on-primary}`, label set in `{typography.button-md}` (14 px / 500), shape `{rounded.pill}`.
+## 5. Elevation & Depth
 
-**`button-secondary-sm`** — the smaller-scale white pill paired with `button-primary-sm`.
-- Background `{colors.canvas}`, text `{colors.ink}`, same typography + shape as `button-primary-sm`.
+Hampir datar. Kedalaman dibangun dari **hairline** dan **bayangan sangat halus**, bukan efek.
 
-**`tab-ghost`** — the centred-row tab pill ("AI Apps / Web Apps / Ecommerce / Marketing / Platforms").
-- Background `{colors.canvas}`, text `{colors.ink}`, label set in `{typography.body-sm}`, padding `0px {spacing.md}`, shape `{rounded.pill-sm}` 64 px.
+| Level | Perlakuan | Dipakai untuk |
+|---|---|---|
+| 0 | Tanpa border | Hero, area inset, catatan lembut |
+| 1 | Border `{colors.hairline-warm}` + `0 1px 2px rgba(20,83,45,.06)` | Kartu nasabah dan kolektor |
+| 1 (admin) | Border `{colors.hairline}`, tanpa bayangan | Kartu, KPI, tabel admin |
+| 2 | Border + `0 1px 2px rgb(0 0 0 / 0.06)` | Bottom nav, dropdown |
+| 3 | `0 8px 24px rgb(0 0 0 / 0.12)` | Sheet, modal, toast |
 
-**`icon-button-circular`** — the circular icon container (often a "?" or arrow inside).
-- Background `{colors.canvas}`, dark icon, 1 px solid hairline border, shape `{rounded.full}`.
+Tidak ada gradien, blur latar, glow, atau cincin warna-warni. Kedalaman visual di hero datang dari lingkaran datar bertingkat, bukan dari gradien.
 
-**Nav CTAs:**
+## 6. Shapes
 
-**`nav-cta-signup`** — the small black "Sign Up" button in the nav row.
-- Background `{colors.primary}`, text `{colors.on-primary}`, label `{typography.body-sm-strong}`, padding `0px {spacing.xs}`, height 28 px, shape `{rounded.sm}` 6 px (the brand's `--geist-radius`).
+| Token | Nilai | Pemakaian |
+|---|---|---|
+| `sm` | 6px | Admin: tombol, input, item sidebar |
+| `md` | 8px | Admin: kartu, KPI, dropdown |
+| `lg` | 12px | Mobile: input, banner |
+| `tile` | 14px | Ubin ikon, banner dan kotak isi dalam kartu |
+| `card` | 20px | Mobile: kartu, kartu catatan, empty state (`rounded-[20px]`) |
+| `hero` | 24px | Hero (`rounded-3xl`) |
+| `2xl` | 24px | Sudut atas sheet dan modal bawah |
+| `panel` | 40px | Sudut bawah panel hijau di login |
+| `pill` | 9999px | Mobile: tombol, chip, bottom nav, lingkaran |
 
-**`nav-cta-login`** — the white "Log In" button in the nav.
-- Background `{colors.canvas}`, text `{colors.ink}`, same typography / height / shape as `nav-cta-signup`.
+Aturan: **satu portal, satu keluarga bentuk.** Mobile = pil + 12–24px. Admin = 6–8px. Jangan mencampur tombol pil dengan tombol 6px di layar yang sama.
 
-**`nav-cta-ask-ai`** — the small "Ask AI" button with a faint border.
-- Background `{colors.canvas}`, text `{colors.ink}`, 1 px solid `{colors.hairline}` border (extracted as `0px solid rgb(235, 235, 235)`), same typography / height / shape.
+## 7. Components
 
-### Cards & Containers
+### Tombol
+- **Primary** (`button-primary`): hijau penuh, pil, 48px. Satu per layar. Label diawali kata kerja: "Ajukan penarikan", "Catat setoran", "Masuk".
+- **Secondary**: putih, border `hairline-strong`, pil.
+- **Ghost**: teks hijau tanpa latar, untuk tindakan tersier ("Lihat riwayat").
+- **Danger**: merah penuh, hanya untuk tindakan merusak dan tidak bisa dibatalkan (tolak, batalkan, nonaktifkan). Selalu lewat konfirmasi.
+- **Admin**: `button-admin-primary` hitam-tinta 36px radius 6px; `button-admin-secondary` putih berborder.
+- Tombol tidak dinonaktifkan diam-diam. Bila tidak boleh ditekan, tampilkan alasannya di bawah tombol ("Saldo belum cukup", "Belum waktunya cair").
+- Fokus: cincin 2px `{colors.primary}` (admin: `{colors.ink}`) dengan offset 2px. Jangan dihapus.
 
-**`card-marketing`** — the canonical marketing feature card (3-up section cards).
-- Background `{colors.canvas}`, text `{colors.ink}`, padding `{spacing.lg}` 24 px, shape `{rounded.md}` 8 px (the `--geist-marketing-radius`). Carries Level 3 soft-stack shadow.
+### Kartu, hero, dan catatan
+- `card`: putih, border hairline hangat, radius 20px, padding 16px, bayangan halus.
+- `hero-card`: hijau tua `{colors.primary-deep}`, radius 24px, padding 20px. Isi: label kecil `on-hero-mute`, **total saldo** `money-hero` `on-hero`, chip produk (putih 16%), satu kalimat hangat dengan ikon centang, dan dekor datar di pojok kanan atas. **Teks selalu di atas lapisan dekor** dan tidak pernah bertumpuk dengan koin. Di Saldo, hero memuat tombol utama berlatar putih ("Ajukan penarikan") dan satu tautan bergaris bawah.
+- `note-amber` / `note-green`: kartu catatan lembut untuk pengajuan menunggu dan rincian biaya.
+- Header paket: pita `{colors.tile-teal-bg}` setinggi 110px berisi ilustrasi kado datar di kiri dan nama paket di kanan.
 
-**`card-marketing-large`** — the larger marketing card used for "compute model" / "AI Gateway" callouts.
-- Background `{colors.canvas}`, text `{colors.ink}`, padding `{spacing.xl}`, shape `{rounded.lg}` 12 px. Carries Level 4 float-stack shadow.
+### Ubin ikon dan aksi cepat
+Ubin `tile-*` (44px; 56px untuk aksi cepat; 40px di baris daftar). Aksi cepat: empat ubin 56px berlabel 12/500 di bawahnya (Tarik hijau, Riwayat biru, Paket teal, Bantuan kuning). Judul bagian aksi cepat ramah dan sopan ("Mau apa hari ini?").
 
-**`card-soft`** — the soft-tinted card used inside cluster groups (lighter than canvas-soft).
-- Background `{colors.canvas-soft}`, text `{colors.ink}`, padding `{spacing.lg}`, shape `{rounded.md}`.
+### Cincin progres, lencana, dan streak
+- **Cincin** (`progress-ring`): lingkaran SVG, track `{colors.primary-soft}`, isi `{colors.primary}`, ujung membulat, persentase di tengah (ukuran teks ¼ diameter, bobot 600). Wajib `role="img"` dan `aria-label="42 persen"`. Ukuran: 132px (halaman progres), 88px (kartu di beranda), 56px (lencana barang).
+- **Lencana barang**: cincin 56px, tercapai = centang, lainnya persentase; nama barang 13/500 dan jumlahnya 12px di bawahnya.
+- **Streak**: kartu dengan ikon api, "12 hari berturut-turut", dan tujuh lingkaran 30px (S S R K J S M) berisi centang hijau. Hari tanpa setoran = lingkaran kosong berborder `hairline-strong`, bukan merah.
+- Kalimat penyemangat berbasis angka nyata ("Tinggal Rp 1.040.000 lagi") boleh dipakai hanya bila angkanya dihitung dari data. Jangan menulis angka tetap.
 
-**`template-card`** — the deploy-template card in the "Deploy your first app" grid.
-- Background `{colors.canvas}`, text `{colors.ink}`, padding `{spacing.md}` 16 px, shape `{rounded.md}` 8 px. Hosts a 16:9 thumbnail at the top.
+### Penanda tahap (stepper)
+Untuk status yang berurutan: titik 24px dihubungkan garis 2px, label 12px di bawahnya.
 
-**`code-editor-mockup`** — the dark code-preview surface inside marketing bands.
-- Background `{colors.primary}`, text `{colors.on-primary}`, body in `{typography.code}` (13 px / Geist Mono), padding `{spacing.lg}` 24 px, shape `{rounded.md}` 8 px.
+| Domain | Tahap | Pemetaan status |
+|---|---|---|
+| Penarikan | Diajukan → Disetujui → Selesai | `pending` / `approved` / `selesai` |
+| Penarikan ditolak | Diajukan → Ditolak | `ditolak` (titik akhir `stepper-dot-bad`, tanpa centang) |
+| Komplain | Dikirim → Diproses → Selesai | `baru` / `diproses` / `selesai` |
 
-**`pricing-card`** — the default pricing-tier card.
-- Background `{colors.canvas}`, text `{colors.ink}`, padding `{spacing.xl}` 32 px, shape `{rounded.lg}` 12 px. Inside: tier name in `{typography.display-md}`, price in `{typography.display-xl}`, feature list in `{typography.body-md}` rows, CTA at the bottom.
+Tahap selesai = `stepper-dot-done` (hijau + centang), belum = `stepper-dot-todo`, ditolak = `stepper-dot-bad` (merah, **tanpa centang**, label "Ditolak" tetap tertulis). Status `dibatalkan` dan `kedaluwarsa` belum punya tampilan tahap: pakai chip netral saja.
 
-**`pricing-card-featured`** — the polarity-flipped "Pro" tier card.
-- Background `{colors.primary}`, text `{colors.on-primary}`, same shape + padding as `pricing-card`. CTA inverts to `button-secondary-sm` (white pill on black card).
+### Input nominal dan pilihan cepat
+`input-amount` 68px, `money-input` berwarna `primary`, di bawahnya teks bantu 12px ("Min. Rp 10.000 atau tarik habis"). **Pilihan nominal cepat** (`chip-amount`: Rp 50 rb, Rp 100 rb, Rp 200 rb, Tarik habis; aktif = `chip-amount-active`) adalah **usulan baru**, bukan fitur yang ada di kode (lihat §14).
 
-### Inputs & Forms
+### Layar sukses
+Dipakai setelah pengajuan penarikan terkirim. Lingkaran centang 104px `{colors.primary}` dengan cincin lembut `{colors.primary-soft}` 12px, titik dan batang konfeti datar (emas, hijau, teal) di belakangnya, judul "Pengajuan terkirim", ringkasan nominal dalam kartu, satu catatan hijau yang menunjuk ke Notifikasi, lalu dua tombol (utama dan sekunder). Konfeti statis, tidak beranimasi.
 
-**`form-input`** — the canonical text input.
-- Background `{colors.canvas}`, text `{colors.ink}`, 1 px solid `{colors.hairline}` border, body in `{typography.body-sm}` (14 px), padding `0px {spacing.sm}`, height 40 px (the brand's `--geist-form-height`), shape `{rounded.sm}` 6 px.
+### Kondisi kosong
+`empty-state` memakai ilustrasi tunas 96px di dalam lingkaran `{colors.primary-soft}`, judul 16/600 yang menyebut ruangnya, dan satu kalimat ajakan. Selalu ada, tidak pernah hanya ikon kecil.
 
-**`form-input-sm`** — small-height variant (32 px tall) for tight forms.
-- Same as `form-input` but height 32 px (the `--geist-form-small-height`).
+### Panel login (D38, D40, D42)
+Halaman login portal mobile memakai tata letak responsif dua kolom pada layar desktop/tablet (≥ 900px) dan kolom bertumpuk dengan header panel di layar ponsel. Panel identitas di sisi kiri/atas memakai warna brand masing-masing portal (`{colors.primary-deep}` untuk nasabah, `{colors.portal-kolektor}` untuk kolektor) dengan ilustrasi toples celengan datar SVG. Panel form di kanan/bawah **selalu terang** (`{colors.surface}` dan `{colors.canvas-warm}`, keputusan D42). Form login dua langkah (D38) memisahkan masukan Nomor HP dan Keypad PIN 6 digit dengan opsi fallback no-JS. Tombol aksi utama (Lanjut, Masuk) **selalu berwarna hijau `{colors.primary}`** terlepas dari portal nasabah atau kolektor (keputusan D40).
 
-**`form-input-lg`** — large-height variant (48 px tall) for hero CTAs.
-- Same as `form-input` but height 48 px (the `--geist-form-large-height`); body in `{typography.body-md}` 16 px.
+### Keypad PIN & Titik PIN
+- **Keypad PIN** (`pin-pad`): Tombol angka berukuran tinggi 62px, sudut membulat `rounded-2xl`, latar `{colors.surface-inset}` dengan border `{colors.hairline}`, teks 24px/600 `tabular-nums`. Tombol hapus dan tombol lihat PIN (peek 1,2 detik).
+- **Titik PIN** (`pin-dots`): Enam lingkaran 20px berjarak 12px. Belum terisi = lingkaran kosong border `{colors.hairline-strong}`; terisi = bulatan penuh `{colors.ink}` (atau `{colors.primary}`) dengan animasi pop lembut. Ketika input gagal/salah, titik PIN bergetar secara horizontal (animasi `shake`).
 
-### Navigation
+### Kartu Toast & Notifikasi
+Kartu mengambang halus di pojok kanan bawah atau atas layar untuk umpan balik instan (durasi 3 detik). Menggunakan border hairline, tanpa shadow tebal, teks pendek jelas.
 
-**`nav-bar`** — the sticky top nav.
-- Background `{colors.canvas}`, text `{colors.ink}`, height 64 px (the brand's `--header-height`), padding `{spacing.sm} {spacing.lg}`. Layout: logo left, link row centre, "Ask AI / Log In / Sign Up" cluster right.
+### Ilustrasi Toples Celengan
+Ilustrasi toples kaca tabungan datar SVG dengan koin emas jatuh dan permukaan koin di dalam toples yang naik bertahap sesuai tingkat tabungan atau interaksi pengguna.
 
-**`nav-link`** — the centred link row inside `nav-bar`.
-- Text `{colors.body}`, set in `{typography.body-sm}`, padding `{spacing.xs} {spacing.sm}`, shape `{rounded.full}` (ghost pill — visible only on hover or active, but the radius is documented).
+### Aturan Gerakan & Animasi (Motion, D39)
+- **Lingkup**: Animasi dekoratif (koin jatuh, level toples, konfeti berhamburan) **hanya diizinkan di halaman login dan layar sukses penarikan/setoran** (D39). Seluruh layar kerja harian hanya memakai transisi halus ≤ 200ms pada penekanan tombol dan pergantian elemen.
+- **Teknis**: Hanya menganimasikan `transform` dan `opacity` untuk efisiensi render GPU.
+- **Aksesibilitas**: Seluruh animasi wajib menghormati kueri media `@media (prefers-reduced-motion: reduce)` yang mematikan durasi dan iterasi (durasi 0.01ms tanpa loop).
 
-**`footer`** — the bottom 4-column nav.
-- Background `{colors.canvas}`, text `{colors.body}`, padding `{spacing.4xl} {spacing.lg}`. Eyebrow column labels in `{typography.caption-mono}` (uppercase mono effect); link rows in `{typography.body-sm}`.
+### Mode Teks Besar (A+, D37)
+Tersedia tombol pengubah ukuran teks "A+" di sudut kanan atas halaman login dan menu pengaturan portal nasabah/kolektor. Menambahkan kelas `.big` pada elemen `<html>` yang menaikkan ukuran font dasar sebesar 118% (1.18em/rem). Preferensi disimpan di `localStorage` dengan kunci `td-text-size` (`try/catch` aman).
 
-### Signature Components
+### Baris daftar (riwayat, produk, nasabah)
+Tinggi ≥ 64px. Kiri: ikon dalam lingkaran 36px berwarna `primary-soft` + judul + keterangan satu baris. Kanan: nominal (`money-md`, rata kanan, `tabular-nums`) + chip status di bawahnya bila perlu. Pembatas antar baris memakai hairline. Seluruh baris bisa disentuh.
 
-**`hero-band`** — the white hero with the mesh gradient backdrop.
-- Background `{colors.canvas}` (or `{colors.canvas-soft}` on some surfaces), text `{colors.ink}`, padding `{spacing.4xl} {spacing.lg}`. Inside: a small mono badge above the headline, the headline in `{typography.display-xl}` (sentence-case, period-terminated), a body lead in `{typography.body-lg}`, then a CTA row with `button-primary` + `button-secondary`. The mesh gradient sits behind, scaled to occupy roughly the top half of the band.
+### Chip
+Radius pil, 12px/500, teks selalu dari pasangan `*-deep` di atas `*-soft`. Chip **portal** memakai latar penuh `portal-*` dengan teks putih, **hanya** di kanan atas layar, satu per layar.
 
-**`feature-mesh-band`** — the secondary section that hosts a mesh-gradient atmospheric backdrop with feature copy on top.
-- Background `{colors.canvas}`, text `{colors.ink}`, padding `{spacing.5xl} {spacing.lg}`. Section headline in `{typography.display-lg}`; supporting body in `{typography.body-md}`.
+### Form
+- Label di atas input (14/500), bukan placeholder. Placeholder berisi contoh nyata dan memakai `{colors.subtle}`.
+- Input 48px, radius 12px (admin: 40px, radius 6px). Error: border `danger`, teks pesan 14px di bawahnya dengan ikon, sebutkan apa yang salah dan apa yang harus dilakukan.
+- **Nominal**: `input-amount` 68px (`money-input`, berwarna `primary`), `inputmode="numeric"`, pemisah ribuan otomatis, awalan `Rp` tetap terlihat.
+- **PIN 6 digit**: enam `pin-cell` 56px, `inputmode="numeric"`, karakter disamarkan, tempel dinonaktifkan. Pesan kesalahan login tetap generik (anti-enumerasi, keputusan D19). Jangan diubah menjadi spesifik.
+- **Tanggal**: selalu `<x-ui.tanggal>` (flatpickr, locale `id`). Palet kalender mengikuti `primary` (`--color-brand-*` yang sekarang dipakai flatpickr diganti token baru).
+- **Tanda tangan**: kanvas putih, border putus-putus hairline-strong, tinggi ≥ 160px, tombol ghost "Hapus", di bawahnya teks "Tanda tangan di dalam kotak".
+- **Foto/selfie (absensi, bukti penarikan)**: bingkai 3:4, tombol rana 64px di tengah bawah, tampilan hasil dengan tombol "Ulangi" dan "Pakai foto ini".
 
-**`showcase-band-light`** — a soft-canvas section ("Deploy your first app in seconds").
-- Background `{colors.canvas-soft}`, text `{colors.ink}`, padding `{spacing.5xl} {spacing.lg}`.
+### Navigasi mobile
+- `bottom-nav`: bar putih menempel ke bawah, tinggi 64px, **empat item dengan ikon 24px dan label 12px yang selalu terlihat** (bukan hanya di item aktif). Aktif = warna `primary` + bobot 500. Tidak ada pil hitam melayang.
+- Kolektor: tombol **Absen** `fab-absen` 56px di tengah, hijau datar, tanpa cincin gradien, dengan label "Absen" di bawahnya (12px). Setelah absen masuk, ia berubah menjadi centang dengan label "Sudah absen".
 
-**`showcase-band-dark`** — the polarity-flipped dark band ("A compute model for all workloads").
-- Background `{colors.primary}`, text `{colors.on-primary}`, padding `{spacing.5xl} {spacing.lg}`. Section headline in `{typography.display-lg}` (white on black). Often contains a `code-editor-mockup` flush with the band.
+### Navigasi admin
+- `admin-sidebar`: putih, border kanan hairline, item 36px, aktif `surface-inset` + teks ink + bobot 500. Bagian dikelompokkan dengan judul 12px `mute` (bukan huruf kapital semua).
+- `topbar`: 56px, pencarian global di kiri, chip portal admin dan menu profil di kanan.
 
-**`logo-strip`** — the customer-logo wrapping row near the top of the page.
-- Background `{colors.canvas}`, text `{colors.body}`, padding `{spacing.lg} {spacing.xl}`. Logos rendered as monochrome SVGs at consistent height.
+### Tabel admin
+- Header `admin-table-head`: monospace 12px, huruf kapital, tracking 0,6px, warna `mute`, latar `canvas`.
+- Sel: 14px, tinggi baris 44px, border bawah hairline, hover `surface-inset`. **Kolom nominal rata kanan dengan `tabular-nums`**, bukan mono. Kolom status memakai chip dari tabel §2.
+- Tabel yang memuat lebih dari 6 kolom digulir di dalam kontainer sendiri. Halaman tidak boleh bergulir ke samping.
+- Di bawah 640px, tabel yang dipakai admin di HP berubah menjadi daftar kartu.
 
-**`badge-secondary`** — the small inline metadata pill ("New", "Beta", "Live").
-- Background `{colors.canvas-soft}`, text `{colors.body}`, body in `{typography.caption}`, padding `0px {spacing.xs}`, shape `{rounded.full}`.
+### KPI
+`kpi-card`: putih, border hairline, radius 8px, label 12px `mute` di atas, nilai `money-lg` di bawah, ikon 32px `surface-inset`. Delta (naik/turun) memakai chip kecil dengan panah, bukan hanya warna.
 
-**`banner-marketing`** — the "Introducing X" announcement pill at the top of pages.
-- Background `{colors.canvas-soft}`, text `{colors.body}`, body in `{typography.body-sm}`, padding `{spacing.xs} {spacing.sm}`, shape `{rounded.full}`.
+### Banner, toast, sheet, empty state
+- **Banner** (`banner-*`): dalam halaman, untuk kondisi yang butuh perhatian ("Tunggakan 2 hari: Rp 20.000"). Selalu ada ikon dan tindakan jelas bila ada.
+- **Toast** (`flux:toast`): 3 detik, tanpa tanda seru, tanpa kata "berhasil" ("Setoran dicatat").
+- **Sheet** (`sheet`): panel bawah dengan sudut atas 24px untuk konfirmasi, PIN, dan pilihan. Latar belakang diredupkan 40% hitam.
+- **Empty state**: ajakan, bukan permintaan maaf. Judul menyebut ruangnya ("Belum ada setoran"), satu kalimat penjelas, satu tombol bila ada tindakan yang masuk akal.
 
-**`link-inline`** — body-copy inline links.
-- Text `{colors.link}` (`#0070f3`), body in `{typography.body-md}`, underlined.
+### Offline dan PWA
+Halaman `/offline` dan service worker sudah ada. Saat tidak ada koneksi, tampilkan `banner-info` di atas layar ("Anda sedang offline. Data terakhir ditampilkan.") dan nonaktifkan tindakan yang butuh server dengan alasan terlihat. Input kolektor offline (antrean lokal) masih backlog di PRD, jadi belum ada pola visualnya.
 
-### Examples (illustrative)
+### Cetak (struk setoran dan rekap mutasi)
+Hitam-putih, tanpa latar berwarna, tanpa merek hijau. Font sistem, header tabel dengan latar abu sangat muda yang aman dicetak, baris **Tanda Tangan Nasabah / Tanggal Cetak / Nama Kolektor** selalu ada di rekap. Nominal tetap rata kanan dengan angka tabular. Cetak harus terbaca di printer hitam-putih dan di kertas kecil.
 
-> Auto-derived kit-mirror demonstration surfaces (`scripts/derive-examples-block.mjs`). Each `ex-*` entry references brand-native primitives so downstream consumers (`/preview-design`, `/generate-kit`) re-skin the same 10 surfaces consistently. `TO_FILL` markers indicate missing primitives — resolve in the LLM judgment pass.
+## 8. Pola kepercayaan
 
-**`ex-pricing-tier`** — Default Pricing tier card. Re-uses feature-card chrome with brand canvas-soft surface.
-- Properties: `backgroundColor`, `textColor`, `borderColor`, `rounded`, `padding`
+Karena produk ini memegang uang orang, tampilan ikut menjadi alat audit:
+- Setiap transaksi menampilkan **tanggal transaksi** dan, bila beda, **waktu dicatat** ("Dicatat 14 Okt, 09.12").
+- Setiap setoran menampilkan **siapa yang mencatat** dan menawarkan **struk**.
+- Konfirmasi penarikan menampilkan **nominal, komisi, jumlah diterima, lokasi pengambilan** sebelum PIN diminta.
+- Tindakan final (tinjauan "bermasalah", pembatalan, penolakan) memakai sheet dengan **akibat yang ditulis jelas** dan tombol `danger`.
+- Selisih kas ditampilkan sebagai angka bertanda dan chip ("Kurang −Rp 20.000").
 
-**`ex-pricing-tier-featured`** — Featured/highlighted tier — polarity-flipped surface (dark fill + light text in light mode, light fill + dark text in dark mode).
-- Properties: `backgroundColor`, `textColor`, `rounded`, `padding`
+## 9. Suara dan bahasa (UI)
 
-**`ex-product-selector`** — What's Included summary card — re-purposed for SaaS / B2B verticals (NOT a literal product gallery).
-- Properties: `backgroundColor`, `rounded`, `padding`
+- Bahasa Indonesia, sapaan **"Anda"**, huruf kapital biasa. Bukan "Saldo Saya" tetapi "Saldo saya"; bukan "Ajukan Penarikan" tetapi "Ajukan penarikan".
+- Tombol: kata kerja di depan, 1–3 kata. Tanpa titik di akhir label dan judul; teks penjelas diakhiri titik.
+- Kesalahan: sebut apa yang terjadi, lalu apa yang bisa dilakukan, dalam satu kalimat. Tanpa awalan "Error:".
+- Hindari "Berhasil!", "Silakan", dan tanda seru pada teks sistem. Kecuali pesan login, yang memang harus generik.
+- Istilah bisnis konsisten: **setoran**, **penarikan**, **tunggakan**, **paket**, **kolektor**, **nasabah**. Jangan mengganti dengan sinonim.
 
-**`ex-cart-drawer`** — Subscription summary — re-purposed for SaaS / B2B (line items per add-on, not literal cart).
-- Properties: `backgroundColor`, `rounded`, `padding`, `item-divider`
+### Nada hangat
 
-**`ex-app-shell-row`** — Sidebar nav row inside the App Shell example. Active state uses brand primary as the indicator.
-- Properties: `backgroundColor`, `activeIndicator`, `rounded`, `padding`
+- Sapaan memakai **nama depan** dan waktu ("Selamat pagi", "Halo, Sari"). Nama berasal dari data, bukan tetap.
+- Kalimat penyemangat pendek dan tulus ("Semangat!", "Sedikit lagi, Sari!"), berbasis angka nyata. Tidak lebih dari satu per kartu.
+- **Tetap sopan dan konsisten: "Anda", bukan "kamu" atau "lo".** Hindari bahasa gaul ("ngapain"). Hangat bukan berarti santai berlebihan, karena sebagian nasabah lebih nyaman dengan bahasa yang rapi.
+- Penolakan dan galat tetap lugas dan tidak dihias. Tidak ada kalimat riang di kartu yang berisi masalah (tunggakan, ditolak, terkunci).
 
-**`ex-data-table-cell`** — Default data-table th + td chrome. Header uses mono-caps eyebrow typography; body uses body-sm.
-- Properties: `headerBackground`, `headerTypography`, `bodyTypography`, `cellPadding`, `rowBorder`
+## 10. Aksesibilitas
 
-**`ex-auth-form-card`** — Sign-in / sign-up card. Re-uses feature-card chrome with text-input primitives inside.
-- Properties: `backgroundColor`, `rounded`, `padding`
+- Kontras: teks ≥ 4,5:1, komponen non-teks ≥ 3:1. Semua pasangan di dokumen ini sudah dihitung.
+- Target sentuh ≥ 44px. Jarak antar target ≥ 8px.
+- Status tidak pernah hanya berupa warna.
+- Hormati `prefers-reduced-motion`: tanpa animasi selain transisi 150ms.
+- Ikon fungsional punya `aria-label`; ikon dekoratif `aria-hidden`.
+- Terbaca di bawah sinar matahari: jangan memakai teks abu terang di atas putih untuk informasi penting kolektor (nominal, nama, status).
+- Teks di atas hero memakai `on-hero` atau `on-hero-mute` (≥ 5,8:1). Jangan memakai abu atau hijau lain di atas `primary-deep`.
+- Cincin progres, grafik batang, dan stepper punya padanan teks (persentase, `aria-label`, label tahap). Ilustrasi dan konfeti `aria-hidden="true"`.
+- Penanda tahap tidak hanya mengandalkan warna: tahap selesai berisi centang, ditolak berlabel "Ditolak".
+- Kuning pada ubin kategori tidak boleh menjadi satu-satunya pembawa makna "perhatian". Tunggakan tetap memakai banner/chip peringatan.
 
-**`ex-modal-card`** — Modal dialog surface — same chrome as feature-card with elevated shadow.
-- Properties: `backgroundColor`, `rounded`, `padding`
+## 11. Implementasi (Tailwind v4 + Flux)
 
-**`ex-empty-state-card`** — Empty-state illustration frame.
-- Properties: `backgroundColor`, `rounded`, `padding`, `captionTypography`
+Tempel di `resources/css/app.css`, menggantikan blok `@theme` dan `.dark` yang lama. Snippet ini **belum dijalankan terhadap build Anda**, jadi jalankan `npm run build` dan periksa hasilnya.
 
-**`ex-toast`** — Toast notification surface — feature-card shape + medium shadow.
-- Properties: `backgroundColor`, `rounded`, `padding`, `typography`
+```css
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
 
+    --color-primary: #15803d;
+    --color-primary-hover: #166534;
+    --color-primary-soft: #dcfce7;
+    --color-on-primary-soft: #14532d;
 
-## Do's and Don'ts
+    --color-ink: #171717;
+    --color-body: #404040;
+    --color-mute: #525252;
+    --color-subtle: #737373;
+    --color-hairline: #e5e5e5;
+    --color-hairline-strong: #858585;
+    --color-canvas: #fafafa;
+    --color-surface: #ffffff;
+    --color-inset: #f5f5f5;
+
+    --color-success: #15803d;   --color-success-soft: #dcfce7;  --color-success-deep: #14532d;
+    --color-warning: #d97706;   --color-warning-soft: #fef3c7;  --color-warning-deep: #92400e;
+    --color-danger: #b23a2e;    --color-danger-soft: #f6e5e2;   --color-danger-deep: #8f2b21;
+    --color-info: #1d4ed8;      --color-info-soft: #dbeafe;
+
+    --color-portal-nasabah: #15803d;
+    --color-portal-kolektor: #2563eb;
+    --color-portal-admin: #171717;
+
+    --color-primary-deep: #166534;
+    --color-on-hero: #ecfdf5;
+    --color-on-hero-mute: #bbf7d0;
+    --color-canvas-warm: #f3f7f1;
+    --color-hairline-warm: #e1eadd;
+    --color-tile-teal-bg: #ccfbf1;
+    --color-tile-teal-fg: #0f766e;
+
+    --color-accent: var(--color-primary);
+    --color-accent-content: var(--color-primary);
+    --color-accent-foreground: #ffffff;
+}
+
+@layer theme {
+    .dark {
+        --color-primary: #22c55e;
+        --color-primary-hover: #4ade80;
+        --color-primary-soft: #0f2e1a;
+        --color-on-primary-soft: #86efac;
+        --color-ink: #fafafa;
+        --color-body: #d4d4d4;
+        --color-mute: #a3a3a3;
+        --color-subtle: #a3a3a3;
+        --color-hairline: #2e2e2e;
+        --color-hairline-strong: #808080;
+        --color-canvas: #0a0a0a;
+        --color-surface: #171717;
+        --color-inset: #262626;
+        --color-success-soft: #0f2e1a;  --color-success-deep: #86efac;
+        --color-warning-soft: #422006;  --color-warning-deep: #fcd34d;
+        --color-danger-soft: #450a0a;   --color-danger-deep: #fca5a5;
+        --color-info-soft: #172554;     --color-info: #bfdbfe;
+        --color-canvas-warm: #0a0a0a;
+        --color-hairline-warm: #2e2e2e;
+        --color-tile-teal-bg: #042f2e;
+        --color-tile-teal-fg: #5eead4;
+        --color-accent-foreground: #052e16;
+    }
+}
+
+html[data-portal="admin"] {
+    --color-accent: var(--color-portal-admin);
+    --color-accent-content: var(--color-portal-admin);
+}
+html.dark[data-portal="admin"] {
+    --color-accent: #fafafa;
+    --color-accent-foreground: #171717;
+}
+```
+
+Prasyarat kode:
+1. Beri `<html data-portal="{{ role }}">` di `partials/head`/layout agar varian admin aktif.
+2. Buat komponen Blade **`<x-ui.rupiah :nilai="..." />`** (belum ada) dan **`<x-ui.status-chip :domain="..." :status="..." />`** (belum ada) yang mengimplementasikan §2 dan §3, supaya pemetaan status dan format uang hanya ada di satu tempat.
+3. Satukan tiga nilai hijau nasabah yang sekarang berbeda: `PortalLogin::aksen()` (`#16a34a`), `public/manifest-nasabah.webmanifest` (`#16a34a`), dan `mobile/flavors.json` (`#059669`) → semuanya `#15803d`. Kolektor `#2563eb` dan admin `#171717` sudah konsisten.
+
+## 12. Peta migrasi (dari kode sekarang ke dokumen ini)
+
+Urutan pengerjaan yang disarankan: (1) nasabah: saldo, riwayat, penarikan, paket; (2) kolektor: setoran, daftar nasabah, absen; (3) login dan landing; (4) admin: hanya penyelarasan warna.
+
+| Sekarang | Jadi |
+|---|---|
+| `indigo-*` (nasabah ±207, admin ±145) | Nasabah/kolektor: token `primary`. Admin: tombol → `portal-admin`, tautan/fokus → `info` |
+| `emerald-*` (kolektor ±233, landing, nasabah ±121) | Token `primary` / `primary-soft` |
+| `blue-*` di kolektor (±95) | Hanya untuk chip dan pita portal; selain itu `info` atau `primary` |
+| `rounded-3xl` / `rounded-2xl` pada kartu | `rounded-[20px]`; `rounded-3xl` hanya untuk hero dan sheet |
+| Gradien (kartu saldo, tombol Absen, landing) | Warna datar |
+| `font-mono` untuk nominal | `tabular-nums` (mono tinggal untuk ID, kode, header tabel admin) |
+| `font-serif` / Source Serif 4 | Hapus (dan hapus tag Google Fonts di `head.blade.php`) |
+| `text-[9.5px]`…`text-[11px]` | Minimal 12px |
+| Hex Vercel di admin: `#ab570a` → `{colors.warning-deep}`, `#c50000` → `{colors.danger}`, `#ebebeb` → `{colors.hairline}` | Pakai token. `#92400e` (6,37:1) lebih kontras dari `#ab570a` |
+| Chip portal `#16a34a` + teks putih (3,30:1) | `#15803d` (5,02:1) |
+| `.btn-primary` (`indigo-800`) di `app.css` | Per portal: hijau (mobile) / tinta (admin) |
+| Mode gelap navy (`#131C2E`, `#0B1220`, `#0A1626`) | Netral `dark-*` |
+| Bottom nav pil hitam, label hanya di item aktif | Bar putih, label selalu terlihat |
+| Latar `#fafafa` / `bg-zinc-50` di nasabah dan kolektor | `canvas-warm` `#f3f7f1` |
+| Border kartu `border-hairline` abu | `border-hairline-warm` + bayangan halus |
+| Kartu saldo hijau muda polos | `hero-card` hijau tua berilustrasi |
+| Ikon polos di lingkaran hijau seragam | Ubin kategori `tile-*` (§2) |
+| Status progres hanya chip | Cincin progres dan stepper (§7) |
+| Kondisi kosong berikon kecil | Ilustrasi tunas + judul + ajakan |
+
+## 13. Do dan Don't
 
 ### Do
-- Reserve `{colors.primary}` (`#171717`) for primary CTAs across the page. Black ink IS the conversion target.
-- Use `{rounded.pill}` 100 px for every marketing-scale CTA and `{rounded.sm}` 6 px for nav-scale buttons. The two pill scales coexist deliberately.
-- Set every headline in `{typography.display-*}` weight 600, sentence-case, often period-terminated. Aggressive negative tracking is part of the voice.
-- Use the brand mesh gradient as atmospheric decoration at hero scale only — never miniaturise it to an icon, never reduce to a single colour.
-- Layer stacked shadows (multiple small offsets with inset hairline) rather than single heavy drops. The brand's elevation is calmer than Material.
-- Cycle page surfaces in `{colors.canvas-soft}` → `{colors.canvas}` → `{colors.primary}` polarity-flipped bands; the dark band IS the depth cue.
-- Set every code block and technical eyebrow in `{typography.code}` / `{typography.caption-mono}`. Mono is the voice of the platform.
+- Pakai **satu** tombol utama hijau per layar mobile.
+- Sapa dengan nama depan dan beri satu kalimat penyemangat yang dihitung dari data nyata.
+- Pakai ubin kategori untuk memudahkan memindai daftar, dan chip untuk status.
+- Tampilkan nominal dengan tanda, awalan `Rp`, dan angka tabular.
+- Sertakan teks (dan ikon) di setiap status, jangan hanya warna.
+- Biarkan ruang putih bekerja. Kartu berhairline cukup, tanpa bayangan.
+- Pakai token dari dokumen ini. Bila butuh warna baru, tambahkan dulu ke dokumen.
+- Uji layar di lebar 360px, mode gelap, dan di bawah cahaya terang.
 
 ### Don't
-- Don't introduce a sixth accent colour. The brand operates with ink + gray + the four-pair gradient palette; new accents flatten the voice.
-- Don't render headlines in all-caps. Sentence-case + negative tracking is non-negotiable.
-- Don't drop a single heavy drop-shadow on cards. The brand's elevation is built from stacked small offsets + inset hairline rings.
-- Don't render the brand gradient at icon scale or in a single-colour reduced form. The gradient lives at hero scale only.
-- Don't promote the geometric sans to weight 700. The brand's display ceiling is 600.
-- Don't pair the marketing 100-px pill CTA shape with the 6-px nav radius on the same screen — pick a scale and stay there.
-- Don't set body paragraphs in the mono face. The mono is for code + technical labels only.
+- Jangan memakai gradien, blur, atau cincin warna-warni.
+- Jangan menaruh lebih dari satu ilustrasi per layar, atau ilustrasi di layar kerja kolektor, admin, dan cetak.
+- Jangan menaruh teks di atas koin atau lingkaran dekor hero.
+- Jangan memakai warna kategori (ubin) untuk teks, chip, atau banner.
+- Jangan menulis "kamu" atau bahasa gaul, dan jangan memakai kalimat riang di kartu masalah.
+- Jangan menaruh `subtle` `#737373` di atas kanvas hangat.
+- Jangan merahkan penarikan biasa. Merah berarti masalah.
+- Jangan memakai font mono untuk saldo atau nominal.
+- Jangan membuat teks di bawah 12px atau abu lebih terang dari `#737373`.
+- Jangan memakai bobot 700 atau lebih, atau huruf kapital semua di UI mobile.
+- Jangan mencampur tombol pil dan tombol 6px di satu layar.
+- Jangan menyalin warna, font, atau logo merek lain. Dokumen ini hanya mengambil prinsip (kejelasan, satu aksen, hampir tanpa bayangan), sedangkan identitasnya milik Tabungan Digital.
+- Jangan mengubah pesan kesalahan login menjadi spesifik.
 
-</design-context>
+## 14. Peta layar nasabah dan pekerjaan kode
 
-Use the design system above for all UI you generate.
+Desain visual ada di kanvas "UI/UX Nasabah — Tabungan Digital" (14 artboard + layar sukses). Angka, nama, dan tanggal di kanvas adalah **data contoh**. Tabel ini memisahkan apa yang sudah didukung kode dari apa yang butuh perubahan perilaku (dan karena itu butuh tes, sesuai `CLAUDE.md`).
+
+| Layar | Rute / view | Status |
+|---|---|---|
+| Beranda | `dashboard` (cabang nasabah di `dashboard.blade.php`) | Ada. **Sapaan waktu**: baru, dihitung di view. **Titik streak mingguan**: butuh data setoran per hari (controller hanya mengirim jumlah `$streak`). **"Tinggal Rp X lagi"**: bisa dihitung dari target dan `total_aktual_terkumpul` |
+| Saldo | `nasabah.saldo.index` | Ada |
+| Ajukan penarikan | `nasabah.penarikan.index` | Ada. **Pilihan nominal cepat**: perilaku baru |
+| Riwayat penarikan | `nasabah.riwayat.index` | Ada. Stepper dari `status`. `dibatalkan` dan `kedaluwarsa` belum punya desain tahap |
+| Riwayat tabungan | `nasabah.riwayat-tabungan.index` | Ada. **Grafik batang 7 hari**: butuh agregat per hari |
+| Ikuti paket | `nasabah.paket.pilih` | Ada. Header ilustrasi: baru (visual saja) |
+| Progres paket | `nasabah.progres-paket.index` | Ada. Cincin dari `$persentase`, lencana dari `$progres['items']` |
+| Notifikasi | `nasabah.notifikasi.index` | Ada. **Warna ubin per jenis**: kolom `jenis_notifikasi` (string) ada, tetapi nilainya belum terdaftar (hanya `pin_awal` ditemukan di kode). Sebelum itu pakai ubin hijau |
+| Komplain | `nasabah.komplain.index` | Ada. Stepper dari `baru`/`diproses`/`selesai` |
+| Pengaturan | `nasabah.pengaturan.index` | Ada |
+| Login | `pages/auth/login.blade.php` | Ada. Panel hijau: visual saja. Teks galat tetap generik |
+| Kondisi khusus | offline, kosong, sesi habis, terkunci | Ada. Teks "sesi berakhir" di kanvas adalah contoh, belum diverifikasi |
+| Pengajuan terkirim | (baru) | **Baru.** Saat ini submit menampilkan banner `session('success')` di halaman yang sama. Layar sukses butuh state atau rute baru |
+
+Urutan pengerjaan yang disarankan: (1) token dan komponen bersama (`hero-card`, `tile`, `progress-ring`, `stepper`), (2) Beranda dan Saldo, (3) Progres paket dan Riwayat penarikan, (4) sisanya, (5) elemen yang butuh data atau perilaku baru, satu per satu dengan tes.

@@ -3,6 +3,8 @@
 use App\Http\Controllers\AbsensiFotoController;
 use App\Http\Controllers\Admin\DetailNasabahController;
 use App\Http\Controllers\Admin\HandoverController;
+use App\Http\Controllers\Admin\InputSetoranController;
+use App\Http\Controllers\Admin\KasKolektorController;
 use App\Http\Controllers\Admin\KomisiController;
 use App\Http\Controllers\Admin\KomplainController;
 use App\Http\Controllers\Admin\LaporanController;
@@ -11,11 +13,14 @@ use App\Http\Controllers\Admin\MonitoringAbsensiController;
 use App\Http\Controllers\Admin\NasabahController;
 use App\Http\Controllers\Admin\PenarikanController as AdminPenarikanController;
 use App\Http\Controllers\Admin\PengaturanController as AdminPengaturanController;
+use App\Http\Controllers\Admin\PersetujuanController;
 use App\Http\Controllers\Admin\ProdukController;
 use App\Http\Controllers\Admin\RegistrasiController;
 use App\Http\Controllers\Admin\RekonsiliasiController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
+use App\Http\Controllers\Admin\TinjauanPenarikanOfflineController;
 use App\Http\Controllers\Admin\VerifikasiController;
+use App\Http\Controllers\BuktiPenarikanController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Kolektor\AbsenController;
 use App\Http\Controllers\Kolektor\DaftarNasabahController;
@@ -25,21 +30,61 @@ use App\Http\Controllers\Kolektor\PengaturanController as KolektorPengaturanCont
 use App\Http\Controllers\Kolektor\RiwayatAbsensiController;
 use App\Http\Controllers\Kolektor\SetoranController;
 use App\Http\Controllers\Kolektor\SetorKantorController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Nasabah\NotifikasiController;
 use App\Http\Controllers\Nasabah\PenarikanController;
 use App\Http\Controllers\Nasabah\PengaturanController as NasabahPengaturanController;
+use App\Http\Controllers\Nasabah\PilihPaketController;
 use App\Http\Controllers\Nasabah\RiwayatController;
 use App\Http\Controllers\Nasabah\SaldoController;
+use App\Http\Controllers\RekapMutasiController;
+use App\Http\Controllers\SerahTerimaFotoController;
+use App\Http\Controllers\SerahTerimaPaketController;
+use App\Http\Controllers\StrukSetoranController;
+use App\Support\PortalLogin;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', LandingController::class)->name('home');
 
-Route::middleware(['auth', 'active'])->group(function () {
+Route::view('/offline', 'pages.offline')->name('offline');
+
+// Portal login terpisah (D19): GET /login (nasabah) terdaftar di Fortify.
+Route::get('/login/kolektor', fn (Request $request) => view('pages.auth.login', [
+    'portal' => PortalLogin::dariUri($request),
+]))->name('login.kolektor');
+
+Route::get('/login/admin', fn (Request $request) => view('pages.auth.login', [
+    'portal' => PortalLogin::dariUri($request),
+]))->name('login.admin');
+
+Route::middleware(['auth', 'active', 'idle'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::get('/absensi/{absensi}/{jenis}', [AbsensiFotoController::class, 'show'])
         ->where('jenis', 'selfie|tanda-tangan')
         ->name('absensi.foto');
+
+    Route::get('/penarikan/{penarikan}/bukti', [BuktiPenarikanController::class, 'show'])
+        ->name('penarikan.bukti');
+
+    Route::get('/serah-terima/{kepesertaan}/bukti', [SerahTerimaFotoController::class, 'show'])
+        ->name('serah-terima.bukti');
+
+    Route::get('/serah-terima-paket', [SerahTerimaPaketController::class, 'index'])
+        ->middleware('role:admin|kolektor')
+        ->name('serah-terima.index');
+
+    Route::get('/struk/setoran/{setoran}', [StrukSetoranController::class, 'show'])
+        ->name('struk.setoran');
+
+    Route::get('/rekap/nasabah/{user}', [RekapMutasiController::class, 'show'])
+        ->middleware('role:admin|kolektor')
+        ->name('rekap.nasabah');
+
+    Route::post('/rekap/nasabah/{user}/cetak', [RekapMutasiController::class, 'cetak'])
+        ->middleware('role:admin|kolektor')
+        ->name('rekap.nasabah.cetak');
 
     // Admin Routes
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
@@ -51,6 +96,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/penarikan', [AdminPenarikanController::class, 'index'])->name('penarikan.index');
         Route::get('/komisi', [KomisiController::class, 'index'])->name('komisi.index');
         Route::get('/rekonsiliasi', [RekonsiliasiController::class, 'index'])->name('rekonsiliasi.index');
+        Route::get('/kas-kolektor', [KasKolektorController::class, 'index'])->name('kas-kolektor.index');
         Route::get('/komplain', [KomplainController::class, 'index'])->name('komplain.index');
         Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
         Route::get('/log', [LogController::class, 'index'])->name('log.index');
@@ -58,8 +104,12 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/kolektor', [NasabahController::class, 'kolektor'])->name('kolektor.index');
         Route::get('/bermasalah', [NasabahController::class, 'bermasalah'])->name('bermasalah.index');
         Route::get('/monitoring-setoran', [NasabahController::class, 'monitoringSetoran'])->name('monitoring-setoran.index');
+        Route::get('/setoran', [InputSetoranController::class, 'index'])->name('setoran.create');
         Route::get('/monitoring-absensi', [MonitoringAbsensiController::class, 'index'])->name('monitoring-absensi.index');
         Route::get('/pengaturan', [AdminPengaturanController::class, 'index'])->name('pengaturan.index');
+        Route::get('/persetujuan', [PersetujuanController::class, 'index'])->name('persetujuan.index');
+        Route::get('/tinjauan-penarikan-offline', [TinjauanPenarikanOfflineController::class, 'index'])
+            ->name('tinjauan-penarikan-offline');
 
         // Settings khusus admin
         Route::prefix('settings')->name('settings.')->group(function () {
@@ -89,7 +139,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/penarikan', [PenarikanController::class, 'index'])->name('penarikan.index');
         Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat.index');
         Route::get('/riwayat-tabungan', [RiwayatController::class, 'riwayatTabungan'])->name('riwayat-tabungan.index');
+        Route::get('/riwayat-Tabungan', [RiwayatController::class, 'riwayatTabungan'])->name('riwayat-Tabungan.index');
         Route::get('/progres-paket', [RiwayatController::class, 'progresPaket'])->name('progres-paket.index');
+        Route::get('/pilih-paket', [PilihPaketController::class, 'index'])->name('paket.pilih');
         Route::get('/komplain', [RiwayatController::class, 'komplain'])->name('komplain.index');
         Route::get('/saldo', [SaldoController::class, 'index'])->name('saldo.index');
         Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');

@@ -1,176 +1,216 @@
-<div class="mx-auto max-w-2xl space-y-6 pb-6">
-    {{-- Page Header --}}
+<div class="space-y-6">
+    {{-- Judul halaman --}}
     <div>
-        <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Pengaturan</h1>
-        <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Kelola akun, preferensi, dan keamanan Anda.</p>
+        <h1 class="text-2xl font-semibold tracking-tight text-ink">Pengaturan</h1>
+        <p class="mt-1 text-sm text-mute">Kelola akun, preferensi, dan keamanan Anda.</p>
     </div>
 
-    {{-- Profile Card Header --}}
-    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 p-6 text-white shadow-xl dark:from-zinc-950 dark:to-zinc-900 border border-zinc-800 dark:border-zinc-800/80">
-        <div class="absolute -right-8 -top-8 h-40 w-40 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none"></div>
-        
-        <div class="relative flex items-center gap-4">
-            <div class="relative">
-                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-xl font-bold text-white shadow-lg shadow-emerald-500/20">
+    {{-- Kartu profil --}}
+    <section aria-labelledby="label-profil" class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
+        <h2 id="label-profil" class="sr-only">Profil</h2>
+
+        <div class="flex items-center gap-4">
+            @if(auth()->user()->foto_profil_path)
+                <img src="{{ asset('storage/'.auth()->user()->foto_profil_path) }}" alt="Foto Profil"
+                     class="size-14 rounded-full border border-hairline object-cover" />
+            @else
+                <div class="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xl font-semibold text-on-primary-soft" aria-hidden="true">
                     {{ auth()->user()->initials() }}
                 </div>
-                <div class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 ring-2 ring-zinc-900" title="Akun Aktif">
-                    <svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
-                    </svg>
+            @endif
+
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                    <p class="truncate text-lg font-semibold tracking-tight text-ink">{{ auth()->user()->name }}</p>
+                    <x-ui.status-chip domain="akun" status="aktif" />
                 </div>
-            </div>
-            
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2">
-                    <h2 class="truncate text-lg font-bold text-white">{{ auth()->user()->name }}</h2>
-                    <span class="inline-flex items-center rounded-md bg-emerald-400/10 px-2 py-0.5 text-xs font-semibold text-emerald-400 ring-1 ring-inset ring-emerald-400/20">
-                        Nasabah
-                    </span>
-                </div>
-                <p class="mt-1 text-sm text-zinc-400 font-mono tracking-wide">{{ auth()->user()->no_hp ?? '-' }}</p>
-                <p class="mt-0.5 text-xs text-zinc-500">Terdaftar sejak {{ auth()->user()->created_at?->translatedFormat('F Y') ?? '-' }}</p>
+                <p class="mt-0.5 text-xs text-mute">{{ auth()->user()->no_hp ?? '-' }}</p>
+                <p class="mt-0.5 text-xs text-mute">Terdaftar sejak {{ auth()->user()->created_at?->translatedFormat('F Y') ?? '-' }}</p>
             </div>
         </div>
-    </div>
+    </section>
 
-    {{-- Section: Akun --}}
-    <div>
-        <p class="mb-2.5 px-1 text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Akun & Keamanan</p>
-        <div class="overflow-hidden rounded-3xl bg-white dark:bg-zinc-800 shadow-sm border border-zinc-100 dark:border-zinc-700/60 divide-y divide-zinc-100 dark:divide-zinc-700/60">
-            {{-- Edit Profil --}}
-            <a href="{{ route('profile.edit') }}" wire:navigate
-               class="group flex items-center gap-3.5 px-5 py-4 transition hover:bg-zinc-50 dark:hover:bg-zinc-700/40">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 group-hover:scale-105 transition-transform">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-semibold text-zinc-900 dark:text-white">Edit Profil</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Ubah nama, nomor HP, dan informasi pribadi</p>
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-            </a>
-
-            {{-- Ganti PIN --}}
-            <a href="{{ route('security.edit') }}" wire:navigate
-               class="group flex items-center gap-3.5 px-5 py-4 transition hover:bg-zinc-50 dark:hover:bg-zinc-700/40">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 group-hover:scale-105 transition-transform">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-semibold text-zinc-900 dark:text-white">Ganti PIN / Password</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Keamanan akun dan kata sandi transaksi</p>
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-            </a>
-        </div>
-    </div>
-
-    {{-- Section: Preferensi --}}
-    <div>
-        <p class="mb-2.5 px-1 text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Preferensi & Tampilan</p>
-        <div class="overflow-hidden rounded-3xl bg-white dark:bg-zinc-800 shadow-sm border border-zinc-100 dark:border-zinc-700/60 divide-y divide-zinc-100 dark:divide-zinc-700/60">
-            {{-- Notifikasi WhatsApp --}}
-            <div class="flex items-center justify-between gap-3.5 px-5 py-4">
-                <div class="flex items-center gap-3.5">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a.75.75 0 01-1.074-.85c.18-.705.513-1.637.971-2.45A8.83 8.83 0 013 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
-                        </svg>
+    {{-- Informasi Kolektor Penanggung Jawab --}}
+    @php
+        $kolektorPj = \App\Models\KolektorNasabah::where('nasabah_id', auth()->id())
+            ->where('status', 'aktif')
+            ->with('kolektor')
+            ->first()?->kolektor;
+    @endphp
+    @if($kolektorPj)
+        <section aria-labelledby="label-kolektor" class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
+            <h2 id="label-kolektor" class="text-xs font-semibold text-body mb-3">Petugas Kolektor Anda</h2>
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="flex size-11 items-center justify-center rounded-full bg-info-soft text-sm font-semibold text-info" aria-hidden="true">
+                        {{ $kolektorPj->initials() }}
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-zinc-900 dark:text-white">Notifikasi WhatsApp</p>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400">Terima bukti setoran & info via WA</p>
+                        <p class="text-xs font-semibold text-ink">{{ $kolektorPj->name }}</p>
+                        <p class="text-xs text-mute">{{ $kolektorPj->no_hp ?? '-' }}</p>
                     </div>
                 </div>
-                <button wire:click="toggleNotifikasiWa" type="button"
-                        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 {{ $notifikasiWaAktif ? 'bg-emerald-600 dark:bg-emerald-500' : 'bg-zinc-200 dark:bg-zinc-700' }}">
-                    <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out {{ $notifikasiWaAktif ? 'translate-x-5' : 'translate-x-0' }}"></span>
+                @if($kolektorPj->no_hp)
+                    @php
+                        $waKolektor = preg_replace('/[^0-9]/', '', (string)$kolektorPj->no_hp);
+                        if (str_starts_with($waKolektor, '0')) {
+                            $waKolektor = '62' . substr($waKolektor, 1);
+                        }
+                    @endphp
+                    <a href="https://wa.me/{{ $waKolektor }}" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-1.5 rounded-full border border-hairline-strong bg-white px-3.5 py-1.5 text-xs font-medium text-ink transition hover:bg-surface-inset active:scale-95 dark:bg-surface">
+                        <flux:icon.chat-bubble-left-right class="size-3.5 text-primary" />
+                        <span>Chat</span>
+                    </a>
+                @endif
+            </div>
+        </section>
+    @endif
+
+    {{-- Akun dan keamanan --}}
+    <section aria-labelledby="label-akun">
+        <h2 id="label-akun" class="mb-2 px-1 text-xs font-semibold text-mute">Akun &amp; Keamanan</h2>
+        <div class="divide-y divide-hairline-warm overflow-hidden rounded-[20px] border border-hairline-warm bg-white shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
+            <a href="{{ route('profile.edit') }}" wire:navigate
+               class="flex min-h-14 items-center gap-3 px-4 py-3 transition hover:bg-surface-inset">
+                <x-ui.tile kategori="hijau" ukuran="40" aria-hidden="true">
+                    <flux:icon.user class="size-4" />
+                </x-ui.tile>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-medium text-ink">Edit profil</span>
+                    <span class="block text-xs text-mute">Ubah nama, nomor HP, dan informasi pribadi</span>
+                </span>
+                <flux:icon.chevron-right class="size-4 shrink-0 text-mute" aria-hidden="true" />
+            </a>
+
+            <a href="{{ route('security.edit') }}" wire:navigate
+               class="flex min-h-14 items-center gap-3 px-4 py-3 transition hover:bg-surface-inset">
+                <x-ui.tile kategori="hijau" ukuran="40" aria-hidden="true">
+                    <flux:icon.key class="size-4" />
+                </x-ui.tile>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-medium text-ink">Ganti PIN / kata sandi</span>
+                    <span class="block text-xs text-mute">Keamanan akun dan verifikasi transaksi</span>
+                </span>
+                <flux:icon.chevron-right class="size-4 shrink-0 text-mute" aria-hidden="true" />
+            </a>
+        </div>
+    </section>
+
+    {{-- Preferensi & Tampilan --}}
+    <section aria-labelledby="label-preferensi">
+        <h2 id="label-preferensi" class="mb-2 px-1 text-xs font-semibold text-mute">Preferensi &amp; Tampilan</h2>
+        <div class="divide-y divide-hairline-warm overflow-hidden rounded-[20px] border border-hairline-warm bg-white shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
+            {{-- Notifikasi WhatsApp --}}
+            <div class="flex min-h-14 items-center justify-between gap-3 px-4 py-3">
+                <div class="flex min-w-0 items-center gap-3">
+                    <x-ui.tile kategori="hijau" ukuran="40" aria-hidden="true">
+                        <flux:icon.chat-bubble-bottom-center-text class="size-4" />
+                    </x-ui.tile>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-medium text-ink">Notifikasi WhatsApp</span>
+                        <span class="block text-xs text-mute">Terima bukti setoran dan info via WA</span>
+                    </span>
+                </div>
+
+                <button wire:click="toggleNotifikasiWa" type="button" role="switch" aria-checked="{{ $notifikasiWaAktif ? 'true' : 'false' }}"
+                        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-zinc-900 {{ $notifikasiWaAktif ? 'bg-primary' : 'bg-hairline-strong' }}">
+                    <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white transition duration-200 ease-in-out {{ $notifikasiWaAktif ? 'translate-x-5' : 'translate-x-0' }}"></span>
                 </button>
             </div>
 
-            {{-- Mode Gelap --}}
+            {{-- Toggle Ukuran Teks Besar (D37) --}}
+            <div class="flex min-h-14 items-center justify-between gap-3 px-4 py-3" x-data="{
+                isBig: $store.textSize ? $store.textSize.isBig : false
+            }">
+                <div class="flex min-w-0 items-center gap-3">
+                    <x-ui.tile kategori="hijau" ukuran="40" aria-hidden="true">
+                        <span class="text-xs font-semibold">A+</span>
+                    </x-ui.tile>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-medium text-ink">Ukuran teks besar</span>
+                        <span class="block text-xs text-mute">Perbesar tulisan aplikasi agar lebih nyaman dibaca</span>
+                    </span>
+                </div>
+
+                <button type="button"
+                        @click="if (window.toggleUkuranTeks) { window.toggleUkuranTeks(); isBig = $store.textSize.isBig; }"
+                        role="switch"
+                        :aria-checked="isBig ? 'true' : 'false'"
+                        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
+                        :class="isBig ? 'bg-primary' : 'bg-hairline-strong'">
+                    <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white transition duration-200 ease-in-out"
+                          :class="isBig ? 'translate-x-5' : 'translate-x-0'"></span>
+                </button>
+            </div>
+
+            {{-- Mode Gelap / Tampilan --}}
             <a href="{{ route('appearance.edit') }}" wire:navigate
-               class="group flex items-center gap-3.5 px-5 py-4 transition hover:bg-zinc-50 dark:hover:bg-zinc-700/40">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 group-hover:scale-105 transition-transform">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-semibold text-zinc-900 dark:text-white">Tampilan & Mode Gelap</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Atur tema aplikasi sesuai kenyamanan</p>
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
+               class="flex min-h-14 items-center gap-3 px-4 py-3 transition hover:bg-surface-inset">
+                <x-ui.tile kategori="hijau" ukuran="40" aria-hidden="true">
+                    <flux:icon.moon class="size-4" />
+                </x-ui.tile>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-medium text-ink">Tema &amp; mode gelap</span>
+                    <span class="block text-xs text-mute">Sesuaikan tampilan terang atau gelap</span>
+                </span>
+                <flux:icon.chevron-right class="size-4 shrink-0 text-mute" aria-hidden="true" />
             </a>
         </div>
-    </div>
+    </section>
 
-    {{-- Section: Bantuan & Lainnya --}}
-    <div>
-        <p class="mb-2.5 px-1 text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Bantuan & Sesi</p>
-        <div class="overflow-hidden rounded-3xl bg-white dark:bg-zinc-800 shadow-sm border border-zinc-100 dark:border-zinc-700/60 divide-y divide-zinc-100 dark:divide-zinc-700/60">
-            {{-- Riwayat Komplain --}}
+    {{-- Bantuan & Sesi --}}
+    @php
+        $nomorWaAdmin = \App\Models\AdminSetting::get('nomor_wa_bantuan', config('services.admin_wa', '081234567890'));
+        $waAdminClean = preg_replace('/[^0-9]/', '', (string)$nomorWaAdmin);
+        if (str_starts_with($waAdminClean, '0')) {
+            $waAdminClean = '62' . substr($waAdminClean, 1);
+        }
+    @endphp
+    <section aria-labelledby="label-bantuan">
+        <h2 id="label-bantuan" class="mb-2 px-1 text-xs font-semibold text-mute">Bantuan &amp; Sesi</h2>
+        <div class="divide-y divide-hairline-warm overflow-hidden rounded-[20px] border border-hairline-warm bg-white shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
             <a href="{{ route('nasabah.komplain.index') }}" wire:navigate
-               class="group flex items-center gap-3.5 px-5 py-4 transition hover:bg-zinc-50 dark:hover:bg-zinc-700/40">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 group-hover:scale-105 transition-transform">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-semibold text-zinc-900 dark:text-white">Riwayat Komplain</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Lihat status keluhan dan tanggapan admin</p>
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
+               class="flex min-h-14 items-center gap-3 px-4 py-3 transition hover:bg-surface-inset">
+                <x-ui.tile kategori="hijau" ukuran="40" aria-hidden="true">
+                    <flux:icon.chat-bubble-left-right class="size-4" />
+                </x-ui.tile>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-medium text-ink">Riwayat komplain</span>
+                    <span class="block text-xs text-mute">Lihat status keluhan dan tanggapan admin</span>
+                </span>
+                <flux:icon.chevron-right class="size-4 shrink-0 text-mute" aria-hidden="true" />
             </a>
 
-            {{-- Bantuan WhatsApp --}}
-            <a href="https://wa.me/6289531432845" target="_blank" rel="noopener noreferrer"
-               class="group flex items-center gap-3.5 px-5 py-4 transition hover:bg-zinc-50 dark:hover:bg-zinc-700/40">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-400 group-hover:scale-105 transition-transform">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M12 18h.008v.008H12V18zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-semibold text-zinc-900 dark:text-white">Pusat Bantuan & CS</p>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Hubungi customer service via WhatsApp</p>
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-400 dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                </svg>
-            </a>
+            @if($waAdminClean)
+                <a href="https://wa.me/{{ $waAdminClean }}" target="_blank" rel="noopener noreferrer"
+                   class="flex min-h-14 items-center gap-3 px-4 py-3 transition hover:bg-surface-inset">
+                    <x-ui.tile kategori="hijau" ukuran="40" aria-hidden="true">
+                        <flux:icon.question-mark-circle class="size-4" />
+                    </x-ui.tile>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-medium text-ink">Pusat bantuan &amp; CS</span>
+                        <span class="block text-xs text-mute">Hubungi customer service via WhatsApp</span>
+                    </span>
+                    <flux:icon.arrow-up-right class="size-4 shrink-0 text-mute" aria-hidden="true" />
+                </a>
+            @endif
 
-            {{-- Keluar --}}
-            <button wire:click="logout" type="button"
-                    class="group flex w-full items-center gap-3.5 px-5 py-4 transition hover:bg-rose-50/60 dark:hover:bg-rose-950/20 text-left">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 group-hover:scale-105 transition-transform">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-semibold text-rose-600 dark:text-rose-400">Keluar Akun</p>
-                    <p class="text-xs text-rose-500/80 dark:text-rose-400/70">Keluar dari aplikasi pada perangkat ini</p>
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-400 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
+            <button wire:click="logout"
+                    wire:confirm="Yakin ingin keluar dari akun Anda pada perangkat ini?"
+                    type="button"
+                    class="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-surface-inset">
+                <x-ui.tile kategori="netral" ukuran="40" aria-hidden="true">
+                    <flux:icon.arrow-right-start-on-rectangle class="size-4" />
+                </x-ui.tile>
+                <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-medium text-ink">Keluar akun</span>
+                    <span class="block text-xs text-mute">Keluar dari aplikasi pada perangkat ini</span>
+                </span>
+                <flux:icon.chevron-right class="size-4 shrink-0 text-mute" aria-hidden="true" />
             </button>
         </div>
-    </div>
-</div>
+    </section>
 
+    <p class="mt-6 text-center text-xs text-mute">Tabungan Digital · versi mobile</p>
+</div>

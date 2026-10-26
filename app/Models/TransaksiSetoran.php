@@ -16,6 +16,7 @@ class TransaksiSetoran extends Model
     protected $fillable = [
         'nasabah_id',
         'produk_id',
+        'kepesertaan_id',
         'nominal',
         'tanggal_transaksi',
         'tanggal_input_sistem',
@@ -46,9 +47,20 @@ class TransaksiSetoran extends Model
         return $this->belongsTo(User::class, 'nasabah_id');
     }
 
+    /**
+     * @return BelongsTo<ProdukTabungan, $this>
+     */
     public function produk(): BelongsTo
     {
         return $this->belongsTo(ProdukTabungan::class, 'produk_id');
+    }
+
+    /**
+     * @return BelongsTo<KepesertaanPaket, $this>
+     */
+    public function kepesertaan(): BelongsTo
+    {
+        return $this->belongsTo(KepesertaanPaket::class, 'kepesertaan_id');
     }
 
     public function inputBy(): BelongsTo
@@ -75,8 +87,45 @@ class TransaksiSetoran extends Model
         return $query->whereIn('status', ['tercatat', 'dikoreksi']);
     }
 
+    /**
+     * Kas yang masih dipegang kolektor: belum disetor ke kantor dan diinput
+     * oleh akun berperan kolektor. Setoran yang dicatat admin (FR-5) ikut
+     * punya `sudah_disetor_ke_kantor = true`, tetapi tetap dikeluarkan di
+     * sini berdasarkan peran `input_by` agar tidak pernah mengisi kas kolektor.
+     */
     public function scopeBelumDisetor(Builder $query): Builder
     {
-        return $query->masihAktif()->where('sudah_disetor_ke_kantor', false);
+        return $query->masihAktif()
+            ->where('sudah_disetor_ke_kantor', false)
+            ->where(function (Builder $sub) {
+                $sub->whereNull('input_by')
+                    ->orWhereIn('input_by', User::where('role', 'kolektor')->select('id'));
+            });
+    }
+
+    /**
+     * Agregasi kas yang dipegang per kolektor dalam satu query GROUP BY.
+     *
+     * @return array<int, array{total: float, jumlah: int, terlama: string|null}>
+     */
+    public static function teragregasiPerKolektor(): array
+    {
+        $rows = static::belumDisetor()
+            ->whereNotNull('input_by')
+            ->groupBy('input_by')
+            ->selectRaw('input_by, COALESCE(SUM(nominal), 0) as total_nominal, COUNT(*) as jumlah_transaksi, MIN(tanggal_transaksi) as tanggal_terlama')
+            ->get();
+
+        $hasil = [];
+        foreach ($rows as $row) {
+            $terlama = $row->getAttribute('tanggal_terlama');
+            $hasil[(int) $row->getAttribute('input_by')] = [
+                'total' => (float) $row->getAttribute('total_nominal'),
+                'jumlah' => (int) $row->getAttribute('jumlah_transaksi'),
+                'terlama' => $terlama !== null ? (string) $terlama : null,
+            ];
+        }
+
+        return $hasil;
     }
 }

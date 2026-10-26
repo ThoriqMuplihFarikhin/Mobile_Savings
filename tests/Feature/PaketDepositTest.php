@@ -40,6 +40,12 @@ function seedSetoranPaket(): array
         'status' => 'aktif',
     ]);
 
+    KepesertaanPaket::create([
+        'nasabah_id' => $nasabah->id,
+        'produk_id' => $produk->id,
+        'tanggal_mulai_ikut' => now()->subDay()->toDateString(),
+    ]);
+
     return compact('admin', 'kolektor', 'nasabah', 'produk');
 }
 

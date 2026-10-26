@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * Cast `array` pada `isi_paket` mengembalikan list item, bukan string JSON mentah kolom.
+ *
+ * @property array<int, array<string, mixed>>|null $isi_paket
+ */
 class ProdukTabungan extends Model
 {
     use HasFactory;
@@ -24,6 +29,9 @@ class ProdukTabungan extends Model
         'periode_selesai',
         'tanggal_boleh_cair',
         'batas_toleransi_tunggakan_hari',
+        'tampilkan_harga_ke_nasabah',
+        'boleh_cair_saat_target',
+        'batas_daftar_hingga',
         'status',
     ];
 
@@ -38,12 +46,34 @@ class ProdukTabungan extends Model
             'periode_mulai' => 'date',
             'periode_selesai' => 'date',
             'tanggal_boleh_cair' => 'date',
+            'tampilkan_harga_ke_nasabah' => 'boolean',
+            'boleh_cair_saat_target' => 'boolean',
+            'batas_daftar_hingga' => 'date',
         ];
     }
 
     public function isPaket(): bool
     {
         return $this->tipe === 'paket';
+    }
+
+    /**
+     * Isi paket untuk halaman publik: kunci `harga` dibuang agar tidak
+     * bocor ke klien (D15).
+     *
+     * @return array<int, array<string, mixed>>|null
+     */
+    public function isiPaketPublik(): ?array
+    {
+        if ($this->isi_paket === null) {
+            return null;
+        }
+
+        return array_map(fn (array $item): array => array_filter(
+            $item,
+            fn (string $kunci): bool => $kunci !== 'harga',
+            ARRAY_FILTER_USE_KEY
+        ), $this->isi_paket);
     }
 
     public function isBebas(): bool

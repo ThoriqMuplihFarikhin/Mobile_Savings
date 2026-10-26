@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\KasKolektorHitung;
 use App\Support\NomorHp;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -19,17 +20,19 @@ use Spatie\Permission\Traits\HasRoles;
 /**
  * @property int $id
  * @property string $name
- * @property string $no_hp
+ * @property string|null $no_hp
  * @property string $pin_hash
  * @property string $role
  * @property string $status_akun
+ * @property string $mode_akses
  * @property int $percobaan_gagal
  * @property bool $harus_ganti_pin
+ * @property bool $izin_penarikan_langsung
  * @property Carbon|null $login_terkunci_hingga
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'no_hp', 'pin_hash', 'role', 'status_akun', 'percobaan_gagal', 'harus_ganti_pin', 'notifikasi_wa_aktif', 'foto_profil_path', 'banner_path', 'login_terkunci_hingga'])]
+#[Fillable(['name', 'no_hp', 'pin_hash', 'role', 'status_akun', 'mode_akses', 'percobaan_gagal', 'harus_ganti_pin', 'izin_penarikan_langsung', 'notifikasi_wa_aktif', 'foto_profil_path', 'banner_path', 'login_terkunci_hingga'])]
 #[Hidden(['pin_hash', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -37,6 +40,17 @@ class User extends Authenticatable
     use HasFactory, HasRoles, Notifiable;
 
     protected $guard_name = 'web';
+
+    /**
+     * Nilai bawaan atribut model: `izin_penarikan_langsung` ikut di-insert
+     * agar instance yang belum di-refresh (mis. hasil factory) tetap membaca
+     * keputusan D23, bukan null.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'izin_penarikan_langsung' => true,
+    ];
 
     protected static function booted(): void
     {
@@ -52,17 +66,23 @@ class User extends Authenticatable
         return [
             'percobaan_gagal' => 'integer',
             'harus_ganti_pin' => 'boolean',
+            'izin_penarikan_langsung' => 'boolean',
             'notifikasi_wa_aktif' => 'boolean',
             'login_terkunci_hingga' => 'datetime',
         ];
     }
 
     /**
-     * @return Attribute<string, string>
+     * @return Attribute<string|null, string>
      */
     protected function noHp(): Attribute
     {
-        return Attribute::set(fn (string $value) => NomorHp::normalize($value));
+        return Attribute::set(fn (?string $value) => $value === null ? null : NomorHp::normalize($value));
+    }
+
+    public function isOffline(): bool
+    {
+        return $this->mode_akses === 'offline';
     }
 
     public function initials(): string
@@ -74,6 +94,9 @@ class User extends Authenticatable
             : $initials;
     }
 
+    /**
+     * @return HasOne<NasabahProfil, $this>
+     */
     public function nasabahProfil(): HasOne
     {
         return $this->hasOne(NasabahProfil::class);
@@ -155,8 +178,8 @@ class User extends Authenticatable
             return false;
         }
 
-        return TransaksiSetoran::belumDisetor()
-            ->where('input_by', $this->id)
-            ->exists();
+        // D13: kas net — setoran belum disetor dikurangi penarikan tunai
+        // yang belum direkonsiliasi (sumber tunggal KasKolektorHitung).
+        return bccomp(KasKolektorHitung::kasDiTangan((int) $this->id), '0', 2) > 0;
     }
 }

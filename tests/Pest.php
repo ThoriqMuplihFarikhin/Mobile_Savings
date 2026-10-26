@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\KolektorNasabah;
+use App\Models\ProdukTabungan;
+use App\Models\TransaksiSetoran;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,7 +48,41 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Kolektor baru dengan nasabah binaan, produk, dan kas fisik senilai $nominal.
+ *
+ * @return array{kolektor: User, nasabah: User, produk: ProdukTabungan, setoran: TransaksiSetoran}
+ */
+function kolektorDenganKas(float $nominal = 100000): array
 {
-    // ..
+    $kolektor = User::factory()->kolektor()->create();
+    $nasabah = User::factory()->nasabah()->create();
+
+    $produk = ProdukTabungan::create([
+        'nama' => 'Tabungan Kas D13',
+        'tipe' => 'bebas',
+        'persen_komisi' => 5.00,
+        'minimal_setor' => 10000,
+        'status' => 'aktif',
+    ]);
+
+    KolektorNasabah::create([
+        'kolektor_id' => $kolektor->id,
+        'nasabah_id' => $nasabah->id,
+        'tanggal_mulai_ditangani' => now()->toDateString(),
+        'status' => 'aktif',
+    ]);
+
+    $setoran = TransaksiSetoran::create([
+        'nasabah_id' => $nasabah->id,
+        'produk_id' => $produk->id,
+        'nominal' => $nominal,
+        'tanggal_transaksi' => now()->toDateString(),
+        'tanggal_input_sistem' => now(),
+        'input_by' => $kolektor->id,
+        'sumber_input' => 'real_time',
+        'status' => 'tercatat',
+    ]);
+
+    return compact('kolektor', 'nasabah', 'produk', 'setoran');
 }

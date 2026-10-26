@@ -6,6 +6,7 @@ use App\Jobs\KirimNotifikasiWhatsApp;
 use App\Models\LogAktivitas;
 use App\Models\LogNotifikasi;
 use App\Models\User;
+use App\Support\JenisNotifikasi;
 use Illuminate\Support\Facades\Request;
 
 class ActivityLogger
@@ -23,14 +24,20 @@ class ActivityLogger
         ]);
     }
 
-    public static function notify(int $nasabahId, string $judul, string $pesan, string $jenis = 'in_app'): void
+    public static function notify(int $nasabahId, string $judul, string $pesan, JenisNotifikasi $jenis = JenisNotifikasi::InApp): void
     {
-        if (in_array($jenis, ['in_app', 'both'])) {
+        $user = User::find($nasabahId);
+
+        if ($user !== null && $user->isOffline()) {
+            return;
+        }
+
+        if ($jenis->keAplikasi()) {
             LogNotifikasi::create([
                 'nasabah_id' => $nasabahId,
                 'judul' => $judul,
                 'pesan' => $pesan,
-                'jenis_notifikasi' => $jenis,
+                'jenis_notifikasi' => $jenis->value,
                 'channel' => 'in_app',
                 'status_kirim' => 'terkirim',
                 'is_read' => false,
@@ -38,18 +45,16 @@ class ActivityLogger
             ]);
         }
 
-        if (! in_array($jenis, ['whatsapp', 'both'])) {
+        if (! $jenis->keWhatsapp()) {
             return;
         }
-
-        $user = User::find($nasabahId);
 
         if (! $user || ! $user->no_hp) {
             LogNotifikasi::create([
                 'nasabah_id' => $nasabahId,
                 'judul' => $judul,
                 'pesan' => $pesan,
-                'jenis_notifikasi' => $jenis,
+                'jenis_notifikasi' => $jenis->value,
                 'channel' => 'whatsapp',
                 'status_kirim' => 'gagal',
                 'is_read' => false,
@@ -67,7 +72,7 @@ class ActivityLogger
             'nasabah_id' => $nasabahId,
             'judul' => $judul,
             'pesan' => $pesan,
-            'jenis_notifikasi' => $jenis,
+            'jenis_notifikasi' => $jenis->value,
             'channel' => 'whatsapp',
             'status_kirim' => 'antri',
             'is_read' => false,

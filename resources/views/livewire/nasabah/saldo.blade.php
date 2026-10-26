@@ -1,95 +1,108 @@
 <div class="space-y-6">
-    {{-- Page Header --}}
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">Saldo Saya</h1>
-            <p class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">Detail saldo per produk tabungan aktif Anda.</p>
-        </div>
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400 shadow-2xs border border-indigo-100 dark:border-indigo-900/50">
-            <flux:icon.wallet class="size-5" />
-        </div>
+    {{-- Judul halaman --}}
+    <div>
+        <h1 class="text-2xl font-semibold tracking-tight text-ink">Saldo saya</h1>
+        <p class="mt-1 text-sm text-mute">Rincian saldo per produk tabungan aktif Anda.</p>
     </div>
 
-    {{-- Total Saldo Hero Card --}}
-    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-900 via-indigo-800 to-zinc-900 p-6 text-white shadow-xl border border-indigo-700/30 dark:from-zinc-950 dark:to-zinc-900 dark:border-zinc-800">
-        <div class="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none"></div>
-        <div class="relative z-10">
-            <div class="flex items-center justify-between">
-                <span class="text-[10px] font-bold uppercase tracking-widest text-indigo-200">Total Akumulasi Saldo</span>
-                <span class="rounded-full bg-white/15 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-semibold text-white border border-white/15">
-                    Aktif
-                </span>
-            </div>
-            <p class="mt-3 font-mono text-4xl font-extrabold tracking-tight text-white">
-                Rp {{ number_format($totalSaldo, 0, ',', '.') }}
-            </p>
-            <p class="mt-1.5 text-xs text-indigo-200/80">Dari seluruh produk tabungan aktif Anda.</p>
+    {{-- Kartu saldo utama (hero-card §7) --}}
+    <x-ui.kartu-saldo-hero :total-saldo="$totalSaldo" label="Total saldo">
+        <p class="mt-1 text-sm text-on-hero-mute">Dari seluruh produk tabungan aktif Anda.</p>
 
-            {{-- Quick Action Buttons --}}
-            <div class="mt-6 grid grid-cols-2 gap-3">
-                <a href="{{ route('nasabah.riwayat-tabungan.index') }}" wire:navigate
-                    class="flex items-center justify-center gap-2 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 py-3 text-center text-xs font-bold text-white transition backdrop-blur-md">
-                    <flux:icon.clock class="size-4 text-white" />
-                    Riwayat Setoran
-                </a>
-                <a href="{{ route('nasabah.penarikan.index') }}" wire:navigate
-                    class="flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 py-3 text-center text-xs font-bold text-white transition shadow-lg shadow-indigo-900/50">
-                    <flux:icon.arrow-up-tray class="size-4 text-white" />
-                    Ajukan Penarikan
-                </a>
-            </div>
-        </div>
-    </div>
+        <a href="{{ route('nasabah.penarikan.index') }}" wire:navigate
+            class="mt-5 flex h-12 items-center justify-center gap-2 rounded-full bg-white text-base font-medium text-on-primary-soft transition hover:bg-white/90 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white dark:text-primary-deep"
+            data-test="tombol-ajukan-penarikan">
+            <flux:icon.arrow-up-tray class="size-5" />
+            Ajukan penarikan
+        </a>
+        <a href="{{ route('nasabah.riwayat-tabungan.index') }}" wire:navigate
+            class="mt-2 flex h-11 items-center justify-center gap-2 rounded-full text-sm font-medium text-on-hero underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+            <flux:icon.clock class="size-4" />
+            Lihat riwayat setoran
+        </a>
+    </x-ui.kartu-saldo-hero>
 
-    {{-- Per-Product Cards --}}
-    <div class="space-y-3">
-        <div class="flex items-center justify-between px-1">
-            <span class="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Rincian Tabungan</span>
-            <span class="text-xs text-zinc-400 font-medium">{{ count($saldo) }} Produk</span>
+    {{-- Rincian per produk --}}
+    <section aria-labelledby="label-rincian" class="space-y-3">
+        <div class="flex items-baseline justify-between">
+            <h2 id="label-rincian" class="text-base font-semibold text-ink">Rincian tabungan</h2>
+            <span class="text-sm text-mute">{{ count($saldo) }} produk</span>
         </div>
 
         @forelse($saldo as $item)
-            <div class="rounded-3xl bg-white dark:bg-zinc-800/90 p-4.5 shadow-xs border border-zinc-200/80 dark:border-zinc-700/80 flex items-center gap-4 transition hover:border-zinc-300 dark:hover:border-zinc-600">
-                {{-- Icon --}}
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl
-                    {{ $item->produk->isPaket() ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-900/40' : 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40' }}">
-                    @if($item->produk->isPaket())
-                        <flux:icon.shopping-bag class="size-5" />
-                    @else
-                        <flux:icon.banknotes class="size-5" />
-                    @endif
-                </div>
+            @php
+                // Bar capaian teal (DESIGN §2 "cincin dan bar paket") hanya untuk
+                // produk paket, dihitung dari saldo produk dan target akhir yang
+                // sudah ada di view ini; tanpa query baru.
+                $targetProduk = $item->produk->isPaket() ? $item->produk->targetAkhir() : null;
+                $capaianPersen = $targetProduk !== null && $targetProduk > 0
+                    ? (int) min(100, round((float) $item->saldo / $targetProduk * 100))
+                    : null;
+            @endphp
+            <div class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface" data-test="kartu-produk-saldo">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <x-ui.tile :kategori="$item->produk->isPaket() ? 'teal' : 'hijau'" ukuran="44" aria-hidden="true">
+                            @if($item->produk->isPaket())
+                                <flux:icon.shopping-bag class="size-5" />
+                            @else
+                                <flux:icon.banknotes class="size-5" />
+                            @endif
+                        </x-ui.tile>
 
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold
-                            {{ $item->produk->isPaket() ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50' : 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/50' }}">
-                            {{ $item->produk->tipe === 'paket' ? 'Paket' : 'Bebas' }}
-                        </span>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                                <p class="truncate text-base font-semibold text-ink">{{ $item->produk->nama }}</p>
+                                <span class="rounded-full px-2 py-0.5 text-xs font-medium {{ $item->produk->isPaket() ? 'bg-tile-teal-bg text-tile-teal-fg' : 'bg-primary-soft text-primary' }}">
+                                    {{ $item->produk->isPaket() ? 'Paket' : 'Bebas' }}
+                                </span>
+                            </div>
+                            <p class="text-xs text-mute mt-0.5">
+                                @if($item->produk->isPaket() && $item->produk->tanggal_boleh_cair)
+                                    Cair {{ \Carbon\Carbon::parse($item->produk->tanggal_boleh_cair)->translatedFormat('d M Y') }}
+                                @else
+                                    Bebas ditarik kapan saja
+                                @endif
+                            </p>
+                        </div>
                     </div>
-                    <p class="mt-1 text-xs font-bold text-zinc-900 dark:text-white truncate">{{ $item->produk->nama }}</p>
-                    @if($item->produk->isPaket() && $item->produk->tanggal_boleh_cair)
-                        <p class="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">
-                            Cair: {{ \Carbon\Carbon::parse($item->produk->tanggal_boleh_cair)->translatedFormat('d M Y') }}
+
+                    <div class="text-right shrink-0">
+                        <p class="text-base font-semibold text-ink">
+                            <x-ui.rupiah :nilai="$item->saldo" />
                         </p>
-                    @endif
+                    </div>
                 </div>
 
-                <div class="text-right shrink-0">
-                    <p class="font-mono text-base font-bold text-zinc-900 dark:text-white">
-                        Rp {{ number_format($item->saldo, 0, ',', '.') }}
-                    </p>
+                @if($capaianPersen !== null)
+                    <div class="mt-3">
+                        <div class="h-2 overflow-hidden rounded-full bg-tile-teal-bg" aria-hidden="true">
+                            <div class="h-full rounded-full bg-tile-teal-fg transition-all duration-500" style="width: {{ $capaianPersen }}%"></div>
+                        </div>
+                        <p class="mt-1 text-xs text-mute tabular-nums">
+                            Capaian {{ $capaianPersen }}% dari target <x-ui.rupiah :nilai="$targetProduk" />
+                        </p>
+                    </div>
+                @endif
+
+                <div class="mt-3.5 pt-3 border-t border-hairline-warm flex items-center justify-between">
+                    <span class="text-xs text-mute">Tersedia untuk ditarik</span>
+                    <a href="{{ route('nasabah.penarikan.index', ['produk_id' => $item->produk_id]) }}" wire:navigate
+                       class="inline-flex items-center gap-1.5 rounded-full border border-hairline-strong bg-white px-3.5 py-1.5 text-xs font-medium text-ink transition hover:bg-surface-inset active:scale-95 dark:bg-surface"
+                       data-test="tombol-tarik-produk">
+                        <flux:icon.arrow-up-tray class="size-3.5 text-primary" />
+                        Tarik
+                    </a>
                 </div>
             </div>
         @empty
-            <div class="rounded-3xl bg-white dark:bg-zinc-800 p-10 text-center border border-zinc-200/80 dark:border-zinc-700/80 shadow-xs">
-                <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-zinc-100 dark:bg-zinc-700/60 text-zinc-400">
-                    <flux:icon.wallet class="size-7 text-zinc-400" />
-                </div>
-                <h3 class="mt-4 text-sm font-bold text-zinc-900 dark:text-white">Belum Ada Tabungan Aktif</h3>
-                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Hubungi kolektor Anda untuk mulai menabung.</p>
+            <div class="rounded-[20px] border border-hairline-warm bg-white p-8 text-center shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
+                <span class="mx-auto flex size-32 items-center justify-center rounded-full bg-primary-soft" aria-hidden="true">
+                    <x-ui.ilustrasi nama="tunas" :ukuran="96" />
+                </span>
+                <h3 class="mt-4 text-base font-semibold text-ink">Belum ada tabungan aktif</h3>
+                <p class="mt-1 text-sm text-mute">Hubungi kolektor Anda untuk mulai menabung.</p>
             </div>
         @endforelse
-    </div>
+    </section>
 </div>
-

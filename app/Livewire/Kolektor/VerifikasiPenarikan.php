@@ -4,6 +4,7 @@ namespace App\Livewire\Kolektor;
 
 use App\Actions\Penarikan\VerifikasiPenarikanOfflineAction;
 use App\Livewire\Concerns\AuthorizesRole;
+use App\Livewire\Concerns\ValidatesKolektorNasabah;
 use App\Models\TransaksiPenarikan;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -14,6 +15,7 @@ use Livewire\WithPagination;
 class VerifikasiPenarikan extends Component
 {
     use AuthorizesRole;
+    use ValidatesKolektorNasabah;
     use WithPagination;
 
     protected function requiredRole(): string
@@ -21,7 +23,7 @@ class VerifikasiPenarikan extends Component
         return 'kolektor';
     }
 
-    public $penarikanId = null;
+    public ?int $penarikanId = null;
 
     public $pin = '';
 
@@ -32,7 +34,7 @@ class VerifikasiPenarikan extends Component
         $kolektorId = Auth::id();
 
         $penarikan = TransaksiPenarikan::with(['nasabah', 'produk'])
-            ->where('jalur_pengajuan', 'offline')
+            ->where('lokasi_pengambilan', 'rumah_kolektor')
             ->where('status', 'approved')
             ->whereIn('nasabah_id', function ($query) use ($kolektorId) {
                 $query->select('nasabah_id')
@@ -46,7 +48,7 @@ class VerifikasiPenarikan extends Component
         return view('livewire.kolektor.verifikasi-penarikan', compact('penarikan'));
     }
 
-    public function bukaModal($id)
+    public function bukaModal(int $id)
     {
         $this->penarikanId = $id;
         $this->pin = '';
@@ -67,6 +69,13 @@ class VerifikasiPenarikan extends Component
         ], [], ['pin' => 'PIN nasabah']);
 
         $penarikan = TransaksiPenarikan::findOrFail($this->penarikanId);
+
+        if (! $this->isNasabahBinaan((int) $penarikan->nasabah_id)) {
+            $this->pin = '';
+            $this->addError('pin', 'Nasabah ini bukan tanggung jawab Anda.');
+
+            return;
+        }
 
         try {
             $action->execute($penarikan, $this->pin, Auth::user());

@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Kolektor;
 
+use App\Actions\Setoran\CatatSetoranAction;
 use App\Actions\Tabungan\HitungTunggakanAction;
-use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Livewire\Concerns\ValidatesKolektorNasabah;
 use App\Models\KolektorNasabah;
@@ -11,9 +11,9 @@ use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiSetoran;
+use App\Support\KasKolektorHitung;
+use DomainException;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -169,7 +169,7 @@ class InputSetoran extends Component
 
     public function submit()
     {
-        $produk = ProdukTabungan::find($this->produkId);
+        $produk = ProdukTabungan::whereKey($this->produkId)->first();
         $minimalSetor = max(1000, (int) ($produk->minimal_setor ?? 0));
 
         $this->validate([
@@ -198,65 +198,22 @@ class InputSetoran extends Component
             return;
         }
 
-        $cacheKey = 'setoran-submit:'.Auth::id().':'.$this->idempotencyKey;
-        if (! Cache::add($cacheKey, true, now()->addMinutes(10))) {
-            session()->flash('error', 'Setoran ini sudah diproses. Muat ulang halaman untuk setoran baru.');
-
-            return;
-        }
-
         try {
-            $transaksi = DB::transaction(function () use ($produk) {
-                $saldo = SaldoProduk::firstOrCreate(
-                    ['nasabah_id' => $this->nasabahId, 'produk_id' => $this->produkId],
-                    ['saldo' => 0]
-                );
-                $saldo = SaldoProduk::whereKey($saldo->id)->lockForUpdate()->first();
-
-                $transaksi = TransaksiSetoran::create([
-                    'nasabah_id' => $this->nasabahId,
-                    'produk_id' => $this->produkId,
-                    'nominal' => $this->nominal,
-                    'tanggal_transaksi' => $this->tanggal_transaksi,
-                    'tanggal_input_sistem' => now(),
-                    'input_by' => Auth::id(),
-                    'sumber_input' => $this->sumber_input,
-                    'status' => 'tercatat',
-                    'catatan' => $this->catatan ?: null,
-                ]);
-
-                $saldo->increment('saldo', $this->nominal);
-
-                if ($produk && $produk->tipe === 'paket') {
-                    app(HitungTunggakanAction::class)
-                        ->execute((int) $this->nasabahId, (int) $this->produkId, simpan: true);
-                }
-
-                return $transaksi;
-            });
-        } catch (\Throwable $e) {
-            Cache::forget($cacheKey);
-            report($e);
-            session()->flash('error', 'Gagal mencatat setoran. Silakan coba lagi.');
-
-            return;
-        }
-
-        try {
-            ActivityLogger::log('setor', 'transaksi_setoran', $transaksi->id, [
-                'nasabah_id' => $this->nasabahId,
+            app(CatatSetoranAction::class)->execute([
+                'nasabah_id' => (int) $this->nasabahId,
+                'produk_id' => (int) $this->produkId,
                 'nominal' => $this->nominal,
-                'produk_id' => $this->produkId,
+                'tanggal_transaksi' => (string) $this->tanggal_transaksi,
+                'sumber_input' => (string) $this->sumber_input,
+                'input_by' => (int) Auth::id(),
+                'catatan' => $this->catatan ?: null,
+                'sudah_disetor_ke_kantor' => false,
+                'idempotency_key' => (string) $this->idempotencyKey,
             ]);
+        } catch (DomainException $e) {
+            session()->flash('error', $e->getMessage());
 
-            ActivityLogger::notify(
-                $this->nasabahId,
-                'Setoran Dicatat',
-                'Setoran Rp '.number_format($this->nominal, 0, ',', '.').' ke produk '.($produk->nama ?? '-').' telah dicatat.',
-                'both'
-            );
-        } catch (\Throwable $e) {
-            report($e);
+            return;
         }
 
         $this->idempotencyKey = (string) Str::uuid();
@@ -301,9 +258,8 @@ class InputSetoran extends Component
             ->take(5)
             ->get();
 
-        $totalBelumDisetor = TransaksiSetoran::belumDisetor()
-            ->where('input_by', Auth::id())
-            ->sum('nominal');
+        // D13: banner kas memakai angka net dari sumber tunggal.
+        $totalBelumDisetor = (float) KasKolektorHitung::kasDiTangan((int) Auth::id());
 
         return view('livewire.kolektor.input-setoran', compact('riwayatHariIni', 'totalBelumDisetor'));
     }

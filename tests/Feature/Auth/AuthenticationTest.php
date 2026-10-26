@@ -47,7 +47,7 @@ test('users can logout', function () {
         ->withoutMiddleware(PreventRequestForgery::class)
         ->post(route('logout'));
 
-    $response->assertRedirect(route('home'));
+    $response->assertRedirect(route('login'));
     $this->assertGuest();
 });
 

@@ -146,7 +146,12 @@ it('rejects withdrawal when pending withdrawals exceed available saldo', functio
         ->set('nominal', 30000)
         ->set('lokasi_pengambilan', 'kantor')
         ->call('submit')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->set('pin', '123456')
+        ->call('konfirmasi')
+        ->assertHasNoErrors()
+        ->assertSet('tampilKonfirmasi', true)
+        ->assertNotSet('pesanError', null);
 
     $this->assertDatabaseMissing('transaksi_penarikan', [
         'nasabah_id' => $nasabah->id,
@@ -201,7 +206,12 @@ it('allows withdrawal when pending withdrawals still leave sufficient saldo', fu
         ->set('nominal', 50000)
         ->set('lokasi_pengambilan', 'kantor')
         ->call('submit')
-        ->assertHasNoErrors();
+        ->assertHasNoErrors()
+        ->assertSet('tampilKonfirmasi', true)
+        ->set('pin', '123456')
+        ->call('konfirmasi')
+        ->assertHasNoErrors()
+        ->assertSet('tampilKonfirmasi', false);
 
     $this->assertDatabaseHas('transaksi_penarikan', [
         'nasabah_id' => $nasabah->id,

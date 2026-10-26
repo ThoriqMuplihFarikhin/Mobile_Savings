@@ -54,7 +54,7 @@ it('rejects deletion when nasabah still has balance', function () {
     Livewire::test(ManajemenNasabah::class)
         ->call('confirmDelete', $profil->id)
         ->call('delete')
-        ->assertSet('confirmDelete', true)
+        ->assertSet('tampilKonfirmasiHapus', true)
         ->assertSet('deleteId', $profil->id);
 
     $this->assertDatabaseHas('users', ['id' => $nasabah->id]);
@@ -85,7 +85,7 @@ it('rejects deletion when nasabah has deposits', function () {
     Livewire::test(ManajemenNasabah::class)
         ->call('confirmDelete', $profil->id)
         ->call('delete')
-        ->assertSet('confirmDelete', true);
+        ->assertSet('tampilKonfirmasiHapus', true);
 
     $this->assertDatabaseHas('users', ['id' => $nasabah->id]);
     $this->assertDatabaseHas('nasabah_profil', ['id' => $profil->id]);
@@ -115,7 +115,7 @@ it('rejects deletion when nasabah has withdrawals', function () {
     Livewire::test(ManajemenNasabah::class)
         ->call('confirmDelete', $profil->id)
         ->call('delete')
-        ->assertSet('confirmDelete', true);
+        ->assertSet('tampilKonfirmasiHapus', true);
 
     $this->assertDatabaseHas('users', ['id' => $nasabah->id]);
     $this->assertDatabaseHas('nasabah_profil', ['id' => $profil->id]);
@@ -155,7 +155,7 @@ it('deletes clean nasabah with all related records', function () {
     Livewire::test(ManajemenNasabah::class)
         ->call('confirmDelete', $profil->id)
         ->call('delete')
-        ->assertSet('confirmDelete', false)
+        ->assertSet('tampilKonfirmasiHapus', false)
         ->assertSet('deleteId', null);
 
     $this->assertDatabaseMissing('users', ['id' => $nasabah->id]);

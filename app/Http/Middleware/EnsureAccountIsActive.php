@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\PortalLogin;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -11,11 +12,14 @@ class EnsureAccountIsActive
     public function handle(Request $request, Closure $next): Response
     {
         if ($request->user() && $request->user()->isLocked()) {
+            $role = $request->user()->role;
+
             auth()->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')->with('locked', true);
+            return redirect()->route(PortalLogin::routeName($role))
+                ->with('locked', true);
         }
 
         if ($request->user() && $request->user()->harus_ganti_pin) {

@@ -14,30 +14,15 @@ class HitungTunggakanAction
             return null;
         }
 
-        $kepesertaan = KepesertaanPaket::where('nasabah_id', $nasabahId)
-            ->where('produk_id', $produkId)
-            ->whereNull('keputusan_akhir')
-            ->first();
-
+        $kepesertaan = $this->kepesertaanAktif($nasabahId, $produkId);
         if (! $kepesertaan) {
-            if (! $simpan) {
-                return null;
-            }
-
-            $kepesertaan = KepesertaanPaket::create([
-                'nasabah_id' => $nasabahId,
-                'produk_id' => $produkId,
-                'tanggal_mulai_ikut' => now()->toDateString(),
-                'total_seharusnya_terkumpul' => 0,
-                'total_aktual_terkumpul' => 0,
-                'tunggakan' => 0,
-                'status_alert' => 'normal',
-            ]);
+            return null;
         }
 
         $hasil = $kepesertaan->hitungUlangKepesertaan($simpan);
 
         $result = [
+            'kepesertaan_id' => $kepesertaan->id,
             'tunggakan' => $hasil['tunggakan_rupiah'],
             'tunggakan_hari' => $hasil['tunggakan_hari'],
             'hari' => $hasil['tunggakan_hari'],
@@ -45,5 +30,27 @@ class HitungTunggakanAction
         ];
 
         return $hasil['tunggakan_hari'] > 0 ? $result : null;
+    }
+
+    /**
+     * Hitung ulang kepesertaan yang sudah ada sebagai reaksi perubahan setoran
+     * (koreksi/batal); tidak membuat kepesertaan baru bila belum ada.
+     */
+    public function perbarui(int $nasabahId, int $produkId): void
+    {
+        $this->kepesertaanAktif($nasabahId, $produkId)?->hitungUlangKepesertaan(true);
+    }
+
+    /**
+     * Kepesertaan yang sedang berjalan (belum ada keputusan akhir) untuk
+     * pasangan nasabah+produk; tidak pernah dibuat di sini (D16: setoran
+     * mensyaratkan kepesertaan yang sudah didaftarkan lebih dahulu).
+     */
+    public function kepesertaanAktif(int $nasabahId, int $produkId): ?KepesertaanPaket
+    {
+        return KepesertaanPaket::where('nasabah_id', $nasabahId)
+            ->where('produk_id', $produkId)
+            ->whereNull('keputusan_akhir')
+            ->first();
     }
 }

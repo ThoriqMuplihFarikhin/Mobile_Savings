@@ -4,13 +4,16 @@ namespace App\Livewire\Admin;
 
 use App\Actions\Kolektor\TugaskanNasabahAction;
 use App\Actions\Pin\ResetPinOlehAdminAction;
+use App\Helpers\ActivityLogger;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\KolektorNasabah;
+use App\Models\LogHandoverKolektor;
 use App\Models\NasabahProfil;
 use App\Models\User;
 use App\Support\NomorHp;
 use DomainException;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -26,31 +29,32 @@ class KelolaKolektor extends Component
         return 'admin';
     }
 
-    public $search = '';
+    public string $search = '';
 
-    public $showForm = false;
+    public bool $showForm = false;
 
-    public $editId = null;
+    public ?int $editId = null;
 
-    public $name = '';
+    public string $name = '';
 
     public string $noHp = '';
 
-    public $pin = '';
+    public string $pin = '';
 
-    public $showAssign = false;
+    public bool $showAssign = false;
 
-    public $selectedKolektor = null;
+    public ?User $selectedKolektor = null;
 
-    public $availableNasabah = [];
+    /** @var array<int, NasabahProfil> */
+    public array $availableNasabah = [];
 
-    public $assignNasabahId = '';
+    public string $assignNasabahId = '';
 
-    public bool $confirmResetPin = false;
+    public bool $tampilKonfirmasiResetPin = false;
 
     public ?int $resetPinId = null;
 
-    public function render()
+    public function render(): View
     {
         $kolektor = User::where('role', 'kolektor')
             ->when($this->search, function ($query) {
@@ -66,13 +70,13 @@ class KelolaKolektor extends Component
         return view('livewire.admin.kelola-kolektor', compact('kolektor'));
     }
 
-    public function toggleForm()
+    public function toggleForm(): void
     {
         $this->showForm = ! $this->showForm;
         $this->resetForm();
     }
 
-    public function resetForm()
+    public function resetForm(): void
     {
         $this->editId = null;
         $this->name = '';
@@ -80,7 +84,7 @@ class KelolaKolektor extends Component
         $this->pin = '';
     }
 
-    public function save()
+    public function save(): void
     {
         $this->noHp = NomorHp::normalize($this->noHp);
 
@@ -92,6 +96,13 @@ class KelolaKolektor extends Component
 
         if ($this->editId) {
             $user = User::find($this->editId);
+
+            if (! $user) {
+                session()->flash('error', 'Kolektor tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+                return;
+            }
+
             $user->update([
                 'name' => $this->name,
                 'no_hp' => $this->noHp,
@@ -123,30 +134,48 @@ class KelolaKolektor extends Component
         session()->flash('success', 'Kolektor berhasil disimpan!');
     }
 
-    public function edit($id)
+    public function edit(int $id): void
     {
-        $user = User::findOrFail($id);
+        $user = User::find($id);
+
+        if (! $user instanceof User || $user->role !== 'kolektor') {
+            session()->flash('error', 'Kolektor tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+            return;
+        }
+
         $this->editId = $user->id;
         $this->name = $user->name;
-        $this->noHp = $user->no_hp;
+        $this->noHp = $user->no_hp ?? '';
         $this->showForm = true;
     }
 
-    public function toggleStatus($id)
+    public function toggleStatus(int $id): void
     {
         $user = User::find($id);
-        if (! $user || $user->role !== 'kolektor') {
+        if (! $user instanceof User || $user->role !== 'kolektor') {
             return;
         }
 
-        if ($user->status_akun === 'aktif' && $user->hasUnsettledCash()) {
-            session()->flash('error', 'Kolektor memiliki setoran yang belum disetor ke kantor. Selesaikan terlebih dahulu sebelum menonaktifkan.');
+        $mengunci = $user->status_akun === 'aktif';
+        $denganKas = $mengunci && $user->hasUnsettledCash();
+
+        $user->update(['status_akun' => $mengunci ? 'terkunci' : 'aktif']);
+
+        if ($denganKas) {
+            try {
+                ActivityLogger::log('kunci_kolektor_dengan_kas', 'users', $user->id, [
+                    'kolektor_id' => $user->id,
+                    'kas_belum_disetor' => true,
+                ]);
+            } catch (\Exception $e) {
+                report($e);
+            }
+
+            session()->flash('success', 'Status kolektor berhasil diubah! Kas yang belum disetor tetap dipantau di dashboard kas.');
 
             return;
         }
-
-        $newStatus = $user->status_akun === 'aktif' ? 'terkunci' : 'aktif';
-        $user->update(['status_akun' => $newStatus]);
 
         session()->flash('success', 'Status kolektor berhasil diubah!');
     }
@@ -155,6 +184,12 @@ class KelolaKolektor extends Component
     {
         $user = User::find($id);
         if (! $user || $user->role !== 'kolektor') {
+            return;
+        }
+
+        if (LogHandoverKolektor::where('kolektor_lama_id', $user->id)->exists()) {
+            session()->flash('error', 'Status kolektor ini berasal dari serah terima (handover) nasabah. Kolektor lama sengaja dinonaktifkan; jangan dibuka kunci lewat tombol ini.');
+
             return;
         }
 
@@ -167,10 +202,33 @@ class KelolaKolektor extends Component
         session()->flash('success', 'Kunci akun kolektor berhasil dibuka!');
     }
 
+    /**
+     * Toggle izin penarikan offline langsung kolektor (D23). Id yang bukan
+     * kolektor diabaikan tanpa log agar tombol tidak salah sasaran.
+     */
+    public function toggleIzinPenarikanLangsung(int $id): void
+    {
+        $user = User::find($id);
+        if (! $user instanceof User || $user->role !== 'kolektor') {
+            return;
+        }
+
+        $user->update(['izin_penarikan_langsung' => ! $user->izin_penarikan_langsung]);
+
+        ActivityLogger::log('ubah_izin_penarikan_langsung', 'users', $user->id, [
+            'kolektor_id' => $user->id,
+            'izin_penarikan_langsung' => $user->izin_penarikan_langsung,
+        ]);
+
+        session()->flash('success', $user->izin_penarikan_langsung
+            ? 'Izin penarikan offline langsung kolektor diaktifkan.'
+            : 'Izin penarikan offline langsung kolektor dinonaktifkan.');
+    }
+
     public function confirmResetPin(int $userId): void
     {
         $this->resetPinId = $userId;
-        $this->confirmResetPin = true;
+        $this->tampilKonfirmasiResetPin = true;
     }
 
     public function resetPin(): void
@@ -178,7 +236,7 @@ class KelolaKolektor extends Component
         $target = User::find($this->resetPinId);
 
         if (! $target) {
-            $this->confirmResetPin = false;
+            $this->tampilKonfirmasiResetPin = false;
             $this->resetPinId = null;
             session()->flash('error', 'Pengguna tidak ditemukan.');
 
@@ -187,22 +245,39 @@ class KelolaKolektor extends Component
 
         $pinBaru = app(ResetPinOlehAdminAction::class)->execute($target);
 
-        $this->confirmResetPin = false;
+        $this->tampilKonfirmasiResetPin = false;
         $this->resetPinId = null;
 
         session()->flash('success', "PIN berhasil direset. PIN baru: {$pinBaru}. Catat sekarang karena hanya ditampilkan sekali. Pengguna wajib mengganti PIN setelah login.");
     }
 
-    public function toggleAssign($id)
+    public function toggleAssign(int $id): void
     {
+        $kolektor = User::find($id);
+
+        if (! $kolektor instanceof User || $kolektor->role !== 'kolektor') {
+            $this->showAssign = false;
+            $this->selectedKolektor = null;
+            $this->availableNasabah = [];
+            session()->flash('error', 'Kolektor tidak ditemukan. Muat ulang daftar lalu coba lagi.');
+
+            return;
+        }
+
         $this->showAssign = true;
-        $this->selectedKolektor = User::find($id);
+        $this->selectedKolektor = $kolektor;
         $this->assignNasabahId = '';
         $this->searchNasabah();
     }
 
-    public function searchNasabah()
+    public function searchNasabah(): void
     {
+        if (! $this->selectedKolektor instanceof User) {
+            $this->availableNasabah = [];
+
+            return;
+        }
+
         $assignedIds = KolektorNasabah::where('kolektor_id', $this->selectedKolektor->id)
             ->where('status', 'aktif')
             ->pluck('nasabah_id')
@@ -211,11 +286,18 @@ class KelolaKolektor extends Component
         $this->availableNasabah = NasabahProfil::where('status_pendaftaran', 'aktif')
             ->whereNotIn('user_id', $assignedIds)
             ->with('user')
-            ->get();
+            ->get()
+            ->all();
     }
 
-    public function assignNasabah()
+    public function assignNasabah(): void
     {
+        if (! $this->selectedKolektor instanceof User) {
+            session()->flash('error', 'Pilih kolektor terlebih dahulu.');
+
+            return;
+        }
+
         $this->validate([
             'assignNasabahId' => 'required|exists:users,id',
         ]);
@@ -237,7 +319,7 @@ class KelolaKolektor extends Component
         session()->flash('success', 'Nasabah berhasil ditugaskan ke kolektor!');
     }
 
-    public function removeAssign($id)
+    public function removeAssign(int $id): void
     {
         $assign = KolektorNasabah::find($id);
         if ($assign) {
@@ -252,7 +334,7 @@ class KelolaKolektor extends Component
         session()->flash('success', 'Penugasan nasabah berhasil dihapus!');
     }
 
-    public function updatedSearch()
+    public function updatedSearch(): void
     {
         $this->resetPage();
     }

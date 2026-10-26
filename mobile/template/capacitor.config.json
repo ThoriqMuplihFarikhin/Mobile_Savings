@@ -1,0 +1,15 @@
+{
+    "appId": "{{APPLICATION_ID}}",
+    "appName": "{{APP_NAME}}",
+    "server": {
+        "url": "https://{{APP_DOMAIN}}{{START_PATH}}",
+        "cleartext": false,
+        "allowNavigation": ["{{APP_DOMAIN}}"],
+        "errorPath": "/offline",
+        "android": {
+            "appendUserAgent": "TabunganApp/{{FLAVOR}}",
+            "allowMixedContent": false,
+            "webContentsDebuggingEnabled": false
+        }
+    }
+}
