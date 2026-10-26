@@ -3,7 +3,7 @@
 Berlaku untuk kolektor lapangan dan admin pendamping. Dokumen ini meringkas cara
 menangani **nasabah offline** — nasabah yang didaftarkan tanpa aplikasi
 (`mode_akses = offline`), sehingga seluruh transaksi dilakukan lewat HP kolektor
-dan dicatat pada buku tabungan fisik.
+dan dicatat pada buku Tabungan fisik.
 
 ---
 
@@ -80,7 +80,7 @@ dan dicatat pada buku tabungan fisik.
 3. Cetak **satu lembar**. Pada bagian bawah lembar terdapat baris **Tanda Tangan
    Nasabah**, **Tanggal Cetak**, dan **Nama Kolektor**.
 4. Nasabah **menandatangani tanda tangan** pada lembar tersebut di hadapan
-   kolektor, lalu lembar ditempel pada buku tabungan fisik.
+   kolektor, lalu lembar ditempel pada buku Tabungan fisik.
 5. Admin memantau kepatuhan lewat **Laporan → Nasabah**, kolom **Rekap Terakhir
    Dicetak**. Baris diurutkan dari yang **paling lama**; nilai *Belum pernah*
    berarti nasabah tersebut belum pernah menerima cetakan rekap.
@@ -124,4 +124,17 @@ tinjauan; jejak audit tetap utuh karena peninjauan tidak dapat diulang.
 | Membuka halaman rekap & mencetak | hanya nasabah binaannya | ✔ |
 | Tinjauan *sesuai* / *bermasalah* | — | ✔ |
 | Membekukan / membuka izin penarikan langsung | — | ✔ |
-| Mengubah batas kas dan batas penarikan | — | ✔ |
+---
+
+## 6. Akses Sistem Kolektor di Lapangan
+
+### 6.1 Alur Masuk (Login 2 Langkah)
+1. Buka tautan portal kolektor (`/login/kolektor`).
+2. **Langkah 1 (Nomor HP)**: Masukkan nomor HP aktif yang didaftarkan kantor (misal: `0812 3456 7890`), lalu tekan tombol **Lanjut** (hijau).
+3. **Langkah 2 (PIN 6 Digit)**: Masukkan 6 digit PIN akun Anda menggunakan papan angka digital (keypad). Sistem akan secara otomatis memverifikasi PIN saat digit ke-6 dimasukkan, atau tekan tombol **Masuk**.
+4. Bila lupa PIN atau akun terkunci akibat 5 kali salah input, hubungi admin kantor melalui tautan WhatsApp bantuan pada halaman login.
+
+### 6.2 Mode Teks Besar (A+)
+- Pada kondisi lapangan dengan pencahayaan terang matahari atau bagi petugas yang membutuhkan keterbacaan lebih tinggi, tekan tombol **A+** di sudut atas layar login atau di menu **Pengaturan**.
+- Mode teks besar akan memperbesar ukuran teks aplikasi secara proporsional (+18%) dan tersimpan otomatis di perangkat kolektor.
+
