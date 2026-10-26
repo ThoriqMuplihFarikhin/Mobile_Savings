@@ -139,6 +139,7 @@ Route::middleware(['auth', 'active', 'idle'])->group(function () {
         Route::get('/penarikan', [PenarikanController::class, 'index'])->name('penarikan.index');
         Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat.index');
         Route::get('/riwayat-tabungan', [RiwayatController::class, 'riwayatTabungan'])->name('riwayat-tabungan.index');
+        Route::get('/riwayat-Tabungan', [RiwayatController::class, 'riwayatTabungan'])->name('riwayat-Tabungan.index');
         Route::get('/progres-paket', [RiwayatController::class, 'progresPaket'])->name('progres-paket.index');
         Route::get('/pilih-paket', [PilihPaketController::class, 'index'])->name('paket.pilih');
         Route::get('/komplain', [RiwayatController::class, 'komplain'])->name('komplain.index');

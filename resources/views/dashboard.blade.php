@@ -107,11 +107,11 @@
                         </div>
                         <span class="mt-1.5 text-xs font-medium text-body">Setor</span>
                     </a>
-                    <a href="{{ route('kolektor.setor-kantor.index') }}" wire:navigate class="flex flex-col items-center group">
-                        <div class="flex h-11 w-11 items-center justify-center rounded-full bg-info-soft text-info transition group-hover:scale-105">
-                            <flux:icon.building-office class="size-5" />
+                    <a href="{{ route('kolektor.penarikan-offline.index') }}" wire:navigate class="flex flex-col items-center group">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-full bg-danger-soft text-danger transition group-hover:scale-105">
+                            <flux:icon.arrow-up-tray class="size-5" />
                         </div>
-                        <span class="mt-1.5 text-xs font-medium text-body">Kantor</span>
+                        <span class="mt-1.5 text-xs font-medium text-body">Tarik Offline</span>
                     </a>
                     <a href="{{ route('kolektor.verifikasi-penarikan.index') }}" wire:navigate class="flex flex-col items-center group">
                         <div class="relative flex h-11 w-11 items-center justify-center rounded-full bg-warning-soft text-warning-deep transition group-hover:scale-105">
@@ -125,6 +125,12 @@
                             <span class="text-xs font-medium leading-tight text-warning-deep">menunggu diantar</span>
                         @endif
                     </a>
+                    <a href="{{ route('kolektor.setor-kantor.index') }}" wire:navigate class="flex flex-col items-center group">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-full bg-info-soft text-info transition group-hover:scale-105">
+                            <flux:icon.building-office class="size-5" />
+                        </div>
+                        <span class="mt-1.5 text-xs font-medium text-body">Kantor</span>
+                    </a>
                     <a href="{{ route('kolektor.jadwal.index') }}" wire:navigate class="flex flex-col items-center group">
                         <div class="flex h-11 w-11 items-center justify-center rounded-full bg-info-soft text-info transition group-hover:scale-105">
                             <flux:icon.calendar-days class="size-5" />
@@ -137,11 +143,23 @@
                         </div>
                         <span class="mt-1.5 text-xs font-medium text-body">Nasabah</span>
                     </a>
+                    <a href="{{ route('kolektor.daftar-nasabah.index') }}" wire:navigate class="flex flex-col items-center group">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-full bg-primary-soft text-on-primary-soft transition group-hover:scale-105">
+                            <flux:icon.user-plus class="size-5" />
+                        </div>
+                        <span class="mt-1.5 text-xs font-medium text-body">Daftar Baru</span>
+                    </a>
                     <a href="{{ route('serah-terima.index') }}" wire:navigate class="flex flex-col items-center group">
                         <div class="flex h-11 w-11 items-center justify-center rounded-full bg-inset text-ink transition group-hover:scale-105">
                             <flux:icon.hand-raised class="size-5" />
                         </div>
                         <span class="mt-1.5 text-xs font-medium text-body">Serah Terima</span>
+                    </a>
+                    <a href="{{ route('kolektor.izin.index') }}" wire:navigate class="flex flex-col items-center group">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-full bg-warning-soft text-warning-deep transition group-hover:scale-105">
+                            <flux:icon.calendar class="size-5" />
+                        </div>
+                        <span class="mt-1.5 text-xs font-medium text-body">Izin / Cuti</span>
                     </a>
                 </div>
             </div>
@@ -293,14 +311,14 @@
                         ? (int) now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($tanggalCair)->startOfDay(), false)
                         : 0;
 
-                    // DESIGN.md §14: "Tinggal Rp X lagi" dihitung dari target
-                    // produk dan total_aktual_terkumpul yang sudah dimuat.
-                    $targetPaket = $kepesertaanAktif->produk->targetAkhir();
+                    // Target paket: durasi periode (mulai s/d selesai) x harga per hari
+                    $targetPaket = $kepesertaanAktif->produk?->targetAkhir() ?? $kepesertaanAktif->targetKepesertaan();
                     $terkumpulPaket = (float) $kepesertaanAktif->total_aktual_terkumpul;
                     $sisaPaket = $targetPaket !== null ? max(0, $targetPaket - $terkumpulPaket) : null;
                     $persenPaket = $targetPaket !== null && $targetPaket > 0
                         ? (int) min(100, round($terkumpulPaket / $targetPaket * 100))
                         : null;
+                    $sisaPersenPaket = $persenPaket !== null ? max(0, 100 - $persenPaket) : null;
 
                     $teksPencairan = $pencairanPaket['boleh']
                         ? 'Sudah Bisa Dicairkan'
@@ -321,9 +339,9 @@
                     @endif
                     <div class="min-w-0 flex-1">
                         <p class="truncate text-sm text-mute">{{ $kepesertaanAktif->produk->nama }}</p>
-                        @if($sisaPaket !== null)
+                        @if($sisaPersenPaket !== null)
                             <p class="mt-1 text-base font-semibold text-ink">
-                                Tinggal <x-ui.rupiah :nilai="$sisaPaket" /> lagi
+                                Tinggal {{ $sisaPersenPaket }}% lagi
                             </p>
                         @endif
                         <div class="mt-2">
