@@ -4,15 +4,15 @@
 @endphp
 
 <nav data-test="bottom-nav" aria-label="Navigasi utama"
-     class="border-t border-hairline bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_1px_2px_rgb(0_0_0_/_0.06)] dark:bg-surface">
+     class="border-t border-hairline bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-1px_3px_rgba(20,83,45,0.04)] dark:border-hairline/60 dark:bg-surface-dark">
     <div class="flex h-16 items-stretch">
         @foreach($items as $item)
             @if(!empty($isKolektor) && $isKolektor && $loop->index == 2)
-                {{-- Tombol Absen di tengah: hijau datar 56px, tanpa cincin gradien --}}
+                {{-- Tombol Absen di tengah: hijau datar 56px, tanpa cincin gradien (DESIGN.md §7) --}}
                 <a wire:key="nav-absen" href="{{ route('kolektor.absen.index') }}" wire:navigate
                    data-test="tombol-absen"
                    class="flex w-20 shrink-0 -mt-4 flex-col items-center gap-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                    <span class="flex size-14 items-center justify-center rounded-full bg-primary text-on-primary transition active:scale-95">
+                    <span class="flex size-14 items-center justify-center rounded-full bg-primary text-on-primary transition active:scale-95 shadow-[0_2px_4px_rgba(20,83,45,0.12)]">
                         @if($sudahAbsen)
                             {!! $ikonCentang !!}
                         @else
@@ -25,14 +25,17 @@
                             </svg>
                         @endif
                     </span>
-                    <span class="text-xs font-medium whitespace-nowrap text-ink">{{ $sudahAbsen ? 'Sudah absen' : 'Absen' }}</span>
+                    <span class="text-xs font-medium whitespace-nowrap text-ink dark:text-zinc-200">{{ $sudahAbsen ? 'Sudah absen' : 'Absen' }}</span>
                 </a>
             @endif
 
+            @php
+                $isActive = request()->routeIs($item['active']);
+            @endphp
             <a wire:key="nav-item-{{ $loop->index }}" href="{{ $item['url'] }}" wire:navigate
-               class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 px-1 text-xs transition
-                      {{ request()->routeIs($item['active']) ? 'font-medium text-primary' : 'font-normal text-mute' }}">
-                <span class="shrink-0" aria-hidden="true">{!! $item['icon'] !!}</span>
+               class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 px-1 text-xs transition-colors duration-150 {{ $isActive ? 'font-medium text-primary' : 'font-normal text-mute hover:text-ink dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+               @if($isActive) aria-current="page" @endif>
+                <span class="shrink-0 transition-transform duration-150 {{ $isActive ? 'scale-105' : '' }}" aria-hidden="true">{!! $item['icon'] !!}</span>
                 <span class="truncate">{{ $item['label'] }}</span>
             </a>
         @endforeach
