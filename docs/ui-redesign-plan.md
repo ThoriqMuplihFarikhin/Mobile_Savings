@@ -112,7 +112,7 @@ Untuk setiap task: **baca view dan kelas Livewire-nya dulu**, ubah hanya markup/
 | **U3.5 Ajukan penarikan** | `ajukan-penarikan` | `input-amount` 68px, `chip-amount` (termasuk "Tarik habis"), pilihan metode, catatan amber bila menunggu persetujuan, tombol utama di bawah dengan alasan bila nonaktif ("Saldo belum cukup", "Belum waktunya cair") | aturan penarikan (D7, gerbang tunggakan, gerbang pencairan) |
 | **U3.6 Layar sukses penarikan** | bagian dari `ajukan-penarikan` | Komponen `layar-sukses` (cincin lembut, konfeti datar), tombol "Lihat status" dan "Selesai" | hasil pengajuan |
 | **U3.7 Pengajuan aktif** | `pengajuan-aktif` | `stepper` (Diajukan → Disetujui → Selesai; ditolak = titik merah tanpa centang), kartu nominal, catatan serah terima sesuai **D33**, tombol "Batalkan pengajuan" dengan `wire:confirm` | status pengajuan |
-| **U3.8 Riwayat tabungan** | `riwayat-tabungan` | Chip filter, kelompok per tanggal, `baris-riwayat` dengan ubin kategori, tautan rekap mutasi (rute `rekap.nasabah` yang ada, jangan membuat rute baru), empty state | transaksi, filter |
+| **U3.8 Riwayat Tabungan** | `riwayat-tabungan` | Chip filter, kelompok per tanggal, `baris-riwayat` dengan ubin kategori, tautan rekap mutasi (rute `rekap.nasabah` yang ada, jangan membuat rute baru), empty state | transaksi, filter |
 | **U3.9 Riwayat penarikan** | `riwayat-penarikan` | Kartu per penarikan dengan `status-chip` sesuai tabel pemetaan; biaya admin memakai minus `ink`, bukan merah (diuji `GayaUiLayarNasabahTest`) | status penarikan |
 | **U3.10 Notifikasi** | `notifikasi` | Penanda belum dibaca, ubin kategori per jenis (lihat `JenisNotifikasiTest`), tandai dibaca, empty state | jenis notifikasi |
 | **U3.11 Komplain** | `komplain` | Chip jenis, textarea, lampiran foto (komponen yang ada, jangan menulis ulang `foto.js`), daftar komplain dengan stepper Dikirim → Diproses → Selesai | jenis, status |
@@ -138,6 +138,11 @@ Aturan sama dengan Fase 3. Tambahan: layar kolektor dipakai di lapangan (satu ta
 | **U4.7 Setor kantor, penarikan offline, verifikasi penarikan** | `setor-kantor`, `penarikan-offline`, `verifikasi-penarikan` | Hero kas, stepper, `status-chip` dari tabel pemetaan, verifikasi PIN nasabah tetap | Jangan mengubah alur uang/PIN (D2, P3.1) |
 | **U4.8 Izin dan pengaturan** | `ajukan-izin`, `pengaturan` | Chip status persetujuan, profil datar tanpa gradien, tautan "Ajukan izin / cuti" | `chip-peran` tidak boleh muncul di pengaturan kolektor |
 | **U4.9 Bottom nav kolektor** | `layouts/app/bottom-nav.blade.php` | Lima item dengan tombol Absen di tengah (label "Absen"/"Sudah absen") | `BottomNavMobileTest` |
+| **U4.10 Notifikasi** | Ikon lonceng di hero dengan lencana belum dibaca, daftar notifikasi, "Tandai dibaca" | Pakai jenis & teks notifikasi yang sudah ada untuk peran kolektor | `JenisNotifikasiTest` |
+| **U4.11 Kinerja dan pencapaian** | Grafik batang 6 hari, ringkasan kinerja per hari | Total setoran per hari dari data transaksi riil; sembunyikan target jika tak ada aturan di kode | `DashboardKolektorTest`, `KasKolektorTest` |
+| **U4.12 Transaksi hari ini dan struk** | Daftar transaksi masuk/keluar hari ini, nomor bukti nyata, bagikan struk via WA/Web Share (D35) | Gunakan data riil kolektor; tanpa gateway eksternal baru | `DepositTest` |
+| **U4.13 Kunjungan dilewati, rute, pengingat WA** | Penanda status kunjungan, peta/rute bila koordinat tersedia, pengingat tunggakan WA | Gunakan status `JadwalKunjunganOtomatis` dan service WA eksisting; sembunyikan bila data belum ada | `JadwalKunjunganOtomatisTest`, `GayaUiLayarKolektorTest` |
+| **U4.14 Mode offline, ganti PIN, edit profil** | Penyelarasan banner `Mode Offline`, lembar ubah PIN, dan profil | Sambungkan ke action ganti PIN & profil yang ada dengan validasi server | `UbahPinTest`, `GayaUiEditProfilTest` |
 
 Selesai bila: `GayaUiLayarKolektorTest`, `DashboardKolektorTest`, `DaftarNasabahTest`, `AbsenTest`, `KasKolektorTest`, `HandoverKolektorTest`, `IzinKolektorTest`, `DepositTest` hijau.
 
