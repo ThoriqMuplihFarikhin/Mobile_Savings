@@ -1,70 +1,50 @@
 @props(['title' => '', 'subtitle' => ''])
 
-<header class="flex items-center justify-between gap-3 px-4 md:px-7 py-3 md:py-4
-               bg-surface dark:bg-surface-alt border-b border-border transition-colors">
-
-    {{-- Hamburger (mobile) --}}
-    <button @click="$store.ui.toggleSidebar()" class="lg:hidden flex h-9 w-9 items-center justify-center rounded-md
-            bg-inset dark:bg-surface text-mute dark:text-body transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+<header class="admin-topbar sticky top-0 z-20 flex items-center gap-2.5 px-4 py-2.5 border-b border-hairline transition-colors">
+    {{-- Hamburger (mobile < lg) --}}
+    <button
+        type="button"
+        @click="$store.ui.toggleSidebar()"
+        aria-label="Buka menu"
+        class="lg:hidden flex size-[38px] items-center justify-center rounded-[10px] border border-hairline bg-surface text-mute hover:bg-surface-2 hover:text-ink transition-colors cursor-pointer shrink-0"
+    >
+        <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
         </svg>
     </button>
 
-    <div class="min-w-0">
-        <h1 class="text-base md:text-xl font-semibold truncate text-ink">{{ $title }}</h1>
-        @if($subtitle)
-            <p class="hidden sm:block text-xs text-mute dark:text-subtle">{{ $subtitle }}</p>
-        @endif
+    {{-- Pencarian Global --}}
+    <div class="flex-1 max-w-[460px]">
+        <livewire:admin.search wire:key="topbar-search" />
     </div>
 
-    <div class="flex items-center gap-2 md:gap-3">
-        {{-- Search: icon on mobile, input on desktop --}}
-        <button class="md:hidden flex h-9 w-9 items-center justify-center rounded-md border border-border
-                       text-mute dark:text-subtle transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-            </svg>
-        </button>
-        <div class="hidden md:flex items-center gap-2 bg-inset dark:bg-surface
-                    border border-border rounded-md px-3 py-2 w-56 lg:w-64 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle dark:text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-            </svg>
-            <input type="text" placeholder="Cari nasabah, kolektor..."
-                   class="bg-transparent text-sm outline-none w-full placeholder:text-subtle dark:placeholder:text-subtle text-ink" />
-        </div>
-
-        <x-admin.theme-toggle />
-
-        {{-- Notification --}}
-        <button class="relative flex h-9 w-9 items-center justify-center rounded-md border border-border
-                       text-mute dark:text-subtle transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
-            </svg>
-            <span class="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-danger"></span>
-        </button>
-
-        {{-- Tambah Nasabah (desktop only) --}}
-        <a href="/admin/nasabah" wire:navigate
-           class="hidden lg:flex items-center gap-2 bg-accent text-accent-foreground
-                  rounded-md px-4 py-2 text-sm font-medium transition hover:opacity-90">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <div class="flex items-center gap-2 md:gap-3 ml-auto">
+        {{-- Tombol Tambah Nasabah Cepat --}}
+        <a
+            href="{{ route('admin.registrasi.index') }}"
+            wire:navigate
+            class="hidden sm:inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-[10px] bg-accent text-accent-foreground text-xs font-semibold hover:opacity-90 transition shadow-xs shrink-0 cursor-pointer"
+        >
+            <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            Tambah Nasabah
+            <span>Tambah Nasabah</span>
         </a>
 
-        {{-- Chip peran portal (D19 butir 4) --}}
+        {{-- Tombol Tema --}}
+        <x-admin.theme-toggle />
+
+        {{-- Chip peran portal --}}
         <x-peran-chip class="hidden sm:inline-flex lg:hidden" />
 
-        {{-- Profile chip (desktop only) --}}
-        <div class="hidden lg:flex items-center gap-2.5">
-            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground">
-                {{ substr(auth()->user()->name, 0, 1) }}
+        {{-- Chip Profil --}}
+        <div class="flex items-center gap-2 shrink-0">
+            <div class="flex size-[34px] items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-on-primary-soft select-none border border-primary/20">
+                {{ auth()->user()?->initials() ?? 'AD' }}
             </div>
-            <span class="text-sm font-medium text-ink">{{ auth()->user()->name }}</span>
+            <span class="hidden md:inline-block text-xs font-medium text-ink max-w-[120px] truncate">
+                {{ auth()->user()?->name ?? 'Admin' }}
+            </span>
         </div>
     </div>
 </header>
