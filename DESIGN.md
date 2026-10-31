@@ -32,7 +32,14 @@ colors:
   info-soft: "#dbeafe"
   portal-nasabah: "#15803d"
   portal-kolektor: "#2563eb"
-  portal-admin: "#171717"
+  portal-admin: "#15803d"
+  dark-portal-admin: "#22c55e"
+  admin-canvas: "#f4f7f3"
+  admin-surface: "#ffffff"
+  admin-surface-2: "#f8faf7"
+  admin-border: "#e1e8de"
+  admin-text: "#171717"
+  admin-mute: "#5b6b5d"
   canvas-warm: "#f3f7f1"
   hairline-warm: "#e1eadd"
   primary-deep: "#166534"
@@ -794,18 +801,26 @@ Radius pil, 12px/500, teks selalu dari pasangan `*-deep` di atas `*-soft`. Chip 
 - `bottom-nav`: bar putih menempel ke bawah, tinggi 64px, **empat item dengan ikon 24px dan label 12px yang selalu terlihat** (bukan hanya di item aktif). Aktif = warna `primary` + bobot 500. Tidak ada pil hitam melayang.
 - Kolektor: tombol **Absen** `fab-absen` 56px di tengah, hijau datar, tanpa cincin gradien, dengan label "Absen" di bawahnya (12px). Setelah absen masuk, ia berubah menjadi centang dengan label "Sudah absen".
 
-### Navigasi admin
-- `admin-sidebar`: putih, border kanan hairline, item 36px, aktif `surface-inset` + teks ink + bobot 500. Bagian dikelompokkan dengan judul 12px `mute` (bukan huruf kapital semua).
-- `topbar`: 56px, pencarian global di kiri, chip portal admin dan menu profil di kanan.
+### Navigasi admin (Redesain D59)
+- `admin-sidebar`: lebar 268px, sticky 100dvh, padding 16px 12px, border kanan hairline (`#e1e8de`, gelap `#2a352d`). Bagian dikelompokkan dengan label grup huruf kapital 11px (`text-[11px] font-semibold uppercase tracking-wider text-mute`).
+- Item menu (`ni`): tinggi min 38px, radius 10px (`rounded-[10px]`), padding 8px 10px, ikon 18px. Status aktif (`ni.a`): latar hijau muda (`bg-primary-soft` `#dcfce7`), teks hijau tua (`text-on-primary-soft` `#14532d`, gelap `#bbf7d0`), font-semibold. Lencana antrean (`bg`): latar kuning muda (`bg-warning-soft` `#fef3c7`), teks kuning tua (`text-warning-deep` `#92400e`), pill rounded-full, font-semibold 11px.
+- `topbar`: sticky, tinggi sekitar 54px, padding 10px 16px, border bawah hairline (`#e1e8de`), blur latar melalui CSS kelas `.admin-topbar`. Pencarian global di kiri (input 38px radius 10px), tombol ganti tema 38px, dan chip profil admin di kanan.
 
-### Tabel admin
-- Header `admin-table-head`: monospace 12px, huruf kapital, tracking 0,6px, warna `mute`, latar `canvas`.
-- Sel: 14px, tinggi baris 44px, border bawah hairline, hover `surface-inset`. **Kolom nominal rata kanan dengan `tabular-nums`**, bukan mono. Kolom status memakai chip dari tabel §2.
-- Tabel yang memuat lebih dari 6 kolom digulir di dalam kontainer sendiri. Halaman tidak boleh bergulir ke samping.
-- Di bawah 640px, tabel yang dipakai admin di HP berubah menjadi daftar kartu.
+### Tabel admin (Redesain D59)
+- Kartu tabel: `rounded-[14px] border border-hairline bg-surface overflow-hidden shadow-xs`.
+- Header tabel: sans (Instrument Sans), 12px, huruf kapital, tracking 0,04em, warna `mute` (`#5b6b5d`), latar `surface-2` (`#f8faf7`, gelap `#111712`), padding 10px 14px, teks rata kiri kecuali kolom uang rata kanan.
+- Sel: 14px (atau 13px untuk subteks), border atas hairline, hover baris `surface-2`. **Kolom nominal rata kanan dengan `tabular-nums`**. Kolom status memakai chip dari tabel §2 / prototipe.
+- Kolom aksi baris: rata kanan, maksimal dua tombol langsung (tinggi 32px `rounded-[10px]`), sisanya di dropdown menu tiga titik.
+- Footer tabel: padding 10px 14px, border atas hairline, font 13px text-mute, teks "Menampilkan n dari m data" dan penomoran halaman.
+- Responsif mobile: di bawah breakpoint `md`, tabel berubah menjadi daftar kartu dengan atribut `data-test="kartu-tabel" class="divide-y divide-hairline md:hidden"`.
 
-### KPI
-`kpi-card`: putih, border hairline, radius 8px, label 12px `mute` di atas, nilai `money-lg` di bawah, ikon 32px `surface-inset`. Delta (naik/turun) memakai chip kecil dengan panah, bukan hanya warna.
+### Detail dan Aksi (Redesain D59)
+- **Panel Samping (Drawer / Flyout)**: untuk melihat rincian detail data (nasabah, penarikan, absensi, komplain) tanpa meninggalkan konteks halaman utama. Fixed di sisi kanan layar, lebar 560px (lebar ekstra 760px untuk formulir/analisis luas), berbayang, dengan header judul, tombol silang tutup, isi bergulir, dan penutupan via tombol Esc atau klik backdrop.
+- **Dialog Modal**: untuk konfirmasi aksi (hapus, konversi, approval) dan formulir cepat. Di tengah layar, lebar maks 460px, radius 16px (`rounded-[16px]`), tombol aksi primer dan Batal. Aksi destruktif/bahaya menggunakan varian error (`bd2` / `bg-danger-soft text-danger`).
+
+### KPI (Redesain D59)
+- Grid KPI: `grid auto-fit minmax(170px,1fr) gap-3 mb-4`.
+- `kpi-card`: kartu putih/surface, border hairline, radius 14px (`rounded-[14px]`), padding 14px, bayangan halus `shadow-xs`. Label 13px `mute` di atas, nilai besar `text-[1.4rem] font-semibold -tracking-[0.5px] tabular-nums` di tengah, keterangan kecil 12px `mute` di bawah. Varian peringatan (`k.w`): nilai berwarna `text-warning-deep`; varian bahaya/kolektor lewat batas (`k.e`): nilai berwarna `text-danger`.
 
 ### Banner, toast, sheet, empty state
 - **Banner** (`banner-*`): dalam halaman, untuk kondisi yang butuh perhatian ("Tunggakan 2 hari: Rp 20.000"). Selalu ada ikon dan tindakan jelas bila ada.
@@ -929,12 +944,14 @@ Tempel di `resources/css/app.css`, menggantikan blok `@theme` dan `.dark` yang l
 }
 
 html[data-portal="admin"] {
-    --color-accent: var(--color-portal-admin);
-    --color-accent-content: var(--color-portal-admin);
+    --color-accent: #15803d;
+    --color-accent-content: #15803d;
+    --color-accent-foreground: #ffffff;
 }
 html.dark[data-portal="admin"] {
-    --color-accent: #fafafa;
-    --color-accent-foreground: #171717;
+    --color-accent: #22c55e;
+    --color-accent-content: #22c55e;
+    --color-accent-foreground: #04210f;
 }
 ```
 

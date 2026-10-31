@@ -112,11 +112,13 @@
 
     /* Dekor hero (DESIGN.md §2): hiasan aria-hidden saja, bukan token status. */
     --color-decor-gold: #fbbf24;
-    --color-decor-green: #1b8f47;
+    /* D59: Token surface-2 prototipe admin (header tabel, hover baris) */
+    --color-surface-2: #f8faf7;
 }
 
 @layer theme {
     .dark {
+        --color-surface-2: #111712;
         /* Permukaan gelap netral (DESIGN.md §permukaan "Tidak ada lagi navy"
            #131C2E/#0B1220/#0A1626 dan tabel konversi §navy → Netral dark-*):
            surface = dark-surface #171717; alt = dark-canvas #0a0a0a agar tetap
@@ -169,16 +171,29 @@
     }
 }
 
-/* DESIGN.md §11: varian aksen admin — tombol/aksi memakai tinta portal,
-   bukan hijau. Aktif setelah <html data-portal="admin"> dipasang di layout. */
+/* D59: Aksen portal admin sesuai prototipe acuan — hijau #15803d, teks putih.
+   Mode gelap: hijau #22c55e, teks #04210f. Token kanvas #f4f7f3, border #e1e8de, mute #5b6b5d. */
 html[data-portal="admin"] {
-    --color-accent: var(--color-portal-admin);
-    --color-accent-content: var(--color-portal-admin);
+    --color-accent: #15803d;
+    --color-accent-content: #15803d;
+    --color-accent-foreground: #ffffff;
+    --color-canvas: #f4f7f3;
+    --color-surface: #ffffff;
+    --color-surface-2: #f8faf7;
+    --color-hairline: #e1e8de;
+    --color-mute: #5b6b5d;
 }
 
 html.dark[data-portal="admin"] {
-    --color-accent: #fafafa;
-    --color-accent-foreground: #171717;
+    --color-accent: #22c55e;
+    --color-accent-content: #22c55e;
+    --color-accent-foreground: #04210f;
+    --color-canvas: #0d130f;
+    --color-surface: #151c17;
+    --color-surface-2: #111712;
+    --color-hairline: #2a352d;
+    --color-text: #f2f2f2;
+    --color-mute: #a8b5aa;
 }
 
 @layer base {
@@ -217,16 +232,26 @@ select:focus[data-flux-control] {
   .card {
     @apply rounded-2xl border border-hairline bg-white p-4;
   }
-  /* §6 bentuk admin = 6-8px, jadi kartu admin memakai radius md (8px). */
+  /* D59: kartu admin radius 14px */
   html[data-portal="admin"] .card {
-    @apply rounded-lg;
+    @apply rounded-[14px];
   }
-  /* §7: tombol admin (button-admin-primary) radius 6px; pil hanya untuk portal mobile. */
+  /* D59: tombol admin radius 10px, tinggi 38px */
   html[data-portal="admin"] .btn-primary {
-    @apply rounded-md;
+    @apply rounded-[10px] h-[38px];
   }
   .btn-primary {
     @apply inline-flex items-center justify-center rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* D59: Topbar sticky dengan blur latar khusus admin via CSS (mematuhi larangan GayaUiAdminWarnaTest) */
+  .admin-topbar {
+    background: color-mix(in srgb, var(--color-canvas, #f4f7f3) 88%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .dark .admin-topbar {
+    background: color-mix(in srgb, var(--color-canvas, #0d130f) 88%, transparent);
   }
 }
 
@@ -626,4 +651,24 @@ html.text-enlarged {
     background-color: #3b82f6 !important;
 }
 
+/* Animasi koin melayang di hero dashboard kolektor (sesuai prototipe .cnc) */
+@keyframes heroFloat {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-7px); }
+}
 
+.animate-hero-float {
+    animation: heroFloat 3.8s ease-in-out infinite alternate;
+}
+
+.animate-hero-float-delayed {
+    animation: heroFloat 4.6s ease-in-out -2s infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-hero-float,
+    .animate-hero-float-delayed {
+        animation: none !important;
+        transform: none !important;
+    }
+}
