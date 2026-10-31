@@ -6,7 +6,7 @@
     >
         <x-slot:actions>
             <button wire:click="toggleForm"
-                class="inline-flex h-[38px] items-center gap-2 rounded-[10px] bg-primary px-4 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover active:scale-[0.98]">
+                class="min-h-11 inline-flex h-[38px] items-center gap-2 rounded-[10px] bg-primary px-4 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover active:scale-[0.98]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                 <span>Tambah Produk</span>
             </button>
@@ -407,12 +407,12 @@
                     </div>
                     <div class="flex items-center justify-end gap-1 pt-1">
                         <button wire:click="edit({{ $item->id }})" title="Edit"
-                            class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-hairline bg-white text-body shadow-xs transition hover:bg-inset hover:text-ink dark:bg-surface">
+                            class="min-h-11 flex h-8 w-8 items-center justify-center rounded-[8px] border border-hairline bg-white text-body shadow-xs transition hover:bg-inset hover:text-ink dark:bg-surface">
                             <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                         </button>
                         <button wire:click="toggleStatus({{ $item->id }})"
                             title="{{ $item->status === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}"
-                            class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-hairline bg-white text-warning-deep shadow-xs transition hover:bg-warning-soft dark:bg-surface">
+                            class="min-h-11 flex h-8 w-8 items-center justify-center rounded-[8px] border border-hairline bg-white text-warning-deep shadow-xs transition hover:bg-warning-soft dark:bg-surface">
                             @if($item->status === 'aktif')
                                 <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
                             @else
@@ -420,7 +420,7 @@
                             @endif
                         </button>
                         <button wire:click="confirmDelete({{ $item->id }})" title="Hapus"
-                            class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-hairline bg-white text-danger shadow-xs transition hover:bg-danger-soft dark:bg-surface">
+                            class="min-h-11 flex h-8 w-8 items-center justify-center rounded-[8px] border border-hairline bg-white text-danger shadow-xs transition hover:bg-danger-soft dark:bg-surface">
                             <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                     </div>

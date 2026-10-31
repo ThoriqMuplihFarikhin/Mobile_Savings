@@ -240,7 +240,7 @@
                         <tr class="bg-surface-2 text-xs uppercase tracking-[0.04em] text-mute font-medium border-b border-hairline">
                             <th class="px-4 py-2.5">Tanggal</th>
                             <th class="px-4 py-2.5">Tipe</th>
-                            <th class="px-4 py-2.5 text-right">Nominal</th>
+                            <th class="px-5 py-3 font-medium text-right">Nominal</th>
                             <th class="px-4 py-2.5 text-right">Status</th>
                         </tr>
                     </thead>
@@ -251,9 +251,7 @@
                                 <td class="whitespace-nowrap px-4 py-3">
                                     <x-admin.status-chip :status="$item['tipe']" />
                                 </td>
-                                <td class="whitespace-nowrap px-4 py-3 tabular-nums text-right text-sm font-semibold">
-                                    Rp {{ number_format($item['nominal'], 0, ',', '.') }}
-                                </td>
+                                <td class="whitespace-nowrap px-5 py-3 tabular-nums text-right text-sm">Rp {{ number_format($item['nominal'], 0, ',', '.') }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-right">
                                     <x-admin.status-chip :status="ucfirst($item['status'])" />
                                 </td>

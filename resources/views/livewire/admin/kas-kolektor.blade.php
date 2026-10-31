@@ -95,7 +95,7 @@
         </div>
 
         {{-- Fallback Kartu Mobile --}}
-        <div data-test="kartu-kas" class="divide-y divide-[var(--color-admin-border)] md:hidden">
+        <div data-test="kartu-kas" class="divide-y divide-hairline md:hidden">
             @forelse($daftarKas as $baris)
                 <div @class(['p-4 space-y-3', 'bg-warning-soft/40' => $baris['lewat_batas']])>
                     <div class="flex items-start justify-between gap-2">

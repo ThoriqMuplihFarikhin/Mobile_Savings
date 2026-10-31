@@ -116,7 +116,7 @@
                                 Akun kolektor lama akan dinonaktifkan secara otomatis. Lanjutkan?
                             </p>
                             <button wire:click="processHandover" wire:loading.attr="disabled" wire:confirm="Yakin ingin melakukan handover? Tindakan ini tidak dapat dibatalkan."
-                                class="mt-3 inline-flex h-[38px] items-center gap-2 rounded-[10px] bg-primary px-5 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50">
+                                class="mt-3 min-h-11 inline-flex h-[38px] items-center gap-2 rounded-[10px] bg-primary px-5 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50">
                                 Proses Handover Sekarang
                             </button>
                         </div>
@@ -131,7 +131,7 @@
         <div class="flex items-center justify-between border-b border-hairline px-6 py-4">
             <h3 class="text-sm font-semibold text-ink">Riwayat Handover</h3>
             <button type="button" wire:click="$refresh"
-                class="inline-flex h-[32px] items-center gap-1.5 rounded-[8px] border border-hairline bg-surface px-3 text-xs font-medium text-ink shadow-xs transition hover:bg-inset">
+                class="min-h-11 inline-flex h-[32px] items-center gap-1.5 rounded-[8px] border border-hairline bg-surface px-3 text-xs font-medium text-ink shadow-xs transition hover:bg-inset">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                 <span>Muat Ulang</span>
             </button>

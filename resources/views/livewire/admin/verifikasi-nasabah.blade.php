@@ -40,8 +40,8 @@
     {{-- Tabel / Kartu Verifikasi --}}
     <div class="rounded-[14px] border border-hairline bg-surface shadow-xs overflow-hidden">
         {{-- Desktop Table --}}
-        <div class="hidden md:block overflow-x-auto">
-            <table class="w-full text-left text-sm">
+        <div class="overflow-x-auto">
+            <table class="hidden md:table w-full text-left text-sm">
                 <thead>
                     <tr class="bg-surface-2 text-xs uppercase tracking-[0.04em] text-mute font-medium border-b border-hairline">
                         <th class="px-4 py-2.5">Nama</th>
@@ -62,7 +62,7 @@
                                 @if ($item->tanggal_lahir)
                                     <div>Lahir: {{ $item->tanggal_lahir->format('d/m/Y') }}</div>
                                 @endif
-                                <div>{{ ucfirst($item->jenis_kelamin) }} · {{ $item->pekerjaan ?? '-' }}</div>
+                                <div>{{ $item->jenis_kelamin }} · {{ $item->pekerjaan ?? '-' }}</div>
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-mute">{{ $item->didaftarkanOleh->name ?? '-' }}</td>
                             <td class="whitespace-nowrap px-4 py-3 text-right">
@@ -130,7 +130,7 @@
                                 @if ($item->tanggal_lahir)
                                     Lahir: {{ $item->tanggal_lahir->format('d/m/Y') }} ·
                                 @endif
-                                {{ ucfirst($item->jenis_kelamin) }} · {{ $item->pekerjaan ?? '-' }}
+                                {{ $item->jenis_kelamin }} · {{ $item->pekerjaan ?? '-' }}
                             </span>
                         </div>
                     </div>

@@ -95,7 +95,7 @@
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Waktu</th>
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Kolektor</th>
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Nasabah / Produk</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Nominal</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute text-right">Nominal</th>
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Lokasi / Kas</th>
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Catatan &amp; Bukti</th>
                         <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Tinjauan</th>
@@ -113,7 +113,7 @@
                                 <div class="font-medium text-[var(--color-admin-text)]">{{ $item->nasabah->name ?? '-' }}</div>
                                 <div class="text-xs text-[var(--color-admin-mute)]">{{ $item->produk->nama ?? '-' }}</div>
                             </td>
-                            <td class="px-4 py-3 tabular-nums text-right font-medium text-[var(--color-admin-text)]">
+                            <td class="px-4 py-3 tabular-nums text-right text-sm font-medium text-ink dark:text-white">
                                 Rp {{ number_format((float) $item->nominal_diminta, 0, ',', '.') }}
                             </td>
                             <td class="px-4 py-3 text-xs text-[var(--color-admin-text)]">

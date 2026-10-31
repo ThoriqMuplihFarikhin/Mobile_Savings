@@ -36,7 +36,7 @@
     <div class="flex flex-wrap gap-2">
         @foreach(['baru' => 'Baru', 'diproses' => 'Diproses', 'selesai' => 'Selesai'] as $value => $label)
             <button wire:click="$set('statusFilter', '{{ $value }}')"
-                class="inline-flex h-[38px] items-center gap-2 rounded-[10px] px-4 text-xs font-semibold transition {{ $statusFilter === $value ? 'bg-primary text-on-primary shadow-xs' : 'border border-hairline bg-surface text-ink hover:bg-inset' }}">
+                class="min-h-11 inline-flex h-[38px] items-center gap-2 rounded-[10px] px-4 text-xs font-semibold transition {{ $statusFilter === $value ? 'bg-primary text-on-primary shadow-xs' : 'border border-hairline bg-surface text-ink hover:bg-inset' }}">
                 <span>{{ $label }}</span>
                 @if(isset($ringkasanStatus[$value]) && $ringkasanStatus[$value] > 0)
                     <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold {{ $statusFilter === $value ? 'bg-white/20 text-on-primary' : 'bg-inset text-mute' }}">
@@ -88,13 +88,13 @@
                                 @if($item->status === 'baru')
                                     <div class="inline-flex items-center gap-1.5">
                                         <button wire:click="proses({{ $item->id }})"
-                                            class="inline-flex h-8 items-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">Proses</button>
+                                            class="min-h-11 inline-flex h-8 items-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">Proses</button>
                                         <button wire:click="showDetail({{ $item->id }})"
-                                            class="inline-flex h-8 items-center rounded-[8px] border border-hairline bg-white px-3 text-xs font-semibold text-ink shadow-xs transition hover:bg-inset dark:bg-surface">Detail</button>
+                                            class="min-h-11 inline-flex h-8 items-center rounded-[8px] border border-hairline bg-white px-3 text-xs font-semibold text-ink shadow-xs transition hover:bg-inset dark:bg-surface">Detail</button>
                                     </div>
                                 @elseif($item->status === 'diproses')
                                     <button wire:click="showDetail({{ $item->id }})"
-                                        class="inline-flex h-8 items-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">Selesaikan</button>
+                                        class="min-h-11 inline-flex h-8 items-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">Selesaikan</button>
                                 @else
                                     <span class="text-xs text-mute">-</span>
                                 @endif
@@ -147,14 +147,14 @@
                     @if($item->status === 'baru')
                         <div class="flex items-center justify-end gap-2 pt-1">
                             <button wire:click="proses({{ $item->id }})"
-                                class="inline-flex h-8 items-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">Proses</button>
+                                class="min-h-11 inline-flex h-8 items-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">Proses</button>
                             <button wire:click="showDetail({{ $item->id }})"
-                                class="inline-flex h-8 items-center rounded-[8px] border border-hairline bg-white px-3 text-xs font-semibold text-ink shadow-xs transition hover:bg-inset dark:bg-surface">Detail</button>
+                                class="min-h-11 inline-flex h-8 items-center rounded-[8px] border border-hairline bg-white px-3 text-xs font-semibold text-ink shadow-xs transition hover:bg-inset dark:bg-surface">Detail</button>
                         </div>
                     @elseif($item->status === 'diproses')
                         <div class="flex items-center justify-end pt-1">
                             <button wire:click="showDetail({{ $item->id }})"
-                                class="inline-flex h-8 items-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">Selesaikan</button>
+                                class="min-h-11 inline-flex h-8 items-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">Selesaikan</button>
                         </div>
                     @endif
                 </div>

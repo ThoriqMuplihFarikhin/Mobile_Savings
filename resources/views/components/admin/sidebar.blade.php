@@ -18,9 +18,7 @@
                 Tabungan Digital
             </span>
         </div>
-        <span class="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-semibold text-mute border border-hairline">
-            Admin
-        </span>
+        <x-peran-chip class="shrink-0 text-[10px]" />
     </div>
 
     {{-- Navigation --}}

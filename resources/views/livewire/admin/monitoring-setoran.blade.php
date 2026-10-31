@@ -6,7 +6,7 @@
     >
         <x-slot:actions>
             <a href="/admin/setoran/create" wire:navigate
-                class="inline-flex h-[38px] items-center gap-1.5 rounded-[10px] bg-primary px-4 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover active:scale-[0.98]">
+                class="min-h-11 inline-flex h-[38px] items-center gap-1.5 rounded-[10px] bg-primary px-4 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover active:scale-[0.98]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                 <span>+ Catat Setoran</span>
             </a>
@@ -60,7 +60,7 @@
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute">Tanggal</th>
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute">Nasabah</th>
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute">Produk</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-mute">Nominal</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute text-right">Nominal</th>
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute">Input Oleh</th>
                         <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute">Status</th>
                         <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-mute">Aksi</th>
@@ -76,9 +76,9 @@
                             </td>
                             <td class="px-4 py-3 text-xs text-body">{{ $item->produk->nama ?? '-' }}</td>
                             <td class="px-4 py-3 text-right">
-                                <div class="tabular-nums text-xs font-semibold text-ink">Rp {{ number_format($item->nominal, 0, ',', '.') }}</div>
+                                <div class="tabular-nums text-right text-sm font-medium text-ink">Rp {{ number_format($item->nominal, 0, ',', '.') }}</div>
                                 @if($item->nominal_asli)
-                                    <div class="tabular-nums text-[11px] text-mute">Asli: Rp {{ number_format($item->nominal_asli, 0, ',', '.') }}</div>
+                                    <div class="tabular-nums text-right text-xs text-mute">Asli: Rp {{ number_format($item->nominal_asli, 0, ',', '.') }}</div>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-xs text-body">{{ $item->inputBy->name ?? '-' }}</td>
@@ -158,9 +158,9 @@
                     @if(in_array($item->status, ['tercatat', 'dikoreksi']))
                         <div class="flex items-center justify-end gap-2 pt-1">
                             <button wire:click="toggleKoreksi({{ $item->id }})"
-                                class="inline-flex h-8 items-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">Koreksi</button>
+                                class="min-h-11 inline-flex h-8 items-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">Koreksi</button>
                             <button wire:click="toggleBatal({{ $item->id }})"
-                                class="inline-flex h-8 items-center rounded-[8px] border border-hairline bg-white px-3 text-xs font-semibold text-ink shadow-xs transition hover:bg-inset dark:bg-surface">Batal</button>
+                                class="min-h-11 inline-flex h-8 items-center rounded-[8px] border border-hairline bg-white px-3 text-xs font-semibold text-ink shadow-xs transition hover:bg-inset dark:bg-surface">Batal</button>
                         </div>
                     @endif
                 </div>
