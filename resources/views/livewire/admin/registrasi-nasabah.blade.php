@@ -1,130 +1,182 @@
-<div>
-    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-ink">Registrasi Nasabah</h1>
-            <p class="mt-1 text-sm text-mute">Daftarkan nasabah baru.</p>
-        </div>
-        <button wire:click="toggleForm"
-            class="btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-            Daftar Nasabah Baru
-        </button>
-    </div>
+<div class="space-y-6">
+    {{-- Header Halaman --}}
+    <x-admin.page-header
+        title="Registrasi Nasabah"
+        subtitle="Daftarkan nasabah baru langsung oleh admin."
+        breadcrumb="Nasabah"
+    />
 
+    {{-- Banner Notifikasi Flash --}}
     @if (session('success'))
-        <div class="mb-4 flex items-center gap-2.5 rounded-lg bg-info-soft px-4 py-3 text-sm text-info">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-            {{ session('success') }}
+        <div class="flex items-center gap-2.5 rounded-[10px] bg-primary-soft px-4 py-3 text-xs font-medium text-on-primary-soft border border-primary/20">
+            <svg class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>{{ session('success') }}</span>
         </div>
     @endif
 
-    @if($showForm)
-        <div class="mb-6 rounded-lg bg-inset shadow-[inset_0_0_0_1px_#e5e5e5]">
-            <div class="border-b border-hairline px-6 py-4">
-                <h3 class="text-sm font-semibold text-ink">Form Registrasi Nasabah</h3>
+    {{-- 2-Kolom: Form Registrasi (Kiri) & Terdaftar Terbaru (Kanan) --}}
+    <div class="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4 items-start">
+        {{-- Kolom Kiri: Form Registrasi Nasabah --}}
+        <div class="rounded-[14px] border border-hairline bg-surface p-5 shadow-xs">
+            <div class="border-b border-hairline pb-3 mb-4">
+                <h2 class="text-base font-semibold text-ink">Form Registrasi Nasabah</h2>
+                <p class="text-xs text-mute mt-0.5">Isi data calon nasabah untuk membuka rekening tabungan.</p>
             </div>
-            <form wire:submit="submit" class="space-y-4 p-6">
-                <label class="flex items-center gap-2 text-sm font-medium text-ink">
-                    <input type="checkbox" wire:model.live="modeOffline"
-                        class="h-4 w-4 rounded border-hairline text-info focus:ring-ink" />
-                    Nasabah tidak memakai aplikasi / tidak punya HP (mode offline)
-                </label>
+
+            <form wire:submit="submit" class="space-y-4">
+                {{-- Mode Offline Checkbox --}}
+                <div class="rounded-[10px] border border-hairline bg-surface-2 p-3">
+                    <label class="flex items-start gap-2.5 text-xs text-ink cursor-pointer">
+                        <input
+                            type="checkbox"
+                            wire:model.live="modeOffline"
+                            class="size-4 mt-0.5 rounded border-hairline text-accent focus:ring-accent"
+                        />
+                        <span class="leading-relaxed">
+                            <strong>Nasabah tanpa aplikasi (Mode Offline).</strong> Kolektor yang mencatat setoran dan penarikan langsung melalui buku tabungan fisik.
+                        </span>
+                    </label>
+                </div>
+
                 <div class="grid gap-4 sm:grid-cols-2">
+                    {{-- Nama Lengkap --}}
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-ink">Nama Lengkap</label>
-                        <input type="text" wire:model="nama"
-                            class="h-10 w-full rounded-md border border-hairline bg-white px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10" />
-                        @error('nama') <p class="mt-1.5 text-xs text-danger">{{ $message }}</p> @enderror
+                        <label class="mb-1.5 block text-xs font-medium text-ink">Nama Lengkap</label>
+                        <input
+                            type="text"
+                            wire:model="nama"
+                            placeholder="Nama nasabah"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                        />
+                        @error('nama') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
+
+                    {{-- No. HP (sembunyi jika mode offline) --}}
                     @if(! $modeOffline)
-                    <div>
-                        <label class="mb-1.5 block text-sm font-medium text-ink">No. HP</label>
-                        <input type="text" wire:model="noHp" placeholder="08xxxxxxxxxx"
-                            class="h-10 w-full rounded-md border border-hairline bg-white px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10" />
-                        @error('noHp') <p class="mt-1.5 text-xs text-danger">{{ $message }}</p> @enderror
-                    </div>
+                        <div>
+                            <label class="mb-1.5 block text-xs font-medium text-ink">No. HP</label>
+                            <input
+                                type="text"
+                                wire:model="noHp"
+                                placeholder="08xxxxxxxxxx"
+                                class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                            />
+                            @error('noHp') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                        </div>
                     @endif
-                    <div class="sm:col-span-2">
-                        <label class="mb-1.5 block text-sm font-medium text-ink">Alamat</label>
-                        <textarea wire:model="alamat" rows="2"
-                            class="w-full rounded-md border border-hairline bg-white px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10"></textarea>
-                        @error('alamat') <p class="mt-1.5 text-xs text-danger">{{ $message }}</p> @enderror
+
+                    {{-- Alamat --}}
+                    <div class="{{ ! $modeOffline ? 'sm:col-span-2' : '' }}">
+                        <label class="mb-1.5 block text-xs font-medium text-ink">Alamat</label>
+                        <textarea
+                            wire:model="alamat"
+                            rows="2"
+                            placeholder="Alamat lengkap nasabah"
+                            class="w-full rounded-[10px] border border-hairline bg-surface px-3 py-2 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                        ></textarea>
+                        @error('alamat') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
+
+                    {{-- Tanggal Lahir --}}
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-ink">Tanggal Lahir</label>
-                        <x-ui.tanggal wire:model="tanggalLahir" :max="now()->toDateString()"
-                            class="h-10 w-full rounded-md border border-hairline bg-white px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10" />
-                        @error('tanggalLahir') <p class="mt-1.5 text-xs text-danger">{{ $message }}</p> @enderror
+                        <label class="mb-1.5 block text-xs font-medium text-ink">Tanggal Lahir</label>
+                        <x-ui.tanggal
+                            wire:model="tanggalLahir"
+                            :max="now()->toDateString()"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                        />
+                        @error('tanggalLahir') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
+
+                    {{-- Jenis Kelamin --}}
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-ink">Jenis Kelamin</label>
-                        <select wire:model="jenisKelamin"
-                            class="h-10 w-full rounded-md border border-hairline bg-white px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10">
+                        <label class="mb-1.5 block text-xs font-medium text-ink">Jenis Kelamin</label>
+                        <select
+                            wire:model="jenisKelamin"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                        >
                             <option value="laki-laki">Laki-laki</option>
                             <option value="perempuan">Perempuan</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="mb-1.5 block text-sm font-medium text-ink">Pekerjaan</label>
-                        <input type="text" wire:model="pekerjaan"
-                            class="h-10 w-full rounded-md border border-hairline bg-white px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10" />
+
+                    {{-- Pekerjaan --}}
+                    <div class="sm:col-span-2">
+                        <label class="mb-1.5 block text-xs font-medium text-ink">Pekerjaan</label>
+                        <input
+                            type="text"
+                            wire:model="pekerjaan"
+                            placeholder="Contoh: Pedagang, Wiraswasta, Karyawan"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                        />
+                        @error('pekerjaan') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
                 </div>
-                <div class="flex gap-3">
-                    <button type="submit" wire:loading.attr="disabled"
-                        class="btn-primary">
+
+                {{-- Aksi Formulir --}}
+                <div class="flex items-center gap-2 pt-2 border-t border-hairline">
+                    <button
+                        type="submit"
+                        wire:loading.attr="disabled"
+                        class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] bg-accent px-5 text-xs font-semibold text-accent-foreground transition hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-xs"
+                    >
                         Daftarkan
                     </button>
-                    <button type="button" wire:click="toggleForm"
-                        class="rounded-md border border-hairline bg-white px-4 py-2 text-sm font-medium text-ink transition hover:bg-inset">
-                        Batal
-                    </button>
+                    @if($showForm)
+                        <button
+                            type="button"
+                            wire:click="toggleForm"
+                            class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] border border-hairline bg-surface px-4 text-xs font-medium text-mute transition hover:bg-surface-2 hover:text-ink cursor-pointer"
+                        >
+                            Batal
+                        </button>
+                    @endif
                 </div>
             </form>
         </div>
-    @endif
 
-    <div class="overflow-hidden rounded-lg bg-white shadow-[inset_0_0_0_1px_#e5e5e5]">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="border-b border-hairline bg-inset">
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Nama</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">No. HP</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Status</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Terdaftar</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-hairline">
-                    @forelse($nasabah as $item)
-                        <tr class="transition hover:bg-inset">
-                            <td class="px-4 py-3">
-                                <div class="text-sm font-medium text-ink">{{ $item->name }}</div>
-                                <div class="text-xs text-mute">{{ $item->nasabahProfil->alamat ?? '-' }}</div>
-                            </td>
-                            <td class="px-4 py-3 text-sm text-body">{{ $item->no_hp ?? '— (offline)' }}</td>
-                            <td class="px-4 py-3">
-                                @if($item->status_akun === 'aktif')
-                                    <span class="inline-flex items-center rounded-full bg-info-soft px-2.5 py-0.5 text-xs text-info">Aktif</span>
-                                @else
-                                    <span class="inline-flex items-center rounded-full bg-danger-soft px-2.5 py-0.5 text-xs text-danger">Terkunci</span>
-                                @endif
-                            </td>
-                            <td class="px-4 py-3 text-xs text-mute">{{ $item->created_at->translatedFormat('d M Y') }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="px-4 py-16 text-center">
-                                <div class="flex flex-col items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-hairline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                    <p class="text-sm text-mute">Belum ada nasabah.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+        {{-- Kolom Kanan: Terdaftar Terbaru --}}
+        <div class="rounded-[14px] border border-hairline bg-surface shadow-xs overflow-hidden">
+            <div class="p-4 border-b border-hairline">
+                <h2 class="text-base font-semibold text-ink">Terdaftar Terbaru</h2>
+                <p class="text-xs text-mute mt-0.5">Daftar nasabah yang baru saja didaftarkan.</p>
+            </div>
+
+            @if($nasabah->isNotEmpty())
+                <div class="divide-y divide-hairline">
+                    @foreach($nasabah as $item)
+                        <div class="flex items-center gap-3 px-4 py-3 hover:bg-surface-2 transition">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-on-primary-soft text-xs font-semibold">
+                                {{ $item->initials() }}
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <a href="{{ route('admin.nasabah.detail', $item->id) }}" wire:navigate class="truncate text-sm font-medium text-ink hover:text-primary transition-colors block">
+                                    {{ $item->name }}
+                                </a>
+                                <p class="text-xs text-mute truncate">
+                                    {{ $item->no_hp ?? '— (offline)' }}
+                                    @if($item->nasabahProfil?->alamat)
+                                        · {{ $item->nasabahProfil->alamat }}
+                                    @endif
+                                </p>
+                            </div>
+                            <div class="shrink-0">
+                                <x-admin.status-chip :status="$item->status_akun === 'aktif' ? 'Aktif' : 'Terkunci'" />
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="p-3 border-t border-hairline bg-surface-2">
+                    {{ $nasabah->links() }}
+                </div>
+            @else
+                <x-admin.empty-state
+                    title="Belum ada nasabah"
+                    description="Nasabah yang didaftarkan akan muncul di sini."
+                />
+            @endif
         </div>
-        <div class="border-t border-hairline px-4 py-3">{{ $nasabah->links() }}</div>
     </div>
 </div>
