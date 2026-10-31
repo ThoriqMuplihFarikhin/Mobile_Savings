@@ -8,22 +8,19 @@
         }
     </style>
 
-    <div class="mb-8">
-        <h1 class="text-2xl font-semibold tracking-tight text-ink">Laporan Lengkap</h1>
-        <p class="mt-1 text-sm text-mute">Rekapitulasi keuangan, kolektor, paket, dan kebutuhan barang.</p>
-    </div>
+    <x-admin.page-header breadcrumb="Sistem" title="Laporan Lengkap" subtitle="Rekapitulasi keuangan, kolektor, paket, dan kebutuhan barang." />
 
     @if (session('error'))
-        <div class="mb-4 flex items-center gap-2.5 rounded-lg bg-danger-soft px-4 py-3 text-sm text-danger">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            {{ session('error') }}
+        <div class="mb-4 flex items-center gap-2.5 rounded-[12px] border border-danger/30 bg-danger-soft px-4 py-3 text-xs font-semibold text-danger">
+            <flux:icon.exclamation-circle class="size-4 shrink-0" />
+            <span>{{ session('error') }}</span>
         </div>
     @endif
 
-    <div class="mb-4 flex flex-wrap gap-2">
+    <div class="mb-6 flex flex-wrap gap-1.5 p-1 rounded-[12px] border border-hairline-warm bg-surface-alt/70 dark:border-hairline/60 dark:bg-zinc-800/60 overflow-x-auto">
         @foreach(['keuangan' => 'Keuangan', 'kolektor' => 'Per Kolektor', 'rekon' => 'Rekonsiliasi', 'umurkas' => 'Umur Kas', 'mutasi' => 'Mutasi', 'penarikan' => 'Penarikan', 'offline' => 'Penarikan Offline', 'tunggakan' => 'Tunggakan', 'serah' => 'Serah Terima', 'absensi' => 'Absensi', 'nasabah' => 'Nasabah', 'paket' => 'Per Paket', 'barang' => 'Kebutuhan Barang'] as $nilaiSeksi => $labelSeksi)
             <button wire:click="pilihSeksi('{{ $nilaiSeksi }}')"
-                class="rounded-md px-4 py-2 text-sm font-medium transition {{ $seksi === $nilaiSeksi ? 'bg-accent text-accent-foreground' : 'bg-inset text-body shadow-[inset_0_0_0_1px_#e5e5e5] hover:bg-white' }}">
+                class="rounded-[9px] px-3.5 py-1.5 text-xs font-semibold transition active:scale-95 cursor-pointer {{ $seksi === $nilaiSeksi ? 'bg-white text-ink shadow-xs dark:bg-zinc-800 dark:text-zinc-100' : 'text-mute hover:text-ink dark:text-zinc-400 dark:hover:text-zinc-100' }}">
                 {{ $labelSeksi }}
             </button>
         @endforeach
@@ -32,33 +29,33 @@
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         @if (in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan', 'offline', 'absensi'], true))
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div data-test="baris-periode" class="flex flex-wrap gap-2">
+                <div data-test="baris-periode" class="flex flex-wrap gap-1 p-1 rounded-[10px] border border-hairline-warm bg-surface-alt/70 dark:border-hairline/60 dark:bg-zinc-800/60">
                     @foreach(['harian' => 'Harian', 'bulanan' => 'Bulanan', 'rentang' => 'Rentang'] as $value => $label)
                         <button wire:click="$set('periode', '{{ $value }}')"
-                            class="rounded-md px-4 py-2 text-sm font-medium transition {{ $periode === $value ? 'bg-accent text-accent-foreground' : 'bg-inset text-body shadow-[inset_0_0_0_1px_#e5e5e5] hover:bg-white' }}">
+                            class="rounded-[8px] px-3 py-1 text-xs font-semibold transition active:scale-95 cursor-pointer {{ $periode === $value ? 'bg-white text-ink shadow-xs dark:bg-zinc-800 dark:text-zinc-100' : 'text-mute hover:text-ink dark:text-zinc-400 dark:hover:text-zinc-100' }}">
                             {{ $label }}
                         </button>
                     @endforeach
                 </div>
                 @if($periode === 'rentang')
                     <div class="flex flex-wrap items-center gap-2">
-                        <label class="text-xs font-medium text-mute">Dari</label>
+                        <label class="text-xs font-medium text-mute dark:text-zinc-400">Dari</label>
                         <x-ui.tanggal wire:model.live="dariTanggal" :max="now()->toDateString()"
-                            class="w-full h-10 rounded-md border border-hairline bg-white px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10" />
-                        <label class="text-xs font-medium text-mute">Sampai</label>
+                            class="w-full h-[38px] rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
+                        <label class="text-xs font-medium text-mute dark:text-zinc-400">Sampai</label>
                         <x-ui.tanggal wire:model.live="sampaiTanggal" :min="$dariTanggal" :max="now()->toDateString()"
-                            class="w-full h-10 rounded-md border border-hairline bg-white px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10" />
+                            class="w-full h-[38px] rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
                     </div>
                 @elseif($periode === 'harian')
                     <x-ui.tanggal wire:model.live="tanggal" :max="now()->toDateString()"
-                        class="h-10 rounded-md border border-hairline bg-white px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10" />
+                        class="h-[38px] rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
                 @else
                     <x-ui.tanggal wire:model.live="bulan" mode="bulan" :max="now()->toDateString()"
-                        class="h-10 rounded-md border border-hairline bg-white px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10" />
+                        class="h-[38px] rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
                 @endif
                 @if ($seksi === 'mutasi')
                     <select wire:model.live="mutasiNasabahId"
-                        class="h-10 rounded-md border border-hairline bg-white px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10">
+                        class="h-[38px] rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100">
                         <option value="0">Pilih nasabah</option>
                         @foreach ($mutasiNasabahList as $nasabah)
                             <option value="{{ $nasabah['id'] }}">{{ $nasabah['nama'] }}</option>
@@ -71,18 +68,18 @@
         @endif
         <div data-test="baris-aksi" class="flex flex-wrap gap-2">
             <button wire:click="exportCsv"
-                class="inline-flex items-center gap-2 rounded-md border border-hairline bg-white px-4 py-2 text-sm font-medium text-ink transition hover:bg-inset">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                class="inline-flex items-center gap-1.5 rounded-[10px] border border-hairline-strong bg-white px-3.5 h-[38px] text-xs font-semibold text-body hover:bg-inset transition active:scale-95 cursor-pointer dark:border-hairline dark:bg-surface dark:text-zinc-200">
+                <flux:icon.arrow-down-tray class="size-4" />
                 Export CSV
             </button>
             <button x-on:click="window.print()"
-                class="inline-flex items-center gap-2 rounded-md border border-hairline bg-white px-4 py-2 text-sm font-medium text-ink transition hover:bg-inset">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                class="inline-flex items-center gap-1.5 rounded-[10px] border border-hairline-strong bg-white px-3.5 h-[38px] text-xs font-semibold text-body hover:bg-inset transition active:scale-95 cursor-pointer dark:border-hairline dark:bg-surface dark:text-zinc-200">
+                <flux:icon.printer class="size-4" />
                 Cetak
             </button>
             <a href="{{ route('admin.komisi.index') }}"
-                class="inline-flex items-center gap-2 rounded-md border border-hairline bg-white px-4 py-2 text-sm font-medium text-ink transition hover:bg-inset">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                class="inline-flex items-center gap-1.5 rounded-[10px] border border-hairline-strong bg-white px-3.5 h-[38px] text-xs font-semibold text-body hover:bg-inset transition active:scale-95 cursor-pointer dark:border-hairline dark:bg-surface dark:text-zinc-200">
+                <flux:icon.currency-dollar class="size-4" />
                 Laporan Komisi
             </a>
         </div>
@@ -159,9 +156,9 @@
                         <table class="hidden md:table w-full text-left">
                             <thead>
                                 <tr class="border-b border-hairline">
-                                    <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tanggal</th>
-                                    <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Setoran</th>
-                                    <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Penarikan</th>
+                                    <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Tanggal</th>
+                                    <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Setoran</th>
+                                    <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Penarikan</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-hairline">
@@ -214,13 +211,13 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kolektor</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Total Setoran</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Jumlah Transaksi</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Selisih Rekon</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Penarikan Tunai Dibayar</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Kas di Tangan</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Setor Kantor</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Kolektor</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Total Setoran</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Jumlah Transaksi</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Selisih Rekon</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Penarikan Tunai Dibayar</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Kas di Tangan</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Setor Kantor</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -294,11 +291,11 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kolektor</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Pengajuan</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Seharusnya</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Diterima</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Selisih</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Kolektor</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Pengajuan</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Seharusnya</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Diterima</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Selisih</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -369,13 +366,13 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tanggal</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kolektor</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Seharusnya</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Diterima</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Selisih</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Keterangan</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Penerima</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Tanggal</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Kolektor</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Seharusnya</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Diterima</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Selisih</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Keterangan</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Penerima</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -455,11 +452,11 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kolektor</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Kas di Tangan</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Umur Terlama</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kelompok</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Lewat Batas</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Kolektor</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Kas di Tangan</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Umur Terlama</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Kelompok</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Lewat Batas</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -582,11 +579,11 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tanggal</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tipe</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Produk</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Nominal</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Saldo Berjalan</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Tanggal</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Tipe</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Produk</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Nominal</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Saldo Berjalan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -656,16 +653,16 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tanggal</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Nasabah</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Produk</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Diminta</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Komisi</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Diterima</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Status</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Lokasi</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Waktu Proses</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Alasan</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Tanggal</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Nasabah</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Produk</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Diminta</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Komisi</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Diterima</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Status</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Lokasi</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Waktu Proses</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Alasan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -748,13 +745,13 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kolektor</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Jumlah</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Total Diterima</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Persen Kas</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Belum Ditinjau</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Sesuai</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Bermasalah</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Kolektor</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Jumlah</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Total Diterima</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Persen Kas</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Belum Ditinjau</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Sesuai</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Bermasalah</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -815,12 +812,12 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tanggal</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Nasabah</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kolektor</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Diterima</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tinjauan</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Bukti</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Tanggal</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Nasabah</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Kolektor</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Diterima</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Tinjauan</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Bukti</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -881,13 +878,13 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Nasabah</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Produk</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tunggakan (hari)</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tunggakan (Rp)</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Status Alert</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Keputusan Akhir</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Ditunda Hingga</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Nasabah</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Produk</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Tunggakan (hari)</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Tunggakan (Rp)</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Status Alert</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Keputusan Akhir</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Ditunda Hingga</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -965,13 +962,13 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Nasabah</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Produk</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Status</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Metode</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Penerima</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tanggal</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Foto Bukti</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Nasabah</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Produk</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Status</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Metode</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Penerima</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Tanggal</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Foto Bukti</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -1066,10 +1063,10 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tanggal</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kolektor</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Jam Masuk</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Jam Keluar</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Tanggal</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Kolektor</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Jam Masuk</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Jam Keluar</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -1118,13 +1115,13 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kolektor</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Dari</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Sampai</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Alasan</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Status</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Diproses Oleh</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Catatan</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Kolektor</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Dari</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Sampai</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Alasan</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Status</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Diproses Oleh</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Catatan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -1218,12 +1215,12 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Nama</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">No HP</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Status Pendaftaran</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Mode Akses</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kolektor</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Rekap Terakhir Dicetak</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Nama</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">No HP</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Status Pendaftaran</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Mode Akses</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Kolektor</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Rekap Terakhir Dicetak</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -1286,10 +1283,10 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Paket</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Peserta Aktif</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Total Terkumpul</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Total Tunggakan</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Paket</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Peserta Aktif</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Total Terkumpul</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Total Tunggakan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">
@@ -1348,12 +1345,12 @@
                     <table class="hidden md:table w-full text-left">
                         <thead>
                             <tr class="border-b border-hairline">
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Paket</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Item</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Jumlah per Orang</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Peserta Aktif</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Total Kebutuhan</th>
-                                <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Estimasi Biaya</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Paket</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Item</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Jumlah per Orang</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Peserta Aktif</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">Total Kebutuhan</th>
+                                <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 text-right">Estimasi Biaya</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-hairline">

@@ -1,21 +1,22 @@
 <div class="mx-auto max-w-4xl">
-    <flux:heading size="xl">Pengaturan Sistem</flux:heading>
-    <flux:subheading class="mb-6">Konfigurasi aplikasi yang hanya bisa diubah oleh admin.</flux:subheading>
+    <x-admin.page-header breadcrumb="Sistem" title="Pengaturan Sistem" subtitle="Konfigurasi aplikasi yang hanya bisa diubah oleh admin." />
 
     @if (session('status'))
-        <flux:callout variant="success" class="mb-6" icon="check-circle">
-            {{ session('status') }}
-        </flux:callout>
+        <div class="mb-6 flex items-center gap-2.5 rounded-[12px] border border-primary/30 bg-primary-soft px-4 py-3 text-xs font-semibold text-primary-deep">
+            <flux:icon.check-circle class="size-4 shrink-0" />
+            <span>{{ session('status') }}</span>
+        </div>
     @endif
 
     @if (session('error'))
-        <flux:callout variant="danger" class="mb-6" icon="exclamation-circle">
-            {{ session('error') }}
-        </flux:callout>
+        <div class="mb-6 flex items-center gap-2.5 rounded-[12px] border border-danger/30 bg-danger-soft px-4 py-3 text-xs font-semibold text-danger">
+            <flux:icon.exclamation-circle class="size-4 shrink-0" />
+            <span>{{ session('error') }}</span>
+        </div>
     @endif
 
     {{-- Tab Navigation --}}
-    <div class="mb-6 flex gap-1 rounded-lg bg-inset dark:bg-inset p-1 shadow-[inset_0_0_0_1px_#e5e5e5] dark:shadow-[inset_0_0_0_1px_#404040]">
+    <div class="mb-6 flex gap-1 rounded-[12px] border border-hairline-warm bg-surface-alt/70 p-1 dark:border-hairline/60 dark:bg-zinc-800/60 overflow-x-auto">
         @php
             $tabs = [
                 'umum' => 'Umum',
@@ -26,11 +27,11 @@
             ];
         @endphp
         @foreach ($tabs as $key => $label)
-            <button wire:click="setTab('{{ $key }}')"
-                    class="flex-1 rounded-md px-4 py-2.5 text-sm font-medium transition
+            <button type="button" wire:click="setTab('{{ $key }}')"
+                    class="flex-1 min-w-[120px] rounded-[9px] px-4 py-2 text-xs font-semibold transition active:scale-95 cursor-pointer
                            {{ $activeTab === $key
-                              ? 'bg-accent text-accent-foreground  dark:bg-accent'
-                              : 'text-mute hover:text-ink dark:text-subtle dark:hover:text-accent-foreground' }}">
+                              ? 'bg-white text-ink shadow-xs dark:bg-zinc-800 dark:text-zinc-100'
+                              : 'text-mute hover:text-ink dark:text-zinc-400 dark:hover:text-zinc-100' }}">
                 {{ $label }}
             </button>
         @endforeach
@@ -39,262 +40,318 @@
     {{-- Tab 1: Umum --}}
     @if ($activeTab === 'umum')
         <form wire:submit="simpanKonfigurasi" class="space-y-6">
-            <flux:card class="space-y-4">
-                <flux:heading size="lg">Konfigurasi Umum</flux:heading>
-
-                <flux:input
-                    wire:model="namaProdukDefault"
-                    label="Nama Koperasi / Instansi"
-                    placeholder="Contoh: Koperasi Sejahtera Bersama"
-                />
-
-                <flux:input
-                    type="number"
-                    wire:model="batasToleransiHari"
-                    label="Batas Toleransi Keterlambatan Setoran (hari)"
-                    placeholder="3"
-                />
-
-                <flux:input
-                    type="number"
-                    wire:model="penarikanMinimal"
-                    label="Nominal Penarikan Minimal (Rp)"
-                    placeholder="10000"
-                />
-
-                <flux:input
-                    type="number"
-                    wire:model="penarikanBatasDuaApprover"
-                    label="Batas Persetujuan Ganda Penarikan (Rp, 0 = nonaktif)"
-                    placeholder="0"
-                />
-
-                @if ($peringatanDuaApprover)
-                    <div class="flex items-start gap-2.5 rounded-lg bg-warning-soft px-4 py-3 text-sm text-warning-deep border border-warning">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        <span>Fitur persetujuan ganda tidak berlaku karena jumlah admin aktif belum memenuhi syarat. Minimal {{ \App\Livewire\Admin\ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA }} admin diperlukan agar persetujuan ganda dapat berjalan.</span>
-                    </div>
-                @endif
-
-                <flux:input
-                    type="number"
-                    wire:model="batasKasKolektor"
-                    label="Batas Kas Kolektor (Rp, 0 = nonaktif)"
-                    placeholder="0"
-                />
-
-                <flux:input
-                    type="number"
-                    wire:model="batasHariKas"
-                    label="Batas Umur Kas Kolektor (hari, 0 = nonaktif)"
-                    placeholder="0"
-                />
-
-                <flux:select wire:model="izinkanKasMinus" label="Izinkan Kas Kolektor Minus (D13)">
-                    <flux:select.option value="false">Tidak — penarikan tunai ditolak bila kas kurang</flux:select.option>
-                    <flux:select.option value="true">Ya — penarikan tunai tetap boleh meski kas minus</flux:select.option>
-                </flux:select>
-
-                <flux:input
-                    type="number"
-                    wire:model="offlineBatasLangsung"
-                    label="Batas Penarikan Offline Langsung per Transaksi (Rp, 0 = nonaktif)"
-                    placeholder="0"
-                />
-
-                <flux:input
-                    type="number"
-                    wire:model="offlineBatasHarian"
-                    label="Batas Penarikan Offline Langsung per Hari per Kolektor (Rp, 0 = nonaktif)"
-                    placeholder="0"
-                />
-
-                @if ($peringatanOfflineLangsung)
-                    <div class="flex items-start gap-2.5 rounded-lg bg-warning-soft px-4 py-3 text-sm text-warning-deep border border-warning">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
-                        <span>Penarikan offline langsung aktif, tetapi batas persetujuan ganda nonaktif atau jumlah admin kurang dari {{ \App\Livewire\Admin\ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA }}. Penarikan besar bisa selesai tanpa pengawasan ganda.</span>
-                    </div>
-                @endif
-
-                <flux:input
-                    wire:model="nomorWaBantuan"
-                    label="Nomor WhatsApp Bantuan"
-                    placeholder="6281234567890"
-                />
-
+            <div class="rounded-[14px] border border-hairline-warm bg-white p-6 shadow-xs space-y-4 dark:border-hairline/60 dark:bg-surface">
                 <div>
-                    <flux:button type="submit" variant="primary">Simpan Konfigurasi</flux:button>
+                    <h2 class="text-base font-semibold text-ink dark:text-zinc-100">Konfigurasi Umum</h2>
+                    <p class="text-xs text-mute dark:text-zinc-400 mt-0.5">Kelola batasan transaksi, toleransi hari, dan pengawasan kas.</p>
                 </div>
-            </flux:card>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Nama Koperasi / Instansi</label>
+                        <input type="text" wire:model="namaProdukDefault" placeholder="Contoh: Koperasi Sejahtera Bersama"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
+                        @error('namaProdukDefault') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Batas Toleransi Keterlambatan Setoran (hari)</label>
+                        <input type="number" wire:model="batasToleransiHari" placeholder="3"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
+                        @error('batasToleransiHari') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Nominal Penarikan Minimal (Rp)</label>
+                        <input type="number" wire:model="penarikanMinimal" placeholder="10000"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
+                        @error('penarikanMinimal') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Batas Persetujuan Ganda Penarikan (Rp, 0 = nonaktif)</label>
+                        <input type="number" wire:model="penarikanBatasDuaApprover" placeholder="0"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
+                        @error('penarikanBatasDuaApprover') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    @if ($peringatanDuaApprover)
+                        <div class="sm:col-span-2 flex items-start gap-2.5 rounded-[12px] bg-warning-soft px-4 py-3 text-xs text-warning-deep border border-warning/30">
+                            <flux:icon.exclamation-triangle class="size-4 shrink-0 mt-0.5" />
+                            <span>Fitur persetujuan ganda tidak berlaku karena jumlah admin aktif belum memenuhi syarat. Minimal {{ \App\Livewire\Admin\ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA }} admin diperlukan agar persetujuan ganda dapat berjalan.</span>
+                        </div>
+                    @endif
+
+                    <div>
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Batas Kas Kolektor (Rp, 0 = nonaktif)</label>
+                        <input type="number" wire:model="batasKasKolektor" placeholder="0"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
+                        @error('batasKasKolektor') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Batas Umur Kas Kolektor (hari, 0 = nonaktif)</label>
+                        <input type="number" wire:model="batasHariKas" placeholder="0"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
+                        @error('batasHariKas') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Izinkan Kas Kolektor Minus (D13)</label>
+                        <select wire:model="izinkanKasMinus"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100">
+                            <option value="false">Tidak — penarikan tunai ditolak bila kas kurang</option>
+                            <option value="true">Ya — penarikan tunai tetap boleh meski kas minus</option>
+                        </select>
+                        @error('izinkanKasMinus') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Batas Penarikan Offline Langsung per Transaksi (Rp, 0 = nonaktif)</label>
+                        <input type="number" wire:model="offlineBatasLangsung" placeholder="0"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
+                        @error('offlineBatasLangsung') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Batas Penarikan Offline Langsung per Hari per Kolektor (Rp, 0 = nonaktif)</label>
+                        <input type="number" wire:model="offlineBatasHarian" placeholder="0"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
+                        @error('offlineBatasHarian') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    @if ($peringatanOfflineLangsung)
+                        <div class="sm:col-span-2 flex items-start gap-2.5 rounded-[12px] bg-warning-soft px-4 py-3 text-xs text-warning-deep border border-warning/30">
+                            <flux:icon.exclamation-triangle class="size-4 shrink-0 mt-0.5" />
+                            <span>Penarikan offline langsung aktif, tetapi batas persetujuan ganda nonaktif atau jumlah admin kurang dari {{ \App\Livewire\Admin\ApprovalPenarikan::MINIMAL_ADMIN_PERSETUJUAN_GANDA }}. Penarikan besar bisa selesai tanpa pengawasan ganda.</span>
+                        </div>
+                    @endif
+
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Nomor WhatsApp Bantuan</label>
+                        <input type="text" wire:model="nomorWaBantuan" placeholder="6281234567890"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
+                        @error('nomorWaBantuan') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end">
+                    <button type="submit"
+                        class="inline-flex items-center gap-1.5 rounded-[10px] bg-primary hover:bg-primary-hover px-5 h-[38px] text-xs font-semibold text-on-primary shadow-xs transition active:scale-95 cursor-pointer">
+                        <flux:icon.check class="size-4" />
+                        Simpan Konfigurasi
+                    </button>
+                </div>
+            </div>
         </form>
     @endif
 
     {{-- Tab 2: Admin & Peran --}}
     @if ($activeTab === 'admin')
-        <flux:card class="space-y-4">
-            <flux:heading size="lg">Akun Admin</flux:heading>
-            <flux:subheading>Daftar pengguna dengan peran admin di sistem ini.</flux:subheading>
+        <div class="rounded-[14px] border border-hairline-warm bg-white p-6 shadow-xs space-y-4 dark:border-hairline/60 dark:bg-surface">
+            <div>
+                <h2 class="text-base font-semibold text-ink dark:text-zinc-100">Akun Admin</h2>
+                <p class="text-xs text-mute dark:text-zinc-400 mt-0.5">Daftar pengguna dengan peran admin di sistem ini.</p>
+            </div>
 
-            <div class="rounded-lg shadow-[inset_0_0_0_1px_#e5e5e5] dark:shadow-[inset_0_0_0_1px_#404040]">
+            <div class="overflow-hidden rounded-[12px] border border-hairline-warm dark:border-hairline/60 divide-y divide-hairline">
                 @foreach ($daftarAdmin as $admin)
-                    <div class="flex items-center justify-between px-5 py-3 border-b border-hairline dark:border-hairline-strong last:border-b-0">
+                    <div class="flex items-center justify-between px-5 py-3.5 bg-white dark:bg-surface">
                         <div>
-                            <p class="text-sm font-medium text-ink dark:text-white">{{ $admin->name }}</p>
-                            <p class="text-xs text-mute dark:text-subtle">{{ $admin->no_hp }}</p>
+                            <p class="text-xs font-semibold text-ink dark:text-white">{{ $admin->name }}</p>
+                            <p class="text-[11px] text-mute dark:text-zinc-400">{{ $admin->no_hp }}</p>
                         </div>
                         @if ($admin->id === auth()->id())
-                            <flux:badge size="sm">Anda</flux:badge>
+                            <span class="inline-flex items-center rounded-full bg-primary-soft text-primary-deep border border-primary/30 px-2.5 py-0.5 text-[11px] font-semibold">Anda</span>
                         @endif
                     </div>
                 @endforeach
             </div>
-        </flux:card>
+        </div>
     @endif
 
     {{-- Tab 3: Integrasi WhatsApp --}}
     @if ($activeTab === 'whatsapp')
         @if (! $waApiKeyTersimpan)
-            <flux:callout variant="danger" class="mb-6" icon="exclamation-triangle">
-                <strong>Belum terhubung</strong> — notifikasi WhatsApp ke nasabah/kolektor belum aktif.
-            </flux:callout>
+            <div class="mb-6 flex items-center gap-2.5 rounded-[12px] border border-danger/30 bg-danger-soft px-4 py-3 text-xs font-semibold text-danger">
+                <flux:icon.exclamation-triangle class="size-4 shrink-0" />
+                <span><strong>Belum terhubung</strong> — notifikasi WhatsApp ke nasabah/kolektor belum aktif.</span>
+            </div>
         @else
-            <flux:callout variant="success" class="mb-6" icon="check-circle">
-                WhatsApp terhubung — notifikasi aktif.
-            </flux:callout>
+            <div class="mb-6 flex items-center gap-2.5 rounded-[12px] border border-primary/30 bg-primary-soft px-4 py-3 text-xs font-semibold text-primary-deep">
+                <flux:icon.check-circle class="size-4 shrink-0" />
+                <span>WhatsApp terhubung — notifikasi aktif.</span>
+            </div>
         @endif
 
         <form wire:submit="simpanWhatsApp" class="space-y-6">
-            <flux:card class="space-y-4">
-                <flux:heading size="lg">Konfigurasi WhatsApp</flux:heading>
-
-                <flux:select wire:model="waProvider" label="Provider WhatsApp">
-                    <flux:select.option value="">Pilih provider...</flux:select.option>
-                    <flux:select.option value="fonnte">Fonnte</flux:select.option>
-                    <flux:select.option value="wablas">Wablas</flux:select.option>
-                    <flux:select.option value="official">WhatsApp Business API (Official)</flux:select.option>
-                </flux:select>
-
-                <flux:input
-                    wire:model="waApiKey"
-                    label="API Key"
-                    placeholder="{{ $waApiKeyTersimpan ? '•••••••• — isi untuk mengganti' : 'Masukkan API Key dari provider Anda' }}"
-                    type="password"
-                />
-
+            <div class="rounded-[14px] border border-hairline-warm bg-white p-6 shadow-xs space-y-4 dark:border-hairline/60 dark:bg-surface">
                 <div>
-                    <flux:button type="submit" variant="primary">Simpan Konfigurasi WhatsApp</flux:button>
+                    <h2 class="text-base font-semibold text-ink dark:text-zinc-100">Konfigurasi WhatsApp</h2>
+                    <p class="text-xs text-mute dark:text-zinc-400 mt-0.5">Pengaturan provider gateway notifikasi WhatsApp.</p>
                 </div>
-            </flux:card>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Provider WhatsApp</label>
+                        <select wire:model="waProvider"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100">
+                            <option value="">Pilih provider...</option>
+                            <option value="fonnte">Fonnte</option>
+                            <option value="wablas">Wablas</option>
+                            <option value="official">WhatsApp Business API (Official)</option>
+                        </select>
+                        @error('waProvider') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">API Key</label>
+                        <input
+                            type="password"
+                            wire:model="waApiKey"
+                            placeholder="{{ $waApiKeyTersimpan ? '•••••••• — isi untuk mengganti' : 'Masukkan API Key dari provider Anda' }}"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
+                        @error('waApiKey') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end">
+                    <button type="submit"
+                        class="inline-flex items-center gap-1.5 rounded-[10px] bg-primary hover:bg-primary-hover px-5 h-[38px] text-xs font-semibold text-on-primary shadow-xs transition active:scale-95 cursor-pointer">
+                        <flux:icon.check class="size-4" />
+                        Simpan Konfigurasi WhatsApp
+                    </button>
+                </div>
+            </div>
         </form>
 
-        <flux:card class="mt-6 space-y-4">
-            <flux:heading size="lg">Uji Coba</flux:heading>
-            <flux:subheading>Kirim pesan uji coba untuk memastikan integrasi berfungsi.</flux:subheading>
-
-            <div class="flex items-end gap-3">
-                <div class="flex-1">
-                    <flux:input
-                        wire:model="waTestNumber"
-                        label="Nomor WhatsApp Tujuan"
-                        placeholder="6281234567890"
-                    />
-                </div>
-                <flux:button wire:click="kirimPesanUjiCoba" variant="primary" icon="paper-airplane">
-                    Kirim Uji Coba
-                </flux:button>
+        <div class="mt-6 rounded-[14px] border border-hairline-warm bg-white p-6 shadow-xs space-y-4 dark:border-hairline/60 dark:bg-surface">
+            <div>
+                <h2 class="text-base font-semibold text-ink dark:text-zinc-100">Uji Coba</h2>
+                <p class="text-xs text-mute dark:text-zinc-400 mt-0.5">Kirim pesan uji coba untuk memastikan integrasi berfungsi.</p>
             </div>
-        </flux:card>
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+                <div class="flex-1">
+                    <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Nomor WhatsApp Tujuan</label>
+                    <input type="text" wire:model="waTestNumber" placeholder="6281234567890"
+                        class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
+                    @error('waTestNumber') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                </div>
+                <button type="button" wire:click="kirimPesanUjiCoba"
+                    class="inline-flex items-center justify-center gap-1.5 rounded-[10px] border border-hairline-strong bg-white px-4 h-[38px] text-xs font-semibold text-body hover:bg-inset transition active:scale-95 cursor-pointer dark:border-hairline dark:bg-surface dark:text-zinc-200">
+                    <flux:icon.paper-airplane class="size-4" />
+                    Kirim Uji Coba
+                </button>
+            </div>
+        </div>
     @endif
 
     {{-- Tab 4: Backup & Keamanan --}}
     @if ($activeTab === 'backup')
-        <flux:card class="space-y-4">
-            <flux:heading size="lg">Backup Database</flux:heading>
+        <div class="grid gap-6 md:grid-cols-2">
+            <div class="rounded-[14px] border border-hairline-warm bg-white p-6 shadow-xs space-y-4 dark:border-hairline/60 dark:bg-surface">
+                <div>
+                    <h2 class="text-base font-semibold text-ink dark:text-zinc-100">Backup Database</h2>
+                    <p class="text-xs text-mute dark:text-zinc-400 mt-0.5">Cadangkan data sistem dalam format .sql.</p>
+                </div>
 
-            <div class="rounded-lg bg-inset dark:bg-inset/50 p-4 shadow-[inset_0_0_0_1px_#e5e5e5] dark:shadow-[inset_0_0_0_1px_#404040]">
-                <p class="text-sm text-mute dark:text-subtle">
-                    @if ($backupTerakhir)
-                        Backup terakhir: <span class="font-medium text-ink dark:text-white">{{ $backupTerakhir }}</span>
-                    @else
-                        Belum pernah backup
-                    @endif
+                <div class="rounded-[10px] bg-surface-alt/70 p-3.5 border border-hairline dark:bg-zinc-800/40">
+                    <p class="text-xs text-mute dark:text-zinc-400">
+                        @if ($backupTerakhir)
+                            Backup terakhir: <span class="font-semibold text-ink dark:text-white">{{ $backupTerakhir }}</span>
+                        @else
+                            Belum pernah backup
+                        @endif
+                    </p>
+                </div>
+
+                <div>
+                    <button type="button" wire:click="backupSekarang"
+                        class="inline-flex items-center gap-1.5 rounded-[10px] bg-primary hover:bg-primary-hover px-4 h-[38px] text-xs font-semibold text-on-primary shadow-xs transition active:scale-95 cursor-pointer">
+                        <flux:icon.arrow-down-tray class="size-4" />
+                        Backup Sekarang
+                    </button>
+                </div>
+
+                <p class="text-[11px] text-mute dark:text-zinc-400">
+                    File backup akan diunduh dalam format .sql. Pastikan mysqldump tersedia di server.
                 </p>
             </div>
 
-            <div>
-                <flux:button wire:click="backupSekarang" variant="primary" icon="arrow-down-tray">
-                    Backup Sekarang
-                </flux:button>
-            </div>
-
-            <p class="text-xs text-mute dark:text-subtle">
-                File backup akan diunduh dalam format .sql. Pastikan mysqldump tersedia di server.
-            </p>
-        </flux:card>
-
-        <flux:card class="mt-6 space-y-4">
-            <flux:heading size="lg">Retensi Log Aktivitas</flux:heading>
-            <flux:subheading>Log yang lebih lama dari periode ini akan dihapus secara otomatis (jadwal terpisah).</flux:subheading>
-
-            <form wire:submit="simpanRetensiLog" class="flex items-end gap-3">
-                <div class="flex-1">
-                    <flux:select wire:model="retensiLogBulan" label="Retensi Log">
-                        <flux:select.option value="3">3 bulan</flux:select.option>
-                        <flux:select.option value="6">6 bulan</flux:select.option>
-                        <flux:select.option value="12">12 bulan</flux:select.option>
-                        <flux:select.option value="24">24 bulan</flux:select.option>
-                    </flux:select>
+            <div class="rounded-[14px] border border-hairline-warm bg-white p-6 shadow-xs space-y-4 dark:border-hairline/60 dark:bg-surface">
+                <div>
+                    <h2 class="text-base font-semibold text-ink dark:text-zinc-100">Retensi Log Aktivitas</h2>
+                    <p class="text-xs text-mute dark:text-zinc-400 mt-0.5">Log yang lebih lama dari periode ini akan dihapus secara otomatis.</p>
                 </div>
-                <flux:button type="submit" variant="primary">Simpan</flux:button>
-            </form>
-        </flux:card>
+
+                <form wire:submit="simpanRetensiLog" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 pt-2">
+                    <div class="flex-1">
+                        <label class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">Retensi Log</label>
+                        <select wire:model="retensiLogBulan"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100">
+                            <option value="3">3 bulan</option>
+                            <option value="6">6 bulan</option>
+                            <option value="12">12 bulan</option>
+                            <option value="24">24 bulan</option>
+                        </select>
+                    </div>
+                    <button type="submit"
+                        class="inline-flex items-center justify-center gap-1.5 rounded-[10px] bg-primary hover:bg-primary-hover px-4 h-[38px] text-xs font-semibold text-on-primary shadow-xs transition active:scale-95 cursor-pointer">
+                        Simpan
+                    </button>
+                </form>
+            </div>
+        </div>
     @endif
 
     {{-- Tab 5: Akun Saya --}}
     @if ($activeTab === 'akun')
-        <flux:card class="space-y-4">
-            <flux:heading size="lg">Akun Saya</flux:heading>
-            <flux:subheading>Kelola informasi akun pribadi Anda.</flux:subheading>
+        <div class="rounded-[14px] border border-hairline-warm bg-white p-6 shadow-xs space-y-4 dark:border-hairline/60 dark:bg-surface">
+            <div>
+                <h2 class="text-base font-semibold text-ink dark:text-zinc-100">Akun Saya</h2>
+                <p class="text-xs text-mute dark:text-zinc-400 mt-0.5">Kelola informasi akun pribadi Anda.</p>
+            </div>
 
             <div class="space-y-3">
                 <a href="{{ route('admin.settings.profile') }}" wire:navigate
-                   class="flex items-center gap-4 rounded-lg border border-hairline dark:border-hairline-strong p-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.05]">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-info-soft text-info">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                   class="flex items-center gap-4 rounded-[12px] border border-hairline-warm p-4 transition hover:bg-surface-alt/50 dark:border-hairline/60 dark:hover:bg-zinc-800/40">
+                    <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-info-soft text-info border border-info/20">
+                        <flux:icon.user class="size-5" />
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm font-medium text-ink dark:text-white">Edit Profil Saya</p>
-                        <p class="text-xs text-mute dark:text-subtle">Ubah nama dan foto profil</p>
+                        <p class="text-xs font-semibold text-ink dark:text-white">Edit Profil Saya</p>
+                        <p class="text-[11px] text-mute dark:text-zinc-400">Ubah nama dan foto profil</p>
                     </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle dark:text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    <flux:icon.chevron-right class="size-4 text-mute dark:text-zinc-400" />
                 </a>
 
                 <a href="{{ route('admin.settings.security') }}" wire:navigate
-                   class="flex items-center gap-4 rounded-lg border border-hairline dark:border-hairline-strong p-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.05]">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-warning-soft text-warning-deep">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                   class="flex items-center gap-4 rounded-[12px] border border-hairline-warm p-4 transition hover:bg-surface-alt/50 dark:border-hairline/60 dark:hover:bg-zinc-800/40">
+                    <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-warning-soft text-warning-deep border border-warning/20">
+                        <flux:icon.lock-closed class="size-5" />
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm font-medium text-ink dark:text-white">Ganti PIN Saya</p>
-                        <p class="text-xs text-mute dark:text-subtle">Perbarui PIN keamanan akun</p>
+                        <p class="text-xs font-semibold text-ink dark:text-white">Ganti PIN Saya</p>
+                        <p class="text-[11px] text-mute dark:text-zinc-400">Perbarui PIN keamanan akun</p>
                     </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle dark:text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    <flux:icon.chevron-right class="size-4 text-mute dark:text-zinc-400" />
                 </a>
 
                 <a href="{{ route('admin.settings.appearance') }}" wire:navigate
-                   class="flex items-center gap-4 rounded-lg border border-hairline dark:border-hairline-strong p-4 transition hover:bg-black/[0.02] dark:hover:bg-white/[0.05]">
-                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-info-soft text-info">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                   class="flex items-center gap-4 rounded-[12px] border border-hairline-warm p-4 transition hover:bg-surface-alt/50 dark:border-hairline/60 dark:hover:bg-zinc-800/40">
+                    <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary-deep border border-primary/20">
+                        <flux:icon.swatch class="size-5" />
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm font-medium text-ink dark:text-white">Tampilan (Terang/Gelap)</p>
-                        <p class="text-xs text-mute dark:text-subtle">Ubah tema tampilan aplikasi</p>
+                        <p class="text-xs font-semibold text-ink dark:text-white">Tampilan (Terang/Gelap)</p>
+                        <p class="text-[11px] text-mute dark:text-zinc-400">Ubah tema tampilan aplikasi</p>
                     </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle dark:text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    <flux:icon.chevron-right class="size-4 text-mute dark:text-zinc-400" />
                 </a>
             </div>
-        </flux:card>
+        </div>
     @endif
 
-    <p class="mt-6 text-center text-xs text-mute dark:text-subtle">Tabungan Digital · versi alpha</p>
+    <p class="mt-8 text-center text-xs text-mute dark:text-zinc-400">Tabungan Digital · versi alpha</p>
 </div>
