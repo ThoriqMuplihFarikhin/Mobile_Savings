@@ -1,145 +1,149 @@
-<div>
-    <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-ink">Kas di Tangan Kolektor</h1>
-            <p class="mt-1 text-sm text-mute">Pantau uang tunai yang belum disetorkan kolektor ke kantor.</p>
-        </div>
-        <a href="/admin/rekonsiliasi" wire:navigate
-            class="rounded-md border border-hairline bg-white px-4 py-2 text-xs font-medium text-ink transition hover:bg-inset">
-            Buka Rekonsiliasi
-        </a>
-    </div>
+<div class="space-y-6">
+    <x-admin.page-header
+        breadcrumb="Keuangan"
+        title="Kas di Tangan Kolektor"
+        subtitle="Pantau uang tunai yang belum disetorkan kolektor ke kantor."
+    >
+        <x-slot:actions>
+            <a href="/admin/rekonsiliasi" wire:navigate
+                class="inline-flex h-[38px] items-center rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-4 text-xs font-medium text-[var(--color-admin-text)] transition hover:bg-[var(--color-surface-2)]">
+                Buka Rekonsiliasi
+            </a>
+        </x-slot:actions>
+    </x-admin.page-header>
 
-    <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div class="rounded-lg border border-border bg-surface p-4">
-            <div class="mb-1 text-xs text-mute dark:text-subtle">Total Kas</div>
-            <div class="text-2xl font-semibold text-ink">Rp {{ number_format($totalKas, 0, ',', '.') }}</div>
-        </div>
-        <div class="rounded-lg border border-border bg-surface p-4">
-            <div class="mb-1 text-xs text-mute dark:text-subtle">Kolektor Melewati Batas</div>
-            <div class="text-2xl font-semibold text-ink">{{ $jumlahLewatBatas }}</div>
-        </div>
-        <div class="rounded-lg border border-border bg-surface p-4">
-            <div class="mb-1 text-xs text-mute dark:text-subtle">Batas Kas / Batas Hari</div>
-            <div class="text-2xl font-semibold text-ink">
-                Rp {{ number_format((int) \App\Models\AdminSetting::get('batas_kas_kolektor', '0'), 0, ',', '.') }}
-                / {{ (int) \App\Models\AdminSetting::get('batas_hari_kas', '0') }} hari
-            </div>
-        </div>
-    </div>
+    {{-- KPI Cards --}}
+    <x-admin.kpi-grid cols="3">
+        <x-admin.kpi-card
+            label="Total kas"
+            :value="'Rp ' . number_format($totalKas, 0, ',', '.')"
+            sub="Seluruh kolektor aktif"
+        />
+        <x-admin.kpi-card
+            label="Kolektor melewati batas"
+            :value="$jumlahLewatBatas"
+            sub="Perlu tindakan"
+            :variant="$jumlahLewatBatas > 0 ? 'error' : 'default'"
+        />
+        <x-admin.kpi-card
+            label="Batas kas / hari"
+            :value="'Rp ' . number_format((int) \App\Models\AdminSetting::get('batas_kas_kolektor', '0'), 0, ',', '.') . ' / ' . (int) \App\Models\AdminSetting::get('batas_hari_kas', '0') . ' hari'"
+            sub="Sesuai pengaturan"
+        />
+    </x-admin.kpi-grid>
 
-    <div class="overflow-hidden rounded-lg bg-white shadow-[inset_0_0_0_1px_#e5e5e5]">
-        <div class="border-b border-hairline px-6 py-4">
-            <h3 class="text-sm font-semibold text-ink">Kas Per Kolektor</h3>
+    {{-- Tabel Desktop --}}
+    <div class="overflow-hidden rounded-[14px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] shadow-xs">
+        <div class="border-b border-[var(--color-admin-border)] px-5 py-3.5">
+            <h3 class="text-sm font-semibold text-[var(--color-admin-text)]">Kas Per Kolektor</h3>
         </div>
         <div class="overflow-x-auto">
-            <table class="hidden md:table w-full text-left">
+            <table class="hidden md:table w-full text-left text-sm">
                 <thead>
-                    <tr class="border-b border-hairline bg-inset">
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kolektor</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Setoran Masuk</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Penarikan Tunai</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kas di Tangan</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Transaksi</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Umur Tertua</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Pengajuan Pending</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Akumulasi Selisih</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Status</th>
+                    <tr class="border-b border-[var(--color-admin-border)] bg-[var(--color-surface-2)]">
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Kolektor</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Setoran Masuk</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Penarikan Tunai</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Kas di Tangan</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Transaksi</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Umur Tertua</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Pending</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Akumulasi Selisih</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Status</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-hairline">
+                <tbody class="divide-y divide-[var(--color-admin-border)]">
                     @forelse($daftarKas as $baris)
-                        <tr @class(['transition hover:bg-inset', 'bg-warning-soft' => $baris['lewat_batas']])>
-                            <td class="px-4 py-3 text-sm font-medium text-ink">
-                                {{ $baris['nama'] }}
-                                @if($baris['terkunci'])
-                                    <span class="ml-1.5 inline-flex items-center rounded-full bg-danger-soft px-2 py-0.5 text-xs text-danger">Terkunci</span>
-                                @endif
+                        <tr @class(['transition hover:bg-[var(--color-surface-2)]', 'bg-warning-soft/40' => $baris['lewat_batas']])>
+                            <td class="px-4 py-3">
+                                <div class="font-medium text-[var(--color-admin-text)] flex items-center gap-1.5">
+                                    <span>{{ $baris['nama'] }}</span>
+                                    @if($baris['terkunci'])
+                                        <span class="inline-flex items-center rounded-full bg-red-500/10 px-2 py-0.5 text-[11px] font-semibold text-red-600 dark:text-red-400">Terkunci</span>
+                                    @endif
+                                </div>
                             </td>
-                            <td class="px-4 py-3 tabular-nums text-sm text-body">Rp {{ number_format($baris['total_belum_disetor'], 0, ',', '.') }}</td>
-                            <td class="px-4 py-3 tabular-nums text-sm text-body">Rp {{ number_format($baris['penarikan_tunai'], 0, ',', '.') }}</td>
-                            <td class="px-4 py-3 tabular-nums text-sm font-semibold text-ink">Rp {{ number_format($baris['kas_di_tangan'], 0, ',', '.') }}</td>
-                            <td class="px-4 py-3 tabular-nums text-sm text-body">{{ $baris['jumlah_transaksi'] }}</td>
-                            <td class="px-4 py-3 tabular-nums text-sm text-body">{{ $baris['umur_terlama_hari'] }} hari</td>
-                            <td class="px-4 py-3 tabular-nums text-sm text-body">{{ $baris['pengajuan_pending'] }}</td>
-                            <td class="px-4 py-3 tabular-nums text-sm {{ $baris['selisih_kumulatif'] != 0 ? 'text-danger' : 'text-body' }}">
+                            <td class="px-4 py-3 text-right tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($baris['total_belum_disetor'], 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($baris['penarikan_tunai'], 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right tabular-nums font-semibold text-[var(--color-admin-text)]">Rp {{ number_format($baris['kas_di_tangan'], 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-center tabular-nums text-[var(--color-admin-text)]">{{ $baris['jumlah_transaksi'] }}</td>
+                            <td class="px-4 py-3 text-center tabular-nums text-[var(--color-admin-text)]">{{ $baris['umur_terlama_hari'] }} hari</td>
+                            <td class="px-4 py-3 text-center tabular-nums text-[var(--color-admin-text)]">{{ $baris['pengajuan_pending'] }}</td>
+                            <td class="px-4 py-3 text-right tabular-nums font-medium {{ $baris['selisih_kumulatif'] != 0 ? 'text-red-600 dark:text-red-400' : 'text-[var(--color-admin-text)]' }}">
                                 {{ $baris['selisih_kumulatif'] >= 0 ? '+' : '' }}Rp {{ number_format($baris['selisih_kumulatif'], 0, ',', '.') }}
                             </td>
-                            <td class="px-4 py-3">
+                            <td class="px-4 py-3 text-center">
                                 @if($baris['lewat_batas'])
-                                    <span class="inline-flex items-center rounded-full bg-warning-soft px-2.5 py-0.5 text-xs text-warning-deep">Lewat Batas</span>
+                                    <x-admin.status-chip status="Lewat Batas" />
                                 @else
-                                    <span class="inline-flex items-center rounded-full bg-info-soft px-2.5 py-0.5 text-xs text-info">Aman</span>
+                                    <x-admin.status-chip status="Aman" />
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-4 py-16 text-center">
-                                <div class="flex flex-col items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-hairline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                    <p class="text-sm text-mute">Belum ada kolektor aktif.</p>
-                                </div>
+                            <td colspan="9" class="p-0">
+                                <x-admin.empty-state
+                                    title="Belum ada kolektor aktif"
+                                    description="Data kas di tangan akan muncul saat kolektor mulai menerima setoran."
+                                />
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div data-test="kartu-kas" class="divide-y divide-hairline md:hidden">
+
+        {{-- Fallback Kartu Mobile --}}
+        <div data-test="kartu-kas" class="divide-y divide-[var(--color-admin-border)] md:hidden">
             @forelse($daftarKas as $baris)
-                <div class="px-4 py-3" @class(['bg-warning-soft' => $baris['lewat_batas']])>
-                    <div class="flex items-center justify-between gap-2">
-                        <div class="min-w-0">
-                            <span class="text-sm font-medium text-ink">{{ $baris['nama'] }}</span>
-                            @if($baris['terkunci'])
-                                <span class="ml-1.5 inline-flex items-center rounded-full bg-danger-soft px-2 py-0.5 text-xs text-danger">Terkunci</span>
-                            @endif
+                <div @class(['p-4 space-y-3', 'bg-warning-soft/40' => $baris['lewat_batas']])>
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <div class="font-medium text-[var(--color-admin-text)] flex items-center gap-1.5">
+                                <span>{{ $baris['nama'] }}</span>
+                                @if($baris['terkunci'])
+                                    <span class="inline-flex items-center rounded-full bg-red-500/10 px-2 py-0.5 text-[11px] font-semibold text-red-600 dark:text-red-400">Terkunci</span>
+                                @endif
+                            </div>
+                            <div class="text-xs text-[var(--color-admin-mute)] mt-0.5">{{ $baris['jumlah_transaksi'] }} transaksi · Umur {{ $baris['umur_terlama_hari'] }} hari</div>
                         </div>
                         @if($baris['lewat_batas'])
-                            <span class="inline-flex items-center rounded-full bg-warning-soft px-2.5 py-0.5 text-xs text-warning-deep">Lewat Batas</span>
+                            <x-admin.status-chip status="Lewat Batas" />
                         @else
-                            <span class="inline-flex items-center rounded-full bg-info-soft px-2.5 py-0.5 text-xs text-info">Aman</span>
+                            <x-admin.status-chip status="Aman" />
                         @endif
                     </div>
-                    <div class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+                    <div class="grid grid-cols-2 gap-2 text-xs border-t border-b border-[var(--color-admin-border)] py-2">
                         <div>
-                            <span class="block text-xs text-mute">Setoran Masuk</span>
-                            <span class="tabular-nums text-sm text-body">Rp {{ number_format($baris['total_belum_disetor'], 0, ',', '.') }}</span>
+                            <span class="text-[var(--color-admin-mute)]">Setoran Masuk:</span>
+                            <div class="font-medium tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($baris['total_belum_disetor'], 0, ',', '.') }}</div>
                         </div>
                         <div>
-                            <span class="block text-xs text-mute">Penarikan Tunai</span>
-                            <span class="tabular-nums text-sm text-body">Rp {{ number_format($baris['penarikan_tunai'], 0, ',', '.') }}</span>
+                            <span class="text-[var(--color-admin-mute)]">Penarikan Tunai:</span>
+                            <div class="font-medium tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($baris['penarikan_tunai'], 0, ',', '.') }}</div>
                         </div>
                         <div>
-                            <span class="block text-xs text-mute">Kas di Tangan</span>
-                            <span class="tabular-nums text-sm font-semibold text-ink">Rp {{ number_format($baris['kas_di_tangan'], 0, ',', '.') }}</span>
+                            <span class="text-[var(--color-admin-mute)]">Kas di Tangan:</span>
+                            <div class="font-semibold tabular-nums text-sm text-[var(--color-accent)]">Rp {{ number_format($baris['kas_di_tangan'], 0, ',', '.') }}</div>
                         </div>
                         <div>
-                            <span class="block text-xs text-mute">Transaksi</span>
-                            <span class="tabular-nums text-sm text-body">{{ $baris['jumlah_transaksi'] }}</span>
-                        </div>
-                        <div>
-                            <span class="block text-xs text-mute">Umur Tertua</span>
-                            <span class="tabular-nums text-sm text-body">{{ $baris['umur_terlama_hari'] }} hari</span>
-                        </div>
-                        <div>
-                            <span class="block text-xs text-mute">Pengajuan Pending</span>
-                            <span class="tabular-nums text-sm text-body">{{ $baris['pengajuan_pending'] }}</span>
-                        </div>
-                        <div>
-                            <span class="block text-xs text-mute">Akumulasi Selisih</span>
-                            <span class="tabular-nums text-sm {{ $baris['selisih_kumulatif'] != 0 ? 'text-danger' : 'text-body' }}">
+                            <span class="text-[var(--color-admin-mute)]">Akumulasi Selisih:</span>
+                            <div class="font-medium tabular-nums {{ $baris['selisih_kumulatif'] != 0 ? 'text-red-600 dark:text-red-400' : 'text-[var(--color-admin-text)]' }}">
                                 {{ $baris['selisih_kumulatif'] >= 0 ? '+' : '' }}Rp {{ number_format($baris['selisih_kumulatif'], 0, ',', '.') }}
-                            </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             @empty
-                <div class="flex flex-col items-center gap-2 px-4 py-10 text-center">
-                    <p class="text-sm text-mute">Belum ada kolektor aktif.</p>
+                <div class="p-6">
+                    <x-admin.empty-state
+                        title="Belum ada kolektor aktif"
+                        description="Data kas di tangan akan muncul saat kolektor mulai menerima setoran."
+                    />
                 </div>
             @endforelse
         </div>
     </div>
 </div>
+

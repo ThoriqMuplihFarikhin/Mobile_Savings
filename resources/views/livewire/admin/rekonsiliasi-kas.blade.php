@@ -1,119 +1,133 @@
-<div>
-    <div class="mb-8">
-        <h1 class="text-2xl font-semibold tracking-tight text-ink">Rekonsiliasi Kas Kolektor</h1>
-        <p class="mt-1 text-sm text-mute">Proses pengajuan setoran dari kolektor dan cocokkan kas fisik.</p>
-    </div>
+<div class="space-y-6">
+    <x-admin.page-header
+        breadcrumb="Keuangan"
+        title="Rekonsiliasi Kas Kolektor"
+        subtitle="Proses pengajuan setoran dari kolektor dan cocokkan kas fisik."
+    />
 
     @if (session('success'))
-        <div class="mb-4 flex items-center gap-2.5 rounded-lg bg-info-soft px-4 py-3 text-sm text-info">
+        <div class="flex items-center gap-2.5 rounded-[10px] border border-primary/20 bg-primary-soft px-4 py-3 text-sm text-on-primary-soft">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
             {{ session('success') }}
         </div>
     @endif
     @if (session('error'))
-        <div class="mb-4 flex items-center gap-2.5 rounded-lg bg-danger-soft px-4 py-3 text-sm text-danger">
+        <div class="flex items-center gap-2.5 rounded-[10px] border border-danger/20 bg-danger-soft px-4 py-3 text-sm text-danger">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
             {{ session('error') }}
         </div>
     @endif
 
+    {{-- Pengajuan Setoran Pending (Menunggu Pemrosesan) --}}
     @if($pendingSubmissions->count() > 0)
-        <div class="mb-6 rounded-lg bg-warning-soft shadow-[inset_0_0_0_1px_#d97706]">
-            <div class="border-b border-[#d97706] px-6 py-4">
-                <h3 class="text-sm font-semibold text-warning-deep">Pengajuan Setoran Pending ({{ $pendingSubmissions->count() }})</h3>
+        <div class="rounded-[14px] border border-warning/20 bg-[var(--color-surface)] shadow-xs overflow-hidden">
+            <div class="border-b border-[var(--color-admin-border)] bg-warning-soft px-5 py-3.5 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-semibold text-warning-deep">Menunggu Pemrosesan</h3>
+                    <p class="text-xs text-[var(--color-admin-mute)]">Ada {{ $pendingSubmissions->count() }} pengajuan setoran kantor dari kolektor.</p>
+                </div>
+                <span class="rounded-full border border-warning/20 bg-warning-soft px-2 py-0.5 text-xs font-semibold text-warning-deep">
+                    {{ $pendingSubmissions->count() }} antrean
+                </span>
             </div>
-            <div class="divide-y divide-[#d97706]">
+            <div class="divide-y divide-[var(--color-admin-border)]">
                 @foreach($pendingSubmissions as $item)
-                    <div class="px-6 py-4">
-                        <div data-test="baris-pengajuan" class="flex flex-wrap items-center justify-between gap-2">
+                    <div class="p-5">
+                        <div data-test="baris-pengajuan" class="flex flex-wrap items-center justify-between gap-4">
                             <div>
-                                <p class="text-sm font-medium text-ink">{{ $item->kolektor->name ?? '-' }}</p>
-                                <p class="text-xs text-mute">{{ $item->tanggal_setor->translatedFormat('d M Y') }} &middot; Seharusnya: Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</p>
-                                @if($item->keterangan_selisih)
-                                    <p class="mt-1 text-xs text-mute">Catatan: {{ $item->keterangan_selisih }}</p>
-                                @endif
+                                <p class="text-sm font-medium text-[var(--color-admin-text)]">{{ $item->kolektor->name ?? '-' }}</p>
+                                <p class="text-xs text-[var(--color-admin-mute)] mt-0.5">
+                                    {{ $item->tanggal_setor->translatedFormat('d M Y') }} &middot; Seharusnya: <span class="tabular-nums font-semibold text-[var(--color-admin-text)]">Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</span>
+                                    @if($item->keterangan_selisih)
+                                        &middot; {{ $item->keterangan_selisih }}
+                                    @endif
+                                </p>
                             </div>
                             <div class="flex items-center gap-2">
                                 @if($processingId === $item->id)
-                                    <button wire:click="cancelProcess" class="rounded-md border border-hairline bg-white px-3 py-1.5 text-xs font-medium text-ink transition hover:bg-inset">
+                                    <button type="button" wire:click="cancelProcess" class="inline-flex h-8 items-center rounded-[8px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 text-xs font-medium text-[var(--color-admin-text)] transition hover:bg-[var(--color-surface-2)]">
                                         Batal
                                     </button>
                                 @elseif($rejectingId === $item->id)
-                                    <button wire:click="cancelReject" class="rounded-md border border-hairline bg-white px-3 py-1.5 text-xs font-medium text-ink transition hover:bg-inset">
+                                    <button type="button" wire:click="cancelReject" class="inline-flex h-8 items-center rounded-[8px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 text-xs font-medium text-[var(--color-admin-text)] transition hover:bg-[var(--color-surface-2)]">
                                         Batal
                                     </button>
                                 @else
-                                    <button wire:click="startProcess({{ $item->id }})" class="btn-primary">
+                                    <button type="button" wire:click="startProcess({{ $item->id }})" class="inline-flex h-8 items-center rounded-[8px] bg-[var(--color-accent)] px-3.5 text-xs font-medium text-white transition hover:opacity-90">
                                         Proses
                                     </button>
-                                    <button wire:click="startReject({{ $item->id }})" class="rounded-full border border-danger bg-white px-3 py-1.5 text-xs font-medium text-danger transition hover:bg-danger-soft">
+                                    <button type="button" wire:click="startReject({{ $item->id }})" class="inline-flex h-8 items-center rounded-[8px] border border-red-500/20 bg-red-500/10 px-3 text-xs font-medium text-red-600 transition hover:bg-red-500/20">
                                         Tolak
                                     </button>
                                 @endif
                             </div>
                         </div>
 
+                        {{-- Form Pemrosesan Setoran --}}
                         @if($processingId === $item->id)
-                            <div class="mt-4 rounded-lg bg-white p-4 shadow-[inset_0_0_0_1px_#e5e5e5]">
-                                <div class="mb-3 rounded-lg bg-inset px-3 py-2">
-                                    <p class="text-xs text-mute">Total Seharusnya</p>
-                                    <p class="tabular-nums text-lg font-semibold text-ink">Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</p>
+                            <div class="mt-4 rounded-[12px] border border-[var(--color-admin-border)] bg-[var(--color-surface-2)] p-4 space-y-3">
+                                <div class="flex items-center justify-between text-xs border-b border-[var(--color-admin-border)] pb-2.5">
+                                    <span class="text-[var(--color-admin-mute)]">Total Seharusnya</span>
+                                    <span class="tabular-nums text-sm font-semibold text-[var(--color-admin-text)]">Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</span>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label class="mb-1.5 block text-sm font-medium text-ink">Total Diterima (Fisik)</label>
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Total Diterima (Fisik)</label>
                                     <div class="relative">
-                                        <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 tabular-nums text-sm text-mute">Rp</span>
+                                        <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 tabular-nums text-xs font-medium text-[var(--color-admin-mute)]">Rp</span>
                                         <input type="number" wire:model.live="processTotalDiterima"
-                                            class="h-10 w-full rounded-md border border-hairline bg-white py-0 pl-10 pr-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
+                                            class="h-[38px] w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] pl-9 pr-3 text-sm text-[var(--color-admin-text)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
                                             placeholder="0" />
                                     </div>
-                                    @error('processTotalDiterima') <p class="mt-1.5 text-xs text-danger">{{ $message }}</p> @enderror
+                                    @error('processTotalDiterima') <p class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                                 </div>
 
                                 @if($processTotalDiterima !== '' && $processTotalDiterima != $item->total_seharusnya)
-                                    <div class="mb-3 rounded-lg {{ $processTotalDiterima > $item->total_seharusnya ? 'bg-warning-soft' : 'bg-danger-soft' }} px-4 py-3">
-                                        <p class="text-sm font-medium {{ $processTotalDiterima > $item->total_seharusnya ? 'text-warning-deep' : 'text-danger' }}">
+                                    <div class="rounded-[10px] border border-[var(--color-admin-border)] p-3 {{ $processTotalDiterima > $item->total_seharusnya ? 'bg-warning-soft text-warning-deep border-warning/20' : 'bg-red-500/10 text-red-600 dark:text-red-400' }}">
+                                        <p class="text-xs font-medium">
                                             Selisih: Rp {{ number_format(abs($processTotalDiterima - $item->total_seharusnya), 0, ',', '.') }} ({{ $processTotalDiterima > $item->total_seharusnya ? 'Lebih' : 'Kurang' }})
                                         </p>
                                     </div>
-                                    <div class="mb-3">
-                                        <label class="mb-1.5 block text-sm font-medium text-ink">Keterangan Selisih (Wajib)</label>
+                                    <div>
+                                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Keterangan Selisih (Wajib)</label>
                                         <textarea wire:model.live="processKeterangan" rows="2"
-                                            class="w-full rounded-md border border-hairline bg-white px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
+                                            class="w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-admin-text)] placeholder-[var(--color-admin-mute)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
                                             placeholder="Jelaskan penyebab selisih..."></textarea>
                                     </div>
                                 @endif
 
-                                <button wire:click="processSubmission({{ $item->id }})" wire:loading.attr="disabled"
-                                    wire:confirm="Yakin mengonfirmasi dan menyimpan hasil rekonsiliasi kas ini?"
-                                    class="btn-primary">
-                                    Konfirmasi &amp; Simpan
-                                </button>
+                                <div class="pt-1">
+                                    <button type="button" wire:click="processSubmission({{ $item->id }})" wire:loading.attr="disabled"
+                                        wire:confirm="Yakin mengonfirmasi dan menyimpan hasil rekonsiliasi kas ini?"
+                                        class="h-[38px] rounded-[10px] bg-[var(--color-accent)] px-4 text-xs font-medium text-white transition hover:opacity-90">
+                                        Konfirmasi &amp; Simpan
+                                    </button>
+                                </div>
                             </div>
                         @endif
 
+                        {{-- Form Penolakan Setoran --}}
                         @if($rejectingId === $item->id)
-                            <div class="mt-4 rounded-lg bg-white p-4 shadow-[inset_0_0_0_1px_#e5e5e5]">
-                                <div class="mb-3 rounded-lg bg-danger-soft px-4 py-3">
-                                    <p class="text-sm font-medium text-danger">
-                                        Menolak pengajuan akan mengembalikan seluruh setoran ke status belum disetor.
-                                    </p>
-                                </div>
+                            <div class="mt-4 rounded-[12px] border border-red-500/20 bg-red-500/5 p-4 space-y-3">
+                                <p class="text-xs font-medium text-red-700 dark:text-red-300">
+                                    Menolak pengajuan akan mengembalikan seluruh setoran terkait ke status belum disetor.
+                                </p>
 
-                                <div class="mb-3">
-                                    <label class="mb-1.5 block text-sm font-medium text-ink">Alasan Penolakan (Wajib)</label>
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Alasan Penolakan (Wajib)</label>
                                     <textarea wire:model="rejectAlasan" rows="2"
-                                        class="w-full rounded-md border border-hairline bg-white px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
+                                        class="w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-admin-text)] placeholder-[var(--color-admin-mute)] focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                                         placeholder="Jelaskan alasan penolakan..."></textarea>
-                                    @error('rejectAlasan') <p class="mt-1.5 text-xs text-danger">{{ $message }}</p> @enderror
+                                    @error('rejectAlasan') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                                 </div>
 
-                                <button wire:click="rejectSubmission" wire:loading.attr="disabled"
-                                    wire:confirm="Yakin menolak pengajuan setoran ini?"
-                                    class="rounded-md bg-danger px-4 py-2 text-xs font-semibold text-white transition hover:bg-danger">
-                                    Tolak Pengajuan
-                                </button>
+                                <div class="pt-1">
+                                    <button type="button" wire:click="rejectSubmission" wire:loading.attr="disabled"
+                                        wire:confirm="Yakin menolak pengajuan setoran ini?"
+                                        class="h-[38px] rounded-[10px] bg-red-600 px-4 text-xs font-medium text-white transition hover:bg-red-700">
+                                        Tolak Pengajuan
+                                    </button>
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -122,219 +136,230 @@
         </div>
     @endif
 
-    <div class="mb-6 rounded-lg bg-inset shadow-[inset_0_0_0_1px_#e5e5e5]">
-        <div class="border-b border-hairline px-6 py-4">
-            <h3 class="text-sm font-semibold text-ink">Input Manual Setoran Kas</h3>
+    {{-- Input Manual Setoran Kas --}}
+    <div class="rounded-[14px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] p-5 shadow-xs">
+        <div class="border-b border-[var(--color-admin-border)] pb-3 mb-4">
+            <h3 class="text-base font-semibold text-[var(--color-admin-text)]">Input Manual Setoran Kas</h3>
+            <p class="text-xs text-[var(--color-admin-mute)] mt-0.5">Catat setoran kas kolektor yang diserahkan langsung ke kantor.</p>
         </div>
-        <div class="p-6">
-            <div>
-                <label class="mb-1.5 block text-sm font-medium text-ink">Kolektor</label>
-                <select wire:model.live="kolektorId"
-                    class="h-10 w-full rounded-md border border-hairline bg-white px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10">
-                    <option value="">Pilih Kolektor</option>
-                    @foreach($kolektorList as $k)
-                        <option value="{{ $k->id }}">{{ $k->name }} ({{ $k->no_hp }})</option>
-                    @endforeach
-                </select>
-            </div>
 
-            @if($showForm && $kolektorId)
-                <div class="mt-4">
-                    <div class="rounded-lg bg-white p-4 shadow-[inset_0_0_0_1px_#e5e5e5]">
-                        <p class="text-xs text-mute">Detail Transaksi yang Belum Disetor</p>
-                        @if($detailTransaksi->count() > 0)
-                            <div class="mt-3 space-y-2">
-                                @foreach($detailTransaksi as $trx)
-                                    <div class="flex items-center justify-between rounded-lg bg-inset px-3 py-2">
-                                        <span class="text-sm text-body">{{ $trx->nasabah->name ?? '-' }} - {{ $trx->produk->nama }}</span>
-                                        <span class="tabular-nums text-sm font-medium text-ink">Rp {{ number_format($trx->nominal, 0, ',', '.') }}</span>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div class="mt-3 border-t border-hairline pt-3 space-y-2">
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-body">Setoran Masuk</span>
-                                    <span class="tabular-nums font-medium text-ink">Rp {{ number_format($totalSetoranMasuk, 0, ',', '.') }}</span>
-                                </div>
-                                <div class="flex justify-between text-sm">
-                                    <span class="text-body">Penarikan Tunai</span>
-                                    <span class="tabular-nums font-medium text-ink">Rp {{ number_format($totalPenarikanTunai, 0, ',', '.') }}</span>
-                                </div>
-                                <div class="flex justify-between text-sm font-semibold">
-                                    <span class="text-body">Total Seharusnya</span>
-                                    <span class="tabular-nums font-medium text-ink">Rp {{ number_format($totalSeharusnya, 0, ',', '.') }}</span>
-                                </div>
-                            </div>
-                        @else
-                            <p class="mt-2 text-sm text-mute">Tidak ada transaksi yang perlu disetor.</p>
-                        @endif
-                    </div>
+        <div>
+            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Kolektor</label>
+            <select wire:model.live="kolektorId"
+                class="h-[38px] w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-admin-text)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]">
+                <option value="">Pilih Kolektor</option>
+                @foreach($kolektorList as $k)
+                    <option value="{{ $k->id }}">{{ $k->name }} ({{ $k->no_hp }})</option>
+                @endforeach
+            </select>
+        </div>
 
-                    @if($rincianLangsung['belum']['jumlah'] + $rincianLangsung['sesuai']['jumlah'] + $rincianLangsung['bermasalah']['jumlah'] > 0)
-                        <div class="mt-3 rounded-lg bg-warning-soft px-3 py-2 text-sm text-warning-deep shadow-[inset_0_0_0_1px_#fef3c7]">
-                            <p class="font-medium">Rincian penarikan offline langsung kolektor ini</p>
-                            <p class="mt-1 tabular-nums text-xs">
-                                belum ditinjau {{ $rincianLangsung['belum']['jumlah'] }} (Rp {{ number_format($rincianLangsung['belum']['nominal'], 0, ',', '.') }})
-                                &middot; sesuai {{ $rincianLangsung['sesuai']['jumlah'] }} (Rp {{ number_format($rincianLangsung['sesuai']['nominal'], 0, ',', '.') }})
-                                &middot; bermasalah {{ $rincianLangsung['bermasalah']['jumlah'] }} (Rp {{ number_format($rincianLangsung['bermasalah']['nominal'], 0, ',', '.') }})
-                            </p>
-                        </div>
-                    @endif
-
+        @if($showForm && $kolektorId)
+            <div class="mt-4">
+                <div class="rounded-[12px] border border-[var(--color-admin-border)] bg-[var(--color-surface-2)] p-4">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)] mb-3">Detail Transaksi yang Belum Disetor</p>
                     @if($detailTransaksi->count() > 0)
-                        <form wire:submit="submit" class="mt-4 space-y-4">
-                            <div>
-                                <label class="mb-1.5 block text-sm font-medium text-ink">Total Diterima (Fisik)</label>
-                                <div class="relative">
-                                    <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 tabular-nums text-sm text-mute">Rp</span>
-                                    <input type="number" wire:model="totalDiterima"
-                                        class="h-10 w-full rounded-md border border-hairline bg-white py-0 pl-10 pr-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
-                                        placeholder="0" />
+                        <div class="space-y-2 max-h-60 overflow-y-auto">
+                            @foreach($detailTransaksi as $trx)
+                                <div class="flex items-center justify-between rounded-[8px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 py-2 text-xs">
+                                    <span class="text-[var(--color-admin-text)]">{{ $trx->nasabah->name ?? '-' }} · {{ $trx->produk->nama }}</span>
+                                    <span class="tabular-nums font-medium text-[var(--color-admin-text)]">Rp {{ number_format($trx->nominal, 0, ',', '.') }}</span>
                                 </div>
-                                @error('totalDiterima') <p class="mt-1.5 text-xs text-danger">{{ $message }}</p> @enderror
+                            @endforeach
+                        </div>
+                        <div class="mt-3 border-t border-[var(--color-admin-border)] pt-3 space-y-1.5 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-[var(--color-admin-mute)]">Setoran Masuk</span>
+                                <span class="tabular-nums font-medium text-[var(--color-admin-text)]">Rp {{ number_format($totalSetoranMasuk, 0, ',', '.') }}</span>
                             </div>
-
-                            @if($totalDiterima && $totalDiterima != $totalSeharusnya)
-                                <div class="rounded-lg {{ $totalDiterima > $totalSeharusnya ? 'bg-warning-soft' : 'bg-danger-soft' }} px-4 py-3">
-                                    <p class="text-sm font-medium {{ $totalDiterima > $totalSeharusnya ? 'text-warning-deep' : 'text-danger' }}">
-                                        Selisih: Rp {{ number_format(abs($totalDiterima - $totalSeharusnya), 0, ',', '.') }} ({{ $totalDiterima > $totalSeharusnya ? 'Lebih' : 'Kurang' }})
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="mb-1.5 block text-sm font-medium text-ink">Keterangan Selisih (Wajib)</label>
-                                    <textarea wire:model="keterangan" rows="2"
-                                        class="w-full rounded-md border border-hairline bg-white px-3 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-ink/10"
-                                        placeholder="Jelaskan penyebab selisih..."></textarea>
-                                </div>
-                            @endif
-
-                            <button type="submit" wire:loading.attr="disabled"
-                                class="btn-primary">
-                                Simpan Rekonsiliasi
-                            </button>
-                        </form>
+                            <div class="flex justify-between">
+                                <span class="text-[var(--color-admin-mute)]">Penarikan Tunai</span>
+                                <span class="tabular-nums font-medium text-[var(--color-admin-text)]">Rp {{ number_format($totalPenarikanTunai, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex justify-between border-t border-[var(--color-admin-border)] pt-2 font-semibold text-sm">
+                                <span class="text-[var(--color-admin-text)]">Total Seharusnya</span>
+                                <span class="tabular-nums text-[var(--color-accent)]">Rp {{ number_format($totalSeharusnya, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                    @else
+                        <p class="text-xs text-[var(--color-admin-mute)]">Tidak ada transaksi yang perlu disetor.</p>
                     @endif
                 </div>
-            @endif
-        </div>
+
+                @if($rincianLangsung['belum']['jumlah'] + $rincianLangsung['sesuai']['jumlah'] + $rincianLangsung['bermasalah']['jumlah'] > 0)
+                    <div class="mt-3 rounded-[10px] border border-warning/20 bg-warning-soft p-3 text-xs text-warning-deep">
+                        <p class="font-medium">Rincian penarikan offline langsung kolektor ini:</p>
+                        <p class="mt-1 tabular-nums text-[11px]">
+                            belum ditinjau {{ $rincianLangsung['belum']['jumlah'] }} (Rp {{ number_format($rincianLangsung['belum']['nominal'], 0, ',', '.') }})
+                            &middot; sesuai {{ $rincianLangsung['sesuai']['jumlah'] }} (Rp {{ number_format($rincianLangsung['sesuai']['nominal'], 0, ',', '.') }})
+                            &middot; bermasalah {{ $rincianLangsung['bermasalah']['jumlah'] }} (Rp {{ number_format($rincianLangsung['bermasalah']['nominal'], 0, ',', '.') }})
+                        </p>
+                    </div>
+                @endif
+
+                @if($detailTransaksi->count() > 0)
+                    <form wire:submit="submit" class="mt-4 space-y-4">
+                        <div>
+                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Total Diterima (Fisik)</label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 tabular-nums text-xs font-medium text-[var(--color-admin-mute)]">Rp</span>
+                                <input type="number" wire:model="totalDiterima"
+                                    class="h-[38px] w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] pl-9 pr-3 text-sm text-[var(--color-admin-text)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                                    placeholder="0" />
+                            </div>
+                            @error('totalDiterima') <p class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                        </div>
+
+                        @if($totalDiterima && $totalDiterima != $totalSeharusnya)
+                            <div class="rounded-[10px] border border-[var(--color-admin-border)] p-3 {{ $totalDiterima > $totalSeharusnya ? 'bg-warning-soft text-warning-deep border-warning/20' : 'bg-red-500/10 text-red-600 dark:text-red-400' }}">
+                                <p class="text-xs font-medium">
+                                    Selisih: Rp {{ number_format(abs($totalDiterima - $totalSeharusnya), 0, ',', '.') }} ({{ $totalDiterima > $totalSeharusnya ? 'Lebih' : 'Kurang' }})
+                                </p>
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Keterangan Selisih (Wajib)</label>
+                                <textarea wire:model="keterangan" rows="2"
+                                    class="w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-admin-text)] placeholder-[var(--color-admin-mute)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                                    placeholder="Jelaskan penyebab selisih..."></textarea>
+                            </div>
+                        @endif
+
+                        <button type="submit" wire:loading.attr="disabled"
+                            class="h-[38px] rounded-[10px] bg-[var(--color-accent)] px-4 text-xs font-medium text-white transition hover:opacity-90">
+                            Simpan Rekonsiliasi
+                        </button>
+                    </form>
+                @endif
+            </div>
+        @endif
     </div>
 
-    <div class="overflow-hidden rounded-lg bg-white shadow-[inset_0_0_0_1px_#e5e5e5]">
-        <div class="border-b border-hairline px-6 py-4">
-            <h3 class="text-sm font-semibold text-ink">Riwayat Rekonsiliasi</h3>
+    {{-- Riwayat Rekonsiliasi --}}
+    <div class="overflow-hidden rounded-[14px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] shadow-xs">
+        <div class="border-b border-[var(--color-admin-border)] px-5 py-3.5">
+            <h3 class="text-sm font-semibold text-[var(--color-admin-text)]">Riwayat Rekonsiliasi</h3>
         </div>
         <div class="overflow-x-auto">
-            <table class="hidden md:table w-full text-left">
+            <table class="hidden md:table w-full text-left text-sm">
                 <thead>
-                    <tr class="border-b border-hairline bg-inset">
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tanggal</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Kolektor</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Seharusnya</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Diterima</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Selisih</th>
-                        <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Status</th>
+                    <tr class="border-b border-[var(--color-admin-border)] bg-[var(--color-surface-2)]">
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Tanggal</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Kolektor</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Seharusnya</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Diterima</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Selisih</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Status</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-hairline">
+                <tbody class="divide-y divide-[var(--color-admin-border)]">
                     @forelse($riwayat as $item)
-                        <tr class="transition hover:bg-inset">
-                            <td class="px-4 py-3 text-sm text-body">{{ $item->tanggal_setor->translatedFormat('d M Y') }}</td>
-                            <td class="px-4 py-3 text-sm font-medium text-ink">{{ $item->kolektor->name ?? '-' }}</td>
-                            <td class="px-4 py-3 tabular-nums text-sm text-body">Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</td>
-                            <td class="px-4 py-3 tabular-nums text-sm text-body">
+                        <tr class="transition hover:bg-[var(--color-surface-2)]">
+                            <td class="px-4 py-3 text-xs text-[var(--color-admin-mute)]">{{ $item->tanggal_setor->translatedFormat('d M Y') }}</td>
+                            <td class="px-4 py-3 font-medium text-[var(--color-admin-text)]">{{ $item->kolektor->name ?? '-' }}</td>
+                            <td class="px-4 py-3 text-right tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right tabular-nums text-[var(--color-admin-text)]">
                                 @if($item->total_diterima !== null)
                                     Rp {{ number_format($item->total_diterima, 0, ',', '.') }}
                                 @else
                                     -
                                 @endif
                             </td>
-                            <td class="px-4 py-3 tabular-nums text-sm {{ $item->selisih && $item->selisih != 0 ? 'text-danger' : 'text-info' }}">
+                            <td class="px-4 py-3 text-right tabular-nums font-medium {{ $item->selisih && $item->selisih != 0 ? ($item->selisih > 0 ? 'text-warning-deep' : 'text-red-600 dark:text-red-400') : 'text-[var(--color-accent)]' }}">
                                 @if($item->selisih !== null)
                                     {{ $item->selisih >= 0 ? '+' : '' }} Rp {{ number_format($item->selisih, 0, ',', '.') }}
                                 @else
                                     -
                                 @endif
                             </td>
-                            <td class="px-4 py-3">
-                                @if($item->status === 'pending')
-                                    <span class="inline-flex items-center rounded-full bg-warning-soft px-2.5 py-0.5 text-xs text-warning-deep">Menunggu</span>
-                                @elseif($item->status === 'cocok')
-                                    <span class="inline-flex items-center rounded-full bg-info-soft px-2.5 py-0.5 text-xs text-info">Cocok</span>
-                                @elseif($item->status === 'lebih')
-                                    <span class="inline-flex items-center rounded-full bg-warning-soft px-2.5 py-0.5 text-xs text-warning-deep">Lebih</span>
-                                @elseif($item->status === 'dibatalkan')
-                                    <span class="inline-flex items-center rounded-full bg-danger-soft px-2.5 py-0.5 text-xs text-danger">Ditolak/Dibatalkan</span>
-                                @else
-                                    <span class="inline-flex items-center rounded-full bg-danger-soft px-2.5 py-0.5 text-xs text-danger">Kurang</span>
-                                @endif
+                            <td class="px-4 py-3 text-center">
+                                @php
+                                    $mapStatus = [
+                                        'pending' => 'Menunggu',
+                                        'cocok' => 'Cocok',
+                                        'lebih' => 'Lebih',
+                                        'kurang' => 'Kurang',
+                                        'dibatalkan' => 'Ditolak',
+                                    ];
+                                @endphp
+                                <x-admin.status-chip :status="$mapStatus[$item->status] ?? ucfirst($item->status)" />
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-16 text-center">
-                                <div class="flex flex-col items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-hairline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                    <p class="text-sm text-mute">Belum ada riwayat rekonsiliasi.</p>
-                                </div>
+                            <td colspan="6" class="p-0">
+                                <x-admin.empty-state
+                                    title="Belum ada riwayat rekonsiliasi"
+                                    description="Semua setoran kantor yang telah diverifikasi akan tercatat di sini."
+                                />
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div data-test="kartu-riwayat" class="divide-y divide-hairline md:hidden">
+
+        {{-- Fallback Kartu Mobile --}}
+        <div data-test="kartu-riwayat" class="divide-y divide-[var(--color-admin-border)] md:hidden">
             @forelse($riwayat as $item)
-                <div class="px-4 py-3">
-                    <div class="flex items-center justify-between gap-3">
-                        <div class="min-w-0">
-                            <p class="text-sm font-medium text-ink">{{ $item->kolektor->name ?? '-' }}</p>
-                            <p class="text-xs text-mute">{{ $item->tanggal_setor->translatedFormat('d M Y') }}</p>
+                <div class="p-4 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <div>
+                            <p class="font-medium text-[var(--color-admin-text)]">{{ $item->kolektor->name ?? '-' }}</p>
+                            <p class="text-xs text-[var(--color-admin-mute)]">{{ $item->tanggal_setor->translatedFormat('d M Y') }}</p>
                         </div>
-                        @if($item->status === 'pending')
-                            <span class="inline-flex items-center rounded-full bg-warning-soft px-2.5 py-0.5 text-xs text-warning-deep">Menunggu</span>
-                        @elseif($item->status === 'cocok')
-                            <span class="inline-flex items-center rounded-full bg-info-soft px-2.5 py-0.5 text-xs text-info">Cocok</span>
-                        @elseif($item->status === 'lebih')
-                            <span class="inline-flex items-center rounded-full bg-warning-soft px-2.5 py-0.5 text-xs text-warning-deep">Lebih</span>
-                        @elseif($item->status === 'dibatalkan')
-                            <span class="inline-flex items-center rounded-full bg-danger-soft px-2.5 py-0.5 text-xs text-danger">Ditolak/Dibatalkan</span>
-                        @else
-                            <span class="inline-flex items-center rounded-full bg-danger-soft px-2.5 py-0.5 text-xs text-danger">Kurang</span>
-                        @endif
+                        @php
+                            $mapStatus = [
+                                'pending' => 'Menunggu',
+                                'cocok' => 'Cocok',
+                                'lebih' => 'Lebih',
+                                'kurang' => 'Kurang',
+                                'dibatalkan' => 'Ditolak',
+                            ];
+                        @endphp
+                        <x-admin.status-chip :status="$mapStatus[$item->status] ?? ucfirst($item->status)" />
                     </div>
-                    <div class="mt-2 grid grid-cols-3 gap-x-3 gap-y-1.5">
+                    <div class="grid grid-cols-3 gap-2 text-xs border-t border-[var(--color-admin-border)] pt-2">
                         <div>
-                            <span class="block text-xs text-mute">Seharusnya</span>
-                            <span class="tabular-nums text-sm text-body">Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</span>
+                            <span class="text-[var(--color-admin-mute)]">Seharusnya:</span>
+                            <div class="font-medium tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</div>
                         </div>
                         <div>
-                            <span class="block text-xs text-mute">Diterima</span>
-                            <span class="tabular-nums text-sm text-body">
+                            <span class="text-[var(--color-admin-mute)]">Diterima:</span>
+                            <div class="font-medium tabular-nums text-[var(--color-admin-text)]">
                                 @if($item->total_diterima !== null)
                                     Rp {{ number_format($item->total_diterima, 0, ',', '.') }}
                                 @else
                                     -
                                 @endif
-                            </span>
+                            </div>
                         </div>
                         <div>
-                            <span class="block text-xs text-mute">Selisih</span>
-                            <span class="tabular-nums text-sm {{ $item->selisih && $item->selisih != 0 ? 'text-danger' : 'text-info' }}">
+                            <span class="text-[var(--color-admin-mute)]">Selisih:</span>
+                            <div class="font-medium tabular-nums {{ $item->selisih && $item->selisih != 0 ? ($item->selisih > 0 ? 'text-warning-deep' : 'text-red-600 dark:text-red-400') : 'text-[var(--color-accent)]' }}">
                                 @if($item->selisih !== null)
                                     {{ $item->selisih >= 0 ? '+' : '' }} Rp {{ number_format($item->selisih, 0, ',', '.') }}
                                 @else
                                     -
                                 @endif
-                            </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             @empty
-                <div class="flex flex-col items-center gap-2 px-4 py-10 text-center">
-                    <p class="text-sm text-mute">Belum ada riwayat rekonsiliasi.</p>
+                <div class="p-6">
+                    <x-admin.empty-state
+                        title="Belum ada riwayat rekonsiliasi"
+                        description="Semua setoran kantor yang telah diverifikasi akan tercatat di sini."
+                    />
                 </div>
             @endforelse
         </div>
-        <div class="border-t border-hairline px-4 py-3">{{ $riwayat->links() }}</div>
+
+        @if($riwayat->hasPages())
+            <div class="border-t border-[var(--color-admin-border)] px-4 py-3">
+                {{ $riwayat->links() }}
+            </div>
+        @endif
     </div>
 </div>
+
