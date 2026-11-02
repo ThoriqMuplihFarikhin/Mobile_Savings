@@ -1,1 +1,1 @@
-<x-layouts::admin title="Manajemen Nasabah"><livewire:admin.manajemen-nasabah /></x-layouts::admin>
+<x-layouts::admin title="Manajemen Nasabah"><livewire:admin.manajemen-nasabah :detail-id="request('detail') ?? ($detailUserId ?? null)" /></x-layouts::admin>

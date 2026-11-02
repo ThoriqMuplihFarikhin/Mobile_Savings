@@ -34,75 +34,60 @@
         </div>
     @endif
 
-    {{-- Formulir Tambah / Edit Nasabah --}}
+    {{-- Modal Dialog Tambah / Edit Nasabah (Popup) --}}
     @if($showForm)
-        <div class="mb-5 rounded-[14px] border border-hairline bg-surface p-5 shadow-xs transition-colors">
-            <div class="border-b border-hairline pb-3 mb-4">
-                <h3 class="text-sm font-semibold text-ink">{{ $editId ? 'Edit Nasabah' : 'Tambah Nasabah Baru' }}</h3>
-                <p class="text-xs text-mute mt-0.5">Lengkapi data profil nasabah di bawah ini.</p>
-            </div>
-            <form wire:submit="save" class="space-y-4">
-                <div class="grid gap-4 sm:grid-cols-2">
-                    <div>
-                        <label class="mb-1.5 block text-xs font-medium text-ink">Nama Lengkap</label>
-                        <input
-                            type="text"
-                            wire:model="nama"
-                            class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
-                            placeholder="Nama nasabah"
-                        />
-                        @error('nama') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label class="mb-1.5 block text-xs font-medium text-ink">No. HP</label>
-                        <input
-                            type="text"
-                            wire:model="no_hp"
-                            class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
-                            placeholder="08xxxxxxxxxx"
-                        />
-                        @error('no_hp') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
-                    </div>
-                    <div class="sm:col-span-2">
-                        <label class="mb-1.5 block text-xs font-medium text-ink">Alamat</label>
-                        <textarea
-                            wire:model="alamat"
-                            rows="2"
-                            class="w-full rounded-[10px] border border-hairline bg-surface px-3 py-2 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
-                            placeholder="Alamat lengkap"
-                        ></textarea>
-                        @error('alamat') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
-                    </div>
-                    <div>
-                        <label class="mb-1.5 block text-xs font-medium text-ink">PIN (6 digit) {{ $editId ? '— Kosongkan jika tidak diubah' : '' }}</label>
-                        <input
-                            type="password"
-                            wire:model="pin"
-                            maxlength="6"
-                            class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
-                            placeholder="123456"
-                        />
-                        @error('pin') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
-                    </div>
+        <x-admin.dialog
+            title="{{ $editId ? 'Edit Nasabah' : 'Tambah Nasabah Baru' }}"
+            message="Lengkapi data profil nasabah di bawah ini."
+            confirm-text="{{ $editId ? 'Simpan Perubahan' : 'Tambah Nasabah' }}"
+            cancel-text="Batal"
+            confirm-action="save"
+            cancel-action="toggleForm"
+        >
+            <form wire:submit.prevent="save" class="space-y-3.5 text-left">
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-ink">Nama Lengkap</label>
+                    <input
+                        type="text"
+                        wire:model="nama"
+                        class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                        placeholder="Nama nasabah"
+                    />
+                    @error('nama') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                 </div>
-                <div class="flex items-center gap-2 pt-2 border-t border-hairline/60">
-                    <button
-                        type="submit"
-                        wire:loading.attr="disabled"
-                        class="min-h-11 h-[38px] rounded-[10px] bg-accent px-4 text-xs font-semibold text-accent-foreground transition hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-xs"
-                    >
-                        {{ $editId ? 'Simpan Perubahan' : 'Tambah Nasabah' }}
-                    </button>
-                    <button
-                        type="button"
-                        wire:click="toggleForm"
-                        class="min-h-11 h-[38px] rounded-[10px] border border-hairline bg-surface px-4 text-xs font-medium text-ink transition hover:bg-surface-2 cursor-pointer"
-                    >
-                        Batal
-                    </button>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-ink">No. HP</label>
+                    <input
+                        type="text"
+                        wire:model="no_hp"
+                        class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                        placeholder="08xxxxxxxxxx"
+                    />
+                    @error('no_hp') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-ink">Alamat</label>
+                    <textarea
+                        wire:model="alamat"
+                        rows="2"
+                        class="w-full rounded-[10px] border border-hairline bg-surface px-3 py-2 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                        placeholder="Alamat lengkap"
+                    ></textarea>
+                    @error('alamat') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                </div>
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-ink">PIN (6 digit) {{ $editId ? '— Kosongkan jika tidak diubah' : '' }}</label>
+                    <input
+                        type="password"
+                        wire:model="pin"
+                        maxlength="6"
+                        class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                        placeholder="123456"
+                    />
+                    @error('pin') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                 </div>
             </form>
-        </div>
+        </x-admin.dialog>
     @endif
 
     {{-- Kartu Tabel Utama --}}
@@ -646,13 +631,21 @@
                 </div>
 
                 {{-- Tombol Aksi Bawah --}}
-                <div class="flex items-center gap-2 pt-3 border-t border-hairline">
-                    <a
-                        href="{{ route('admin.nasabah.detail', $dp->user_id) }}"
+                <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-hairline">
+                    <button
+                        type="button"
+                        wire:click="bukaDaftarPaket({{ $dp->user_id }})"
                         class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] bg-primary px-4 text-xs font-semibold text-white transition hover:bg-primary-hover active:scale-95 cursor-pointer shadow-xs"
                     >
                         Daftarkan ke Paket
-                    </a>
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="edit({{ $dp->id }})"
+                        class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] border border-hairline bg-surface px-4 text-xs font-medium text-ink transition hover:bg-surface-2 cursor-pointer shadow-xs"
+                    >
+                        Edit Profil
+                    </button>
                     <button
                         type="button"
                         wire:click="confirmResetPin({{ $dp->user_id }})"
@@ -663,5 +656,72 @@
                 </div>
             </div>
         </aside>
+    @endif
+
+    {{-- Modal Dialog Pendaftaran Paket Tabungan (Popup) --}}
+    @if($tampilDaftarPaket)
+        <x-admin.dialog
+            title="Daftarkan ke Paket Tabungan"
+            message="Pilih paket tabungan aktif dan catat kesepakatan komitmen setoran nasabah."
+            confirm-text="Daftarkan Sekarang"
+            cancel-text="Batal"
+            confirm-action="daftarkanKePaket"
+            cancel-action="tutupDaftarPaket"
+        >
+            <div class="space-y-3.5 text-left">
+                @if($pesanErrorDaftar)
+                    <div class="rounded-[10px] bg-danger-soft p-3 text-xs font-medium text-danger border border-danger/20">
+                        {{ $pesanErrorDaftar }}
+                    </div>
+                @endif
+
+                {{-- Pilihan Paket --}}
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-ink">Paket Tabungan</label>
+                    <select
+                        wire:model="produkDaftarId"
+                        class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                    >
+                        <option value="0">-- Pilih Paket Tabungan --</option>
+                        @foreach($paketTerbuka as $pkt)
+                            <option value="{{ $pkt->id }}">
+                                {{ $pkt->nama }} (Rp {{ number_format($pkt->harga_per_hari ?? 0, 0, ',', '.') }}/hari)
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('produkDaftarId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                    @if($paketTerbuka->isEmpty())
+                        <p class="mt-1 text-xs text-mute">Tidak ada paket baru yang dapat didaftarkan untuk nasabah ini.</p>
+                    @endif
+                </div>
+
+                {{-- Catatan Komitmen --}}
+                <div>
+                    <label class="mb-1 block text-xs font-medium text-ink">Catatan Komitmen Setoran</label>
+                    <textarea
+                        wire:model="catatanDaftar"
+                        rows="3"
+                        class="w-full rounded-[10px] border border-hairline bg-surface px-3 py-2 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                        placeholder="Contoh: Disepakati nasabah setor harian setiap sore di toko/lokasi kerja."
+                    ></textarea>
+                    <p class="mt-0.5 text-[11px] text-mute">Catatan ini akan disimpan sebagai bukti komitmen kepesertaan nasabah.</p>
+                    @error('catatanDaftar') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- Checkbox Persetujuan --}}
+                <div class="flex items-start gap-2.5 pt-1">
+                    <input
+                        type="checkbox"
+                        id="setujuDaftar"
+                        wire:model="setujuDaftar"
+                        class="size-4 mt-0.5 rounded border-hairline text-accent focus:ring-accent cursor-pointer"
+                    />
+                    <label for="setujuDaftar" class="text-xs text-ink cursor-pointer leading-relaxed">
+                        Nasabah telah menyetujui komitmen dan ketentuan pencairan paket tabungan ini.
+                    </label>
+                </div>
+                @error('setujuDaftar') <p class="mt-0.5 text-xs text-danger">{{ $message }}</p> @enderror
+            </div>
+        </x-admin.dialog>
     @endif
 </div>

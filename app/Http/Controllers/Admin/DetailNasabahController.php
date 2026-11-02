@@ -10,6 +10,10 @@ class DetailNasabahController extends Controller
 {
     public function index(User $user): View
     {
-        return view('pages.admin.nasabah-detail', ['user' => $user]);
+        abort_unless($user->role === 'nasabah', 404);
+
+        return view('pages.admin.nasabah', [
+            'detailUserId' => $user->id,
+        ]);
     }
 }

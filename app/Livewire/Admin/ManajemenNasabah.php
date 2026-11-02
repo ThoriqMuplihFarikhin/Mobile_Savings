@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Paket\DaftarkanKePaketAction;
 use App\Actions\Pin\KirimPinAwalAction;
 use App\Actions\Pin\ResetPinOlehAdminAction;
 use App\Helpers\ActivityLogger;
@@ -12,12 +13,14 @@ use App\Models\KolektorNasabah;
 use App\Models\Komplain;
 use App\Models\LogNotifikasi;
 use App\Models\NasabahProfil;
+use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
 use App\Support\NomorHp;
 use Carbon\Carbon;
+use DomainException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -73,8 +76,28 @@ class ManajemenNasabah extends Component
 
     public string $periodeDetail = '30 Hari';
 
+    public bool $tampilDaftarPaket = false;
+
+    public ?int $targetDaftarUserId = null;
+
+    public int $produkDaftarId = 0;
+
+    public bool $setujuDaftar = false;
+
+    public string $catatanDaftar = '';
+
+    public ?string $pesanErrorDaftar = null;
+
     /** @var array<string, string> */
     protected $listeners = ['nasabahCreated' => '$refresh'];
+
+    public function mount(?int $detailId = null): void
+    {
+        $target = $detailId ?? (request()->filled('detail') ? (int) request('detail') : null);
+        if ($target) {
+            $this->bukaDetail($target);
+        }
+    }
 
     public function render(): View
     {
@@ -173,13 +196,22 @@ class ManajemenNasabah extends Component
             }
         }
 
-        return view('livewire.admin.manajemen-nasabah', compact('nasabah', 'detailData'));
+        $targetUserId = $this->targetDaftarUserId;
+        if (! $targetUserId && $detailData) {
+            $targetUserId = $detailData['profil']->user_id;
+        }
+        $paketTerbuka = $targetUserId ? DaftarkanKePaketAction::paketTerbukaUntuk((int) $targetUserId) : collect();
+
+        return view('livewire.admin.manajemen-nasabah', compact('nasabah', 'detailData', 'paketTerbuka'));
     }
 
     public function bukaDetail(int $id): void
     {
-        $this->detailNasabahId = $id;
-        $this->periodeDetail = '30 Hari';
+        $profil = NasabahProfil::find($id) ?? NasabahProfil::where('user_id', $id)->first();
+        if ($profil) {
+            $this->detailNasabahId = $profil->id;
+            $this->periodeDetail = '30 Hari';
+        }
     }
 
     public function tutupDetail(): void
@@ -190,6 +222,70 @@ class ManajemenNasabah extends Component
     public function setPeriodeDetail(string $periode): void
     {
         $this->periodeDetail = $periode;
+    }
+
+    public function bukaDaftarPaket(int $userId): void
+    {
+        $this->targetDaftarUserId = $userId;
+        $this->produkDaftarId = 0;
+        $this->setujuDaftar = false;
+        $this->catatanDaftar = '';
+        $this->pesanErrorDaftar = null;
+        $this->tampilDaftarPaket = true;
+    }
+
+    public function tutupDaftarPaket(): void
+    {
+        $this->tampilDaftarPaket = false;
+        $this->targetDaftarUserId = null;
+        $this->produkDaftarId = 0;
+        $this->setujuDaftar = false;
+        $this->catatanDaftar = '';
+        $this->pesanErrorDaftar = null;
+    }
+
+    public function daftarkanKePaket(): void
+    {
+        $this->validate([
+            'produkDaftarId' => 'required|integer|exists:produk_tabungan,id',
+            'setujuDaftar' => 'accepted',
+            'catatanDaftar' => 'required|string|max:255',
+        ], [
+            'produkDaftarId.required' => 'Pilih paket tabungan terlebih dahulu.',
+            'produkDaftarId.exists' => 'Paket tabungan tidak valid.',
+            'setujuDaftar.accepted' => 'Persetujuan komitmen wajib dicentang.',
+            'catatanDaftar.required' => 'Catatan komitmen pendaftaran wajib diisi.',
+        ]);
+
+        $pelaku = auth()->user();
+        if (! $pelaku instanceof User) {
+            abort(403);
+        }
+
+        $targetUser = User::find($this->targetDaftarUserId);
+        if (! $targetUser) {
+            $this->pesanErrorDaftar = 'Nasabah tidak ditemukan.';
+
+            return;
+        }
+
+        $produk = ProdukTabungan::find($this->produkDaftarId);
+        if (! $produk instanceof ProdukTabungan) {
+            $this->pesanErrorDaftar = 'Paket tidak ditemukan.';
+
+            return;
+        }
+
+        try {
+            app(DaftarkanKePaketAction::class)->execute($pelaku, $targetUser, $produk, $this->catatanDaftar);
+        } catch (DomainException $e) {
+            $this->pesanErrorDaftar = $e->getMessage();
+
+            return;
+        }
+
+        session()->flash('success', 'Nasabah berhasil didaftarkan ke paket '.$produk->nama.'.');
+        $this->tutupDaftarPaket();
     }
 
     public function updatedModeFilter(): void
@@ -284,7 +380,7 @@ class ManajemenNasabah extends Component
 
     public function edit(int $id): void
     {
-        $profil = NasabahProfil::find($id);
+        $profil = NasabahProfil::find($id) ?? NasabahProfil::where('user_id', $id)->first();
 
         if (! $profil) {
             session()->flash('error', 'Nasabah tidak ditemukan. Muat ulang daftar lalu coba lagi.');
@@ -296,6 +392,7 @@ class ManajemenNasabah extends Component
         $this->nama = $profil->nama;
         $this->no_hp = $profil->user->no_hp ?? '';
         $this->alamat = $profil->alamat;
+        $this->pin = '';
         $this->showForm = true;
     }
 
