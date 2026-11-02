@@ -105,14 +105,11 @@
 @else
     {{-- Portal Nasabah & Kolektor: Desain Sesuai Acuan Mockup --}}
     <x-layouts::auth.portal :title="'Login '.$labelPortal.' - Tabungan Digital'" :portal="$portal">
-        <div x-data="{
-                openBantuanModal: false,
-                ...loginFlow({
-                    oldHp: '{{ old('no_hp') }}',
-                    hasServerError: {{ $errors->any() ? 'true' : 'false' }},
-                    isLocked: {{ session('locked') ? 'true' : 'false' }}
-                })
-             }"
+        <div x-data="loginFlow({
+                oldHp: '{{ old('no_hp') }}',
+                hasServerError: {{ $errors->any() ? 'true' : 'false' }},
+                isLocked: {{ session('locked') ? 'true' : 'false' }}
+             })"
              x-cloak>
 
             <!-- Bar Atas: Switcher Portal & Tombol A+ -->
@@ -318,7 +315,7 @@
                     </div>
 
                     <!-- Indikator Dots & Keypad PIN -->
-                    <x-auth.pin-pad :portal="$portal" :locked="session('locked') ? true : false" />
+                    <x-ui.pin-pad :portal="$portal" :locked="session('locked') ? true : false" />
 
                     <!-- Tombol Masuk Primer (D40: hijau primary) -->
                     <button type="submit"
@@ -357,17 +354,21 @@
             <!-- Modal Dialog Bantuan / Lupa PIN / Baru Mendaftar -->
             <div x-show="openBantuanModal"
                  x-transition.opacity
-                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40"
+                 class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
                  style="display: none;">
-                <div @click.away="openBantuanModal = false"
-                     class="w-full max-w-sm rounded-2xl bg-surface border border-hairline p-6 shadow-2xl">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-bold text-ink">Butuh Bantuan Masuk?</h3>
-                        <button type="button" @click="openBantuanModal = false" class="text-mute hover:text-ink">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                {{-- Backdrop click area to dismiss --}}
+                <div class="fixed inset-0" @click="openBantuanModal = false" aria-hidden="true"></div>
+
+                <div @click.stop
+                     class="relative w-full max-w-sm rounded-[24px] border border-hairline bg-surface p-5 sm:p-6 shadow-md dark:bg-surface">
+                    <div class="flex items-center justify-between pb-3 border-b border-hairline/80">
+                        <h3 class="text-base font-semibold text-ink dark:text-zinc-100">Butuh Bantuan Masuk?</h3>
+                        <button type="button" @click="openBantuanModal = false" aria-label="Tutup"
+                                class="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-inset text-mute transition hover:bg-hairline hover:text-ink active:scale-95 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-400">
+                            <flux:icon.x-mark class="size-4" />
                         </button>
                     </div>
-                    <div class="space-y-3 text-xs sm:text-sm text-body">
+                    <div class="mt-4 space-y-3 text-xs sm:text-sm text-body dark:text-zinc-300">
                         @if ($portal === \App\Support\PortalLogin::KOLEKTOR)
                             <p>Akun kolektor didaftarkan oleh administrator sistem di kantor. Jika belum memiliki akun atau lupa PIN, hubungi bagian administrasi.</p>
                         @else
@@ -379,8 +380,8 @@
                     @if ($waLink)
                         <div class="mt-5">
                             <a href="{{ $waLink }}" target="_blank" rel="noopener noreferrer"
-                               class="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] font-semibold text-white transition hover:bg-[#20ba59]">
-                                <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
+                               class="flex h-11 min-h-[44px] w-full items-center justify-center gap-2 rounded-full bg-[#25D366] text-xs font-semibold text-white transition hover:bg-[#20ba59] shadow-xs active:scale-95">
+                                <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
                                     <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.174.086.275.072.376-.044.101-.116.433-.506.549-.68.116-.173.231-.145.39-.086s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824z" />
                                 </svg>
                                 <span>Hubungi WhatsApp Admin</span>
@@ -389,7 +390,7 @@
                     @endif
 
                     <button type="button" @click="openBantuanModal = false"
-                            class="mt-3 w-full py-2.5 rounded-xl text-xs font-semibold text-mute border border-hairline hover:bg-surface-inset transition">
+                            class="mt-3 flex h-10 w-full items-center justify-center rounded-full text-xs font-semibold text-mute transition hover:text-ink hover:bg-surface-inset active:scale-95 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800">
                         Tutup
                     </button>
                 </div>
@@ -400,6 +401,7 @@
         <script>
             function loginFlow(config) {
                 return {
+                    openBantuanModal: false,
                     step: config.hasServerError ? 2 : 1,
                     rawHp: '',
                     displayHp: '',

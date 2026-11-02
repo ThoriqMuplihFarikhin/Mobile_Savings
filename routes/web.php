@@ -26,10 +26,12 @@ use App\Http\Controllers\Kolektor\AbsenController;
 use App\Http\Controllers\Kolektor\DaftarNasabahController;
 use App\Http\Controllers\Kolektor\JadwalController;
 use App\Http\Controllers\Kolektor\NasabahBinaanController;
+use App\Http\Controllers\Kolektor\NotifikasiController as KolektorNotifikasiController;
 use App\Http\Controllers\Kolektor\PengaturanController as KolektorPengaturanController;
 use App\Http\Controllers\Kolektor\RiwayatAbsensiController;
 use App\Http\Controllers\Kolektor\SetoranController;
 use App\Http\Controllers\Kolektor\SetorKantorController;
+use App\Http\Controllers\Kolektor\TransaksiHariIniController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Nasabah\NotifikasiController;
 use App\Http\Controllers\Nasabah\PenarikanController;
@@ -122,6 +124,8 @@ Route::middleware(['auth', 'active', 'idle'])->group(function () {
     // Kolektor Routes
     Route::prefix('kolektor')->name('kolektor.')->middleware('role:kolektor')->group(function () {
         Route::get('/setoran', [SetoranController::class, 'index'])->name('setoran.index');
+        Route::get('/transaksi', [TransaksiHariIniController::class, 'index'])->name('transaksi.index');
+        Route::get('/notifikasi', [KolektorNotifikasiController::class, 'index'])->name('notifikasi.index');
         Route::get('/jadwal', [JadwalController::class, 'index'])->name('jadwal.index');
         Route::get('/nasabah', [NasabahBinaanController::class, 'index'])->name('nasabah.index');
         Route::get('/daftar-nasabah', [DaftarNasabahController::class, 'index'])->name('daftar-nasabah.index');
@@ -139,7 +143,6 @@ Route::middleware(['auth', 'active', 'idle'])->group(function () {
         Route::get('/penarikan', [PenarikanController::class, 'index'])->name('penarikan.index');
         Route::get('/riwayat', [RiwayatController::class, 'index'])->name('riwayat.index');
         Route::get('/riwayat-tabungan', [RiwayatController::class, 'riwayatTabungan'])->name('riwayat-tabungan.index');
-        Route::get('/riwayat-Tabungan', [RiwayatController::class, 'riwayatTabungan'])->name('riwayat-Tabungan.index');
         Route::get('/progres-paket', [RiwayatController::class, 'progresPaket'])->name('progres-paket.index');
         Route::get('/pilih-paket', [PilihPaketController::class, 'index'])->name('paket.pilih');
         Route::get('/komplain', [RiwayatController::class, 'komplain'])->name('komplain.index');
