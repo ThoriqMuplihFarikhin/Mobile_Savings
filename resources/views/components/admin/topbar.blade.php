@@ -18,6 +18,7 @@
         <livewire:admin.search wire:key="topbar-search" />
     </div>
 
+    <div class="flex items-center gap-2 md:gap-3 ml-auto">
         @php
             $totalAntreanTopbar = \App\Support\AntreanPersetujuan::total();
         @endphp
