@@ -57,7 +57,13 @@ class ApprovalPenarikan extends Component
             ->latest()
             ->paginate(10);
 
-        return view('livewire.admin.approval-penarikan', compact('penarikan'));
+        $ringkasanStatus = [
+            'pending' => TransaksiPenarikan::where('status', 'pending')->count(),
+            'approved' => TransaksiPenarikan::where('status', 'approved')->count(),
+            'selesai' => TransaksiPenarikan::where('status', 'selesai')->count(),
+        ];
+
+        return view('livewire.admin.approval-penarikan', compact('penarikan', 'ringkasanStatus'));
     }
 
     /**

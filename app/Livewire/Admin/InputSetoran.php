@@ -89,17 +89,34 @@ class InputSetoran extends Component
 
     public function loadProduk(): void
     {
-        /** @var array<int, array{id: int, nama: string, minimal_setor: int}> $daftar */
+        /** @var array<int, array{id: int, nama: string, minimal_setor: int, tipe: string, harga_per_hari: int}> $daftar */
         $daftar = [];
         foreach (ProdukTabungan::where('status', 'aktif')->get() as $produk) {
             $daftar[] = [
                 'id' => (int) $produk->id,
                 'nama' => (string) $produk->nama,
                 'minimal_setor' => (int) ($produk->minimal_setor ?? 0),
+                'tipe' => (string) $produk->tipe,
+                'harga_per_hari' => (int) ($produk->harga_per_hari ?? 0),
             ];
         }
 
         $this->produkList = $daftar;
+    }
+
+    public function getSelectedProdukProperty(): ?ProdukTabungan
+    {
+        return $this->produkId ? ProdukTabungan::find($this->produkId) : null;
+    }
+
+    public function setNominalAngka(int $angka): void
+    {
+        $this->nominal = (string) $angka;
+    }
+
+    public function tambahNominal(int $jumlah): void
+    {
+        $this->nominal = (string) (((int) $this->nominal) + $jumlah);
     }
 
     public function updatedSearchNasabah(): void

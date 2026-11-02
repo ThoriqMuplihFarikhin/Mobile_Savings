@@ -71,7 +71,13 @@ class TinjauanPenarikanOffline extends Component
 
         $kolektors = User::where('role', 'kolektor')->orderBy('name')->get(['id', 'name']);
 
-        return view('livewire.admin.tinjauan-penarikan-offline', compact('penarikans', 'kolektors'));
+        $hitungKpi = [
+            'belum' => TransaksiPenarikan::where('metode_verifikasi', 'tanpa_verifikasi_offline')->whereNull('hasil_tinjauan')->count(),
+            'sesuai' => TransaksiPenarikan::where('metode_verifikasi', 'tanpa_verifikasi_offline')->where('hasil_tinjauan', 'sesuai')->count(),
+            'bermasalah' => TransaksiPenarikan::where('metode_verifikasi', 'tanpa_verifikasi_offline')->where('hasil_tinjauan', 'bermasalah')->count(),
+        ];
+
+        return view('livewire.admin.tinjauan-penarikan-offline', compact('penarikans', 'kolektors', 'hitungKpi'));
     }
 
     public function pilihTinjauan(int $id): void

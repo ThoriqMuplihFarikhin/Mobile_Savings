@@ -51,7 +51,13 @@ class AntrianKomplain extends Component
             ->latest()
             ->paginate(10);
 
-        return view('livewire.admin.antrian-komplain', compact('komplains'));
+        $ringkasanStatus = [
+            'baru' => Komplain::where('status', 'baru')->count(),
+            'diproses' => Komplain::where('status', 'diproses')->count(),
+            'selesai' => Komplain::where('status', 'selesai')->count(),
+        ];
+
+        return view('livewire.admin.antrian-komplain', compact('komplains', 'ringkasanStatus'));
     }
 
     public function showDetail(int $id): void

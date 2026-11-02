@@ -137,11 +137,12 @@ class ManajemenProduk extends Component
         }
 
         $target = null;
+        $totalHari = null;
         if (is_numeric($this->harga_per_hari)
             && $this->periode_mulai
             && $this->periode_selesai) {
-            $hari = max(0, (int) Carbon::parse($this->periode_mulai)->diffInDays(Carbon::parse($this->periode_selesai)) + 1);
-            $target = round($hari * (float) $this->harga_per_hari, 2);
+            $totalHari = max(0, (int) Carbon::parse($this->periode_mulai)->diffInDays(Carbon::parse($this->periode_selesai)) + 1);
+            $target = round($totalHari * (float) $this->harga_per_hari, 2);
         }
 
         $total = round($total, 2);
@@ -149,6 +150,7 @@ class ManajemenProduk extends Component
         return [
             'totalHarga' => $total,
             'target' => $target,
+            'totalHari' => $totalHari,
             'selisih' => $target !== null ? round($target - $total, 2) : null,
             'melebihi' => $target !== null && $total > $target,
         ];

@@ -60,6 +60,8 @@ class ManajemenNasabah extends Component
 
     public string $modeFilter = '';
 
+    public string $statusFilter = '';
+
     public bool $tampilKonversiMode = false;
 
     public ?int $konversiProfilId = null;
@@ -83,6 +85,19 @@ class ManajemenNasabah extends Component
                     $sub->where('mode_akses', $this->modeFilter);
                 });
             })
+            ->when($this->statusFilter !== '', function ($query) {
+                if ($this->statusFilter === 'terkunci') {
+                    $query->whereHas('user', function ($sub) {
+                        $sub->where('status_akun', 'terkunci')
+                            ->orWhere(function ($q) {
+                                $q->whereNotNull('login_terkunci_hingga')
+                                    ->where('login_terkunci_hingga', '>', now());
+                            });
+                    });
+                } else {
+                    $query->where('status_pendaftaran', $this->statusFilter);
+                }
+            })
             ->latest()
             ->paginate(10);
 
@@ -90,6 +105,11 @@ class ManajemenNasabah extends Component
     }
 
     public function updatedModeFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
     {
         $this->resetPage();
     }
