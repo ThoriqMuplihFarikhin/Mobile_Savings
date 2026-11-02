@@ -56,8 +56,10 @@
                 <span></span>
             @endif
 
-            @if(isset($pagination))
+            @if(isset($pagination) && method_exists($pagination, 'hasPages') && $pagination->hasPages())
                 <div>{{ $pagination }}</div>
+            @else
+                <span>Halaman 1 dari 1</span>
             @endif
         </div>
     @endif

@@ -8,8 +8,11 @@
             <button
                 type="button"
                 wire:click="toggleForm"
-                class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] bg-primary px-4 text-xs font-semibold text-white transition hover:bg-primary-hover active:scale-95 cursor-pointer shadow-xs"
+                class="min-h-11 h-[38px] inline-flex items-center justify-center gap-1.5 rounded-[10px] bg-primary px-4 text-xs font-semibold text-white transition hover:bg-primary-hover active:scale-95 cursor-pointer shadow-xs"
             >
+                <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
                 Tambah Nasabah
             </button>
         </x-slot:actions>
@@ -179,6 +182,9 @@
                 <tr class="transition-colors hover:bg-surface-2 border-t border-hairline">
                     <td class="px-3.5 py-3">
                         <div class="text-sm font-medium text-ink">{{ $item->nama }}</div>
+                        @if($item->alamat)
+                            <span class="block text-xs text-mute truncate max-w-[220px]">{{ $item->alamat }}</span>
+                        @endif
                     </td>
                     <td class="px-3.5 py-3 text-xs text-body tabular-nums">
                         {{ $item->user?->no_hp ?? '-' }}
@@ -197,14 +203,14 @@
                     </td>
                     <td class="px-3.5 py-3 text-right">
                         <x-admin.row-actions>
-                            <a
-                                href="{{ route('admin.nasabah.detail', $item->user_id) }}"
-                                wire:click.prevent="bukaDetail({{ $item->id }})"
+                            <button
+                                type="button"
+                                wire:click="bukaDetail({{ $item->id }})"
                                 class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] border border-hairline bg-surface text-xs font-medium text-ink transition hover:bg-surface-2 cursor-pointer shadow-xs"
                                 title="Lihat Detail"
                             >
                                 Detail
-                            </a>
+                            </button>
                             <button
                                 type="button"
                                 wire:click="edit({{ $item->id }})"
@@ -319,59 +325,68 @@
                         <span class="text-mute truncate max-w-[180px]">{{ $item->alamat }}</span>
                     </div>
 
-                    <div class="pt-2 border-t border-hairline/60 flex flex-wrap items-center justify-end gap-1.5">
-                        <a
-                            href="{{ route('admin.nasabah.detail', $item->user_id) }}"
-                            wire:click.prevent="bukaDetail({{ $item->id }})"
-                            class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] border border-hairline bg-surface text-xs font-medium text-ink transition hover:bg-surface-2 cursor-pointer"
-                        >
-                            Detail
-                        </a>
-                        <button
-                            type="button"
-                            wire:click="edit({{ $item->id }})"
-                            class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] border border-hairline bg-surface text-xs font-medium text-ink transition hover:bg-surface-2"
-                        >
-                            Edit
-                        </button>
-                        <button
-                            type="button"
-                            wire:click="toggleStatus({{ $item->id }})"
-                            class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] border border-hairline bg-surface text-xs font-medium text-ink transition hover:bg-surface-2"
-                        >
-                            {{ $item->status_pendaftaran === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}
-                        </button>
-                        @if($item->status_pendaftaran === 'aktif' && ($item->user?->status_akun === 'terkunci' || ($item->user?->login_terkunci_hingga && $item->user->login_terkunci_hingga->isFuture())))
+                    <div class="pt-2 border-t border-hairline/60 flex items-center justify-end">
+                        <x-admin.row-actions>
                             <button
                                 type="button"
-                                wire:click="bukaKunci({{ $item->id }})"
-                                class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] bg-primary-soft text-on-primary-soft text-xs font-medium transition"
+                                wire:click="bukaDetail({{ $item->id }})"
+                                class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] border border-hairline bg-surface text-xs font-medium text-ink transition hover:bg-surface-2 cursor-pointer shadow-xs"
+                                title="Lihat Detail"
                             >
-                                Buka Kunci
+                                Detail
                             </button>
-                        @endif
-                        <button
-                            type="button"
-                            wire:click="confirmKonversi({{ $item->id }})"
-                            class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] border border-hairline bg-surface text-xs font-medium text-mute transition hover:bg-surface-2 hover:text-ink"
-                            title="Ubah Mode Akses"
-                        >
-                            Mode
-                        </button>
-                        <button
-                            type="button"
-                            wire:click="confirmResetPin({{ $item->user_id }})"
-                            class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] bg-warning-soft text-warning-deep text-xs font-medium transition"
-                        >
-                            Reset PIN
-                        </button>
-                        <button
-                            type="button"
-                            wire:click="confirmDelete({{ $item->id }})"
-                            class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] bg-danger-soft text-danger text-xs font-medium transition"
-                        >
-                            Hapus
-                        </button>
+                            <button
+                                type="button"
+                                wire:click="edit({{ $item->id }})"
+                                class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] border border-hairline bg-surface text-xs font-medium text-ink transition hover:bg-surface-2 cursor-pointer shadow-xs"
+                            >
+                                Edit
+                            </button>
+
+                            <x-slot:more>
+                                <button
+                                    type="button"
+                                    wire:click="toggleStatus({{ $item->id }})"
+                                    class="w-full text-left px-3 py-2 text-xs rounded-[8px] text-ink hover:bg-surface-2 transition cursor-pointer flex items-center justify-between"
+                                >
+                                    <span>{{ $item->status_pendaftaran === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}</span>
+                                </button>
+
+                                @if($item->status_pendaftaran === 'aktif' && ($item->user?->status_akun === 'terkunci' || ($item->user?->login_terkunci_hingga && $item->user->login_terkunci_hingga->isFuture())))
+                                    <button
+                                        type="button"
+                                        wire:click="bukaKunci({{ $item->id }})"
+                                        class="w-full text-left px-3 py-2 text-xs rounded-[8px] text-primary hover:bg-primary-soft transition cursor-pointer"
+                                    >
+                                        Buka Kunci Akun
+                                    </button>
+                                @endif
+
+                                <button
+                                    type="button"
+                                    wire:click="confirmKonversi({{ $item->id }})"
+                                    class="w-full text-left px-3 py-2 text-xs rounded-[8px] text-ink hover:bg-surface-2 transition cursor-pointer"
+                                >
+                                    Ubah Mode Akses
+                                </button>
+
+                                <button
+                                    type="button"
+                                    wire:click="confirmResetPin({{ $item->user_id }})"
+                                    class="w-full text-left px-3 py-2 text-xs rounded-[8px] text-warning-deep hover:bg-warning-soft transition cursor-pointer"
+                                >
+                                    Reset PIN
+                                </button>
+
+                                <button
+                                    type="button"
+                                    wire:click="confirmDelete({{ $item->id }})"
+                                    class="w-full text-left px-3 py-2 text-xs rounded-[8px] text-danger hover:bg-danger-soft transition cursor-pointer"
+                                >
+                                    Hapus
+                                </button>
+                            </x-slot:more>
+                        </x-admin.row-actions>
                     </div>
                 </div>
             @empty
