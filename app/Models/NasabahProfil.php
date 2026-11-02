@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class NasabahProfil extends Model
 {
@@ -58,5 +59,13 @@ class NasabahProfil extends Model
     public function diverifikasiOleh(): BelongsTo
     {
         return $this->belongsTo(User::class, 'diverifikasi_oleh');
+    }
+
+    /**
+     * @return HasOne<KolektorNasabah, $this>
+     */
+    public function penugasanKolektor(): HasOne
+    {
+        return $this->hasOne(KolektorNasabah::class, 'nasabah_id', 'user_id')->where('status', 'aktif');
     }
 }

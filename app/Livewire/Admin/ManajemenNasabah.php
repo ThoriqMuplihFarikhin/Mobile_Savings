@@ -73,7 +73,7 @@ class ManajemenNasabah extends Component
 
     public function render(): View
     {
-        $nasabah = NasabahProfil::with(['user', 'didaftarkanOleh'])
+        $nasabah = NasabahProfil::with(['user', 'didaftarkanOleh', 'penugasanKolektor.kolektor'])
             ->where(function ($query) {
                 $query->where('nama', 'like', "%{$this->search}%")
                     ->orWhereHas('user', function ($sub) {

@@ -3,17 +3,13 @@
     <x-admin.page-header
         title="Manajemen Nasabah"
         subtitle="Kelola data nasabah tabungan digital."
-        breadcrumb="Nasabah"
     >
         <x-slot:actions>
             <button
                 type="button"
                 wire:click="toggleForm"
-                class="min-h-11 h-[38px] inline-flex items-center gap-2 rounded-[10px] bg-accent px-4 text-xs font-semibold text-accent-foreground transition hover:opacity-90 cursor-pointer shadow-xs"
+                class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] bg-primary px-4 text-xs font-semibold text-white transition hover:bg-primary-hover active:scale-95 cursor-pointer shadow-xs"
             >
-                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
                 Tambah Nasabah
             </button>
         </x-slot:actions>
@@ -110,7 +106,7 @@
     @endif
 
     {{-- Kartu Tabel Utama --}}
-    <x-admin.table :pagination="$nasabah->links()">
+    <x-admin.table :count="$nasabah->count()" :total="$nasabah->total()" :pagination="$nasabah->links()">
         {{-- Toolbar Filter & Pencarian --}}
         <x-slot:toolbar>
             <x-admin.toolbar>
@@ -161,30 +157,58 @@
         <x-slot:head>
             <th class="px-3.5 py-2.5 font-medium text-xs uppercase tracking-[0.04em] text-mute">Nama</th>
             <th class="px-3.5 py-2.5 font-medium text-xs uppercase tracking-[0.04em] text-mute">No. HP</th>
-            <th class="px-3.5 py-2.5 font-medium text-xs uppercase tracking-[0.04em] text-mute">Alamat</th>
+            <th class="px-3.5 py-2.5 font-medium text-xs uppercase tracking-[0.04em] text-mute">Mode</th>
             <th class="px-3.5 py-2.5 font-medium text-xs uppercase tracking-[0.04em] text-mute">Status</th>
+            <th class="px-3.5 py-2.5 font-medium text-xs uppercase tracking-[0.04em] text-mute">Kolektor</th>
             <th class="px-3.5 py-2.5 font-medium text-xs uppercase tracking-[0.04em] text-mute text-right">Aksi</th>
         </x-slot:head>
 
         {{-- Body Tabel Desktop --}}
         <x-slot:body>
             @forelse($nasabah as $item)
+                @php
+                    $isOffline = $item->user?->isOffline() || $item->user?->mode_akses === 'offline';
+                    $isLocked = $item->user?->isLocked() || ($item->user?->login_terkunci_hingga && $item->user->login_terkunci_hingga->isFuture());
+
+                    if ($isLocked) {
+                        $statusKey = 'terkunci';
+                        $statusDomain = 'akun';
+                        $statusTeks = 'Terkunci';
+                    } elseif ($item->status_pendaftaran === 'pending_verifikasi') {
+                        $statusKey = 'pending_verifikasi';
+                        $statusDomain = 'pendaftaran';
+                        $statusTeks = 'Pending';
+                    } elseif ($item->status_pendaftaran === 'ditolak') {
+                        $statusKey = 'ditolak';
+                        $statusDomain = 'pendaftaran';
+                        $statusTeks = 'Ditolak';
+                    } else {
+                        $statusKey = 'aktif';
+                        $statusDomain = 'pendaftaran';
+                        $statusTeks = 'Aktif';
+                    }
+
+                    $namaKolektor = $item->penugasanKolektor?->kolektor?->name
+                        ?? ($item->didaftarkanOleh?->isKolektor() ? $item->didaftarkanOleh->name : '-');
+                @endphp
                 <tr class="transition-colors hover:bg-surface-2 border-t border-hairline">
                     <td class="px-3.5 py-3">
                         <div class="text-sm font-medium text-ink">{{ $item->nama }}</div>
-                        <div class="text-xs text-mute">oleh {{ $item->didaftarkan_oleh->name ?? '-' }}</div>
                     </td>
                     <td class="px-3.5 py-3 text-xs text-body tabular-nums">
-                        {{ $item->user->no_hp ?? '— (offline)' }}
-                    </td>
-                    <td class="max-w-[200px] truncate px-3.5 py-3 text-xs text-body">
-                        {{ $item->alamat }}
+                        {{ $item->user?->no_hp ?? '-' }}
                     </td>
                     <td class="px-3.5 py-3">
-                        <x-admin.status-chip domain="pendaftaran" :status="$item->status_pendaftaran" />
-                        @if($item->user?->isOffline())
-                            <x-admin.status-chip domain="mode_akses" status="offline" teks="Mode Offline" class="ml-1" />
+                        <x-admin.status-chip domain="mode_akses" :status="$isOffline ? 'offline' : 'digital'" :teks="$isOffline ? 'Offline' : 'Digital'" />
+                        @if($isOffline)
+                            <span class="sr-only">Mode Offline</span>
                         @endif
+                    </td>
+                    <td class="px-3.5 py-3">
+                        <x-admin.status-chip :domain="$statusDomain" :status="$statusKey" :teks="$statusTeks" />
+                    </td>
+                    <td class="px-3.5 py-3 text-xs text-body">
+                        {{ $namaKolektor }}
                     </td>
                     <td class="px-3.5 py-3 text-right">
                         <x-admin.row-actions>
@@ -212,7 +236,7 @@
                                     <span>{{ $item->status_pendaftaran === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}</span>
                                 </button>
 
-                                @if($item->status_pendaftaran === 'aktif' && ($item->user->status_akun === 'terkunci' || ($item->user->login_terkunci_hingga && $item->user->login_terkunci_hingga->isFuture())))
+                                @if($item->status_pendaftaran === 'aktif' && ($item->user?->status_akun === 'terkunci' || ($item->user?->login_terkunci_hingga && $item->user->login_terkunci_hingga->isFuture())))
                                     <button
                                         type="button"
                                         wire:click="bukaKunci({{ $item->id }})"
@@ -251,7 +275,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" class="p-0">
+                    <td colspan="6" class="p-0">
                         <x-admin.empty-state
                             title="Tidak ada data nasabah."
                             description="Belum ada data nasabah yang sesuai dengan filter atau kata kunci pencarian Anda."
@@ -264,29 +288,49 @@
         {{-- Kartu Mobile (< md) Sesuai Kontrak Tes ManajemenTabelKeKartuP74cTest --}}
         <x-slot:cards>
             @forelse($nasabah as $item)
+                @php
+                    $isOffline = $item->user?->isOffline() || $item->user?->mode_akses === 'offline';
+                    $isLocked = $item->user?->isLocked() || ($item->user?->login_terkunci_hingga && $item->user->login_terkunci_hingga->isFuture());
+
+                    if ($isLocked) {
+                        $statusKey = 'terkunci';
+                        $statusDomain = 'akun';
+                        $statusTeks = 'Terkunci';
+                    } elseif ($item->status_pendaftaran === 'pending_verifikasi') {
+                        $statusKey = 'pending_verifikasi';
+                        $statusDomain = 'pendaftaran';
+                        $statusTeks = 'Pending';
+                    } elseif ($item->status_pendaftaran === 'ditolak') {
+                        $statusKey = 'ditolak';
+                        $statusDomain = 'pendaftaran';
+                        $statusTeks = 'Ditolak';
+                    } else {
+                        $statusKey = 'aktif';
+                        $statusDomain = 'pendaftaran';
+                        $statusTeks = 'Aktif';
+                    }
+
+                    $namaKolektor = $item->penugasanKolektor?->kolektor?->name
+                        ?? ($item->didaftarkanOleh?->isKolektor() ? $item->didaftarkanOleh->name : '-');
+                @endphp
                 <div class="p-3.5 space-y-2">
                     <div class="flex items-center justify-between gap-3">
                         <div class="min-w-0">
                             <p class="text-sm font-medium text-ink">{{ $item->nama }}</p>
-                            <p class="text-xs text-mute">oleh {{ $item->didaftarkan_oleh->name ?? '-' }}</p>
+                            <p class="text-xs text-mute">{{ $item->user?->no_hp ?? '-' }}</p>
                         </div>
-                        <div class="flex items-center gap-1 shrink-0">
-                            <x-admin.status-chip domain="pendaftaran" :status="$item->status_pendaftaran" />
-                            @if($item->user?->isOffline())
-                                <x-admin.status-chip domain="mode_akses" status="offline" teks="Mode Offline" />
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <x-admin.status-chip domain="mode_akses" :status="$isOffline ? 'offline' : 'digital'" :teks="$isOffline ? 'Offline' : 'Digital'" />
+                            @if($isOffline)
+                                <span class="sr-only">Mode Offline</span>
                             @endif
+                            <x-admin.status-chip :domain="$statusDomain" :status="$statusKey" :teks="$statusTeks" />
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                            <span class="block text-mute">No. HP</span>
-                            <span class="font-medium text-body tabular-nums">{{ $item->user->no_hp ?? '— (offline)' }}</span>
-                        </div>
-                        <div>
-                            <span class="block text-mute">Alamat</span>
-                            <span class="font-medium text-body truncate block">{{ $item->alamat }}</span>
-                        </div>
+                    <div class="flex items-center justify-between gap-2 text-xs">
+                        <span class="text-mute">Kolektor: <strong class="text-ink font-medium">{{ $namaKolektor }}</strong></span>
+                        <span class="text-mute truncate max-w-[180px]">{{ $item->alamat }}</span>
                     </div>
 
                     <div class="pt-2 border-t border-hairline/60 flex flex-wrap items-center justify-end gap-1.5">
@@ -310,7 +354,7 @@
                         >
                             {{ $item->status_pendaftaran === 'aktif' ? 'Nonaktifkan' : 'Aktifkan' }}
                         </button>
-                        @if($item->status_pendaftaran === 'aktif' && ($item->user->status_akun === 'terkunci' || ($item->user->login_terkunci_hingga && $item->user->login_terkunci_hingga->isFuture())))
+                        @if($item->status_pendaftaran === 'aktif' && ($item->user?->status_akun === 'terkunci' || ($item->user?->login_terkunci_hingga && $item->user->login_terkunci_hingga->isFuture())))
                             <button
                                 type="button"
                                 wire:click="bukaKunci({{ $item->id }})"
