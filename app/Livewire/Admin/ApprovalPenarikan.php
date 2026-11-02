@@ -43,11 +43,41 @@ class ApprovalPenarikan extends Component
 
     public ?int $selesaiId = null;
 
+    public bool $showDetail = false;
+
+    public ?int $detailId = null;
+
+    public ?TransaksiPenarikan $detailPenarikan = null;
+
     public function toggleSelesai(int $id): void
     {
         $this->selesaiId = $id;
         $this->alasan = '';
         $this->showSelesai = true;
+    }
+
+    public function bukaDetail(int $id): void
+    {
+        $this->detailId = $id;
+        $this->detailPenarikan = TransaksiPenarikan::with([
+            'nasabah.nasabahProfil',
+            'produk',
+            'disetujuiOleh',
+            'disetujuiOleh2',
+            'diverifikasiOleh',
+            'ditinjauOleh',
+            'dibayarOleh',
+            'dibatalkanOleh',
+        ])->find($id);
+
+        $this->showDetail = true;
+    }
+
+    public function tutupDetail(): void
+    {
+        $this->showDetail = false;
+        $this->detailId = null;
+        $this->detailPenarikan = null;
     }
 
     public function render(): View

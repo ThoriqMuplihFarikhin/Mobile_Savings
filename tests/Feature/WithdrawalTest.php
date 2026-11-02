@@ -450,3 +450,51 @@ it('prevents double withdrawal when two requests race on limited saldo', functio
         ->count();
     expect($pendingCount)->toBe(1);
 });
+
+it('dapat membuka dan menutup drawer detail penarikan pada ApprovalPenarikan', function () {
+    $nasabah = User::factory()->nasabah()->create();
+    $admin = User::factory()->admin()->create();
+
+    NasabahProfil::create([
+        'user_id' => $nasabah->id,
+        'nama' => 'Nasabah Detail Test',
+        'alamat' => 'Jl. Merdeka No. 45',
+        'jenis_kelamin' => 'perempuan',
+        'didaftarkan_oleh' => $admin->id,
+        'status_pendaftaran' => 'aktif',
+    ]);
+
+    $produk = ProdukTabungan::create([
+        'nama' => 'Tabungan Detail',
+        'tipe' => 'bebas',
+        'persen_komisi' => 5,
+        'minimal_setor' => 10000,
+        'status' => 'aktif',
+    ]);
+
+    $penarikan = TransaksiPenarikan::create([
+        'nasabah_id' => $nasabah->id,
+        'produk_id' => $produk->id,
+        'nominal_diminta' => 50000,
+        'persen_komisi_terpakai' => 5,
+        'nominal_komisi' => 2500,
+        'nominal_diterima' => 47500,
+        'jalur_pengajuan' => 'online',
+        'lokasi_pengambilan' => 'kantor',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($admin);
+
+    Livewire::test(ApprovalPenarikan::class)
+        ->assertSee('Detail')
+        ->call('bukaDetail', $penarikan->id)
+        ->assertSet('showDetail', true)
+        ->assertSet('detailId', $penarikan->id)
+        ->assertSee('Detail Penarikan')
+        ->assertSee($nasabah->name)
+        ->assertSee('Rp 47.500')
+        ->call('tutupDetail')
+        ->assertSet('showDetail', false)
+        ->assertSet('detailId', null);
+});
