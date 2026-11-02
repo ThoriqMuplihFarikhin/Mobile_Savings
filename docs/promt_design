@@ -1,0 +1,100 @@
+# Perintah untuk agent: samakan tampilan portal nasabah dengan portal kolektor
+
+Salin semua isi di bawah garis ini ke agent. Sebelumnya taruh empat berkas ini di `docs/design/` pada project:
+- `nasabah-sesuai-kode.html`: prototipe nasabah (acuan tata letak utama).
+- `kolektor-sesuai-kode.html`: prototipe kolektor yang sudah disesuaikan dengan fitur di kode.
+- `Portal__Kolektor__Prototipe.html`: prototipe kolektor lama. **Hanya acuan pola tampilan** (jangan ambil fiturnya).
+- `tabungan-digital-lengkap.html`: gabungan semuanya (beranda publik, masuk, nasabah, kolektor, halaman sistem).
+
+---
+
+## Peran dan tujuan
+
+Kamu engineer Laravel senior yang rapi. Portal kolektor sudah dirombak (Fase 0 sampai U6.2 di `docs/plan-log.md`). Tugasmu sekarang: **portal nasabah dibuat konsisten dengan portal kolektor**, memakai prototipe di atas sebagai acuan tata letak. Ini perubahan **tampilan saja**.
+
+**Jangkar konsistensi** adalah kode kolektor yang sudah ada di project (`resources/views/dashboard.blade.php` bagian `KOLEKTOR DASHBOARD`, `resources/views/livewire/kolektor/*`, `layouts/mobile.blade.php`). Prototipe menunjukkan arah tata letak; **kode dan `DESIGN.md` menang bila bertentangan**, dan setiap penyimpangan dicatat.
+
+## LANGKAH PERTAMA (wajib, sebelum menulis kode)
+
+1. `git status` saat ini menunjukkan sekitar **38 berkas berubah yang belum di-commit**, dan **`CLAUDE.md` tidak ada** di working tree. Jangan menjalankan `git checkout`, `git restore`, `git clean`, atau menghapus apa pun.
+2. Buat `docs/ui-working-tree-audit-2.md`: tiap berkas yang berubah, bagian redesain atau bukan, dan risikonya. Perubahan di luar tampilan (logika uang, otorisasi, rute, migrasi, admin) **jangan di-commit bersama tugas ini dan jangan diperbaiki**; laporkan.
+3. Cek `git show HEAD:CLAUDE.md` dan baca `CLAUDE.md`, `AGENTS.md`, `DESIGN.md`, serta `docs/plan-log.md` (terutama catatan "Pemulihan fatal find-and-replace" pada U6.1: nama tabel `produk_tabungan`, enum `mode_akses`, DB tes `tabungan_digital_test`).
+4. Jalankan seluruh tes (`php artisan test --compact`) dan catat jumlahnya sebagai baseline tugas ini.
+
+## Aturan keras
+
+- **Dilarang find-and-replace massal** di seluruh repositori. Ubah berkas satu per satu, baca dulu, edit seperlunya. (Kesalahan ini pernah merusak nama tabel dan enum.)
+- Dilarang mengubah migrasi, model, kebijakan, middleware, rute, `FortifyServiceProvider`, aksi uang/PIN, dan admin. Tidak menambah dependency, rute, tabel, atau query baru untuk menyajikan data. Bila sebuah elemen prototipe butuh data yang belum ada di controller/komponen: **sembunyikan elemennya**, tulis `[BUTUH KEPUTUSAN]` di plan-log, lanjut.
+- Pertahankan semua atribut `data-test`, nama properti/method Livewire (`wire:model`, `wire:click`), dan teks yang dipakai tes. Sebelum mengubah sebuah view, `grep` tes yang menyentuhnya.
+- Ikuti `DESIGN.md`: tanpa gradien, tanpa font mono, tombol pil hijau, warna kategori hanya di ubin/ikon (bukan teks), uang lewat `x-ui.rupiah`, status lewat `x-ui.status-chip`, target sentuh ≥ 44px, tombol nonaktif wajib menampilkan alasan.
+- Pakai komponen yang sudah ada di `resources/views/components/ui/`: `hero-card`, `kartu-saldo-hero`, `ubin-aksi`, `tile`, `progress-ring`, `stepper`, `stepper-langkah`, `status-chip`, `pin-pad`, `pin-dots`, `layar-sukses`, `baris-riwayat`, `rupiah`, `tanggal`, `ilustrasi`. Tambah komponen baru hanya jika benar-benar tidak ada padanannya.
+- Satu tugas satu commit (`feat(U7.n): ...`), satu baris di `docs/plan-log.md` per tugas (nomor `D` berikutnya setelah yang terakhir). Setelah tiap tugas: `vendor/bin/pint --dirty`, seluruh tes, PHPStan pada berkas yang disentuh, `npm run build`.
+- Mode gelap, teks besar (A+), dan `prefers-reduced-motion` tidak boleh rusak.
+
+## U7.0 Peta konsistensi (tanpa mengubah kode produksi)
+
+Buat `docs/ui-konsistensi-nasabah-kolektor.md`: tabel pola pada kode kolektor (header dashboard, hero kas, kartu metrik, grid menu, daftar kartu, judul halaman tab, bilah judul halaman dalam, kartu peringatan, daftar baris dengan ikon, modal/lembar, layar sukses, empty state, toggle pengaturan) dan padanannya di halaman nasabah yang ada sekarang, lengkap dengan "sudah sama / perlu disamakan / beda sengaja".
+
+## Tugas
+
+### U7.1 Dashboard nasabah (`dashboard.blade.php`, cabang `@else` nasabah)
+Tata letak mengikuti prototipe `nasabah-sesuai-kode.html` (beranda) dan **struktur dashboard kolektor di kode**:
+1. Header: avatar/foto, sapaan waktu, "Halo, {nama depan}", lonceng notifikasi (penanda belum dibaca) dan tombol A+ bila kolektor memilikinya.
+2. Kartu saldo utama: tetap `x-ui.kartu-saldo-hero` (fitur Intip dipertahankan), chip saldo per produk, catatan "Setoran hari ini sudah tercatat. Terima kasih!", **cincin progres paket aktif** dengan sisa target dan status pencairan (`statusPencairan`), dan tombol "Ajukan penarikan" (`nasabah.penarikan.index`). Bila saldo tidak ada, tombol nonaktif dengan alasan.
+3. Menu: grid ubin 8 item memakai `x-ui.ubin-aksi` seperti "Menu Utama" kolektor: Tarik, Riwayat, Paket, Bantuan (komplain), Saldo, Ikuti Paket, Penarikan (riwayat penarikan), Notifikasi. Setiap item hanya dipasang bila rutenya ada (`nasabah.*`).
+4. Kartu berurutan: pengajuan penarikan berjalan (bila ada), paket siap diambil (bila ada kepesertaan boleh cair tanpa metode), "Kolektor saya", streak "Setoran minggu ini", grafik "Setoran 7 hari terakhir", ajakan gabung paket (yang sudah ada), "Aktivitas terakhir".
+5. Data: **gunakan hanya data yang sudah dimuat controller/komponen**. "Kolektor saya" memakai sumber data yang sama dengan `Nasabah\Pengaturan` (nama dan nomor kolektor); jadwal kunjungan berikutnya hanya ditampilkan jika sudah bisa diambil tanpa query baru. Grafik 7 hari memakai data yang sama dengan `RiwayatTabungan`; bila tidak tersedia di dashboard tanpa query baru, sembunyikan kartunya dan catat.
+Tes yang harus tetap hijau: `DashboardTest`, `GayaUiDashboardMobileTest`, `DashboardCountdownPaketTest`, `DashboardProdukTerhapusTest`, `TrenSetoranDashboardTest`, `UiProgressRingTest`, `GayaUiLayarNasabahTest`.
+
+### U7.2 Tab Paket (`livewire/nasabah/progres-paket`) dan Ikuti paket (`pilih-paket`)
+- Progres paket sebagai **halaman tab**: judul besar dengan tombol aksi "+ Ikuti" di kanan (seperti "Nasabah binaan" + "+ Daftar" di kolektor), bukan bilah judul halaman dalam.
+- Kartu per kepesertaan: cincin, "Terkumpul ... dari target ...", chip status, "Tahapan Paket:" memakai `x-ui.stepper`, "Anda terikat komitmen paket ini.", isi paket, bonus uang tunai, pilihan metode pengambilan (opsi kartu pilih), catatan admin.
+- Ikuti paket: kartu detail dengan baris label/nilai (Target akhir terkumpul, Bonus Uang Tunai Diterima, Periode, Tanggal cair, Aturan tunggakan, Batas pendaftaran, Isi paket); lembar "Komitmen ikut paket" dengan centang persetujuan dan PIN 6 digit (pakai `x-ui.pin-pad` dan `x-ui.pin-dots` bila komponen itu sudah dipakai di tempat lain, tanpa mengubah `wire:model="setuju"` dan `wire:model="pin"`).
+Tes: `PilihPaketTest`, `PaketKomitmenSkemaTest`, `ProgresBarangD15Test`, `UiProgressRingTest`.
+
+### U7.3 Penarikan (`ajukan-penarikan`, `pengajuan-aktif`, `riwayat-penarikan`)
+- Ajukan penarikan: saldo tersedia, produk, nominal besar dengan nominal cepat dan "Tarik semua saldo", kartu "Rincian transaksi" (estimasi pencairan, nominal ditarik, biaya admin, total diterima), pilihan lokasi pengambilan, tombol "Lanjut konfirmasi" dengan alasan nonaktif, lembar "Konfirmasi penarikan" dengan PIN, lalu layar sukses `x-ui.layar-sukses` ("Pengajuan terkirim").
+- Pengajuan aktif dan riwayat penarikan: kartu per pengajuan dengan `status-chip` sesuai tabel pemetaan `DESIGN.md`, ringkasan "Selesai ditarik" dan "Sedang diajukan", pembatalan dengan alasan opsional.
+- **Biaya admin dan estimasi pencairan harus berasal dari kode yang sudah ada.** Angka Rp 2.500 di prototipe hanya contoh.
+Tes: `AturanPenarikanTest`, `KonfirmasiPinPenarikanTest`, `GateTunggakanPenarikanTest`, `BatalkanPenarikanD18Test`, `PenarikanBatalKedaluwarsaTest`, `PersetujuanGandaPenarikanTest`, `PesanGalatProdukPenarikanTest`.
+
+### U7.4 Riwayat tabungan (`riwayat-tabungan`) dan Saldo (`saldo`)
+- Riwayat: halaman tab; kartu "Total terkumpul" dengan grafik 7 hari (grafik yang sudah ada, deskripsi aksesibel tetap), filter produk sebagai chip, filter tanggal (Bulan ini, Bulan lalu, Reset, Dari/Sampai), daftar `x-ui.baris-riwayat` dengan "Lihat struk", empty state yang sudah ada.
+- Saldo: total saldo, "Rincian tabungan" per produk dengan "Tersedia untuk ditarik", empty state.
+Tes: `GayaUiSaldoMobileTest`, `TrenSetoranDashboardTest`, `GayaUiLayarNasabahTest`.
+
+### U7.5 Notifikasi, Komplain, Pengaturan
+- Notifikasi: "Tandai semua dibaca", penanda belum dibaca, empty state.
+- Komplain: kartu "Butuh bantuan cepat?" (Chat WA), tombol "Buat tiket" membuka form (kategori, transaksi terkait, deskripsi), daftar tiket dengan status dan tanggapan admin.
+- Pengaturan: kartu profil (hero), kartu "Petugas Kolektor Anda" dengan tombol Chat, grup menu berlabel (Akun & Keamanan, Preferensi & Tampilan, Bantuan & Sesi) dengan baris ikon + judul + deskripsi + toggle, **sama persis polanya dengan `kolektor/pengaturan`**. Teks `Tabungan Digital · versi alpha` dipertahankan.
+Tes: `GayaUiEditProfilTest`, `ComplaintTest`, tes notifikasi yang ada, `NasabahOfflineAkunTest`.
+
+### U7.6 Bottom nav dan pola lintas peran
+- `layouts/mobile.blade.php`: nasabah tetap 4 item (Beranda, Riwayat, Paket, Profil). **Jangan menambah tombol Absen atau item lain**; samakan hanya gaya item aktif, label, dan ukuran dengan nav kolektor.
+- Samakan lintas peran: bilah judul halaman dalam (tombol kembali + judul), judul halaman tab, kartu peringatan amber, empty state (ilustrasi + judul + teks), lembar/modal, layar sukses, tombol nonaktif dengan alasan, toast.
+Tes: `BottomNavMobileTest`, `PembedaVisualPortalD19Test`.
+
+### U7.7 Selisih kolektor terhadap `kolektor-sesuai-kode.html`
+Bandingkan portal kolektor di kode dengan prototipe kolektor. **Laporkan selisih** dalam tabel (fitur ada di kode tapi belum tampil, tampilan beda, teks beda). Perbaiki hanya yang murni tampilan dan aman; sisanya `[BUTUH KEPUTUSAN]`. Jangan menyentuh logika kas, PIN, rekonsiliasi, dan idempotensi setoran.
+Tes: `GayaUiLayarKolektorTest`, `DashboardKolektorTest`, `KasKolektorTest`, `HandoverKolektorTest`.
+
+### U7.8 QA akhir
+- Seluruh tes hijau, `pint --test`, PHPStan tidak menambah error, `npm run build` bersih, anggaran aset tidak melonjak (catat ukuran `app.css` dan `app.js` sebelum dan sesudah).
+- Uji manual 360, 390, 768 px, mode gelap, A+, dan reduced motion pada: beranda, paket, ikuti paket, tarik (sampai sukses), pengajuan aktif, riwayat tabungan, riwayat penarikan, saldo, notifikasi, komplain, pengaturan. Bila tidak ada peramban, katakan terus terang dan tulis tes struktur sebagai gantinya.
+
+## Verifikasi data (jangan ditiru buta dari prototipe)
+
+1. Biaya admin, estimasi pencairan, dan syarat saldo minimal penarikan: dari aturan di kode.
+2. Teks komitmen paket: dari `komitmen_teks` produk, bukan teks contoh.
+3. Jumlah percobaan PIN dan pesan kunci: dari kode yang ada.
+4. "Kolektor saya" dan jadwal kunjungan: hanya yang sudah tersedia di data nasabah.
+5. Streak, grafik 7 hari, dan chip per produk: dari data yang sudah dimuat controller.
+6. Nama paket, nominal, dan tanggal di prototipe seluruhnya contoh.
+
+## Larangan
+
+Tidak mengubah logika bisnis, rute, migrasi, atau admin. Tidak menambah fitur yang tidak ada di kode. Tidak menghapus atau melemahkan tes. Tidak find-and-replace massal. Tidak menyentuh berkas di luar daftar tugas tanpa mencatat alasannya.
+
+## Laporan akhir
+
+(1) Hasil audit working tree dan tindak lanjutnya, (2) berkas dibuat/diubah per tugas, (3) tabel selisih kolektor (U7.7), (4) penyimpangan dari prototipe beserta alasan, (5) elemen yang disembunyikan karena data tidak ada (`[BUTUH KEPUTUSAN]`), (6) hasil tes, pint, PHPStan, build, ukuran aset, (7) langkah uji manual.
