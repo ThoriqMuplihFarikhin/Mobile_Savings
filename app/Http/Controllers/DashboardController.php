@@ -34,6 +34,10 @@ class DashboardController extends Controller
     private function adminDashboard(User $user): View
     {
         $totalNasabah = DB::table('users')->where('role', 'nasabah')->count();
+        $nasabahMingguIni = DB::table('users')
+            ->where('role', 'nasabah')
+            ->where('created_at', '>=', Carbon::now()->startOfWeek())
+            ->count();
         $nasabahOffline = DB::table('users')->where('role', 'nasabah')->where('mode_akses', 'offline')->count();
         $totalKolektor = DB::table('users')->where('role', 'kolektor')->count();
         $totalSaldo = DB::table('saldo_produk')->sum('saldo');
@@ -41,6 +45,10 @@ class DashboardController extends Controller
             ->where('tanggal_transaksi', today())
             ->whereIn('status', ['tercatat', 'dikoreksi'])
             ->sum('nominal');
+        $transaksiHariIniCount = DB::table('transaksi_setoran')
+            ->where('tanggal_transaksi', today())
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
+            ->count();
 
         $totalKomisi = DB::table('transaksi_penarikan')
             ->whereIn('status', ['approved', 'selesai'])
@@ -89,10 +97,12 @@ class DashboardController extends Controller
         return view('dashboard', compact(
             'user',
             'totalNasabah',
+            'nasabahMingguIni',
             'nasabahOffline',
             'totalKolektor',
             'totalSaldo',
             'setoranHariIni',
+            'transaksiHariIniCount',
             'totalKomisi',
             'perluReview',
             'totalKasKolektor',
