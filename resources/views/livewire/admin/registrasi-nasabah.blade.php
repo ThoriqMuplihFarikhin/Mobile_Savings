@@ -67,11 +67,13 @@
 
                     {{-- Tanggal Lahir --}}
                     <div>
-                        <label class="mb-1.5 block text-xs font-medium text-ink">Tanggal Lahir</label>
-                        <x-ui.tanggal
+                        <label for="tanggalLahir" class="mb-1.5 block text-xs font-medium text-ink">Tanggal Lahir</label>
+                        <input
+                            type="date"
+                            id="tanggalLahir"
                             wire:model="tanggalLahir"
-                            :max="now()->toDateString()"
-                            class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink placeholder-mute focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent"
+                            max="{{ now()->toDateString() }}"
+                            class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface px-3 text-sm text-ink focus:border-ink focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
                         />
                         @error('tanggalLahir') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
