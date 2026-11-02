@@ -4,7 +4,7 @@
 @endphp
 
 <nav data-test="bottom-nav" aria-label="Navigasi utama"
-     class="border-t border-hairline bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-1px_3px_rgba(20,83,45,0.04)] dark:border-hairline/60 dark:bg-surface-dark">
+     class="border-t border-hairline bg-surface pb-[env(safe-area-inset-bottom)] shadow-xs">
     <div class="flex h-16 items-stretch">
         @foreach($items as $item)
             @if(!empty($isKolektor) && $isKolektor && $loop->index == 2)
@@ -12,7 +12,7 @@
                 <a wire:key="nav-absen" href="{{ route('kolektor.absen.index') }}" wire:navigate
                    data-test="tombol-absen"
                    class="flex w-20 shrink-0 -mt-4 flex-col items-center gap-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                    <span class="flex size-14 items-center justify-center rounded-full bg-primary text-on-primary transition active:scale-95 shadow-[0_2px_4px_rgba(20,83,45,0.12)]">
+                    <span class="flex size-14 items-center justify-center rounded-full bg-primary text-on-primary transition active:scale-95 shadow-xs">
                         @if($sudahAbsen)
                             {!! $ikonCentang !!}
                         @else
@@ -25,7 +25,7 @@
                             </svg>
                         @endif
                     </span>
-                    <span class="text-xs font-medium whitespace-nowrap text-ink dark:text-zinc-200">{{ $sudahAbsen ? 'Sudah absen' : 'Absen' }}</span>
+                    <span class="text-xs font-medium whitespace-nowrap text-ink">{{ $sudahAbsen ? 'Sudah absen' : 'Absen' }}</span>
                 </a>
             @endif
 
@@ -33,7 +33,7 @@
                 $isActive = request()->routeIs($item['active']);
             @endphp
             <a wire:key="nav-item-{{ $loop->index }}" href="{{ $item['url'] }}" wire:navigate
-               class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 px-1 text-xs transition-colors duration-150 {{ $isActive ? 'font-medium text-primary' : 'font-normal text-mute hover:text-ink dark:text-zinc-400 dark:hover:text-zinc-200' }}"
+               class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 px-1 text-xs transition-colors duration-150 {{ $isActive ? 'font-medium text-primary' : 'font-normal text-mute hover:text-ink' }}"
                @if($isActive) aria-current="page" @endif>
                 <span class="shrink-0 transition-transform duration-150 {{ $isActive ? 'scale-105' : '' }}" aria-hidden="true">{!! $item['icon'] !!}</span>
                 <span class="truncate">{{ $item['label'] }}</span>

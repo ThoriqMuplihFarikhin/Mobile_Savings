@@ -141,9 +141,11 @@ class DashboardController extends Controller
             ->where('kolektor_id', $user->id)
             ->where('tanggal_jadwal', today())
             ->join('users', 'jadwal_kunjungan.nasabah_id', '=', 'users.id')
+            ->leftJoin('nasabah_profil', 'users.id', '=', 'nasabah_profil.user_id')
             ->select(
                 'jadwal_kunjungan.*',
-                'users.name as nasabah_name'
+                'users.name as nasabah_name',
+                'nasabah_profil.alamat as nasabah_alamat'
             )
             ->orderBy('jadwal_kunjungan.id')
             ->get();
@@ -167,6 +169,8 @@ class DashboardController extends Controller
 
         $jadwalTotal = $jadwalHariIni->count();
         $jadwalSelesai = $jadwalHariIni->where('status_kunjungan', 'dikunjungi')->count();
+        $persenKunjungan = $jadwalTotal > 0 ? (int) round(($jadwalSelesai / $jadwalTotal) * 100) : 0;
+        $kunjunganBerikutnya = $jadwalHariIni->firstWhere('status_kunjungan', '!=', 'dikunjungi');
 
         $stats = [
             // D13: kas net di tangan kolektor — setoran belum disetor dikurangi
@@ -196,7 +200,80 @@ class DashboardController extends Controller
             ->whereIn('nasabah_id', $nasabahIds)
             ->count();
 
-        return view('dashboard', compact('user', 'stats', 'jadwalHariIni', 'sudahAbsenHariIni', 'nasabahTunggakParah', 'totalNasabahBinaan', 'penarikanMenungguDiantar'));
+        $paketSiapDiserahkan = KepesertaanPaket::whereIn('nasabah_id', $nasabahIds)
+            ->where('status_serah_terima', 'belum')
+            ->whereNotNull('metode_pengambilan')
+            ->count();
+
+        $setoranMasukHariIni = (float) DB::table('transaksi_setoran')
+            ->where('input_by', $user->id)
+            ->where('tanggal_transaksi', today())
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
+            ->sum('nominal');
+
+        $hariIni = Carbon::today();
+        $rentang6Hari = collect(range(5, 0))->map(fn (int $i) => $hariIni->copy()->subDays($i));
+
+        $setoranPerHari = DB::table('transaksi_setoran')
+            ->selectRaw('tanggal_transaksi, SUM(nominal) as total')
+            ->where('input_by', $user->id)
+            ->whereIn('status', ['tercatat', 'dikoreksi'])
+            ->whereBetween('tanggal_transaksi', [
+                $hariIni->copy()->subDays(5)->toDateString(),
+                $hariIni->toDateString(),
+            ])
+            ->groupBy('tanggal_transaksi')
+            ->pluck('total', 'tanggal_transaksi');
+
+        $kinerja6Hari = $rentang6Hari->map(function (Carbon $tanggal) use ($setoranPerHari, $hariIni) {
+            $hariSingkat = match ($tanggal->dayOfWeekIso) {
+                1 => 'Sen',
+                2 => 'Sel',
+                3 => 'Rab',
+                4 => 'Kam',
+                5 => 'Jum',
+                6 => 'Sab',
+                default => 'Min',
+            };
+
+            return [
+                'tanggal' => $tanggal->toDateString(),
+                'label' => $hariSingkat,
+                'nominal' => (float) ($setoranPerHari[$tanggal->toDateString()] ?? 0),
+                'is_hari_ini' => $tanggal->isSameDay($hariIni),
+            ];
+        });
+
+        $rataRataKinerja = $kinerja6Hari->count() > 0 ? (float) ($kinerja6Hari->avg('nominal') ?? 0) : 0;
+        $targetHarian = 1500000;
+
+        $unreadNotifikasiCount = LogNotifikasi::where('nasabah_id', $user->id)
+            ->where('is_read', false)
+            ->count();
+
+        $menungguAdminSetor = DB::table('setoran_kolektor_kantor')
+            ->where('kolektor_id', $user->id)
+            ->where('status', 'menunggu')
+            ->exists();
+
+        return view('dashboard', compact(
+            'user',
+            'stats',
+            'jadwalHariIni',
+            'sudahAbsenHariIni',
+            'nasabahTunggakParah',
+            'totalNasabahBinaan',
+            'penarikanMenungguDiantar',
+            'paketSiapDiserahkan',
+            'persenKunjungan',
+            'kunjunganBerikutnya',
+            'setoranMasukHariIni',
+            'kinerja6Hari',
+            'rataRataKinerja',
+            'targetHarian',
+            'unreadNotifikasiCount',
+            'menungguAdminSetor',
+        ));
     }
 
     private function nasabahDashboard(User $user): View
@@ -222,11 +299,13 @@ class DashboardController extends Controller
 
         $riwayatGabungan = $riwayatSetoran->map(fn ($t) => [
             'type' => 'setoran',
+            'id' => $t->id,
             'nama' => $t->produk->nama ?? '-',
             'tanggal' => $t->tanggal_transaksi,
             'nominal' => $t->nominal,
         ])->concat($riwayatPenarikan->filter(fn (TransaksiPenarikan $t) => $t->waktu_pencairan !== null)->map(fn ($t) => [
             'type' => 'penarikan',
+            'id' => $t->id,
             'nama' => $t->produk->nama ?? '-',
             'tanggal' => $t->waktu_pencairan,
             'nominal' => $t->nominal_diterima,

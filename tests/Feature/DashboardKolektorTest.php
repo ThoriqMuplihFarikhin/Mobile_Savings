@@ -144,3 +144,37 @@ it('menjumlahkan setoran hari ini saja di dashboard admin', function () {
     $response->assertOk();
     expect((float) $response->viewData('setoranHariIni'))->toBe(30000.0);
 });
+
+it('mengirim data kinerja 6 hari dan rute kunjungan berikutnya ke view dashboard kolektor', function () {
+    ['kolektor' => $kolektor, 'nasabah' => $nasabah, 'produk' => $produk] = seedKolektorDashboard();
+
+    TransaksiSetoran::create([
+        'nasabah_id' => $nasabah->id,
+        'produk_id' => $produk->id,
+        'nominal' => 250000,
+        'tanggal_transaksi' => now()->toDateString(),
+        'tanggal_input_sistem' => now(),
+        'input_by' => $kolektor->id,
+        'sumber_input' => 'real_time',
+        'status' => 'tercatat',
+    ]);
+
+    $this->actingAs($kolektor);
+    $response = $this->get(route('dashboard'));
+
+    $response->assertOk();
+    $kinerja = $response->viewData('kinerja6Hari');
+    expect($kinerja)->toHaveCount(6)
+        ->and($response->viewData('persenKunjungan'))->toBe(0)
+        ->and($response->viewData('kunjunganBerikutnya')->nasabah_name)->toBe($nasabah->name)
+        ->and((float) $response->viewData('setoranMasukHariIni'))->toBe(250000.0);
+
+    $html = $response->getContent();
+    expect($html)
+        ->toContain('Kas di Tangan')
+        ->toContain('Kunjungan berikutnya')
+        ->toContain('Kinerja 6 hari')
+        ->toContain('Ringkasan hari ini')
+        ->toContain('Catat setoran')
+        ->toContain('Setor kantor');
+});
