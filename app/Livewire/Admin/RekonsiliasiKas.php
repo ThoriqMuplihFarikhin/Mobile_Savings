@@ -61,6 +61,8 @@ class RekonsiliasiKas extends Component
 
     public bool $showForm = false;
 
+    public bool $showManualModal = false;
+
     /** @var array<int, SetoranKolektorKantor>|Collection<int, SetoranKolektorKantor> */
     public $pendingSubmissions = [];
 
@@ -78,6 +80,18 @@ class RekonsiliasiKas extends Component
     {
         $this->kolektorList = User::where('role', 'kolektor')->where('status_akun', 'aktif')->get();
         $this->loadPendingSubmissions();
+    }
+
+    public function bukaManualModal(): void
+    {
+        $this->showManualModal = true;
+    }
+
+    public function tutupManualModal(): void
+    {
+        $this->showManualModal = false;
+        $this->reset(['kolektorId', 'totalDiterima', 'keterangan', 'showForm', 'totalSeharusnya']);
+        $this->detailTransaksi = [];
     }
 
     public function loadPendingSubmissions(): void
@@ -273,6 +287,7 @@ class RekonsiliasiKas extends Component
                 ->get();
 
             $this->showForm = true;
+            $this->showManualModal = true;
         } else {
             $this->totalSeharusnya = 0;
             $this->totalSetoranMasuk = 0;
@@ -380,7 +395,7 @@ class RekonsiliasiKas extends Component
             'status' => $hasil->status,
         ]);
 
-        $this->reset(['kolektorId', 'totalDiterima', 'keterangan', 'showForm', 'totalSeharusnya']);
+        $this->reset(['kolektorId', 'totalDiterima', 'keterangan', 'showForm', 'totalSeharusnya', 'showManualModal']);
         $this->detailTransaksi = [];
         $this->loadPendingSubmissions();
         session()->flash('success', 'Rekonsiliasi kas berhasil disimpan!');

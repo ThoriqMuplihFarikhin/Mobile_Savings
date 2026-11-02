@@ -214,3 +214,17 @@ it('records reconciliation with surplus and keterangan', function () {
         'keterangan_selisih' => 'Kelebihan dari setoran kemarin',
     ]);
 });
+
+it('dapat membuka dan menutup modal input manual setoran kas', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin);
+
+    Livewire::test(RekonsiliasiKas::class)
+        ->assertSet('showManualModal', false)
+        ->call('bukaManualModal')
+        ->assertSet('showManualModal', true)
+        ->assertSee('Input Manual Setoran Kas')
+        ->call('tutupManualModal')
+        ->assertSet('showManualModal', false);
+});
