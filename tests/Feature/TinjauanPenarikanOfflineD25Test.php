@@ -295,3 +295,22 @@ it('pengaturan batas penarikan offline tersimpan dari halaman pengaturan (D23)',
     expect(AdminSetting::get('offline_penarikan_batas_langsung'))->toBe('150000')
         ->and(AdminSetting::get('offline_penarikan_batas_harian'))->toBe('300000');
 });
+
+it('dapat membuka dan menutup drawer detail penarikan offline', function () {
+    $fix = penarikanLangsungD25();
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin);
+
+    Livewire::test(TinjauanPenarikanOffline::class)
+        ->assertSet('detailId', null)
+        ->assertSet('showDetail', false)
+        ->call('bukaDetail', $fix['penarikan']->id)
+        ->assertSet('detailId', $fix['penarikan']->id)
+        ->assertSet('showDetail', true)
+        ->assertSee('Detail Penarikan Offline')
+        ->assertSee($fix['nasabah']->name)
+        ->call('tutupDetail')
+        ->assertSet('detailId', null)
+        ->assertSet('showDetail', false);
+});

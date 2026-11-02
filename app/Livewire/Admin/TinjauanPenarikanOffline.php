@@ -25,7 +25,7 @@ class TinjauanPenarikanOffline extends Component
     use AuthorizesRole;
     use WithPagination;
 
-    public string $statusFilter = 'belum';
+    public string $statusFilter = 'semua';
 
     public string $kolektorFilter = '';
 
@@ -38,6 +38,36 @@ class TinjauanPenarikanOffline extends Component
     public string $catatanTinjauan = '';
 
     public bool $bekukanKolektor = true;
+
+    public bool $showDetail = false;
+
+    public ?int $detailId = null;
+
+    public ?TransaksiPenarikan $detailPenarikan = null;
+
+    public function bukaDetail(int $id): void
+    {
+        $this->detailId = $id;
+        $this->detailPenarikan = TransaksiPenarikan::with([
+            'nasabah.nasabahProfil',
+            'produk',
+            'disetujuiOleh',
+            'disetujuiOleh2',
+            'diverifikasiOleh',
+            'ditinjauOleh',
+            'dibayarOleh',
+            'dibatalkanOleh',
+        ])->find($id);
+
+        $this->showDetail = true;
+    }
+
+    public function tutupDetail(): void
+    {
+        $this->showDetail = false;
+        $this->detailId = null;
+        $this->detailPenarikan = null;
+    }
 
     protected function requiredRole(): string
     {
