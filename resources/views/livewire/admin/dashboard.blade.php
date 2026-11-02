@@ -37,30 +37,7 @@
 
 <div class="space-y-4">
     {{-- Header Halaman --}}
-    <x-admin.page-header title="Dashboard" subtitle="Ringkasan operasional Tabungan Digital hari ini.">
-        <x-slot:actions>
-            <a href="{{ route('admin.registrasi.index') }}" wire:navigate class="btn-primary">
-                <svg viewBox="0 0 24 24" class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M12 5v14M5 12h14"/>
-                </svg>
-                Tambah Nasabah
-            </a>
-        </x-slot:actions>
-    </x-admin.page-header>
-
-    @php
-        $totalAntrean = \App\Support\AntreanPersetujuan::total();
-    @endphp
-
-    {{-- Banner Antrean --}}
-    @if($totalAntrean > 0)
-        <div class="flex flex-wrap items-center justify-between gap-2.5 rounded-[12px] bg-warning-soft px-3.5 py-2.5 text-sm text-warning-deep">
-            <span><strong>{{ $totalAntrean }} antrean</strong> menunggu tindakan Anda.</span>
-            <a href="{{ route('admin.persetujuan.index') }}" wire:navigate class="inline-flex items-center justify-center rounded-[10px] bg-primary px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-hover active:scale-95 shadow-xs">
-                Buka Hub Persetujuan
-            </a>
-        </div>
-    @endif
+    <x-admin.page-header title="Dashboard" subtitle="Ringkasan operasional Tabungan Digital hari ini." />
 
     {{-- 9 KPI Cards --}}
     <x-admin.kpi-grid>

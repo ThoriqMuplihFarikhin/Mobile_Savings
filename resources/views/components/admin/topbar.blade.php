@@ -18,17 +18,27 @@
         <livewire:admin.search wire:key="topbar-search" />
     </div>
 
-    <div class="flex items-center gap-2 md:gap-3 ml-auto">
-        {{-- Tombol Tambah Nasabah Cepat --}}
+        @php
+            $totalAntreanTopbar = \App\Support\AntreanPersetujuan::total();
+        @endphp
+
+        {{-- Tombol Notifikasi --}}
         <a
-            href="{{ route('admin.registrasi.index') }}"
+            href="{{ route('admin.persetujuan.index') }}"
             wire:navigate
-            class="hidden sm:inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-[10px] bg-accent text-accent-foreground text-xs font-semibold hover:opacity-90 transition shadow-xs shrink-0 cursor-pointer"
+            aria-label="{{ $totalAntreanTopbar > 0 ? $totalAntreanTopbar . ' antrean notifikasi' : 'Notifikasi' }}"
+            class="relative flex size-[38px] items-center justify-center rounded-[10px] border border-hairline bg-surface text-mute hover:bg-surface-2 hover:text-ink transition-colors cursor-pointer shrink-0"
         >
-            <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            <svg class="size-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
             </svg>
-            <span>Tambah Nasabah</span>
+            @if($totalAntreanTopbar > 0)
+                <span class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-foreground shadow-xs">
+                    {{ $totalAntreanTopbar > 99 ? '99+' : $totalAntreanTopbar }}
+                </span>
+            @else
+                <span class="sr-only bg-accent">Notifikasi</span>
+            @endif
         </a>
 
         {{-- Tombol Tema --}}
