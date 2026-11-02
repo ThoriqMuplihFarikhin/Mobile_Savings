@@ -52,6 +52,14 @@ class RiwayatPenarikan extends Component
             ->latest()
             ->paginate(10);
 
-        return view('livewire.nasabah.riwayat-penarikan', compact('penarikan'));
+        $totalDitarik = (int) TransaksiPenarikan::where('nasabah_id', Auth::id())
+            ->where('status', 'selesai')
+            ->sum('nominal_diterima');
+
+        $totalDiajukan = (int) TransaksiPenarikan::where('nasabah_id', Auth::id())
+            ->whereIn('status', ['pending', 'approved'])
+            ->sum('nominal_diminta');
+
+        return view('livewire.nasabah.riwayat-penarikan', compact('penarikan', 'totalDitarik', 'totalDiajukan'));
     }
 }

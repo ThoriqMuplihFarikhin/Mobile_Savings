@@ -19,8 +19,12 @@ class PengajuanAktif extends Component
 {
     use AuthorizesRole;
 
-    /** Alasan opsional pembatalan yang diisi nasabah (D18). */
-    public string $alasanBatal = '';
+    /**
+     * Alasan opsional pembatalan yang diisi nasabah (D18).
+     *
+     * @var string|array<int|string, string>
+     */
+    public string|array $alasanBatal = '';
 
     protected function requiredRole(): string
     {
@@ -35,15 +39,24 @@ class PengajuanAktif extends Component
             return;
         }
 
+        $alasan = is_array($this->alasanBatal)
+            ? ($this->alasanBatal[$penarikanId] ?? null)
+            : ($this->alasanBatal !== '' ? $this->alasanBatal : null);
+
         try {
-            $action->execute($penarikanId, $nasabah, $this->alasanBatal);
+            $action->execute($penarikanId, $nasabah, $alasan);
         } catch (\DomainException $e) {
             session()->flash('error', $e->getMessage());
 
             return;
         }
 
-        $this->reset('alasanBatal');
+        if (is_array($this->alasanBatal)) {
+            unset($this->alasanBatal[$penarikanId]);
+        } else {
+            $this->reset('alasanBatal');
+        }
+
         session()->flash('success', 'Pengajuan penarikan berhasil dibatalkan.');
     }
 

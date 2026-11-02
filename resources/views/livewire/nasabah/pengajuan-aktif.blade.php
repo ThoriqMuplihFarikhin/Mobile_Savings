@@ -1,21 +1,21 @@
 <div>
 @if($pengajuan->isNotEmpty())
-    {{-- Flash Messages --}}
+    {{-- Pesan sistem --}}
     @if (session('success'))
-        <div class="mb-3 flex items-center gap-3 rounded-xl bg-primary-soft p-3 text-xs font-medium text-on-primary-soft">
+        <div class="mb-3 flex items-center gap-3 rounded-2xl bg-primary-soft p-3 text-xs font-medium text-on-primary-soft">
             <flux:icon.check-circle class="size-4 shrink-0 text-on-primary-soft" />
             <span>{{ session('success') }}</span>
         </div>
     @endif
     @if (session('error'))
-        <div class="mb-3 flex items-center gap-3 rounded-xl bg-danger-soft p-3 text-xs font-medium text-danger-deep dark:bg-dark-danger-soft dark:text-dark-danger-text">
+        <div class="mb-3 flex items-center gap-3 rounded-2xl bg-danger-soft p-3 text-xs font-medium text-danger-deep dark:bg-dark-danger-soft dark:text-dark-danger-text">
             <flux:icon.exclamation-triangle class="size-4 shrink-0 text-danger-deep dark:text-dark-danger-text" />
             <span>{{ session('error') }}</span>
         </div>
     @endif
 
-    <div class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface" data-test="kartu-pengajuan-aktif">
-        <div class="mb-3 flex items-center justify-between border-b border-hairline-warm pb-2.5">
+    <div class="rounded-2xl border border-hairline bg-white p-4 shadow-xs dark:bg-surface" data-test="kartu-pengajuan-aktif">
+        <div class="mb-3 flex items-center justify-between border-b border-hairline pb-2.5">
             <h3 class="text-xs font-semibold text-ink">Pengajuan Aktif</h3>
             <a href="{{ route('nasabah.riwayat.index') }}" wire:navigate class="text-xs font-medium text-primary hover:underline">
                 Lihat Riwayat
@@ -46,13 +46,13 @@
                         <button type="button"
                                 wire:click="batalkan({{ $item->id }})"
                                 wire:confirm="Yakin membatalkan pengajuan penarikan ini? Saldo yang sudah dipotong akan dikembalikan."
-                                class="rounded-full border border-danger/40 bg-white px-3 py-1.5 text-xs font-medium text-danger transition hover:bg-danger-soft active:scale-95 dark:bg-surface">
+                                class="inline-flex min-h-9 items-center justify-center rounded-full border border-danger/40 bg-white px-3.5 text-xs font-medium text-danger transition hover:bg-danger-soft active:scale-95 dark:bg-surface">
                             Batalkan
                         </button>
                     </div>
 
                     <div class="mt-2.5">
-                        <input type="text" wire:model="alasanBatal" maxlength="255"
+                        <input type="text" wire:model="alasanBatal.{{ $item->id }}" maxlength="255"
                                placeholder="Alasan membatalkan (opsional)"
                                class="w-full rounded-xl border border-hairline-strong bg-white px-3 py-2 text-xs text-ink transition placeholder:text-mute focus:border-danger focus:outline-none focus:ring-2 focus:ring-danger/20 dark:bg-surface" />
                     </div>
@@ -62,3 +62,4 @@
     </div>
 @endif
 </div>
+

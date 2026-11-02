@@ -1,12 +1,19 @@
 <div class="space-y-6">
-    {{-- Judul halaman & Tombol aksi --}}
-    <div class="flex items-start justify-between gap-3">
-        <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-ink">Notifikasi</h1>
-            <p class="mt-1 text-sm text-mute">Pesan dan informasi terbaru untuk Anda.</p>
+    {{-- Header navigasi kembali & judul --}}
+    <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+            <a href="{{ route('dashboard') }}" wire:navigate
+               aria-label="Kembali ke Beranda"
+               class="flex size-11 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface text-ink transition hover:bg-surface-inset active:scale-95">
+                <flux:icon.arrow-left class="size-5" />
+            </a>
+            <div class="min-w-0 flex-1">
+                <h1 class="text-xl font-semibold tracking-tight text-ink leading-tight">Notifikasi</h1>
+                <p class="text-xs text-mute truncate">Pesan dan informasi terbaru untuk Anda.</p>
+            </div>
         </div>
         <button wire:click="markAllRead"
-            class="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-hairline-strong bg-white px-3.5 py-1.5 text-xs font-medium text-ink transition hover:bg-surface-inset active:scale-95 dark:bg-surface">
+            class="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-hairline bg-surface px-3.5 py-1.5 text-xs font-medium text-ink transition hover:bg-surface-inset active:scale-95 shadow-xs">
             <flux:icon.check class="size-3.5 text-primary" aria-hidden="true" />
             <span>Tandai semua dibaca</span>
         </button>
@@ -17,16 +24,10 @@
         @forelse($notifikasi as $item)
             @php
                 $judulLower = strtolower($item->judul);
-                $kategoriNotif = match(true) {
-                    str_contains($judulLower, 'setoran') => 'hijau',
-                    str_contains($judulLower, 'penarikan') => 'biru',
-                    str_contains($judulLower, 'paket') || str_contains($judulLower, 'komitmen') => 'teal',
-                    default => 'kuning',
-                };
             @endphp
             <button type="button" wire:click="markAsRead({{ $item->id }})"
-                class="flex w-full items-start gap-3 rounded-2xl p-4 text-left transition {{ $item->is_read ? 'border border-hairline bg-surface-inset opacity-80' : 'border border-hairline-warm border-l-4 border-l-primary bg-white shadow-sm dark:bg-surface' }}">
-                <x-ui.tile :kategori="$kategoriNotif" ukuran="40" aria-hidden="true">
+                class="flex w-full items-start gap-3 rounded-2xl p-4 text-left transition {{ $item->is_read ? 'border border-hairline bg-surface-inset opacity-80' : 'border border-hairline border-l-4 border-l-primary bg-surface shadow-xs' }}">
+                <x-ui.tile kategori="hijau" ukuran="40" aria-hidden="true">
                     @if(str_contains($judulLower, 'setoran'))
                         <flux:icon.arrow-down-left class="size-4" />
                     @elseif(str_contains($judulLower, 'penarikan'))
@@ -56,7 +57,7 @@
                 </div>
             </button>
         @empty
-            <div class="rounded-[20px] border border-hairline-warm bg-white p-8 text-center shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
+            <div class="rounded-[20px] border border-hairline bg-surface p-8 text-center shadow-xs">
                 <span class="mx-auto flex size-32 items-center justify-center rounded-full bg-primary-soft" aria-hidden="true">
                     <x-ui.ilustrasi nama="tunas" :ukuran="96" />
                 </span>

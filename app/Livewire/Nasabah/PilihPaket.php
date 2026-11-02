@@ -144,6 +144,7 @@ class PilihPaket extends Component
             'batas_daftar_hingga' => $p->batas_daftar_hingga ? Carbon::parse($p->batas_daftar_hingga)->format('d/m/Y') : null,
             'toleransi_hari' => $p->batas_toleransi_tunggakan_hari,
             'target' => $p->targetAkhir(),
+            'uang_tunai' => (float) ($p->uang_tunai ?? 0),
             'isi' => $p->isiPaketPublik() ?? [],
         ];
     }

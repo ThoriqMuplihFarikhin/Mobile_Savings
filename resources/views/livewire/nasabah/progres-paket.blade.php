@@ -1,238 +1,283 @@
-<div class="space-y-6">
-    {{-- Judul halaman --}}
-    <div>
-        <h1 class="text-2xl font-semibold tracking-tight text-ink">Progres paket</h1>
-        <p class="mt-1 text-sm text-mute">Pantau perkembangan kepesertaan paket tabungan Anda.</p>
+<div class="space-y-5">
+    {{-- Header Top-Level Tab (konsisten dengan Nasabah Binaan Kolektor) --}}
+    <div class="flex items-start justify-between gap-3">
+        <div>
+            <h1 class="text-2xl font-semibold tracking-tight text-ink">Paket Tabungan</h1>
+            <p class="mt-0.5 text-xs text-mute">Pantau perkembangan kepesertaan paket tabungan Anda.</p>
+        </div>
+        <a href="{{ route('nasabah.paket.pilih') }}" wire:navigate
+           class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover active:scale-95"
+           data-test="tombol-ikut-paket-header">
+            <flux:icon.plus class="size-3.5" aria-hidden="true" />
+            <span>+ Ikuti</span>
+        </a>
     </div>
 
     {{-- Pesan sistem --}}
     @if (session('success'))
-        <div class="flex items-start gap-2 rounded-xl bg-primary-soft p-3 text-sm text-on-primary-soft">
+        <div class="flex items-start gap-2 rounded-2xl bg-primary-soft p-3 text-xs text-on-primary-soft">
             <flux:icon.check-circle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             <span>{{ session('success') }}</span>
         </div>
     @endif
     @if (session('error'))
-        <div class="flex items-start gap-2 rounded-xl bg-danger-soft p-3 text-sm text-danger-deep dark:bg-dark-danger-soft dark:text-dark-danger-text">
+        <div class="flex items-start gap-2 rounded-2xl bg-danger-soft p-3 text-xs text-danger-deep dark:bg-dark-danger-soft dark:text-dark-danger-text">
             <flux:icon.exclamation-triangle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             <span>{{ session('error') }}</span>
         </div>
     @endif
 
+    {{-- Daftar kartu paket --}}
     <div class="space-y-4">
         @forelse($kepesertaan as $item)
             @php
                 $targetAkhir = $item->targetKepesertaan();
-                $persentase = $targetAkhir ? min(100, round(($item->total_aktual_terkumpul / $targetAkhir) * 100)) : 0;
+                $persentase = $targetAkhir ? min(100, (int) round(($item->total_aktual_terkumpul / $targetAkhir) * 100)) : 0;
                 $alertStatus = $item->status_alert ?? 'normal';
-
-                // DESIGN.md §7: kalimat penyemangat "Tinggal Rp X lagi" dihitung
-                // dari target dan total_aktual_terkumpul yang sudah ada di baris
-                // ini; disembunyikan bila target belum diatur admin.
                 $sisaTerkumpul = $targetAkhir ? max(0, $targetAkhir - $item->total_aktual_terkumpul) : null;
+                $isSudahDiterima = $item->status_serah_terima === 'sudah_diterima';
 
                 $infoPencairan = $pencairan[(int) $item->id] ?? null;
                 $bolehCair = $infoPencairan['boleh'] ?? false;
-                $kodeCair = $bolehCair ? 'boleh' : ($infoPencairan['kode'] ?? 'belum_waktunya');
-                $teksCair = $bolehCair ? 'Sudah Bisa Dicairkan' : ($infoPencairan['alasan'] ?? 'Belum waktunya');
+                $kodeCair = $isSudahDiterima ? 'sudah_diterima' : ($bolehCair ? 'boleh' : ($infoPencairan['kode'] ?? 'belum_waktunya'));
+                $teksCair = $isSudahDiterima ? 'Sudah Diterima' : ($bolehCair ? 'Sudah Bisa Dicairkan' : 'Sedang Menabung');
+
+                $progresPerKepesertaan = collect($progres)->keyBy('kepesertaan_id');
+                $progresMilik = $progresPerKepesertaan->get((int) $item->id);
+
+                $bolehPilihMetode = ($pencairan[(int) $item->id]['boleh'] ?? false) && !$isSudahDiterima;
+
+                $tahapList = ['Menabung', 'Boleh Cair', 'Pengambilan', 'Diterima'];
+                $saatIniTahap = match (true) {
+                    $isSudahDiterima => 3,
+                    !empty($item->metode_pengambilan) => 2,
+                    $bolehCair => 1,
+                    default => 0,
+                };
             @endphp
-            <article class="overflow-hidden rounded-[20px] border border-hairline-warm bg-white shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface" data-test="kartu-progres-paket">
-                {{-- Pita header paket (DESIGN.md §7): tile-teal-bg, ilustrasi kado, nama paket --}}
-                <div class="flex h-[110px] items-center justify-between gap-3 bg-tile-teal-bg px-4">
-                    <x-ui.ilustrasi nama="kado" :ukuran="72" />
-                    <div class="min-w-0 text-right">
-                        <h2 class="truncate text-base font-semibold text-ink">{{ $item->produk->nama ?? '-' }}</h2>
-                        <p class="mt-0.5 text-xs text-body">Mulai {{ $item->tanggal_mulai_ikut->translatedFormat('d M Y') }}</p>
+            <article class="rounded-[24px] border border-hairline bg-white p-5 shadow-xs dark:bg-surface" data-test="kartu-progres-paket">
+                {{-- Baris utama: Cincin progres di kiri + Info paket di kanan --}}
+                <div class="flex items-start gap-3.5">
+                    <div class="shrink-0 pt-0.5">
+                        <x-ui.progress-ring :persen="$persentase" :ukuran="72" :lebar="8" :label="'Capaian paket '.$persentase.' persen'" />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h2 class="truncate text-base font-semibold text-ink leading-tight">{{ $item->produk->nama ?? '-' }}</h2>
+                        <p class="mt-1 text-xs text-mute">
+                            Terkumpul <span class="font-semibold text-ink"><x-ui.rupiah :nilai="$item->total_aktual_terkumpul" /></span>
+                            @if ($targetAkhir)
+                                dari <x-ui.rupiah :nilai="$targetAkhir" />
+                            @endif
+                        </p>
+                        @if ($targetAkhir && $sisaTerkumpul > 0 && !$isSudahDiterima)
+                            <p class="mt-0.5 text-xs font-semibold text-primary">
+                                Tinggal <x-ui.rupiah :nilai="$sisaTerkumpul" /> lagi
+                            </p>
+                        @endif
+
+                        <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                            <span class="rounded-full bg-tile-teal-bg px-2 py-0.5 text-xs font-semibold text-tile-teal-fg">
+                                Paket
+                            </span>
+                            <x-ui.status-chip domain="pencairan" :status="$kodeCair" :teks="$teksCair" />
+                            @if($alertStatus !== 'normal' && !$isSudahDiterima)
+                                <x-ui.status-chip domain="alert_paket" status="{{ $alertStatus }}" />
+                            @endif
+                        </div>
                     </div>
                 </div>
 
-                <div class="p-4">
-                    {{-- Cincin progres (DESIGN.md §7: 132px di halaman progres) --}}
-                    <div class="flex items-center gap-4">
-                        <x-ui.progress-ring :persen="$persentase" :ukuran="132" :lebar="12" :label="'Capaian paket '.$persentase.' persen'" />
-                        <div class="min-w-0 flex-1">
-                            <div class="flex flex-wrap gap-1.5 mb-2">
-                                <x-ui.status-chip domain="alert_paket" status="{{ $alertStatus }}" />
-                                <x-ui.status-chip domain="pencairan" :status="$kodeCair" :teks="$teksCair" />
-                            </div>
-                            <p class="text-xs text-mute">Terkumpul</p>
-                            <p class="text-2xl font-semibold tracking-tight text-ink">
-                                <x-ui.rupiah :nilai="$item->total_aktual_terkumpul" />
-                            </p>
-                            @if ($targetAkhir)
-                                <p class="mt-1 text-xs text-mute">dari target <x-ui.rupiah :nilai="$targetAkhir" /></p>
-                                <p class="mt-1 text-xs font-semibold text-primary">
-                                    Tinggal <x-ui.rupiah :nilai="$sisaTerkumpul" /> lagi
-                                </p>
-                            @else
-                                <p class="mt-1 text-xs text-mute">Belum diatur admin</p>
-                            @endif
+                {{-- Tahapan Paket (x-ui.stepper) --}}
+                <div class="mt-4 pt-3.5 border-t border-hairline">
+                    <p class="text-xs font-medium text-mute mb-2.5">Tahapan Paket:</p>
+                    <x-ui.stepper :tahap="$tahapList" :saat-ini="$saatIniTahap" />
+                </div>
+
+                {{-- Komitmen notice hanya untuk paket yang masih berjalan --}}
+                @if (!$isSudahDiterima && $item->keputusan_akhir === null)
+                    <div class="mt-3.5 flex items-start gap-2 rounded-2xl bg-surface-inset p-3 text-xs text-body border border-hairline">
+                        <flux:icon.information-circle class="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+                        <div>
+                            <span class="font-medium text-ink">Anda terikat komitmen paket ini.</span>
+                            <span class="text-mute">Pengambilan diproses setelah jatuh tempo.</span>
                         </div>
                     </div>
+                @endif
 
-                    {{-- Tunggakan: masalah nyata, jadi merah (DESIGN.md §2, §8) --}}
-                    @if ($item->tunggakan > 0)
-                        <div class="mt-4 flex items-start gap-2 rounded-xl bg-danger-soft p-3 text-xs text-danger-deep dark:bg-dark-danger-soft dark:text-dark-danger-text">
-                            <flux:icon.exclamation-triangle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                            <span>Tunggakan setoran {{ (int) $item->tunggakan }} hari.</span>
+                {{-- Tunggakan hanya jika ada masalah --}}
+                @if ($item->tunggakan > 0)
+                    <div class="mt-3 flex items-start gap-2 rounded-2xl bg-danger-soft p-3 text-xs text-danger-deep dark:bg-dark-danger-soft dark:text-dark-danger-text">
+                        <flux:icon.exclamation-triangle class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                        <span>Tunggakan setoran {{ (int) $item->tunggakan }} hari.</span>
+                    </div>
+                @endif
+
+                {{-- Isi paket --}}
+                @if ($item->produk && $item->produk->isPaket() && ($item->produk->isi_paket || $item->produk->uang_tunai))
+                    <div class="mt-3.5 rounded-2xl bg-surface-inset p-3.5 border border-hairline text-xs">
+                        <div class="flex items-center justify-between font-semibold text-ink mb-2">
+                            <span>Isi paket</span>
+                            @if ($progresMilik !== null && $progresMilik['persenKeseluruhan'] !== null && !$isSudahDiterima)
+                                <span class="text-xs text-mute font-normal">Pemenuhan: {{ (int) round($progresMilik['persenKeseluruhan']) }}%</span>
+                            @endif
                         </div>
-                    @endif
-
-                    {{-- Terikat komitmen: info biru, bukan masalah --}}
-                    @if ($item->keputusan_akhir === null)
-                        <div class="mt-4 flex items-start gap-2 rounded-xl bg-info-soft p-3 text-xs text-info">
-                            <flux:icon.package class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                            <span>
-                                <span class="font-medium">Anda terikat komitmen paket ini.</span>
-                                Paket tidak dapat ditinggalkan di tengah jalan; pengambilan diproses setelah jatuh tempo. Hubungi admin bila ada kendala.
-                            </span>
-                        </div>
-                    @endif
-
-                    @php
-                        $progresPerKepesertaan = collect($progres)->keyBy('kepesertaan_id');
-                        $progresMilik = $progresPerKepesertaan->get((int) $item->id);
-                    @endphp
-                    {{-- Isi paket dengan lencana per barang (DESIGN.md §7) --}}
-                    @if ($item->produk && $item->produk->isPaket() && ($item->produk->isi_paket || $item->produk->uang_tunai))
-                        <div class="mt-4 rounded-2xl bg-surface-inset p-4 border border-hairline">
-                            <p class="text-xs font-semibold text-ink">Isi paket</p>
-
+                        <div class="divide-y divide-hairline">
                             @if ($progresMilik !== null && count($progresMilik['items']) > 0)
-                                @if ($progresMilik['persenKeseluruhan'] !== null)
-                                    @php
-                                        $persenKeseluruhan = is_int($progresMilik['persenKeseluruhan'])
-                                            ? $progresMilik['persenKeseluruhan']
-                                            : rtrim(rtrim(number_format((float) $progresMilik['persenKeseluruhan'], 2, ',', ' '), '0'), ',');
-                                    @endphp
-                                    <p class="mt-1 text-xs text-mute">Progres pemenuhan barang: {{ $persenKeseluruhan }}%</p>
-                                @endif
-
-                                <ul class="mt-3 grid grid-cols-2 gap-2.5">
-                                    @foreach ($progresMilik['items'] as $barang)
-                                        @php
-                                            $statusItem = $barang['status'] ?? 'belum';
-                                            $chipStatus = match($statusItem) {
-                                                'tercapai' => ['bg' => 'bg-primary-soft', 'text' => 'text-primary', 'label' => 'Tercapai'],
-                                                'berjalan' => ['bg' => 'bg-info-soft', 'text' => 'text-info', 'label' => 'Berjalan'],
-                                                default => ['bg' => 'bg-white dark:bg-surface', 'text' => 'text-mute', 'label' => 'Belum'],
-                                            };
-                                        @endphp
-                                        <li class="flex flex-col items-center gap-1.5 rounded-xl bg-white dark:bg-surface p-3 border border-hairline text-center">
-                                            @if ($barang['persen'] !== null)
-                                                <x-ui.progress-ring :persen="(int) round($barang['persen'])" :ukuran="56" :centang="$barang['status'] === 'tercapai'" :label="$barang['nama'].', '.$barang['jumlah']" />
-                                            @endif
-                                            <span class="mt-1 text-xs font-semibold text-ink truncate w-full">{{ $barang['nama'] }}</span>
-                                            <span class="text-xs text-mute">{{ $barang['jumlah'] }}</span>
-                                            <span class="mt-0.5 rounded-full px-2 py-0.5 text-xs font-medium {{ $chipStatus['bg'] }} {{ $chipStatus['text'] }}">
-                                                {{ $chipStatus['label'] }}
-                                            </span>
-                                        </li>
-                                    @endforeach
-                                </ul>
+                                @foreach ($progresMilik['items'] as $barang)
+                                    <div class="flex items-center justify-between py-1.5">
+                                        <span class="text-mute truncate">{{ $barang['nama'] }}</span>
+                                        <span class="font-semibold text-ink shrink-0">&times; {{ $barang['jumlah'] }}</span>
+                                    </div>
+                                @endforeach
                             @elseif ($item->produk->isi_paket)
-                                <ul class="mt-2 space-y-1.5">
-                                    @foreach ($item->produk->isi_paket as $barang)
-                                        <li class="flex items-center justify-between gap-3 text-xs">
-                                            <span class="text-body font-medium">{{ $barang['nama'] ?? '-' }}</span>
-                                            <span class="text-mute">{{ $barang['jumlah'] ?? '-' }}</span>
-                                        </li>
-                                    @endforeach
-                                </ul>
+                                @foreach ($item->produk->isi_paket as $barang)
+                                    <div class="flex items-center justify-between py-1.5">
+                                        <span class="text-mute truncate">{{ $barang['nama'] ?? '-' }}</span>
+                                        <span class="font-semibold text-ink shrink-0">&times; {{ $barang['jumlah'] ?? '-' }}</span>
+                                    </div>
+                                @endforeach
                             @endif
 
-                            @if ($item->produk->uang_tunai)
-                                <div class="mt-3 flex items-center justify-between gap-3 border-t border-hairline pt-3">
-                                    <span class="text-xs text-body font-medium">Bonus uang tunai</span>
-                                    <span class="text-xs font-semibold">
+                            @php
+                                $adaItemUangTunai = isset($progresMilik['items']) && collect($progresMilik['items'])->contains(fn($b) => stripos($b['nama'], 'uang tunai') !== false);
+                            @endphp
+                            @if ($item->produk->uang_tunai && !$adaItemUangTunai)
+                                <div class="flex items-center justify-between py-1.5 border-t border-hairline">
+                                    <span class="text-mute">Bonus uang tunai</span>
+                                    <span class="font-semibold text-primary">
                                         <x-ui.rupiah :nilai="$item->produk->uang_tunai" tanda="+" />
                                     </span>
                                 </div>
                             @endif
                         </div>
-                    @endif
+                    </div>
+                @endif
 
-                    @if ($item->produk && $item->produk->isPaket())
-                        @php
-                            $detailInfo = array_filter([
-                                $item->produk->tanggal_boleh_cair ? ['label' => 'Boleh Cair', 'value' => \Carbon\Carbon::parse($item->produk->tanggal_boleh_cair)->translatedFormat('d M Y')] : null,
-                                $item->keputusan_akhir ? ['label' => 'Keputusan', 'value' => ucfirst(str_replace('_', ' ', $item->keputusan_akhir))] : null,
-                                $item->metode_pengambilan ? ['label' => 'Pengambilan', 'value' => $item->metode_pengambilan === 'ambil_sendiri' ? 'Ambil Sendiri' : 'Diantar Kolektor'] : null,
-                                $item->status_serah_terima ? ['label' => 'Serah Terima', 'value' => $item->status_serah_terima === 'sudah_diterima' ? 'Sudah Diterima' : 'Belum'] : null,
-                                $item->komitmen_disetujui_pada ? ['label' => 'Komitmen', 'value' => \Carbon\Carbon::parse($item->komitmen_disetujui_pada)->translatedFormat('d M Y').($item->komitmen_via ? ' · '.ucfirst($item->komitmen_via) : '')] : null,
-                            ]);
-                        @endphp
-                        @if (count($detailInfo) > 0)
-                            <dl class="mt-4 grid grid-cols-2 gap-2">
-                                @foreach ($detailInfo as $detail)
-                                    <div class="rounded-xl bg-surface-inset p-3 border border-hairline">
-                                        <dt class="text-xs text-mute">{{ $detail['label'] }}</dt>
-                                        <dd class="mt-0.5 truncate font-medium text-ink text-xs">{{ $detail['value'] }}</dd>
-                                    </div>
-                                @endforeach
-                            </dl>
-                        @endif
-                    @endif
-
-                    {{-- Foto bukti serah terima (hanya pemilik, lewat controller berotorisasi) --}}
-                    @if ($item->status_serah_terima === 'sudah_diterima' && $item->bukti_foto_url)
-                        <a href="{{ route('serah-terima.bukti', $item) }}" target="_blank" rel="noopener noreferrer" class="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-primary hover:underline">
-                            <flux:icon.camera class="size-4" aria-hidden="true" />
-                            Lihat Foto Bukti Serah Terima
-                        </a>
-                    @endif
-
-                    @php
-                        $bolehPilihMetode = ($pencairan[(int) $item->id]['boleh'] ?? false) && $item->status_serah_terima !== 'sudah_diterima';
-                    @endphp
-                    @if ($bolehPilihMetode || $item->metode_pengambilan)
-                        <div class="mt-4 rounded-2xl bg-surface-inset p-4 border border-hairline">
-                            <p class="text-xs font-semibold text-ink">Metode pengambilan</p>
-                            <p class="text-xs text-mute mt-0.5">Pilih bagaimana Anda ingin menerima paket ini.</p>
-                            <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <button type="button" wire:click="pilihMetodePengambilan({{ $item->id }}, 'ambil_sendiri')"
-                                    class="flex items-center justify-between gap-2 rounded-xl p-3 border transition text-left {{ $item->metode_pengambilan === 'ambil_sendiri' ? 'border-primary bg-primary-soft text-primary font-semibold' : 'border-hairline bg-white text-ink hover:bg-surface dark:bg-surface' }}">
-                                    <div>
-                                        <p class="text-xs font-semibold">Ambil sendiri di kantor</p>
-                                    </div>
+                {{-- Metode pengambilan hanya saat boleh cair dan belum diterima --}}
+                @if ($bolehPilihMetode)
+                    <div class="mt-3.5 rounded-2xl bg-surface-inset p-3.5 border border-hairline">
+                        <p class="text-xs font-semibold text-ink">Metode pengambilan</p>
+                        <p class="text-xs text-mute mt-0.5 mb-2.5">Pilih bagaimana Anda ingin menerima paket ini:</p>
+                        <div class="space-y-2">
+                            <button type="button" wire:click="pilihMetodePengambilan({{ $item->id }}, 'ambil_sendiri')"
+                                class="flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition {{ $item->metode_pengambilan === 'ambil_sendiri' ? 'border-primary bg-primary-soft/30 text-ink' : 'border-hairline bg-white hover:bg-surface-inset text-ink dark:bg-surface' }}">
+                                <span class="flex size-5 shrink-0 items-center justify-center rounded-full border-2 {{ $item->metode_pengambilan === 'ambil_sendiri' ? 'border-primary' : 'border-hairline-strong bg-white' }}">
                                     @if($item->metode_pengambilan === 'ambil_sendiri')
-                                        <flux:icon.check-circle class="size-4 text-primary shrink-0" />
+                                        <span class="size-2.5 rounded-full bg-primary"></span>
                                     @endif
-                                </button>
-                                <button type="button" wire:click="pilihMetodePengambilan({{ $item->id }}, 'diantar_kolektor')"
-                                    class="flex items-center justify-between gap-2 rounded-xl p-3 border transition text-left {{ $item->metode_pengambilan === 'diantar_kolektor' ? 'border-primary bg-primary-soft text-primary font-semibold' : 'border-hairline bg-white text-ink hover:bg-surface dark:bg-surface' }}">
-                                    <div>
-                                        <p class="text-xs font-semibold">Diantar kolektor ke rumah</p>
-                                    </div>
+                                </span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-semibold text-ink">Ambil sendiri di kantor</p>
+                                    <p class="text-xs text-mute">Ambil langsung ke kantor utama</p>
+                                </div>
+                            </button>
+                            <button type="button" wire:click="pilihMetodePengambilan({{ $item->id }}, 'diantar_kolektor')"
+                                class="flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition {{ $item->metode_pengambilan === 'diantar_kolektor' ? 'border-primary bg-primary-soft/30 text-ink' : 'border-hairline bg-white hover:bg-surface-inset text-ink dark:bg-surface' }}">
+                                <span class="flex size-5 shrink-0 items-center justify-center rounded-full border-2 {{ $item->metode_pengambilan === 'diantar_kolektor' ? 'border-primary' : 'border-hairline-strong bg-white' }}">
                                     @if($item->metode_pengambilan === 'diantar_kolektor')
-                                        <flux:icon.check-circle class="size-4 text-primary shrink-0" />
+                                        <span class="size-2.5 rounded-full bg-primary"></span>
                                     @endif
-                                </button>
-                            </div>
+                                </span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-xs font-semibold text-ink">Diantar kolektor ke rumah</p>
+                                    <p class="text-xs text-mute">Diserahkan saat kunjungan kolektor</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Rincian spesifikasi & jadwal --}}
+                <div class="mt-3.5 rounded-2xl bg-surface-inset p-3.5 border border-hairline divide-y divide-hairline text-xs">
+                    @if ($item->komitmen_disetujui_pada)
+                        <div class="flex items-center justify-between py-1.5">
+                            <span class="text-mute">Komitmen</span>
+                            <span class="font-medium text-ink">
+                                {{ \Carbon\Carbon::parse($item->komitmen_disetujui_pada)->translatedFormat('d M Y') }}
+                                @if($item->komitmen_via)
+                                    &middot; {{ ucfirst($item->komitmen_via) }}
+                                @endif
+                            </span>
                         </div>
                     @endif
-
-                    @if ($item->catatan_admin)
-                        <div class="mt-4 rounded-xl bg-warning-soft p-3 text-xs text-warning-deep">
-                            <span class="font-medium">Catatan admin:</span> {{ $item->catatan_admin }}
+                    @if ($item->produk && $item->produk->tanggal_boleh_cair)
+                        <div class="flex items-center justify-between py-1.5">
+                            <span class="text-mute">Tanggal Boleh Cair</span>
+                            <span class="font-medium text-ink">
+                                {{ \Carbon\Carbon::parse($item->produk->tanggal_boleh_cair)->translatedFormat('d M Y') }}
+                            </span>
+                        </div>
+                    @endif
+                    @if ($item->metode_pengambilan && !$bolehPilihMetode)
+                        <div class="flex items-center justify-between py-1.5">
+                            <span class="text-mute">Pengambilan</span>
+                            <span class="font-medium text-ink">
+                                {{ $item->metode_pengambilan === 'ambil_sendiri' ? 'Ambil Sendiri di Kantor' : 'Diantar Kolektor ke Rumah' }}
+                            </span>
+                        </div>
+                    @endif
+                    @if ($item->status_serah_terima)
+                        <div class="flex items-center justify-between py-1.5">
+                            <span class="text-mute">Serah Terima</span>
+                            <span class="font-medium text-ink">
+                                {{ $isSudahDiterima ? 'Sudah Diterima' : 'Belum Diterima' }}
+                            </span>
+                        </div>
+                    @endif
+                    @if ($item->keputusan_akhir)
+                        <div class="flex items-center justify-between py-1.5">
+                            <span class="text-mute">Keputusan</span>
+                            <span class="font-medium text-ink">
+                                {{ ucfirst(str_replace('_', ' ', $item->keputusan_akhir)) }}
+                            </span>
+                        </div>
+                    @endif
+                    @if ($isSudahDiterima && $item->bukti_foto_url)
+                        <div class="flex items-center justify-between py-2 border-t border-hairline">
+                            <span class="text-mute">Bukti Penyerahan</span>
+                            <a href="{{ route('serah-terima.bukti', $item) }}"
+                               @click.prevent="$dispatch('buka-foto-bukti', { url: '{{ route('serah-terima.bukti', $item) }}', judul: 'Foto Bukti Serah Terima', keterangan: '{{ $item->produk?->nama }} · Diterima oleh {{ $item->diterima_oleh }}' })"
+                               class="inline-flex items-center gap-1.5 font-semibold text-primary hover:underline cursor-pointer">
+                                <flux:icon.camera class="size-3.5" />
+                                <span>Lihat Foto Bukti Serah Terima</span>
+                            </a>
                         </div>
                     @endif
                 </div>
+
+                {{-- Catatan admin --}}
+                @if ($item->catatan_admin)
+                    <div class="mt-3 rounded-xl bg-surface-inset p-3 text-xs text-mute border border-hairline">
+                        <span class="font-medium text-ink">Catatan admin:</span> {{ $item->catatan_admin }}
+                    </div>
+                @endif
             </article>
         @empty
-            <div class="rounded-[20px] border border-hairline-warm bg-white p-8 text-center shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
+            <div class="rounded-[24px] border border-hairline bg-white p-8 text-center shadow-xs dark:bg-surface">
                 <span class="mx-auto flex size-32 items-center justify-center rounded-full bg-primary-soft" aria-hidden="true">
                     <x-ui.ilustrasi nama="tunas" :ukuran="96" />
                 </span>
                 <p class="mt-4 text-base font-semibold text-ink">Anda belum terdaftar dalam paket apa pun.</p>
                 <p class="mt-1 text-xs text-mute">Pilih paket tabungan untuk mulai menabung.</p>
                 <a href="{{ route('nasabah.paket.pilih') }}" wire:navigate
-                   class="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-medium text-on-primary transition hover:bg-primary-hover active:scale-95"
+                   class="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs font-semibold text-on-primary transition hover:bg-primary-hover active:scale-95"
                    data-test="tombol-ikut-paket">
-                    <flux:icon.plus-circle class="size-4" />
-                    Pilih Paket Sekarang
+                    <flux:icon.plus class="size-4" />
+                    <span>Pilih Paket Sekarang</span>
                 </a>
             </div>
         @endforelse
+
+        {{-- Tombol ikuti paket baru di bagian bawah bila ada paket yang sudah diikuti --}}
+        @if($kepesertaan->isNotEmpty())
+            <div class="pt-1">
+                <a href="{{ route('nasabah.paket.pilih') }}" wire:navigate
+                   class="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-primary/30 bg-white text-sm font-semibold text-primary transition hover:bg-primary-soft active:scale-[0.98] dark:bg-surface">
+                    <flux:icon.plus class="size-4" />
+                    <span>Ikuti paket baru</span>
+                </a>
+            </div>
+        @endif
     </div>
 </div>
+

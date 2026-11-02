@@ -1,8 +1,15 @@
 <div class="space-y-6">
-    {{-- Judul halaman --}}
-    <div>
-        <h1 class="text-2xl font-semibold tracking-tight text-ink">Saldo saya</h1>
-        <p class="mt-1 text-sm text-mute">Rincian saldo per produk tabungan aktif Anda.</p>
+    {{-- Header navigasi kembali & judul --}}
+    <div class="flex items-center gap-3">
+        <a href="{{ route('dashboard') }}" wire:navigate
+           aria-label="Kembali ke Beranda"
+           class="flex size-11 shrink-0 items-center justify-center rounded-full border border-hairline bg-surface text-ink transition hover:bg-surface-inset active:scale-95">
+            <flux:icon.arrow-left class="size-5" />
+        </a>
+        <div class="min-w-0 flex-1">
+            <h1 class="text-xl font-semibold tracking-tight text-ink leading-tight">Saldo saya</h1>
+            <p class="text-xs text-mute truncate">Rincian saldo per produk tabungan aktif Anda.</p>
+        </div>
     </div>
 
     {{-- Kartu saldo utama (hero-card §7) --}}
@@ -39,7 +46,7 @@
                     ? (int) min(100, round((float) $item->saldo / $targetProduk * 100))
                     : null;
             @endphp
-            <div class="rounded-[20px] border border-hairline-warm bg-white p-4 shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface" data-test="kartu-produk-saldo">
+            <div class="rounded-[20px] border border-hairline bg-surface p-4 shadow-xs" data-test="kartu-produk-saldo">
                 <div class="flex items-start justify-between gap-3">
                     <div class="flex items-center gap-3">
                         <x-ui.tile :kategori="$item->produk->isPaket() ? 'teal' : 'hijau'" ukuran="44" aria-hidden="true">
@@ -85,10 +92,10 @@
                     </div>
                 @endif
 
-                <div class="mt-3.5 pt-3 border-t border-hairline-warm flex items-center justify-between">
+                <div class="mt-3.5 pt-3 border-t border-hairline flex items-center justify-between">
                     <span class="text-xs text-mute">Tersedia untuk ditarik</span>
                     <a href="{{ route('nasabah.penarikan.index', ['produk_id' => $item->produk_id]) }}" wire:navigate
-                       class="inline-flex items-center gap-1.5 rounded-full border border-hairline-strong bg-white px-3.5 py-1.5 text-xs font-medium text-ink transition hover:bg-surface-inset active:scale-95 dark:bg-surface"
+                       class="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface px-3.5 py-1.5 text-xs font-medium text-ink transition hover:bg-surface-inset active:scale-95"
                        data-test="tombol-tarik-produk">
                         <flux:icon.arrow-up-tray class="size-3.5 text-primary" />
                         Tarik
@@ -96,7 +103,7 @@
                 </div>
             </div>
         @empty
-            <div class="rounded-[20px] border border-hairline-warm bg-white p-8 text-center shadow-[0_1px_2px_rgba(20,83,45,.06)] dark:bg-surface">
+            <div class="rounded-[20px] border border-hairline bg-surface p-8 text-center shadow-xs">
                 <span class="mx-auto flex size-32 items-center justify-center rounded-full bg-primary-soft" aria-hidden="true">
                     <x-ui.ilustrasi nama="tunas" :ukuran="96" />
                 </span>
