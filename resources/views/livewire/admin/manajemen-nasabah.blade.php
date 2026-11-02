@@ -214,6 +214,7 @@
                         <x-admin.row-actions>
                             <a
                                 href="{{ route('admin.nasabah.detail', $item->user_id) }}"
+                                wire:click.prevent="bukaDetail({{ $item->id }})"
                                 class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] border border-hairline bg-surface text-xs font-medium text-ink transition hover:bg-surface-2 cursor-pointer shadow-xs"
                                 title="Lihat Detail"
                             >
@@ -336,7 +337,8 @@
                     <div class="pt-2 border-t border-hairline/60 flex flex-wrap items-center justify-end gap-1.5">
                         <a
                             href="{{ route('admin.nasabah.detail', $item->user_id) }}"
-                            class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] border border-hairline bg-surface text-xs font-medium text-ink transition hover:bg-surface-2"
+                            wire:click.prevent="bukaDetail({{ $item->id }})"
+                            class="min-h-11 h-8 inline-flex items-center justify-center px-3 rounded-[10px] border border-hairline bg-surface text-xs font-medium text-ink transition hover:bg-surface-2 cursor-pointer"
                         >
                             Detail
                         </a>
@@ -459,5 +461,207 @@
                 <p class="text-xs text-mute leading-relaxed">Seluruh sesi login nasabah akan dihapus dan notifikasi dimatikan &mdash; nasabah dicatat kembali lewat buku fisik.</p>
             @endif
         </x-admin.dialog>
+    @endif
+
+    {{-- Drawer Slide-over Detail Nasabah Sesuai Desain UI/UX Prototipe --}}
+    @if($detailData)
+        @php
+            $dp = $detailData['profil'];
+            $isOfflineDetail = $dp->user?->isOffline() || $dp->user?->mode_akses === 'offline';
+            $isLockedDetail = $dp->user?->isLocked() || ($dp->user?->login_terkunci_hingga && $dp->user->login_terkunci_hingga->isFuture());
+
+            if ($isLockedDetail) {
+                $statusKeyDetail = 'terkunci';
+                $statusDomainDetail = 'akun';
+                $statusTeksDetail = 'Terkunci';
+            } elseif ($dp->status_pendaftaran === 'pending_verifikasi') {
+                $statusKeyDetail = 'pending_verifikasi';
+                $statusDomainDetail = 'pendaftaran';
+                $statusTeksDetail = 'Pending';
+            } elseif ($dp->status_pendaftaran === 'ditolak') {
+                $statusKeyDetail = 'ditolak';
+                $statusDomainDetail = 'pendaftaran';
+                $statusTeksDetail = 'Ditolak';
+            } else {
+                $statusKeyDetail = 'aktif';
+                $statusDomainDetail = 'pendaftaran';
+                $statusTeksDetail = 'Aktif';
+            }
+        @endphp
+
+        {{-- Backdrop Scrim --}}
+        <div class="fixed inset-0 bg-black/40 z-40 transition-opacity" wire:click="tutupDetail"></div>
+
+        {{-- Drawer Slide-over Panel --}}
+        <aside class="fixed inset-y-0 right-0 z-50 w-full max-w-[560px] bg-surface border-l border-hairline shadow-2xl flex flex-col transition-transform">
+            {{-- Header Drawer --}}
+            <div class="flex items-center justify-between px-5 py-4 border-b border-hairline">
+                <h3 class="text-base font-semibold text-ink">Detail Nasabah</h3>
+                <button
+                    type="button"
+                    wire:click="tutupDetail"
+                    class="flex size-8 items-center justify-center rounded-[8px] border border-hairline text-mute hover:text-ink hover:bg-surface-2 transition cursor-pointer"
+                    aria-label="Tutup"
+                >
+                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Isi Drawer --}}
+            <div class="p-5 overflow-y-auto flex-1 space-y-5 text-sm">
+                {{-- 1. Profil --}}
+                <div class="space-y-1">
+                    <h4 class="text-xs uppercase tracking-[0.05em] text-mute font-medium mb-1">Profil</h4>
+                    <div class="flex items-center justify-between gap-3 py-2 border-b border-dashed border-hairline text-sm">
+                        <span class="text-mute">No. HP</span>
+                        <b class="font-medium text-ink tabular-nums">{{ $dp->user?->no_hp ?? '-' }}</b>
+                    </div>
+                    <div class="flex items-center justify-between gap-3 py-2 border-b border-dashed border-hairline text-sm">
+                        <span class="text-mute">Alamat</span>
+                        <b class="font-medium text-ink text-right">{{ $dp->alamat ?? '-' }}</b>
+                    </div>
+                    <div class="flex items-center justify-between gap-3 py-2 border-b border-dashed border-hairline text-sm">
+                        <span class="text-mute">Kolektor</span>
+                        <b class="font-medium text-ink">{{ $detailData['kolektor'] }}</b>
+                    </div>
+                    <div class="flex items-center justify-between gap-3 py-2 border-b border-dashed border-hairline text-sm">
+                        <span class="text-mute">Mode</span>
+                        <x-admin.status-chip domain="mode_akses" :status="$isOfflineDetail ? 'offline' : 'digital'" :teks="$isOfflineDetail ? 'Offline' : 'Digital'" />
+                    </div>
+                    <div class="flex items-center justify-between gap-3 py-2 border-b-0 text-sm">
+                        <span class="text-mute">Status</span>
+                        <x-admin.status-chip :domain="$statusDomainDetail" :status="$statusKeyDetail" :teks="$statusTeksDetail" />
+                    </div>
+                </div>
+
+                {{-- 2. Saldo per Produk --}}
+                <div class="space-y-1">
+                    <h4 class="text-xs uppercase tracking-[0.05em] text-mute font-medium mb-1">Saldo per Produk</h4>
+                    @forelse($detailData['saldoProduk'] as $sp)
+                        <div class="flex items-center justify-between gap-3 py-2 border-b border-dashed border-hairline text-sm">
+                            <span class="text-mute">{{ $sp->produk->nama ?? 'Produk' }}</span>
+                            <b class="font-medium text-ink tabular-nums">Rp {{ number_format($sp->saldo, 0, ',', '.') }}</b>
+                        </div>
+                    @empty
+                        <div class="py-2 text-xs text-mute border-b border-dashed border-hairline">Belum ada saldo produk.</div>
+                    @endforelse
+                    <div class="flex items-center justify-between gap-3 py-2 border-b-0 text-sm">
+                        <span class="text-mute font-medium">Total</span>
+                        <b class="font-semibold text-ink tabular-nums">Rp {{ number_format($detailData['totalSaldo'], 0, ',', '.') }}</b>
+                    </div>
+                </div>
+
+                {{-- 3. Kepesertaan Paket --}}
+                <div class="space-y-1">
+                    <h4 class="text-xs uppercase tracking-[0.05em] text-mute font-medium mb-1">Kepesertaan Paket</h4>
+                    @forelse($detailData['kepesertaan'] as $kp)
+                        <div class="flex items-center justify-between gap-3 py-2 border-b border-dashed border-hairline text-sm">
+                            <span class="text-mute">{{ $kp->produk->nama ?? 'Paket' }}</span>
+                            <x-admin.status-chip domain="produk" status="aktif" teks="Aktif" />
+                        </div>
+                        <div class="flex items-center justify-between gap-3 py-2 border-b border-dashed border-hairline text-sm">
+                            <span class="text-mute">Komitmen</span>
+                            <b class="font-medium text-ink text-right text-xs">
+                                Disetujui via kolektor, {{ $kp->tanggal_mulai_ikut ? $kp->tanggal_mulai_ikut->format('d M Y') : '12 Jan 2026' }}
+                            </b>
+                        </div>
+                        <div class="flex items-center justify-between gap-3 py-2 border-b-0 text-sm">
+                            <span class="text-mute">Kolektor</span>
+                            <b class="font-medium text-ink">{{ $detailData['kolektor'] }}</b>
+                        </div>
+                    @empty
+                        <div class="flex items-center justify-between gap-3 py-2 border-b border-dashed border-hairline text-sm">
+                            <span class="text-mute">Paket Tabungan</span>
+                            <span class="text-xs text-mute">Belum ada paket aktif</span>
+                        </div>
+                    @endforelse
+                </div>
+
+                {{-- 4. Perkembangan Saldo --}}
+                <div class="space-y-2">
+                    <h4 class="text-xs uppercase tracking-[0.05em] text-mute font-medium">Perkembangan Saldo</h4>
+                    <div class="inline-flex gap-1 rounded-[10px] border border-hairline bg-surface-2 p-[3px]">
+                        @foreach(['30 Hari', '90 Hari', 'Tahun Ini'] as $perOpt)
+                            <button
+                                type="button"
+                                wire:click="setPeriodeDetail('{{ $perOpt }}')"
+                                @class([
+                                    'h-7 rounded-[7px] px-3 text-xs font-medium transition cursor-pointer select-none',
+                                    'bg-surface font-semibold text-ink shadow-xs' => $periodeDetail === $perOpt,
+                                    'text-mute hover:text-ink' => $periodeDetail !== $perOpt,
+                                ])
+                            >
+                                {{ $perOpt }}
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <div class="bars flex items-end gap-[5px] h-[110px] pt-2 overflow-hidden rounded-[10px] bg-surface-2/60 p-2 border border-hairline/60" role="img" aria-label="Grafik perkembangan saldo {{ $periodeDetail }}">
+                        @foreach($detailData['bars'] as $i => $bar)
+                            @php
+                                $isLast = $i === count($detailData['bars']) - 1;
+                            @endphp
+                            <div
+                                class="flex-1 rounded-t-[5px] rounded-b-[2px] transition-all duration-300 {{ $isLast ? 'bg-primary' : 'bg-primary/30' }}"
+                                style="height: {{ $bar['pct'] }}%; min-height: 4px;"
+                                title="Rp {{ number_format($bar['val'], 0, ',', '.') }}"
+                            ></div>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- 5. Riwayat Transaksi --}}
+                <div class="space-y-2">
+                    <h4 class="text-xs uppercase tracking-[0.05em] text-mute font-medium">Riwayat Transaksi</h4>
+                    @if($detailData['riwayat']->isNotEmpty())
+                        <div class="rounded-[10px] border border-hairline overflow-hidden">
+                            <table class="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr class="bg-surface-2 text-mute border-b border-hairline font-medium">
+                                        <th class="px-3 py-2">Tanggal</th>
+                                        <th class="px-3 py-2">Tipe</th>
+                                        <th class="px-3 py-2 text-right">Nominal</th>
+                                        <th class="px-3 py-2 text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-hairline">
+                                    @foreach($detailData['riwayat'] as $trx)
+                                        <tr class="hover:bg-surface-2 transition">
+                                            <td class="px-3 py-2 text-mute">{{ $trx['tanggal'] }}</td>
+                                            <td class="px-3 py-2 font-medium text-ink">{{ $trx['tipe'] }}</td>
+                                            <td class="px-3 py-2 text-right tabular-nums font-medium text-ink">Rp {{ number_format($trx['nominal'], 0, ',', '.') }}</td>
+                                            <td class="px-3 py-2 text-right">
+                                                <x-admin.status-chip :status="$trx['status']" />
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <p class="text-xs text-mute py-2">Belum ada riwayat transaksi.</p>
+                    @endif
+                </div>
+
+                {{-- Tombol Aksi Bawah --}}
+                <div class="flex items-center gap-2 pt-3 border-t border-hairline">
+                    <a
+                        href="{{ route('admin.nasabah.detail', $dp->user_id) }}"
+                        class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] bg-primary px-4 text-xs font-semibold text-white transition hover:bg-primary-hover active:scale-95 cursor-pointer shadow-xs"
+                    >
+                        Daftarkan ke Paket
+                    </a>
+                    <button
+                        type="button"
+                        wire:click="confirmResetPin({{ $dp->user_id }})"
+                        class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] border border-hairline bg-surface px-4 text-xs font-medium text-ink transition hover:bg-surface-2 cursor-pointer shadow-xs"
+                    >
+                        Reset PIN
+                    </button>
+                </div>
+            </div>
+        </aside>
     @endif
 </div>

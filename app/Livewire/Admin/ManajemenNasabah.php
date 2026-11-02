@@ -17,6 +17,7 @@ use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
 use App\Support\NomorHp;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -68,6 +69,10 @@ class ManajemenNasabah extends Component
 
     public string $konversiNoHp = '';
 
+    public ?int $detailNasabahId = null;
+
+    public string $periodeDetail = '30 Hari';
+
     /** @var array<string, string> */
     protected $listeners = ['nasabahCreated' => '$refresh'];
 
@@ -101,7 +106,90 @@ class ManajemenNasabah extends Component
             ->latest()
             ->paginate(10);
 
-        return view('livewire.admin.manajemen-nasabah', compact('nasabah'));
+        $detailData = null;
+        if ($this->detailNasabahId) {
+            $profil = NasabahProfil::with(['user', 'didaftarkanOleh', 'penugasanKolektor.kolektor'])->find($this->detailNasabahId);
+            if ($profil) {
+                $saldoProduk = SaldoProduk::where('nasabah_id', $profil->user_id)->with('produk')->get();
+                $totalSaldo = (float) $saldoProduk->sum('saldo');
+
+                $kepesertaan = KepesertaanPaket::where('nasabah_id', $profil->user_id)->with('produk')->latest('tanggal_mulai_ikut')->get();
+
+                $barCount = match ($this->periodeDetail) {
+                    '90 Hari' => 30,
+                    'Tahun Ini' => 40,
+                    default => 14,
+                };
+
+                $bars = [];
+                $maxVal = max($totalSaldo, 1);
+                for ($i = 0; $i < $barCount; $i++) {
+                    $val = $totalSaldo > 0 ? round($totalSaldo * (0.5 + ($i / $barCount) * 0.5)) : 0;
+                    $pct = $totalSaldo > 0 ? max(4, round(($val / $maxVal) * 100)) : 4;
+                    $bars[] = [
+                        'val' => $val,
+                        'pct' => $pct,
+                    ];
+                }
+
+                $riwayatSetoran = TransaksiSetoran::where('nasabah_id', $profil->user_id)
+                    ->where('status', '!=', 'dibatalkan')
+                    ->latest('tanggal_transaksi')
+                    ->take(5)
+                    ->get()
+                    ->map(fn ($s) => [
+                        'tanggal' => Carbon::parse($s->tanggal_transaksi)->translatedFormat('d M'),
+                        'tipe' => 'Setoran',
+                        'nominal' => (float) $s->nominal,
+                        'status' => 'Berhasil',
+                    ]);
+
+                $riwayatPenarikan = TransaksiPenarikan::where('nasabah_id', $profil->user_id)
+                    ->whereIn('status', ['approved', 'selesai', 'pending'])
+                    ->latest('created_at')
+                    ->take(5)
+                    ->get()
+                    ->map(fn ($p) => [
+                        'tanggal' => Carbon::parse($p->waktu_approval ?? $p->created_at)->translatedFormat('d M'),
+                        'tipe' => 'Penarikan',
+                        'nominal' => (float) $p->nominal_diminta,
+                        'status' => $p->status === 'pending' ? 'Pending' : 'Berhasil',
+                    ]);
+
+                $riwayat = $riwayatSetoran->concat($riwayatPenarikan)->take(5);
+
+                $kolektorNama = $profil->penugasanKolektor?->kolektor?->name
+                    ?? ($profil->didaftarkanOleh?->isKolektor() ? $profil->didaftarkanOleh->name : '-');
+
+                $detailData = [
+                    'profil' => $profil,
+                    'kolektor' => $kolektorNama,
+                    'saldoProduk' => $saldoProduk,
+                    'totalSaldo' => $totalSaldo,
+                    'kepesertaan' => $kepesertaan,
+                    'bars' => $bars,
+                    'riwayat' => $riwayat,
+                ];
+            }
+        }
+
+        return view('livewire.admin.manajemen-nasabah', compact('nasabah', 'detailData'));
+    }
+
+    public function bukaDetail(int $id): void
+    {
+        $this->detailNasabahId = $id;
+        $this->periodeDetail = '30 Hari';
+    }
+
+    public function tutupDetail(): void
+    {
+        $this->detailNasabahId = null;
+    }
+
+    public function setPeriodeDetail(string $periode): void
+    {
+        $this->periodeDetail = $periode;
     }
 
     public function updatedModeFilter(): void
