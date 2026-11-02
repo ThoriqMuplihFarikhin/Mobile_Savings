@@ -6,7 +6,11 @@ use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
 use App\Models\TransaksiPenarikan;
 use App\Models\User;
+use Carbon\Carbon;
 use Livewire\Livewire;
+
+beforeEach(fn () => Carbon::setTestNow(Carbon::parse('2026-10-26 12:00:00')));
+afterEach(fn () => Carbon::setTestNow());
 
 /**
  * @return array{admin: User, kolektor: User, produk: ProdukTabungan, lain: ProdukTabungan}
