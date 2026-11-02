@@ -1,4 +1,10 @@
 <div class="space-y-6 pb-8">
+    {{-- Page Header --}}
+    <div>
+        <h1 class="text-2xl font-semibold tracking-tight text-ink">Ajukan izin / cuti</h1>
+        <p class="mt-1 text-sm text-mute">Pengajuan izin kerja atau cuti, menunggu persetujuan admin.</p>
+    </div>
+
     @if (session('success'))
         <div class="flex items-center gap-2.5 rounded-xl border border-hairline bg-primary-soft px-4 py-3 text-sm font-medium text-on-primary-soft">
             <flux:icon.check-circle class="size-5 shrink-0" aria-hidden="true" />
@@ -36,6 +42,20 @@
                 <label class="mb-1.5 block text-sm font-medium text-body" for="alasan-izin">Alasan</label>
                 <textarea wire:model="alasan" rows="3" id="alasan-izin" placeholder="Contoh: acara keluarga di luar kota"
                           class="w-full rounded-xl border border-hairline-strong bg-white px-3 py-3 text-base text-ink placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface"></textarea>
+                <div class="mt-2 flex flex-wrap gap-1.5">
+                    <button type="button" wire:click="$set('alasan', 'Sakit (istirahat medis)')"
+                        class="rounded-full border border-hairline bg-inset px-3 py-1 text-xs font-medium text-body transition hover:bg-hairline hover:text-ink active:scale-95">
+                        Sakit
+                    </button>
+                    <button type="button" wire:click="$set('alasan', 'Keperluan keluarga mendesak')"
+                        class="rounded-full border border-hairline bg-inset px-3 py-1 text-xs font-medium text-body transition hover:bg-hairline hover:text-ink active:scale-95">
+                        Keperluan keluarga
+                    </button>
+                    <button type="button" wire:click="$set('alasan', 'Cuti tahunan')"
+                        class="rounded-full border border-hairline bg-inset px-3 py-1 text-xs font-medium text-body transition hover:bg-hairline hover:text-ink active:scale-95">
+                        Cuti tahunan
+                    </button>
+                </div>
                 @error('alasan') <p class="mt-1.5 flex items-center gap-1 text-sm text-danger"><flux:icon.exclamation-circle class="size-4 shrink-0" aria-hidden="true" />{{ $message }}</p> @enderror
             </div>
 
@@ -47,7 +67,7 @@
     </div>
 
     <div class="rounded-2xl border border-hairline bg-white p-5 dark:bg-surface">
-        <h2 class="text-base font-semibold text-ink">Riwayat pengajuan</h2>
+        <h2 class="text-base font-semibold text-ink">Pengajuan saya</h2>
 
         <div class="mt-3 space-y-3">
             @forelse($daftarIzin as $izin)

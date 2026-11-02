@@ -199,3 +199,31 @@ it('scheduler mendaftarkan jadwal:generate setiap pukul 00:30', function () {
     expect($event)->not->toBeNull()
         ->and($event->expression)->toBe('30 0 * * *');
 });
+
+it('komponen jadwal kunjungan dapat membuka dan menutup modal rute peta', function () {
+    ['kolektor' => $kolektor, 'nasabahA' => $nasabahA] = p63Fixture();
+    p63Binaan($kolektor, $nasabahA, [p63HariIni()]);
+
+    $tes = Livewire::actingAs($kolektor)->test(JadwalKunjungan::class);
+
+    $tes->assertSee('Lihat rute hari ini')
+        ->assertDontSee('Peta rute kunjungan')
+        ->call('bukaRuteModal')
+        ->assertSet('showRuteModal', true)
+        ->assertSee('Rute hari ini')
+        ->assertSee('Peta rute kunjungan')
+        ->assertSee('Buka di Maps')
+        ->call('tutupRuteModal')
+        ->assertSet('showRuteModal', false)
+        ->assertDontSee('Peta rute kunjungan');
+});
+
+it('halaman nasabah binaan menampilkan tautan tambah daftar nasabah', function () {
+    ['kolektor' => $kolektor, 'nasabahA' => $nasabahA] = p63Fixture();
+    p63Binaan($kolektor, $nasabahA);
+
+    Livewire::actingAs($kolektor)
+        ->test(NasabahBinaan::class)
+        ->assertSee('+ Daftar')
+        ->assertSee(route('kolektor.daftar-nasabah.index'));
+});

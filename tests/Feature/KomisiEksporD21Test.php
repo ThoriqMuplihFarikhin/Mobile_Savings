@@ -89,7 +89,7 @@ function siapkanKomisiEkspor(): array
         'nominal_komisi' => 1000,
         'nominal_diterima' => 39000,
         'waktu_approval' => now(),
-        'waktu_pencairan' => now()->subMonth(),
+        'waktu_pencairan' => now()->subMonthNoOverflow(),
     ]);
 
     return ['admin' => $admin, 'kolektor' => $kolektor, 'produk' => $produk, 'lain' => $lain];

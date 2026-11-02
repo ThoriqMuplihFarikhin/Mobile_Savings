@@ -97,6 +97,10 @@
                         Batal
                     </button>
                 </div>
+                <p class="pt-1 text-center text-xs text-mute flex items-center justify-center gap-1.5">
+                    <flux:icon.information-circle class="size-4 shrink-0" aria-hidden="true" />
+                    Data diverifikasi admin sebelum akun aktif.
+                </p>
             </form>
         </div>
     @endif

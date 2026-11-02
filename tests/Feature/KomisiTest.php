@@ -79,7 +79,7 @@ it('filters by date range based on waktu_approval', function () {
     ]);
 
     // Approved last month
-    createApprovedPenarikan($nasabah, $admin, $produk, 'approved', 50000, 2500, now()->subMonth()->toDateString());
+    createApprovedPenarikan($nasabah, $admin, $produk, 'approved', 50000, 2500, now()->subMonthNoOverflow()->toDateString());
     // Approved this month
     createApprovedPenarikan($nasabah, $admin, $produk, 'approved', 100000, 5000, now()->toDateString());
 
@@ -92,7 +92,7 @@ it('filters by date range based on waktu_approval', function () {
 
     // Expand filter to include last month
     Livewire::test(Komisi::class)
-        ->set('dariTanggal', now()->subMonth()->startOfMonth()->toDateString())
+        ->set('dariTanggal', now()->subMonthNoOverflow()->startOfMonth()->toDateString())
         ->assertSet('totalKomisi', 7500)
         ->assertSet('totalTransaksi', 2);
 });

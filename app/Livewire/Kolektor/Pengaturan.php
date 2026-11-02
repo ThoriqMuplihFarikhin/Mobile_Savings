@@ -5,6 +5,9 @@ namespace App\Livewire\Kolektor;
 use App\Livewire\Actions\Logout;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Livewire\Concerns\HasNotifikasiWaToggle;
+use App\Models\AbsensiKolektor;
+use App\Models\JadwalKunjungan;
+use App\Models\KolektorNasabah;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -41,6 +44,24 @@ class Pengaturan extends Component
 
     public function render()
     {
-        return view('livewire.kolektor.pengaturan');
+        $userId = (int) Auth::id();
+
+        $totalKunjunganLancar = JadwalKunjungan::where('kolektor_id', $userId)
+            ->where('status_kunjungan', 'dikunjungi')
+            ->count();
+
+        $totalNasabahBinaan = KolektorNasabah::where('kolektor_id', $userId)
+            ->where('status', 'aktif')
+            ->count();
+
+        $streakTepatWaktu = AbsensiKolektor::where('kolektor_id', $userId)
+            ->whereNotNull('waktu_masuk')
+            ->count();
+
+        return view('livewire.kolektor.pengaturan', compact(
+            'totalKunjunganLancar',
+            'totalNasabahBinaan',
+            'streakTepatWaktu'
+        ));
     }
 }

@@ -159,3 +159,39 @@ it('accumulates saldo across multiple deposits', function () {
 
     $this->assertDatabaseCount('transaksi_setoran', 2);
 });
+
+it('menampilkan modal sukses setoran setelah submit dan dapat ditutup', function () {
+    $kolektor = User::factory()->kolektor()->create();
+    $nasabah = User::factory()->nasabah()->create();
+    $produk = ProdukTabungan::create([
+        'nama' => 'Tabungan Sukses',
+        'tipe' => 'bebas',
+        'persen_komisi' => 0,
+        'status' => 'aktif',
+    ]);
+
+    KolektorNasabah::create([
+        'kolektor_id' => $kolektor->id,
+        'nasabah_id' => $nasabah->id,
+        'tanggal_mulai_ditangani' => now()->toDateString(),
+        'status' => 'aktif',
+    ]);
+
+    $this->actingAs($kolektor);
+
+    Livewire::test(InputSetoran::class)
+        ->set('nasabahId', $nasabah->id)
+        ->set('produkId', $produk->id)
+        ->set('nominal', 50000)
+        ->set('tanggal_transaksi', now()->format('Y-m-d'))
+        ->set('sumber_input', 'real_time')
+        ->call('submit')
+        ->assertHasNoErrors()
+        ->assertSet('showSuccess', true)
+        ->assertSee('Setoran dicatat')
+        ->assertSee('Bagikan struk')
+        ->assertSee('Kunjungan berikutnya')
+        ->call('tutupSuccess')
+        ->assertSet('showSuccess', false)
+        ->assertDontSee('Bagikan struk');
+});

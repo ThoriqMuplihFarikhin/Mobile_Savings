@@ -30,6 +30,56 @@ class JadwalKunjungan extends Component
 
     public $filterStatus = 'semua';
 
+    public bool $showRuteModal = false;
+
+    public bool $showLewatiModal = false;
+
+    public ?int $selectedNasabahLewatiId = null;
+
+    public ?string $selectedNasabahNama = null;
+
+    public string $alasanLewati = 'Tidak di rumah';
+
+    public function bukaRuteModal(): void
+    {
+        $this->showRuteModal = true;
+    }
+
+    public function tutupRuteModal(): void
+    {
+        $this->showRuteModal = false;
+    }
+
+    public function bukaLewatiModal(int $nasabahId, ?string $nama = null): void
+    {
+        $this->selectedNasabahLewatiId = $nasabahId;
+        $this->selectedNasabahNama = $nama;
+        $this->alasanLewati = 'Tidak di rumah';
+        $this->showLewatiModal = true;
+    }
+
+    public function tutupLewatiModal(): void
+    {
+        $this->showLewatiModal = false;
+        $this->selectedNasabahLewatiId = null;
+        $this->selectedNasabahNama = null;
+    }
+
+    public function simpanLewati(): void
+    {
+        if (! $this->selectedNasabahLewatiId) {
+            return;
+        }
+
+        $status = in_array($this->alasanLewati, ['Alamat tidak ditemukan', 'Tidak di rumah'], true)
+            ? 'tidak_ada'
+            : 'dilewati';
+
+        $this->updateStatus($this->selectedNasabahLewatiId, $status);
+        $this->tutupLewatiModal();
+        session()->flash('success', 'Kunjungan ditandai dilewati (alasan: '.$this->alasanLewati.').');
+    }
+
     public function mount()
     {
         $this->tanggal = now()->format('Y-m-d');

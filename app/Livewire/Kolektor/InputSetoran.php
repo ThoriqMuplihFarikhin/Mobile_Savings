@@ -52,6 +52,8 @@ class InputSetoran extends Component
 
     public $showSuccess = false;
 
+    public ?int $lastSetoranId = null;
+
     public $searchNasabah = '';
 
     public $showPickerNasabah = true;
@@ -64,6 +66,11 @@ class InputSetoran extends Component
         $this->tanggal_transaksi = now()->format('Y-m-d');
         $this->loadNasabah();
         $this->loadProduk();
+
+        $targetNasabah = request()->query('nasabah_id') ?? request()->query('nasabah');
+        if ($targetNasabah) {
+            $this->pilihNasabah((int) $targetNasabah);
+        }
     }
 
     public function loadNasabah()
@@ -146,6 +153,16 @@ class InputSetoran extends Component
         $this->hitungTunggakan();
     }
 
+    public function getSelectedProdukProperty(): ?ProdukTabungan
+    {
+        return $this->produkId ? ProdukTabungan::find($this->produkId) : null;
+    }
+
+    public function setNominalAngka(int $angka): void
+    {
+        $this->nominal = (string) $angka;
+    }
+
     public function tambahNominal($jumlah)
     {
         $this->nominal = ($this->nominal ?: 0) + $jumlah;
@@ -199,7 +216,7 @@ class InputSetoran extends Component
         }
 
         try {
-            app(CatatSetoranAction::class)->execute([
+            $setoran = app(CatatSetoranAction::class)->execute([
                 'nasabah_id' => (int) $this->nasabahId,
                 'produk_id' => (int) $this->produkId,
                 'nominal' => $this->nominal,
@@ -217,6 +234,7 @@ class InputSetoran extends Component
         }
 
         $this->idempotencyKey = (string) Str::uuid();
+        $this->lastSetoranId = $setoran->id;
         $this->showSuccess = true;
         $this->reset(['nasabahId', 'produkId', 'nominal', 'catatan']);
         $this->selectedNasabah = null;
@@ -225,6 +243,12 @@ class InputSetoran extends Component
         session()->flash('success', 'Setoran berhasil dicatat!');
 
         $this->dispatch('setoranCreated');
+    }
+
+    public function tutupSuccess(): void
+    {
+        $this->showSuccess = false;
+        $this->lastSetoranId = null;
     }
 
     public function resetNominal()
@@ -261,6 +285,10 @@ class InputSetoran extends Component
         // D13: banner kas memakai angka net dari sumber tunggal.
         $totalBelumDisetor = (float) KasKolektorHitung::kasDiTangan((int) Auth::id());
 
-        return view('livewire.kolektor.input-setoran', compact('riwayatHariIni', 'totalBelumDisetor'));
+        $lastSetoran = $this->lastSetoranId
+            ? TransaksiSetoran::with(['nasabah', 'produk'])->find($this->lastSetoranId)
+            : null;
+
+        return view('livewire.kolektor.input-setoran', compact('riwayatHariIni', 'totalBelumDisetor', 'lastSetoran'));
     }
 }

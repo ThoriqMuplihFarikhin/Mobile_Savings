@@ -45,7 +45,11 @@ class VerifikasiPenarikan extends Component
             ->latest()
             ->paginate(10);
 
-        return view('livewire.kolektor.verifikasi-penarikan', compact('penarikan'));
+        $penarikanAktif = $this->penarikanId
+            ? TransaksiPenarikan::with(['nasabah', 'produk'])->find($this->penarikanId)
+            : null;
+
+        return view('livewire.kolektor.verifikasi-penarikan', compact('penarikan', 'penarikanAktif'));
     }
 
     public function bukaModal(int $id)

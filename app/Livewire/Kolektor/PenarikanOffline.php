@@ -82,6 +82,12 @@ class PenarikanOffline extends Component
                     ->where('status', 'aktif');
             })
             ->count();
+
+        $paramNasabah = request()->query('nasabah_id') ?? request()->query('nasabah');
+        if ($paramNasabah && is_numeric($paramNasabah) && $this->isNasabahBinaan((int) $paramNasabah)) {
+            $this->nasabahId = (string) $paramNasabah;
+            $this->updatedNasabahId();
+        }
     }
 
     public function loadProduk(?int $nasabahId = null): void
@@ -144,6 +150,25 @@ class PenarikanOffline extends Component
     public function updatedNominal()
     {
         $this->hitungKomisi();
+    }
+
+    public function setNominal(float|int|string $nilai): void
+    {
+        $this->nominal = (string) $nilai;
+        $this->hitungKomisi();
+    }
+
+    public function tarikHabis(): void
+    {
+        if (! $this->selectedNasabah || ! $this->produkId) {
+            return;
+        }
+
+        $saldoObj = $this->selectedNasabah->user->saldoProduks->firstWhere('produk_id', (int) $this->produkId);
+        if ($saldoObj && (float) $saldoObj->saldo > 0) {
+            $this->nominal = (string) $saldoObj->saldo;
+            $this->hitungKomisi();
+        }
     }
 
     public function hitungKomisi()
