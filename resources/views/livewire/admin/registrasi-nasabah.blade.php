@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-5">
     {{-- Header Halaman --}}
     <x-admin.page-header
         title="Registrasi Nasabah"
@@ -17,7 +17,7 @@
     @endif
 
     {{-- 2-Kolom: Form Registrasi (Kiri) & Terdaftar Terbaru (Kanan) --}}
-    <div class="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-5 items-start">
         {{-- Kolom Kiri: Form Registrasi Nasabah --}}
         <div class="rounded-[14px] border border-hairline bg-surface p-5 shadow-xs">
             <div class="border-b border-hairline pb-3 mb-4">
@@ -26,23 +26,9 @@
             </div>
 
             <form wire:submit="submit" class="space-y-4">
-                {{-- Mode Offline Checkbox --}}
-                <div class="rounded-[10px] border border-hairline bg-surface-2 p-3">
-                    <label class="flex items-start gap-2.5 text-xs text-ink cursor-pointer">
-                        <input
-                            type="checkbox"
-                            wire:model.live="modeOffline"
-                            class="size-4 mt-0.5 rounded border-hairline text-accent focus:ring-accent"
-                        />
-                        <span class="leading-relaxed">
-                            <strong>Nasabah tanpa aplikasi (Mode Offline).</strong> Kolektor yang mencatat setoran dan penarikan langsung melalui buku tabungan fisik.
-                        </span>
-                    </label>
-                </div>
-
                 <div class="grid gap-4 sm:grid-cols-2">
                     {{-- Nama Lengkap --}}
-                    <div>
+                    <div class="{{ $modeOffline ? 'sm:col-span-2' : '' }}">
                         <label class="mb-1.5 block text-xs font-medium text-ink">Nama Lengkap</label>
                         <input
                             type="text"
@@ -68,7 +54,7 @@
                     @endif
 
                     {{-- Alamat --}}
-                    <div class="{{ ! $modeOffline ? 'sm:col-span-2' : '' }}">
+                    <div class="sm:col-span-2">
                         <label class="mb-1.5 block text-xs font-medium text-ink">Alamat</label>
                         <textarea
                             wire:model="alamat"
@@ -113,26 +99,31 @@
                         />
                         @error('pekerjaan') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
+
+                    {{-- Mode Offline Checkbox --}}
+                    <div class="sm:col-span-2 pt-1">
+                        <label class="flex items-start gap-2.5 text-xs text-ink cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                wire:model.live="modeOffline"
+                                class="size-4 mt-0.5 rounded border-hairline text-accent focus:ring-accent cursor-pointer"
+                            />
+                            <span class="leading-relaxed text-mute">
+                                <strong class="text-ink font-medium">Nasabah tanpa aplikasi (Mode Offline).</strong> Kolektor yang mencatat setoran dan penarikan langsung melalui buku tabungan fisik.
+                            </span>
+                        </label>
+                    </div>
                 </div>
 
                 {{-- Aksi Formulir --}}
-                <div class="flex items-center gap-2 pt-2 border-t border-hairline">
+                <div class="flex items-center justify-end pt-3 border-t border-hairline">
                     <button
                         type="submit"
                         wire:loading.attr="disabled"
-                        class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] bg-accent px-5 text-xs font-semibold text-accent-foreground transition hover:opacity-90 disabled:opacity-50 cursor-pointer shadow-xs"
+                        class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] bg-primary px-5 text-xs font-semibold text-white transition hover:bg-primary-hover active:scale-95 disabled:opacity-50 cursor-pointer shadow-xs"
                     >
                         Daftarkan
                     </button>
-                    @if($showForm)
-                        <button
-                            type="button"
-                            wire:click="toggleForm"
-                            class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] border border-hairline bg-surface px-4 text-xs font-medium text-mute transition hover:bg-surface-2 hover:text-ink cursor-pointer"
-                        >
-                            Batal
-                        </button>
-                    @endif
                 </div>
             </form>
         </div>
@@ -148,34 +139,43 @@
                 <div class="divide-y divide-hairline">
                     @foreach($nasabah as $item)
                         <div class="flex items-center gap-3 px-4 py-3 hover:bg-surface-2 transition">
-                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-on-primary-soft text-xs font-semibold">
+                            <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-on-primary-soft text-xs font-semibold select-none">
                                 {{ $item->initials() }}
                             </span>
                             <div class="min-w-0 flex-1">
-                                <a href="{{ route('admin.nasabah.detail', $item->id) }}" wire:navigate class="truncate text-sm font-medium text-ink hover:text-primary transition-colors block">
+                                <a
+                                    href="{{ route('admin.nasabah.index', ['detail' => $item->id]) }}"
+                                    wire:navigate
+                                    class="truncate text-sm font-medium text-ink hover:text-primary transition-colors block"
+                                    title="Lihat detail nasabah"
+                                >
                                     {{ $item->name }}
                                 </a>
-                                <p class="text-xs text-mute truncate">
-                                    {{ $item->no_hp ?? '— (offline)' }}
+                                <span class="block text-xs text-mute truncate mt-0.5">
+                                    <span class="tabular-nums">{{ $item->no_hp ?? 'Offline' }}</span>
                                     @if($item->nasabahProfil?->alamat)
-                                        · {{ $item->nasabahProfil->alamat }}
+                                        &middot; {{ $item->nasabahProfil->alamat }}
                                     @endif
-                                </p>
+                                </span>
                             </div>
                             <div class="shrink-0">
-                                <x-admin.status-chip :status="$item->status_akun === 'aktif' ? 'Aktif' : 'Terkunci'" />
+                                <x-admin.status-chip :status="$item->status_akun === 'aktif' ? 'Aktif' : ($item->status_akun === 'terkunci' ? 'Terkunci' : 'Pending')" />
                             </div>
                         </div>
                     @endforeach
                 </div>
-                <div class="p-3 border-t border-hairline bg-surface-2">
-                    {{ $nasabah->links() }}
-                </div>
+                @if($nasabah->hasPages())
+                    <div class="p-3 border-t border-hairline bg-surface-2">
+                        {{ $nasabah->links() }}
+                    </div>
+                @endif
             @else
-                <x-admin.empty-state
-                    title="Belum ada nasabah"
-                    description="Nasabah yang didaftarkan akan muncul di sini."
-                />
+                <div class="p-4">
+                    <x-admin.empty-state
+                        title="Belum ada nasabah"
+                        description="Nasabah yang didaftarkan akan muncul di sini."
+                    />
+                </div>
             @endif
         </div>
     </div>
