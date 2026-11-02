@@ -110,3 +110,48 @@ it('memuat status koreksi bila setoran pernah dikoreksi', function () {
         ->assertSee('Rp 150.000')
         ->assertSee('Rp 120.000');
 });
+
+it('halaman struk memiliki struktur pop up modal dengan role dialog dan tombol tutup', function () {
+    ['nasabah' => $nasabah, 'setoran' => $setoran] = p64StrukFixture();
+
+    $this->actingAs($nasabah)
+        ->get(route('struk.setoran', $setoran))
+        ->assertOk()
+        ->assertSee('role="dialog"', false)
+        ->assertSee('aria-modal="true"', false)
+        ->assertSee('struk-popup')
+        ->assertSee('tutupPopUp()')
+        ->assertSee('Tutup Struk')
+        ->assertSee('Bagikan');
+});
+
+it('endpoint struk mengembalikan format json saat diminta untuk pop up modal', function () {
+    ['nasabah' => $nasabah, 'setoran' => $setoran] = p64StrukFixture([
+        'nominal' => 250000,
+    ]);
+
+    $nomor = 'SET-'.str_pad((string) $setoran->id, 6, '0', STR_PAD_LEFT);
+
+    $this->actingAs($nasabah)
+        ->getJson(route('struk.setoran', $setoran))
+        ->assertOk()
+        ->assertJson([
+            'id' => $setoran->id,
+            'nomor' => $nomor,
+            'nasabah' => $nasabah->name,
+            'nominal' => 250000,
+            'nominal_formatted' => 'Rp 250.000',
+            'status' => 'tercatat',
+            'status_label' => 'Diterima',
+        ]);
+});
+
+it('dashboard memuat modal struk dan trigger pop up', function () {
+    ['nasabah' => $nasabah] = p64StrukFixture();
+
+    $this->actingAs($nasabah)
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('data-test="modal-struk-popup"', false)
+        ->assertSee('buka-struk');
+});
