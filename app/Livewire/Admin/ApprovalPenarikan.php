@@ -35,7 +35,7 @@ class ApprovalPenarikan extends Component
         return 'admin';
     }
 
-    public string $statusFilter = 'pending';
+    public string $statusFilter = 'semua';
 
     public string $alasan = '';
 
@@ -52,10 +52,13 @@ class ApprovalPenarikan extends Component
 
     public function render(): View
     {
-        $penarikan = TransaksiPenarikan::with(['nasabah', 'produk', 'disetujuiOleh'])
-            ->where('status', $this->statusFilter)
-            ->latest()
-            ->paginate(10);
+        $query = TransaksiPenarikan::with(['nasabah', 'produk', 'disetujuiOleh']);
+
+        if ($this->statusFilter !== 'semua' && $this->statusFilter !== '') {
+            $query->where('status', $this->statusFilter);
+        }
+
+        $penarikan = $query->latest()->paginate(10);
 
         $ringkasanStatus = [
             'pending' => TransaksiPenarikan::where('status', 'pending')->count(),
