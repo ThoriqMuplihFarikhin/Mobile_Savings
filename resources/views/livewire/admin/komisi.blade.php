@@ -97,58 +97,60 @@
                 </button>
             </div>
 
-            {{-- Opsi Periode Tanggal & Filter Tambahan (Harmonis, Collapsible & Menjaga Kontrak Test) --}}
-            <details class="group border-t border-hairline/40 pt-2 text-xs">
-                <summary class="flex cursor-pointer items-center justify-between text-mute hover:text-ink select-none py-1">
-                    <span class="inline-flex items-center gap-1.5 font-medium">
-                        <svg class="size-3.5 transition group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        Opsi Periode Tanggal & Filter Tambahan
-                        <span class="text-[11px] text-mute/80">({{ $dariTanggal ? \Carbon\Carbon::parse($dariTanggal)->format('d/m/Y') : 'Awal' }} - {{ $sampaiTanggal ? \Carbon\Carbon::parse($sampaiTanggal)->format('d/m/Y') : 'Sekarang' }})</span>
-                    </span>
-                    <span class="text-[11px] text-primary group-open:hidden">Sesuaikan</span>
-                </summary>
-                <div class="mt-3 space-y-3 pt-2">
-                    <div class="flex flex-wrap items-center justify-between gap-3">
-                        <div data-test="baris-tanggal-filter" class="flex flex-wrap items-center gap-2">
-                            <span class="text-xs font-medium text-mute">Dari</span>
-                            <x-ui.tanggal wire:model.live="dariTanggal"
-                                class="h-[34px] rounded-lg border border-hairline/60 bg-surface px-2.5 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
-                            <span class="text-xs font-medium text-mute">Sampai</span>
-                            <x-ui.tanggal wire:model.live="sampaiTanggal" :min="$dariTanggal"
-                                class="h-[34px] rounded-lg border border-hairline/60 bg-surface px-2.5 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
-                            
-                            <select wire:model.live="kolektorId"
-                                class="h-[34px] rounded-lg border border-hairline/60 bg-surface px-2.5 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20">
-                                <option value="">Semua Kolektor Pembayar</option>
-                                @foreach($kolektorList as $kolektor)
-                                    <option value="{{ $kolektor->id }}">{{ $kolektor->name }}</option>
-                                @endforeach
-                            </select>
-
-                            <select wire:model.live="dasarTanggal" title="Dasar tanggal penentuan periode"
-                                class="h-[34px] rounded-lg border border-hairline/60 bg-surface px-2.5 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20">
-                                <option value="waktu_approval">Dasar: Tanggal Approval</option>
-                                <option value="waktu_pencairan">Dasar: Tanggal Pencairan</option>
-                            </select>
-                        </div>
-
-                        <div data-test="baris-aksi-filter" class="flex flex-wrap items-center gap-2">
-                            <button type="button" wire:click="exportCsv"
-                                class="inline-flex h-[34px] items-center gap-1.5 rounded-lg border border-hairline/60 bg-surface px-3 text-xs font-medium text-ink shadow-xs transition hover:bg-surface-2">
-                                Unduh CSV
-                            </button>
-                            <button type="button" x-on:click="window.print()"
-                                class="inline-flex h-[34px] items-center gap-1.5 rounded-lg border border-hairline/60 bg-surface px-3 text-xs font-medium text-ink shadow-xs transition hover:bg-surface-2">
-                                Cetak
-                            </button>
-                            <button type="button" wire:click="resetFilter"
-                                class="inline-flex h-[34px] items-center gap-1.5 rounded-lg border border-hairline/60 bg-surface px-3 text-xs font-medium text-ink shadow-xs transition hover:bg-surface-2">
-                                Reset Filter
-                            </button>
-                        </div>
+            {{-- Baris 2: Periode Tanggal & Opsi Tambahan (Rapi, Terbuka & Siap Digunakan) --}}
+            <div class="flex flex-wrap items-center justify-between gap-3 border-t border-hairline/40 pt-2.5 text-xs">
+                <div data-test="baris-tanggal-filter" class="flex flex-wrap items-center gap-2">
+                    <div class="flex items-center gap-1.5 text-mute font-medium mr-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mute shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>Periode:</span>
                     </div>
+
+                    <div class="w-36">
+                        <x-ui.tanggal wire:model.live="dariTanggal"
+                            placeholder="Dari tanggal"
+                            class="h-[34px] w-full rounded-xl border border-hairline/60 bg-surface px-2.5 pr-8 text-xs font-medium text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 shadow-xs" />
+                    </div>
+                    <span class="text-xs font-medium text-mute">&ndash;</span>
+                    <div class="w-36">
+                        <x-ui.tanggal wire:model.live="sampaiTanggal" :min="$dariTanggal"
+                            placeholder="Sampai tanggal"
+                            class="h-[34px] w-full rounded-xl border border-hairline/60 bg-surface px-2.5 pr-8 text-xs font-medium text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 shadow-xs" />
+                    </div>
+
+                    <select wire:model.live="kolektorId"
+                        class="h-[34px] rounded-xl border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 shadow-xs">
+                        <option value="">Semua Kolektor</option>
+                        @foreach($kolektorList as $kolektor)
+                            <option value="{{ $kolektor->id }}">{{ $kolektor->name }}</option>
+                        @endforeach
+                    </select>
+
+                    <select wire:model.live="dasarTanggal" title="Dasar tanggal penentuan periode"
+                        class="h-[34px] rounded-xl border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 shadow-xs">
+                        <option value="waktu_approval">Dasar: Tanggal Approval</option>
+                        <option value="waktu_pencairan">Dasar: Tanggal Pencairan</option>
+                    </select>
                 </div>
-            </details>
+
+                <div data-test="baris-aksi-filter" class="flex flex-wrap items-center gap-2">
+                    <button type="button" wire:click="exportCsv"
+                        class="inline-flex h-[34px] items-center gap-1.5 rounded-xl border border-hairline/60 bg-surface px-3 text-xs font-semibold text-ink shadow-xs transition hover:bg-surface-2 focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        <span>Unduh CSV</span>
+                    </button>
+                    <button type="button" x-on:click="window.print()"
+                        class="inline-flex h-[34px] items-center gap-1.5 rounded-xl border border-hairline/60 bg-surface px-3 text-xs font-semibold text-ink shadow-xs transition hover:bg-surface-2 focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        <span>Cetak</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         {{-- 3 KPI Cards --}}
