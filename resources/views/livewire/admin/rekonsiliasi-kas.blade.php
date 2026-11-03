@@ -416,6 +416,17 @@
                             </div>
                         </div>
 
+                        @if(($rincianLangsung['belum']['jumlah'] ?? 0) + ($rincianLangsung['sesuai']['jumlah'] ?? 0) + ($rincianLangsung['bermasalah']['jumlah'] ?? 0) > 0)
+                            <div class="rounded-2xl bg-warning-soft p-4 space-y-1.5 text-xs text-warning-deep border border-warning-deep/20">
+                                <p class="font-bold">Rincian penarikan offline langsung kolektor ini</p>
+                                <p class="font-mono text-xs">
+                                    belum ditinjau {{ $rincianLangsung['belum']['jumlah'] }} (Rp {{ number_format($rincianLangsung['belum']['nominal'], 0, ',', '.') }})
+                                    &middot; sesuai {{ $rincianLangsung['sesuai']['jumlah'] }} (Rp {{ number_format($rincianLangsung['sesuai']['nominal'], 0, ',', '.') }})
+                                    &middot; bermasalah {{ $rincianLangsung['bermasalah']['jumlah'] }} (Rp {{ number_format($rincianLangsung['bermasalah']['nominal'], 0, ',', '.') }})
+                                </p>
+                            </div>
+                        @endif
+
                         @if($detailTransaksi->count() > 0)
                             <div>
                                 <label class="mb-1.5 block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Total Diterima (Fisik)</label>

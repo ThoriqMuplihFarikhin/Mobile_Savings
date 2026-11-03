@@ -58,8 +58,10 @@ class KelolaKolektor extends Component
     {
         $kolektor = User::where('role', 'kolektor')
             ->when($this->search, function ($query) {
-                $query->where('name', 'like', "%{$this->search}%")
-                    ->orWhere('no_hp', 'like', "%{$this->search}%");
+                $query->where(function ($q) {
+                    $q->where('name', 'like', "%{$this->search}%")
+                        ->orWhere('no_hp', 'like', "%{$this->search}%");
+                });
             })
             ->withCount(['kolektorNasabahs as nasabah_aktif_count' => function ($q) {
                 $q->where('status', 'aktif');
