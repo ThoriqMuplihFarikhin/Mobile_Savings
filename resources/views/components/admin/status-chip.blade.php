@@ -102,6 +102,8 @@
             'Diterima' => 'ok', 'diterima' => 'ok',
             'Berhasil' => 'ok', 'berhasil' => 'ok',
             'Ditinjau' => 'wr', 'ditinjau' => 'wr',
+            'Lunas' => 'ok', 'lunas' => 'ok',
+            'Tunggakan' => 'er', 'tunggakan' => 'er',
         ];
         $tipe = $TN[$nilai] ?? 'mu';
     }
