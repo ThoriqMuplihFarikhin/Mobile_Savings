@@ -1,13 +1,14 @@
-<style>
-    @page { margin: 14mm; }
-    @media print {
-        body * { visibility: hidden !important; }
-        .laporan-cetak, .laporan-cetak * { visibility: visible !important; }
-        .laporan-cetak { position: absolute; left: 0; top: 0; width: 100%; }
-    }
-</style>
-<div>
-    <div class="laporan-cetak space-y-4" data-portal="admin">
+<div class="space-y-4" data-portal="admin">
+    <style>
+        @page { margin: 14mm; }
+        @media print {
+            body * { visibility: hidden !important; }
+            .laporan-cetak, .laporan-cetak * { visibility: visible !important; }
+            .laporan-cetak { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+
+    <div class="laporan-cetak space-y-4">
         {{-- Print Header --}}
         <div class="mb-4 hidden print:block">
             <h2 class="text-lg font-semibold text-ink">Laporan Komisi</h2>

@@ -249,7 +249,7 @@ class Komisi extends Component
             ->latest('waktu_approval')
             ->paginate(15);
 
-        $produkList = ProdukTabungan::where('persen_komisi', '>', 0)->orderBy('nama')->get();
+        $produkList = ProdukTabungan::where('status', 'aktif')->orderBy('nama')->get();
         $kolektorList = User::where('role', 'kolektor')->orderBy('name')->get();
 
         return view('livewire.admin.komisi', compact(
