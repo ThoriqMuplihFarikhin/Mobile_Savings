@@ -37,7 +37,7 @@
     @endif
 
     {{-- Card: Menunggu Pemrosesan (Clean & Borderless) --}}
-    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm shadow-zinc-950/5 transition-all">
+    <div class="rounded-2xl bg-white dark:bg-surface p-6 shadow-sm shadow-zinc-950/5 transition-all">
         <div class="flex items-center justify-between pb-4">
             <div class="flex items-center gap-2.5">
                 <span class="flex size-2 rounded-full bg-warning-deep"></span>
@@ -101,7 +101,7 @@
     </div>
 
     {{-- Card: Riwayat Rekonsiliasi (Clean & Borderless) --}}
-    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm shadow-zinc-950/5 transition-all">
+    <div class="rounded-2xl bg-white dark:bg-surface p-6 shadow-sm shadow-zinc-950/5 transition-all">
         <div class="flex items-center justify-between pb-4">
             <div class="flex items-center gap-2.5">
                 <span class="flex size-2 rounded-full bg-primary"></span>
@@ -264,7 +264,7 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Proses setoran {{ $selectedItem->kolektor->name ?? 'Kolektor' }}">
             <div class="fixed inset-0 bg-black/45 transition-opacity cursor-pointer" wire:click="cancelProcess"></div>
 
-            <div class="relative w-full max-w-[460px] rounded-3xl bg-white dark:bg-zinc-900 p-6 shadow-2xl shadow-zinc-950/20 transition-all z-10 my-auto">
+            <div class="relative w-full max-w-[460px] rounded-3xl bg-white dark:bg-surface p-6 shadow-2xl shadow-zinc-950/20 transition-all z-10 my-auto">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white leading-tight">
@@ -327,7 +327,7 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Tolak pengajuan?">
             <div class="fixed inset-0 bg-black/45 transition-opacity cursor-pointer" wire:click="cancelReject"></div>
 
-            <div class="relative w-full max-w-[460px] rounded-3xl bg-white dark:bg-zinc-900 p-6 shadow-2xl shadow-zinc-950/20 transition-all z-10 my-auto">
+            <div class="relative w-full max-w-[460px] rounded-3xl bg-white dark:bg-surface p-6 shadow-2xl shadow-zinc-950/20 transition-all z-10 my-auto">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white leading-tight">
@@ -372,7 +372,7 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Input Manual Setoran Kas">
             <div class="fixed inset-0 bg-black/45 transition-opacity cursor-pointer" wire:click="closeInputManual"></div>
 
-            <div class="relative w-full max-w-[500px] rounded-3xl bg-white dark:bg-zinc-900 p-6 shadow-2xl shadow-zinc-950/20 transition-all z-10 my-auto">
+            <div class="relative w-full max-w-[500px] rounded-3xl bg-white dark:bg-surface p-6 shadow-2xl shadow-zinc-950/20 transition-all z-10 my-auto">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <h3 class="text-lg font-bold text-zinc-900 dark:text-white leading-tight">
@@ -480,7 +480,7 @@
         <div class="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="Detail Rekonsiliasi Kas">
             <div class="fixed inset-0 bg-black/45 transition-opacity cursor-pointer" wire:click="tutupDetail"></div>
 
-            <div class="relative z-10 flex h-full w-full max-w-[480px] flex-col bg-white dark:bg-zinc-900 shadow-2xl shadow-zinc-950/20 transition-all">
+            <div class="relative z-10 flex h-full w-full max-w-[480px] flex-col bg-white dark:bg-surface shadow-2xl shadow-zinc-950/20 transition-all">
                 {{-- Header Drawer --}}
                 <div class="flex items-center justify-between px-6 py-5 border-b border-zinc-100 dark:border-zinc-800/80">
                     <div>
@@ -563,7 +563,7 @@
                                 </span>
                             </div>
                             @if($detailSetoran->keterangan_selisih)
-                                <div class="rounded-xl bg-white dark:bg-zinc-900 p-3 text-xs text-zinc-800 dark:text-zinc-200 mt-2">
+                                <div class="rounded-xl bg-white dark:bg-surface p-3 text-xs text-zinc-800 dark:text-zinc-200 mt-2">
                                     <span class="font-semibold text-zinc-400 block mb-0.5">Catatan / Keterangan:</span>
                                     {{ $detailSetoran->keterangan_selisih }}
                                 </div>

@@ -76,7 +76,7 @@
                         <th class="px-4 py-2.5">Waktu</th>
                         <th class="px-4 py-2.5">Kolektor</th>
                         <th class="px-4 py-2.5">Nasabah / Produk</th>
-                        <th class="px-4 py-2.5 text-right">Nominal</th>
+                        <th class="px-4 py-2.5 text-mute text-right">Nominal</th>
                         <th class="px-4 py-2.5">Lokasi</th>
                         <th class="px-4 py-2.5">Catatan & Bukti</th>
                         <th class="px-4 py-2.5 text-center">Tinjauan</th>
@@ -108,7 +108,7 @@
                                     <div class="text-xs text-mute mt-0.5">{{ $item->produk->nama }}</div>
                                 @endif
                             </td>
-                            <td class="whitespace-nowrap px-4 py-3 text-right tabular-nums text-xs font-medium text-ink">
+                            <td class="whitespace-nowrap px-4 py-3 tabular-nums text-right text-sm font-medium text-ink dark:text-white">
                                 Rp {{ number_format((float) $item->nominal_diminta, 0, ',', '.') }}
                             </td>
                             <td class="whitespace-nowrap px-4 py-3 text-xs text-body">

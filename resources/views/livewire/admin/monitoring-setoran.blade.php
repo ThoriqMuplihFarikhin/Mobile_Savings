@@ -3,15 +3,7 @@
         breadcrumb="Operasional"
         title="Monitoring Koreksi Setoran"
         subtitle="Lihat, koreksi, atau batalkan setoran nasabah."
-    >
-        <x-slot:actions>
-            <a href="/admin/setoran/create" wire:navigate
-                class="min-h-11 inline-flex h-[38px] items-center gap-1.5 rounded-[10px] bg-primary px-4 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover active:scale-[0.98]">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                <span>+ Catat Setoran</span>
-            </a>
-        </x-slot:actions>
-    </x-admin.page-header>
+    />
 
     @if (session('success'))
         <div class="flex items-center gap-2.5 rounded-[10px] border border-primary/20 bg-primary-soft p-3 text-xs font-medium text-on-primary-soft">
@@ -26,78 +18,81 @@
         </div>
     @endif
 
-    <div class="overflow-hidden rounded-[14px] border border-hairline bg-white shadow-xs dark:bg-surface">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-hairline p-3 sm:px-4">
-            <div class="flex flex-wrap items-center gap-2.5 flex-1 min-w-[260px]">
-                <div class="relative flex-1 sm:w-64 sm:flex-initial">
-                    <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-mute" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <circle cx="11" cy="11" r="7" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4-4" />
-                    </svg>
-                    <input type="text" wire:model.live="search" placeholder="Cari nama nasabah atau produk..."
-                        class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface pl-9 pr-3 text-xs text-ink placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                </div>
-                <select wire:model.live="statusFilter"
-                    class="h-[38px] rounded-[10px] border border-hairline bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface">
-                    <option value="">Semua Status</option>
-                    <option value="tercatat">Tercatat</option>
-                    <option value="dikoreksi">Dikoreksi</option>
-                    <option value="dibatalkan">Dibatalkan</option>
-                </select>
-                <x-ui.tanggal wire:model.live="tanggalFilter"
-                    class="h-[38px] rounded-[10px] border border-hairline bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface" />
+    <div class="overflow-hidden rounded-2xl border border-hairline/80 bg-white shadow-xs dark:bg-surface">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-hairline/80 p-3 sm:px-4">
+            <div class="relative w-full max-w-sm sm:w-80">
+                <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-mute" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="7" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4-4" />
+                </svg>
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama nasabah atau produk..."
+                    class="h-[38px] w-full rounded-[10px] border border-hairline bg-surface pl-9 pr-3 text-xs text-ink placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
-            <button type="button" wire:click="$refresh"
-                class="inline-flex h-[38px] items-center gap-1.5 rounded-[10px] border border-hairline bg-surface px-4 text-xs font-semibold text-ink shadow-xs transition hover:bg-inset">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                <span>Muat Ulang</span>
-            </button>
+
+            <div class="inline-flex items-center gap-1 rounded-[10px] border border-hairline bg-surface-2 p-[3px] overflow-x-auto max-w-full" role="group" aria-label="Status Setoran">
+                @foreach([
+                    '' => 'Semua Status',
+                    'tercatat' => 'Tercatat',
+                    'dikoreksi' => 'Dikoreksi',
+                    'dibatalkan' => 'Dibatalkan',
+                ] as $val => $label)
+                    <button
+                        type="button"
+                        wire:click="$set('statusFilter', '{{ $val }}')"
+                        class="min-h-11 inline-flex items-center justify-center rounded-[7px] px-3.5 py-1.5 text-xs transition cursor-pointer {{ $statusFilter === $val ? 'bg-surface text-ink font-semibold shadow-xs' : 'text-mute hover:text-ink font-medium' }}"
+                    >
+                        {{ $label }}
+                    </button>
+                @endforeach
+            </div>
         </div>
 
         <div class="overflow-x-auto">
             <table class="hidden md:table w-full text-left">
                 <thead>
-                    <tr class="border-b border-hairline bg-inset/50">
-                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute">Tanggal</th>
-                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute">Nasabah</th>
-                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute">Produk</th>
-                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute text-right">Nominal</th>
-                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute">Input Oleh</th>
-                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-mute">Status</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-mute">Aksi</th>
+                    <tr class="border-b border-hairline bg-surface-2 text-[11px] font-semibold uppercase tracking-wider text-mute">
+                        <th class="px-4 py-3">Tanggal</th>
+                        <th class="px-4 py-3">Nasabah</th>
+                        <th class="px-4 py-3">Produk</th>
+                        <th class="px-4 py-3 text-mute text-right">Nominal</th>
+                        <th class="px-4 py-3">Input Oleh</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-hairline">
                     @forelse($setoran as $item)
-                        <tr class="transition hover:bg-inset/30">
-                            <td class="px-4 py-3 text-xs text-body">{{ $item->tanggal_transaksi->translatedFormat('d M Y') }}</td>
+                        <tr class="transition hover:bg-surface-2">
+                            <td class="whitespace-nowrap px-4 py-3 text-xs text-body">
+                                {{ $item->tanggal_transaksi ? $item->tanggal_transaksi->translatedFormat('d M') : '-' }}{{ $item->tanggal_input_sistem ? ' ' . $item->tanggal_input_sistem->format('H.i') : '' }}
+                            </td>
                             <td class="px-4 py-3">
                                 <div class="text-xs font-medium text-ink">{{ $item->nasabah->name ?? '-' }}</div>
-                                <div class="text-[11px] text-mute">{{ $item->nasabah->no_hp ?? '— (offline)' }}</div>
+                                @if($item->nasabah?->no_hp)
+                                    <div class="text-[11px] text-mute">{{ $item->nasabah->no_hp }}</div>
+                                @endif
                             </td>
-                            <td class="px-4 py-3 text-xs text-body">{{ $item->produk->nama ?? '-' }}</td>
-                            <td class="px-4 py-3 text-right">
+                            <td class="whitespace-nowrap px-4 py-3 text-xs text-body">{{ $item->produk->nama ?? '-' }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 text-right">
                                 <div class="tabular-nums text-right text-sm font-medium text-ink">Rp {{ number_format($item->nominal, 0, ',', '.') }}</div>
                                 @if($item->nominal_asli)
                                     <div class="tabular-nums text-right text-xs text-mute">Asli: Rp {{ number_format($item->nominal_asli, 0, ',', '.') }}</div>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-xs text-body">{{ $item->inputBy->name ?? '-' }}</td>
-                            <td class="px-4 py-3">
-                                @if($item->status === 'tercatat')
-                                    <x-admin.status-chip label="Tercatat" variant="info" />
-                                @elseif($item->status === 'dikoreksi')
-                                    <x-admin.status-chip label="Dikoreksi" variant="warn" />
-                                @else
-                                    <x-admin.status-chip label="Dibatalkan" variant="danger" />
-                                @endif
+                            <td class="whitespace-nowrap px-4 py-3 text-xs text-body">{{ $item->inputBy->name ?? '-' }}</td>
+                            <td class="whitespace-nowrap px-4 py-3">
+                                <x-admin.status-chip :status="$item->status" domain="setoran" />
                             </td>
-                            <td class="px-4 py-3 text-right">
+                            <td class="whitespace-nowrap px-4 py-3 text-right">
                                 @if(in_array($item->status, ['tercatat', 'dikoreksi']))
-                                    <div class="inline-flex items-center gap-1">
-                                        <button wire:click="toggleKoreksi({{ $item->id }})"
-                                            class="inline-flex h-8 items-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">Koreksi</button>
-                                        <button wire:click="toggleBatal({{ $item->id }})"
-                                            class="inline-flex h-8 items-center rounded-[8px] border border-hairline bg-white px-3 text-xs font-semibold text-ink shadow-xs transition hover:bg-inset dark:bg-surface">Batal</button>
+                                    <div class="inline-flex items-center justify-end gap-1.5">
+                                        <button type="button" wire:click="toggleKoreksi({{ $item->id }})"
+                                            class="inline-flex h-8 items-center rounded-lg border border-hairline/80 bg-white px-3 text-xs font-medium text-ink shadow-2xs transition hover:bg-inset active:scale-[0.98] dark:bg-surface">
+                                            Koreksi
+                                        </button>
+                                        <button type="button" wire:click="toggleBatal({{ $item->id }})"
+                                            class="inline-flex h-8 items-center rounded-lg border border-danger/20 bg-danger-soft px-3 text-xs font-medium text-danger transition hover:bg-danger/10 active:scale-[0.98]">
+                                            Batalkan
+                                        </button>
                                     </div>
                                 @else
                                     <span class="text-xs text-mute">-</span>
@@ -126,18 +121,14 @@
                             <p class="text-xs font-semibold text-ink">{{ $item->nasabah->name ?? '-' }}</p>
                             <p class="text-[11px] text-mute">{{ $item->nasabah->no_hp ?? '— (offline)' }}</p>
                         </div>
-                        @if($item->status === 'tercatat')
-                            <x-admin.status-chip label="Tercatat" variant="info" />
-                        @elseif($item->status === 'dikoreksi')
-                            <x-admin.status-chip label="Dikoreksi" variant="warn" />
-                        @else
-                            <x-admin.status-chip label="Dibatalkan" variant="danger" />
-                        @endif
+                        <x-admin.status-chip :status="$item->status" domain="setoran" />
                     </div>
                     <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 rounded-[10px] bg-inset/40 p-2.5 text-[11px]">
                         <div>
                             <span class="block text-mute">Tanggal</span>
-                            <span class="tabular-nums font-medium text-body">{{ $item->tanggal_transaksi->translatedFormat('d M Y') }}</span>
+                            <span class="tabular-nums font-medium text-body">
+                                {{ $item->tanggal_transaksi ? $item->tanggal_transaksi->translatedFormat('d M Y') : '-' }}{{ $item->tanggal_input_sistem ? ' ' . $item->tanggal_input_sistem->format('H.i') : '' }}
+                            </span>
                         </div>
                         <div>
                             <span class="block text-mute">Produk</span>
@@ -157,10 +148,14 @@
                     </div>
                     @if(in_array($item->status, ['tercatat', 'dikoreksi']))
                         <div class="flex items-center justify-end gap-2 pt-1">
-                            <button wire:click="toggleKoreksi({{ $item->id }})"
-                                class="min-h-11 inline-flex h-8 items-center rounded-[8px] bg-primary px-3 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">Koreksi</button>
-                            <button wire:click="toggleBatal({{ $item->id }})"
-                                class="min-h-11 inline-flex h-8 items-center rounded-[8px] border border-hairline bg-white px-3 text-xs font-semibold text-ink shadow-xs transition hover:bg-inset dark:bg-surface">Batal</button>
+                            <button type="button" wire:click="toggleKoreksi({{ $item->id }})"
+                                class="min-h-11 inline-flex items-center justify-center rounded-lg border border-hairline/80 bg-white px-4 text-xs font-medium text-ink shadow-2xs transition hover:bg-inset active:scale-[0.98] dark:bg-surface">
+                                Koreksi
+                            </button>
+                            <button type="button" wire:click="toggleBatal({{ $item->id }})"
+                                class="min-h-11 inline-flex items-center justify-center rounded-lg border border-danger/20 bg-danger-soft px-4 text-xs font-medium text-danger transition hover:bg-danger/10 active:scale-[0.98]">
+                                Batalkan
+                            </button>
                         </div>
                     @endif
                 </div>
@@ -170,19 +165,29 @@
                 </div>
             @endforelse
         </div>
-        @if($setoran->hasPages())
-            <div class="border-t border-hairline px-4 py-3">{{ $setoran->links() }}</div>
-        @endif
+
+        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-hairline/80 px-4 py-3 sm:px-5">
+            <div class="text-xs text-mute">
+                Menampilkan {{ $setoran->count() }} dari {{ $setoran->total() }} data
+            </div>
+            @if($setoran->hasPages())
+                <div>{{ $setoran->links() }}</div>
+            @else
+                <div class="text-xs text-mute">
+                    Halaman {{ $setoran->currentPage() }} dari {{ $setoran->lastPage() }}
+                </div>
+            @endif
+        </div>
     </div>
 
     @if($showKoreksi)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modal-koreksi-setoran-title">
             <div class="fixed inset-0 bg-black/50 transition-opacity" wire:click="$set('showKoreksi', false)" aria-hidden="true"></div>
 
-            <div class="relative w-full max-w-md rounded-[16px] border border-hairline bg-surface p-6 shadow-2xl dark:bg-surface" @click.stop>
+            <div class="relative w-full max-w-md rounded-2xl border border-hairline bg-surface p-6 shadow-2xl dark:bg-surface" @click.stop>
                 <div class="flex items-start justify-between border-b border-hairline pb-3">
                     <div>
-                        <h3 id="modal-koreksi-setoran-title" class="text-sm font-semibold text-ink">Koreksi Setoran</h3>
+                        <h3 id="modal-koreksi-setoran-title" class="text-base font-semibold text-ink">Koreksi Setoran</h3>
                         <p class="mt-0.5 text-xs text-mute">Ubah nominal setoran yang sudah tercatat.</p>
                     </div>
                     <button type="button" wire:click="$set('showKoreksi', false)" aria-label="Tutup"
@@ -216,14 +221,14 @@
                             placeholder="Alasan koreksi..."></textarea>
                         @error('alasanKoreksi') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
-                    <div class="flex justify-end gap-3 pt-2">
+                    <div class="flex justify-end gap-2.5 pt-2">
                         <button type="button" wire:click="$set('showKoreksi', false)"
                             class="h-[38px] rounded-[10px] border border-hairline bg-white px-4 text-xs font-semibold text-ink transition hover:bg-inset dark:bg-surface">
                             Batal
                         </button>
                         <button type="submit"
                             class="inline-flex h-[38px] items-center gap-2 rounded-[10px] bg-primary px-5 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover">
-                            Simpan Koreksi
+                            Koreksi
                         </button>
                     </div>
                 </form>
@@ -235,10 +240,10 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modal-batal-setoran-title">
             <div class="fixed inset-0 bg-black/50 transition-opacity" wire:click="$set('showBatal', false)" aria-hidden="true"></div>
 
-            <div class="relative w-full max-w-md rounded-[16px] border border-hairline bg-surface p-6 shadow-2xl dark:bg-surface" @click.stop>
+            <div class="relative w-full max-w-md rounded-2xl border border-hairline bg-surface p-6 shadow-2xl dark:bg-surface" @click.stop>
                 <div class="flex items-start justify-between border-b border-hairline pb-3">
                     <div>
-                        <h3 id="modal-batal-setoran-title" class="text-sm font-semibold text-ink">Batalkan Setoran</h3>
+                        <h3 id="modal-batal-setoran-title" class="text-base font-semibold text-ink">Batalkan Setoran</h3>
                         <p class="mt-0.5 text-xs text-mute">Setoran yang dibatalkan akan dikurangi dari saldo nasabah.</p>
                     </div>
                     <button type="button" wire:click="$set('showBatal', false)" aria-label="Tutup"
@@ -263,14 +268,14 @@
                             placeholder="Alasan pembatalan..."></textarea>
                         @error('alasanBatal') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                     </div>
-                    <div class="flex justify-end gap-3 pt-2">
+                    <div class="flex justify-end gap-2.5 pt-2">
                         <button type="button" wire:click="$set('showBatal', false)"
                             class="h-[38px] rounded-[10px] border border-hairline bg-white px-4 text-xs font-semibold text-ink transition hover:bg-inset dark:bg-surface">
                             Batal
                         </button>
                         <button type="submit"
                             class="inline-flex h-[38px] items-center gap-2 rounded-[10px] bg-danger px-5 text-xs font-semibold text-white shadow-xs transition hover:opacity-90">
-                            Batalkan Setoran
+                            Batalkan setoran
                         </button>
                     </div>
                 </form>
