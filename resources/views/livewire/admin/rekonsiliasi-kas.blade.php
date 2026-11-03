@@ -1,4 +1,5 @@
 <div class="space-y-6">
+    {{-- Header Halaman --}}
     <x-admin.page-header
         breadcrumb="Keuangan"
         title="Rekonsiliasi Kas Kolektor"
@@ -6,58 +7,80 @@
     >
         <x-slot:actions>
             <button type="button" wire:click="openInputManual"
-                class="inline-flex h-[38px] items-center justify-center gap-2 rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-4 text-sm font-medium text-[var(--color-admin-text)] shadow-xs transition hover:bg-[var(--color-surface-2)] cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 -ml-0.5 text-[var(--color-admin-mute)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
+                class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-white dark:bg-zinc-800 px-4 text-sm font-semibold text-zinc-800 dark:text-zinc-100 shadow-sm hover:shadow-md hover:bg-zinc-50 dark:hover:bg-zinc-700/80 transition-all cursor-pointer active:scale-[0.98]">
+                <div class="flex size-5 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                </div>
                 <span>Input Manual Setoran Kas</span>
             </button>
         </x-slot:actions>
     </x-admin.page-header>
 
+    {{-- Feedback Alerts --}}
     @if (session('success'))
-        <div class="flex items-center gap-2.5 rounded-[10px] border border-primary/20 bg-primary-soft px-4 py-3 text-sm text-on-primary-soft">
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-            {{ session('success') }}
+        <div class="flex items-center gap-3 rounded-2xl bg-emerald-50/90 dark:bg-emerald-950/40 px-5 py-3.5 text-sm text-emerald-800 dark:text-emerald-300 shadow-sm">
+            <div class="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+            </div>
+            <span class="font-medium">{{ session('success') }}</span>
         </div>
     @endif
     @if (session('error'))
-        <div class="flex items-center gap-2.5 rounded-[10px] border border-danger/20 bg-danger-soft px-4 py-3 text-sm text-danger">
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            {{ session('error') }}
+        <div class="flex items-center gap-3 rounded-2xl bg-rose-50/90 dark:bg-rose-950/40 px-5 py-3.5 text-sm text-rose-800 dark:text-rose-300 shadow-sm">
+            <div class="flex size-6 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </div>
+            <span class="font-medium">{{ session('error') }}</span>
         </div>
     @endif
 
-    {{-- Card: Menunggu Pemrosesan --}}
-    <div class="rounded-[14px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] shadow-xs overflow-hidden">
-        <div class="px-5 pt-4 pb-0">
-            <h2 class="text-base font-semibold text-[var(--color-admin-text)]">Menunggu pemrosesan</h2>
+    {{-- Card: Menunggu Pemrosesan (Clean & Borderless) --}}
+    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm shadow-zinc-950/5 transition-all">
+        <div class="flex items-center justify-between pb-4">
+            <div class="flex items-center gap-2.5">
+                <span class="flex size-2 rounded-full bg-amber-500"></span>
+                <h2 class="text-base font-bold text-zinc-900 dark:text-white tracking-tight">Menunggu pemrosesan</h2>
+            </div>
+            @if($pendingSubmissions->count() > 0)
+                <span class="rounded-full bg-amber-50 dark:bg-amber-950/40 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                    {{ $pendingSubmissions->count() }} antrean
+                </span>
+            @endif
         </div>
 
         @if($pendingSubmissions->count() > 0)
-            <div class="divide-y divide-[var(--color-admin-border)] mt-3">
+            <div class="space-y-3 mt-1">
                 @foreach($pendingSubmissions as $item)
-                    <div data-test="baris-pengajuan" class="flex flex-wrap items-center justify-between gap-4 p-4 sm:px-5 sm:py-3.5 transition hover:bg-[var(--color-surface-2)]">
-                        <div class="min-w-[200px] flex-1">
-                            <p class="text-sm font-semibold text-[var(--color-admin-text)]">{{ $item->kolektor->name ?? '-' }}</p>
-                            <p class="text-xs text-[var(--color-admin-mute)] mt-0.5">
-                                {{ $item->tanggal_setor->isToday() ? 'Hari ini' : ($item->tanggal_setor->isYesterday() ? 'Kemarin' : $item->tanggal_setor->translatedFormat('d M')) }}
-                                @if($item->keterangan_selisih)
-                                    &middot; {{ $item->keterangan_selisih }}
-                                @endif
-                            </p>
+                    <div data-test="baris-pengajuan" class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-zinc-50/80 dark:bg-zinc-800/50 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/80 transition-all duration-150">
+                        <div class="min-w-[200px] flex-1 flex items-center gap-3">
+                            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold text-xs uppercase">
+                                {{ Str::substr($item->kolektor->name ?? 'K', 0, 2) }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-zinc-900 dark:text-white">{{ $item->kolektor->name ?? '-' }}</p>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                    {{ $item->tanggal_setor->isToday() ? 'Hari ini' : ($item->tanggal_setor->isYesterday() ? 'Kemarin' : $item->tanggal_setor->translatedFormat('d M')) }}
+                                    @if($item->keterangan_selisih)
+                                        &middot; {{ $item->keterangan_selisih }}
+                                    @endif
+                                </p>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <span class="block text-xs text-[var(--color-admin-mute)]">Total seharusnya</span>
-                            <b class="text-base font-semibold tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</b>
+
+                        <div class="text-right sm:px-4">
+                            <span class="block text-[11px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Total seharusnya</span>
+                            <b class="text-base font-bold tabular-nums text-zinc-900 dark:text-white">Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</b>
                         </div>
+
                         <div class="flex items-center gap-2">
                             <button type="button" wire:click="startProcess({{ $item->id }})"
-                                class="inline-flex h-8 items-center justify-center rounded-[8px] bg-[var(--color-accent)] px-3.5 text-xs font-medium text-white transition hover:opacity-90 cursor-pointer">
+                                class="inline-flex h-9 items-center justify-center rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 text-xs font-semibold text-white shadow-sm shadow-emerald-600/30 transition-all cursor-pointer active:scale-[0.97]">
                                 Proses
                             </button>
                             <button type="button" wire:click="startReject({{ $item->id }})"
-                                class="inline-flex h-8 items-center justify-center rounded-[8px] border border-red-500/20 bg-red-500/10 px-3.5 text-xs font-medium text-red-600 dark:text-red-400 transition hover:bg-red-500/20 cursor-pointer">
+                                class="inline-flex h-9 items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 px-3.5 text-xs font-semibold text-rose-600 dark:text-rose-400 transition-all cursor-pointer active:scale-[0.97]">
                                 Tolak
                             </button>
                         </div>
@@ -65,69 +88,76 @@
                 @endforeach
             </div>
         @else
-            <div class="p-8">
-                <x-admin.empty-state
-                    title="Tidak ada pengajuan setoran"
-                    description="Semua pengajuan sudah diproses."
-                />
+            <div class="py-8 text-center">
+                <div class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 text-zinc-400 mb-2.5">
+                    <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <b class="block text-sm font-semibold text-zinc-800 dark:text-zinc-200">Tidak ada pengajuan setoran</b>
+                <span class="mt-0.5 block text-xs text-zinc-400 dark:text-zinc-500">Semua pengajuan sudah diproses.</span>
             </div>
         @endif
     </div>
 
-    {{-- Card: Riwayat Rekonsiliasi --}}
-    <div class="overflow-hidden rounded-[14px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] shadow-xs">
-        <div class="px-5 pt-4 pb-0">
-            <h2 class="text-base font-semibold text-[var(--color-admin-text)]">Riwayat Rekonsiliasi</h2>
+    {{-- Card: Riwayat Rekonsiliasi (Clean & Borderless) --}}
+    <div class="rounded-2xl bg-white dark:bg-zinc-900 p-6 shadow-sm shadow-zinc-950/5 transition-all">
+        <div class="flex items-center justify-between pb-4">
+            <div class="flex items-center gap-2.5">
+                <span class="flex size-2 rounded-full bg-emerald-500"></span>
+                <h2 class="text-base font-bold text-zinc-900 dark:text-white tracking-tight">Riwayat Rekonsiliasi</h2>
+            </div>
+            <span class="text-xs text-zinc-400 dark:text-zinc-500 font-medium hidden sm:inline-block">Klik baris untuk rincian</span>
         </div>
 
-        {{-- Tabel Desktop --}}
-        <div class="overflow-x-auto mt-3">
+        {{-- Tabel Desktop Tanpa Garis Kaku --}}
+        <div class="overflow-x-auto">
             <table class="hidden md:table w-full text-left text-sm">
                 <thead>
-                    <tr class="border-y border-[var(--color-admin-border)] bg-[var(--color-surface-2)]">
-                        <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Tanggal</th>
-                        <th class="px-5 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Kolektor</th>
-                        <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Seharusnya</th>
-                        <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Diterima</th>
-                        <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Selisih</th>
-                        <th class="px-5 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Status</th>
+                    <tr class="bg-zinc-50/80 dark:bg-zinc-800/40 text-zinc-400 dark:text-zinc-400">
+                        <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider rounded-l-xl">Tanggal</th>
+                        <th class="px-4 py-3 text-[11px] font-semibold uppercase tracking-wider">Kolektor</th>
+                        <th class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider">Seharusnya</th>
+                        <th class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider">Diterima</th>
+                        <th class="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wider">Selisih</th>
+                        <th class="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wider rounded-r-xl">Status</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-[var(--color-admin-border)]">
+                <tbody class="divide-y divide-zinc-100/80 dark:divide-zinc-800/60">
                     @forelse($riwayat as $item)
                         <tr wire:key="rekon-row-{{ $item->id }}" wire:click="bukaDetail({{ $item->id }})"
-                            class="cursor-pointer transition hover:bg-[var(--color-surface-2)] group"
+                            class="cursor-pointer transition-colors duration-150 hover:bg-zinc-50/70 dark:hover:bg-zinc-800/50 group"
                             title="Klik untuk melihat rincian rekonsiliasi">
-                            <td class="px-5 py-3.5 text-xs text-[var(--color-admin-mute)] whitespace-nowrap">
+                            <td class="px-4 py-4 text-xs text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
                                 {{ $item->tanggal_setor->translatedFormat('d M') }}
                             </td>
-                            <td class="px-5 py-3.5 font-medium text-[var(--color-admin-text)]">
-                                <span class="group-hover:text-[var(--color-accent)] transition-colors">{{ $item->kolektor->name ?? '-' }}</span>
+                            <td class="px-4 py-4 font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                {{ $item->kolektor->name ?? '-' }}
                             </td>
-                            <td class="px-5 py-3.5 text-right tabular-nums text-[var(--color-admin-text)]">
+                            <td class="px-4 py-4 text-right tabular-nums text-zinc-600 dark:text-zinc-400 font-medium">
                                 Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}
                             </td>
-                            <td class="px-5 py-3.5 text-right tabular-nums text-[var(--color-admin-text)]">
+                            <td class="px-4 py-4 text-right tabular-nums text-zinc-900 dark:text-white font-semibold">
                                 @if($item->total_diterima !== null)
                                     Rp {{ number_format($item->total_diterima, 0, ',', '.') }}
                                 @else
-                                    -
+                                    <span class="text-zinc-400">-</span>
                                 @endif
                             </td>
-                            <td class="px-5 py-3.5 text-right tabular-nums">
+                            <td class="px-4 py-4 text-right tabular-nums">
                                 @if($item->selisih !== null)
                                     @if($item->selisih > 0)
-                                        <span class="font-medium text-warning-deep">+Rp {{ number_format($item->selisih, 0, ',', '.') }}</span>
+                                        <span class="font-semibold text-amber-600 dark:text-amber-400">+Rp {{ number_format($item->selisih, 0, ',', '.') }}</span>
                                     @elseif($item->selisih < 0)
-                                        <span class="font-medium text-red-600 dark:text-red-400">Rp -{{ number_format(abs($item->selisih), 0, ',', '.') }}</span>
+                                        <span class="font-semibold text-rose-600 dark:text-rose-400">Rp -{{ number_format(abs($item->selisih), 0, ',', '.') }}</span>
                                     @else
-                                        <span class="text-[var(--color-admin-text)] font-normal">Rp 0</span>
+                                        <span class="text-zinc-400 font-medium">Rp 0</span>
                                     @endif
                                 @else
-                                    <span class="text-[var(--color-admin-mute)]">-</span>
+                                    <span class="text-zinc-400">-</span>
                                 @endif
                             </td>
-                            <td class="px-5 py-3.5 text-center whitespace-nowrap">
+                            <td class="px-4 py-4 text-center whitespace-nowrap">
                                 @php
                                     $mapStatus = [
                                         'pending' => 'Menunggu',
@@ -142,11 +172,14 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="p-8">
-                                <x-admin.empty-state
-                                    title="Belum ada riwayat rekonsiliasi"
-                                    description="Semua setoran kantor yang telah diverifikasi akan tercatat di sini."
-                                />
+                            <td colspan="6" class="py-10 text-center">
+                                <div class="mx-auto flex size-12 items-center justify-center rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 text-zinc-400 mb-2.5">
+                                    <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                </div>
+                                <b class="block text-sm font-semibold text-zinc-800 dark:text-zinc-200">Belum ada riwayat rekonsiliasi</b>
+                                <span class="mt-0.5 block text-xs text-zinc-400 dark:text-zinc-500">Semua setoran kantor yang telah diverifikasi akan tercatat di sini.</span>
                             </td>
                         </tr>
                     @endforelse
@@ -154,15 +187,15 @@
             </table>
         </div>
 
-        {{-- Fallback Kartu Mobile --}}
-        <div data-test="kartu-riwayat" class="divide-y divide-[var(--color-admin-border)] md:hidden">
+        {{-- Fallback Kartu Mobile (Sleek & Clean) --}}
+        <div data-test="kartu-riwayat" class="space-y-3 md:hidden">
             @forelse($riwayat as $item)
                 <div wire:key="rekon-card-{{ $item->id }}" wire:click="bukaDetail({{ $item->id }})"
-                    class="p-4 space-y-2.5 cursor-pointer active:bg-[var(--color-surface-2)] transition">
+                    class="p-4 rounded-xl bg-zinc-50/80 dark:bg-zinc-800/50 space-y-3 cursor-pointer active:scale-[0.99] transition-all">
                     <div class="flex items-center justify-between gap-2">
                         <div>
-                            <p class="font-medium text-[var(--color-admin-text)]">{{ $item->kolektor->name ?? '-' }}</p>
-                            <p class="text-xs text-[var(--color-admin-mute)]">{{ $item->tanggal_setor->translatedFormat('d M') }}</p>
+                            <p class="font-bold text-zinc-900 dark:text-white">{{ $item->kolektor->name ?? '-' }}</p>
+                            <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">{{ $item->tanggal_setor->translatedFormat('d M Y') }}</p>
                         </div>
                         @php
                             $mapStatus = [
@@ -175,14 +208,14 @@
                         @endphp
                         <x-admin.status-chip :status="$mapStatus[$item->status] ?? ucfirst($item->status)" />
                     </div>
-                    <div class="grid grid-cols-3 gap-2 text-xs border-t border-[var(--color-admin-border)] pt-2.5">
+                    <div class="grid grid-cols-3 gap-2 text-xs pt-2 border-t border-zinc-200/50 dark:border-zinc-700/50">
                         <div>
-                            <span class="text-[var(--color-admin-mute)]">Seharusnya:</span>
-                            <div class="font-medium tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</div>
+                            <span class="text-zinc-400 block text-[11px]">Seharusnya:</span>
+                            <div class="font-medium tabular-nums text-zinc-700 dark:text-zinc-300 mt-0.5">Rp {{ number_format($item->total_seharusnya, 0, ',', '.') }}</div>
                         </div>
                         <div>
-                            <span class="text-[var(--color-admin-mute)]">Diterima:</span>
-                            <div class="font-medium tabular-nums text-[var(--color-admin-text)]">
+                            <span class="text-zinc-400 block text-[11px]">Diterima:</span>
+                            <div class="font-bold tabular-nums text-zinc-900 dark:text-white mt-0.5">
                                 @if($item->total_diterima !== null)
                                     Rp {{ number_format($item->total_diterima, 0, ',', '.') }}
                                 @else
@@ -191,99 +224,97 @@
                             </div>
                         </div>
                         <div>
-                            <span class="text-[var(--color-admin-mute)]">Selisih:</span>
-                            <div class="font-medium tabular-nums">
+                            <span class="text-zinc-400 block text-[11px]">Selisih:</span>
+                            <div class="font-bold tabular-nums mt-0.5">
                                 @if($item->selisih !== null)
                                     @if($item->selisih > 0)
-                                        <span class="text-warning-deep">+Rp {{ number_format($item->selisih, 0, ',', '.') }}</span>
+                                        <span class="text-amber-600 dark:text-amber-400">+Rp {{ number_format($item->selisih, 0, ',', '.') }}</span>
                                     @elseif($item->selisih < 0)
-                                        <span class="text-red-600 dark:text-red-400">Rp -{{ number_format(abs($item->selisih), 0, ',', '.') }}</span>
+                                        <span class="text-rose-600 dark:text-rose-400">Rp -{{ number_format(abs($item->selisih), 0, ',', '.') }}</span>
                                     @else
-                                        <span class="text-[var(--color-admin-text)]">Rp 0</span>
+                                        <span class="text-zinc-400">Rp 0</span>
                                     @endif
                                 @else
-                                    <span class="text-[var(--color-admin-mute)]">-</span>
+                                    <span class="text-zinc-400">-</span>
                                 @endif
                             </div>
                         </div>
                     </div>
                 </div>
             @empty
-                <div class="p-8">
-                    <x-admin.empty-state
-                        title="Belum ada riwayat rekonsiliasi"
-                        description="Semua setoran kantor yang telah diverifikasi akan tercatat di sini."
-                    />
+                <div class="py-8 text-center">
+                    <b class="block text-sm font-semibold text-zinc-800 dark:text-zinc-200">Belum ada riwayat rekonsiliasi</b>
+                    <span class="mt-0.5 block text-xs text-zinc-400 dark:text-zinc-500">Semua setoran kantor yang telah diverifikasi akan tercatat di sini.</span>
                 </div>
             @endforelse
         </div>
 
         @if($riwayat->hasPages())
-            <div class="border-t border-[var(--color-admin-border)] px-5 py-3">
+            <div class="pt-5 mt-4 border-t border-zinc-100 dark:border-zinc-800/80">
                 {{ $riwayat->links() }}
             </div>
         @endif
     </div>
 
-    {{-- Modal: Proses Setoran --}}
+    {{-- Modal: Proses Setoran (Floating Elevation & Modern) --}}
     @php
         $selectedItem = $this->selectedSubmission;
     @endphp
     @if($processingId && $selectedItem)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Proses setoran {{ $selectedItem->kolektor->name ?? 'Kolektor' }}">
-            <div class="fixed inset-0 bg-black/45 backdrop-blur-[2px] transition-opacity cursor-pointer" wire:click="cancelProcess"></div>
+            <div class="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity cursor-pointer" wire:click="cancelProcess"></div>
 
-            <div class="relative w-full max-w-[460px] rounded-[16px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] p-5 shadow-2xl transition-colors z-10 my-auto">
+            <div class="relative w-full max-w-[460px] rounded-3xl bg-white dark:bg-zinc-900 p-6 shadow-2xl shadow-zinc-950/20 transition-all z-10 my-auto">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <h3 class="text-base font-semibold text-[var(--color-admin-text)] leading-tight">
+                        <h3 class="text-lg font-bold text-zinc-900 dark:text-white leading-tight">
                             Proses setoran {{ $selectedItem->kolektor->name ?? 'Kolektor' }}
                         </h3>
-                        <p class="mt-1 text-xs text-[var(--color-admin-mute)]">
-                            Total seharusnya <span class="font-semibold text-[var(--color-admin-text)] tabular-nums">Rp {{ number_format($selectedItem->total_seharusnya, 0, ',', '.') }}</span>
+                        <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                            Total seharusnya <span class="font-bold text-zinc-900 dark:text-white tabular-nums">Rp {{ number_format($selectedItem->total_seharusnya, 0, ',', '.') }}</span>
                         </p>
                     </div>
-                    <button type="button" wire:click="cancelProcess" class="flex size-7 shrink-0 items-center justify-center rounded-[8px] text-[var(--color-admin-mute)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-admin-text)] cursor-pointer" aria-label="Tutup dialog">
+                    <button type="button" wire:click="cancelProcess" class="flex size-8 shrink-0 items-center justify-center rounded-xl text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer" aria-label="Tutup dialog">
                         <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
 
-                <div class="mt-4 space-y-3.5">
+                <div class="mt-5 space-y-4">
                     <div>
-                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Total Diterima (Fisik)</label>
+                        <label class="mb-1.5 block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Total Diterima (Fisik)</label>
                         <div class="relative">
-                            <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 tabular-nums text-xs font-medium text-[var(--color-admin-mute)]">Rp</span>
+                            <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 tabular-nums text-xs font-semibold text-zinc-400">Rp</span>
                             <input type="number" wire:model.live="processTotalDiterima"
-                                class="h-[38px] w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] pl-9 pr-3 text-sm text-[var(--color-admin-text)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                                class="h-11 w-full rounded-xl bg-zinc-50 dark:bg-zinc-800/80 pl-10 pr-4 text-sm font-semibold text-zinc-900 dark:text-white ring-1 ring-zinc-200/80 dark:ring-zinc-700/80 focus:ring-2 focus:ring-emerald-500 outline-none transition"
                                 placeholder="0" />
                         </div>
-                        @error('processTotalDiterima') <p class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                        @error('processTotalDiterima') <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
                     </div>
 
                     @if($processTotalDiterima !== '' && $processTotalDiterima != $selectedItem->total_seharusnya)
-                        <div class="rounded-[10px] border p-3 {{ $processTotalDiterima > $selectedItem->total_seharusnya ? 'bg-warning-soft text-warning-deep border-warning/20' : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' }}">
-                            <p class="text-xs font-medium">
+                        <div class="rounded-xl p-3.5 {{ $processTotalDiterima > $selectedItem->total_seharusnya ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300' : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300' }}">
+                            <p class="text-xs font-semibold">
                                 Selisih: Rp {{ number_format(abs($processTotalDiterima - $selectedItem->total_seharusnya), 0, ',', '.') }} ({{ $processTotalDiterima > $selectedItem->total_seharusnya ? 'Lebih' : 'Kurang' }})
                             </p>
                         </div>
                         <div>
-                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Keterangan Selisih (Wajib)</label>
+                            <label class="mb-1.5 block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Keterangan Selisih (Wajib)</label>
                             <textarea wire:model.live="processKeterangan" rows="2"
-                                class="w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-admin-text)] placeholder-[var(--color-admin-mute)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                                class="w-full rounded-xl bg-zinc-50 dark:bg-zinc-800/80 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 ring-1 ring-zinc-200/80 dark:ring-zinc-700/80 focus:ring-2 focus:ring-emerald-500 outline-none transition"
                                 placeholder="Jelaskan penyebab selisih..."></textarea>
-                            @error('processKeterangan') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                            @error('processKeterangan') <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
                         </div>
                     @endif
                 </div>
 
-                <div class="mt-5 flex items-center justify-end gap-2 pt-3 border-t border-[var(--color-admin-border)]">
+                <div class="mt-6 flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                     <button type="button" wire:click="cancelProcess"
-                        class="h-[38px] rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-4 text-xs font-medium text-[var(--color-admin-text)] transition hover:bg-[var(--color-surface-2)] cursor-pointer">
+                        class="h-10 rounded-xl px-4 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer">
                         Batal
                     </button>
                     <button type="button" wire:click="processSubmission({{ $selectedItem->id }})" wire:loading.attr="disabled"
                         wire:confirm="Yakin mengonfirmasi dan menyimpan hasil rekonsiliasi kas ini?"
-                        class="h-[38px] rounded-[10px] bg-[var(--color-accent)] px-4 text-xs font-semibold text-white transition hover:opacity-90 cursor-pointer disabled:opacity-50">
+                        class="h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 text-xs font-semibold text-white shadow-sm shadow-emerald-600/30 transition cursor-pointer disabled:opacity-50">
                         Konfirmasi &amp; Simpan
                     </button>
                 </div>
@@ -294,41 +325,41 @@
     {{-- Modal: Tolak Pengajuan --}}
     @if($rejectingId)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Tolak pengajuan?">
-            <div class="fixed inset-0 bg-black/45 backdrop-blur-[2px] transition-opacity cursor-pointer" wire:click="cancelReject"></div>
+            <div class="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity cursor-pointer" wire:click="cancelReject"></div>
 
-            <div class="relative w-full max-w-[460px] rounded-[16px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] p-5 shadow-2xl transition-colors z-10 my-auto">
+            <div class="relative w-full max-w-[460px] rounded-3xl bg-white dark:bg-zinc-900 p-6 shadow-2xl shadow-zinc-950/20 transition-all z-10 my-auto">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <h3 class="text-base font-semibold text-[var(--color-admin-text)] leading-tight">
+                        <h3 class="text-lg font-bold text-zinc-900 dark:text-white leading-tight">
                             Tolak pengajuan?
                         </h3>
-                        <p class="mt-1 text-xs text-[var(--color-admin-mute)]">
+                        <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                             Menolak pengajuan akan mengembalikan seluruh setoran terkait ke status belum disetor.
                         </p>
                     </div>
-                    <button type="button" wire:click="cancelReject" class="flex size-7 shrink-0 items-center justify-center rounded-[8px] text-[var(--color-admin-mute)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-admin-text)] cursor-pointer" aria-label="Tutup dialog">
+                    <button type="button" wire:click="cancelReject" class="flex size-8 shrink-0 items-center justify-center rounded-xl text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer" aria-label="Tutup dialog">
                         <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
 
-                <div class="mt-4 space-y-3">
+                <div class="mt-5 space-y-3">
                     <div>
-                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Alasan Penolakan (Wajib)</label>
+                        <label class="mb-1.5 block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Alasan Penolakan (Wajib)</label>
                         <textarea wire:model="rejectAlasan" rows="3"
-                            class="w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-admin-text)] placeholder-[var(--color-admin-mute)] focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                            class="w-full rounded-xl bg-zinc-50 dark:bg-zinc-800/80 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 ring-1 ring-zinc-200/80 dark:ring-zinc-700/80 focus:ring-2 focus:ring-rose-500 outline-none transition"
                             placeholder="Jelaskan alasan penolakan..."></textarea>
-                        @error('rejectAlasan') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                        @error('rejectAlasan') <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
-                <div class="mt-5 flex items-center justify-end gap-2 pt-3 border-t border-[var(--color-admin-border)]">
+                <div class="mt-6 flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                     <button type="button" wire:click="cancelReject"
-                        class="h-[38px] rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-4 text-xs font-medium text-[var(--color-admin-text)] transition hover:bg-[var(--color-surface-2)] cursor-pointer">
+                        class="h-10 rounded-xl px-4 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer">
                         Batal
                     </button>
                     <button type="button" wire:click="rejectSubmission" wire:loading.attr="disabled"
                         wire:confirm="Yakin menolak pengajuan setoran ini?"
-                        class="h-[38px] rounded-[10px] bg-red-600 px-4 text-xs font-semibold text-white transition hover:bg-red-700 cursor-pointer disabled:opacity-50">
+                        class="h-10 rounded-xl bg-rose-600 hover:bg-rose-700 px-5 text-xs font-semibold text-white shadow-sm shadow-rose-600/30 transition cursor-pointer disabled:opacity-50">
                         Tolak Pengajuan
                     </button>
                 </div>
@@ -339,92 +370,92 @@
     {{-- Modal: Input Manual Setoran Kas --}}
     @if($showManualModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Input Manual Setoran Kas">
-            <div class="fixed inset-0 bg-black/45 backdrop-blur-[2px] transition-opacity cursor-pointer" wire:click="closeInputManual"></div>
+            <div class="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity cursor-pointer" wire:click="closeInputManual"></div>
 
-            <div class="relative w-full max-w-[500px] rounded-[16px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] p-5 shadow-2xl transition-colors z-10 my-auto">
+            <div class="relative w-full max-w-[500px] rounded-3xl bg-white dark:bg-zinc-900 p-6 shadow-2xl shadow-zinc-950/20 transition-all z-10 my-auto">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <h3 class="text-base font-semibold text-[var(--color-admin-text)] leading-tight">
+                        <h3 class="text-lg font-bold text-zinc-900 dark:text-white leading-tight">
                             Input Manual Setoran Kas
                         </h3>
-                        <p class="mt-1 text-xs text-[var(--color-admin-mute)]">
+                        <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                             Catat setoran kas kolektor yang diserahkan langsung ke kantor.
                         </p>
                     </div>
-                    <button type="button" wire:click="closeInputManual" class="flex size-7 shrink-0 items-center justify-center rounded-[8px] text-[var(--color-admin-mute)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-admin-text)] cursor-pointer" aria-label="Tutup dialog">
+                    <button type="button" wire:click="closeInputManual" class="flex size-8 shrink-0 items-center justify-center rounded-xl text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer" aria-label="Tutup dialog">
                         <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
 
-                <div class="mt-4 space-y-3.5">
+                <div class="mt-5 space-y-4">
                     <div>
-                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Kolektor</label>
+                        <label class="mb-1.5 block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Kolektor</label>
                         <select wire:model.live="kolektorId"
-                            class="h-[38px] w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-admin-text)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]">
+                            class="h-11 w-full rounded-xl bg-zinc-50 dark:bg-zinc-800/80 px-4 text-sm font-medium text-zinc-900 dark:text-white ring-1 ring-zinc-200/80 dark:ring-zinc-700/80 focus:ring-2 focus:ring-emerald-500 outline-none transition">
                             <option value="">Pilih Kolektor</option>
                             @foreach($kolektorList as $k)
                                 <option value="{{ $k->id }}">{{ $k->name }} ({{ $k->no_hp }})</option>
                             @endforeach
                         </select>
-                        @error('kolektorId') <p class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                        @error('kolektorId') <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
                     </div>
 
                     @if($showForm && $kolektorId)
-                        <div class="rounded-[12px] border border-[var(--color-admin-border)] bg-[var(--color-surface-2)] p-3.5 space-y-2">
+                        <div class="rounded-2xl bg-zinc-50/80 dark:bg-zinc-800/60 p-4 space-y-2.5">
                             <div class="flex justify-between text-xs">
-                                <span class="text-[var(--color-admin-mute)]">Setoran Masuk</span>
-                                <span class="tabular-nums font-medium text-[var(--color-admin-text)]">Rp {{ number_format($totalSetoranMasuk, 0, ',', '.') }}</span>
+                                <span class="text-zinc-500 dark:text-zinc-400">Setoran Masuk</span>
+                                <span class="tabular-nums font-semibold text-zinc-900 dark:text-white">Rp {{ number_format($totalSetoranMasuk, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between text-xs">
-                                <span class="text-[var(--color-admin-mute)]">Penarikan Tunai</span>
-                                <span class="tabular-nums font-medium text-[var(--color-admin-text)]">Rp {{ number_format($totalPenarikanTunai, 0, ',', '.') }}</span>
+                                <span class="text-zinc-500 dark:text-zinc-400">Penarikan Tunai</span>
+                                <span class="tabular-nums font-semibold text-zinc-900 dark:text-white">Rp {{ number_format($totalPenarikanTunai, 0, ',', '.') }}</span>
                             </div>
-                            <div class="flex justify-between border-t border-[var(--color-admin-border)] pt-2 font-semibold text-sm">
-                                <span class="text-[var(--color-admin-text)]">Total Seharusnya</span>
-                                <span class="tabular-nums text-[var(--color-accent)]">Rp {{ number_format($totalSeharusnya, 0, ',', '.') }}</span>
+                            <div class="flex justify-between border-t border-zinc-200/60 dark:border-zinc-700/60 pt-2 font-bold text-sm">
+                                <span class="text-zinc-800 dark:text-zinc-200">Total Seharusnya</span>
+                                <span class="tabular-nums text-emerald-600 dark:text-emerald-400">Rp {{ number_format($totalSeharusnya, 0, ',', '.') }}</span>
                             </div>
                         </div>
 
                         @if($detailTransaksi->count() > 0)
                             <div>
-                                <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Total Diterima (Fisik)</label>
+                                <label class="mb-1.5 block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Total Diterima (Fisik)</label>
                                 <div class="relative">
-                                    <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 tabular-nums text-xs font-medium text-[var(--color-admin-mute)]">Rp</span>
+                                    <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 tabular-nums text-xs font-semibold text-zinc-400">Rp</span>
                                     <input type="number" wire:model="totalDiterima"
-                                        class="h-[38px] w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] pl-9 pr-3 text-sm text-[var(--color-admin-text)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                                        class="h-11 w-full rounded-xl bg-zinc-50 dark:bg-zinc-800/80 pl-10 pr-4 text-sm font-semibold text-zinc-900 dark:text-white ring-1 ring-zinc-200/80 dark:ring-zinc-700/80 focus:ring-2 focus:ring-emerald-500 outline-none transition"
                                         placeholder="0" />
                                 </div>
-                                @error('totalDiterima') <p class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                                @error('totalDiterima') <p class="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
                             </div>
 
                             @if($totalDiterima && $totalDiterima != $totalSeharusnya)
-                                <div class="rounded-[10px] border p-3 {{ $totalDiterima > $totalSeharusnya ? 'bg-warning-soft text-warning-deep border-warning/20' : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' }}">
-                                    <p class="text-xs font-medium">
+                                <div class="rounded-xl p-3.5 {{ $totalDiterima > $totalSeharusnya ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300' : 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300' }}">
+                                    <p class="text-xs font-semibold">
                                         Selisih: Rp {{ number_format(abs($totalDiterima - $totalSeharusnya), 0, ',', '.') }} ({{ $totalDiterima > $totalSeharusnya ? 'Lebih' : 'Kurang' }})
                                     </p>
                                 </div>
                                 <div>
-                                    <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Keterangan Selisih (Wajib)</label>
+                                    <label class="mb-1.5 block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Keterangan Selisih (Wajib)</label>
                                     <textarea wire:model="keterangan" rows="2"
-                                        class="w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-admin-text)] placeholder-[var(--color-admin-mute)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                                        class="w-full rounded-xl bg-zinc-50 dark:bg-zinc-800/80 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 ring-1 ring-zinc-200/80 dark:ring-zinc-700/80 focus:ring-2 focus:ring-emerald-500 outline-none transition"
                                         placeholder="Jelaskan penyebab selisih..."></textarea>
-                                    @error('keterangan') <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                                    @error('keterangan') <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
                                 </div>
                             @endif
                         @else
-                            <p class="text-xs text-[var(--color-admin-mute)] py-2 text-center">Tidak ada transaksi yang perlu disetor untuk kolektor ini.</p>
+                            <p class="text-xs text-zinc-400 py-2 text-center">Tidak ada transaksi yang perlu disetor untuk kolektor ini.</p>
                         @endif
                     @endif
                 </div>
 
-                <div class="mt-5 flex items-center justify-end gap-2 pt-3 border-t border-[var(--color-admin-border)]">
+                <div class="mt-6 flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-100 dark:border-zinc-800">
                     <button type="button" wire:click="closeInputManual"
-                        class="h-[38px] rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-4 text-xs font-medium text-[var(--color-admin-text)] transition hover:bg-[var(--color-surface-2)] cursor-pointer">
+                        class="h-10 rounded-xl px-4 text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer">
                         Batal
                     </button>
                     @if($showForm && $kolektorId && $detailTransaksi->count() > 0)
                         <button type="button" wire:click="submit" wire:loading.attr="disabled"
-                            class="h-[38px] rounded-[10px] bg-[var(--color-accent)] px-4 text-xs font-semibold text-white transition hover:opacity-90 cursor-pointer disabled:opacity-50">
+                            class="h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-5 text-xs font-semibold text-white shadow-sm shadow-emerald-600/30 transition cursor-pointer disabled:opacity-50">
                             Simpan Rekonsiliasi
                         </button>
                     @endif
@@ -433,17 +464,17 @@
         </div>
     @endif
 
-    {{-- Drawer Slide-over: Detail Rekonsiliasi Kas --}}
+    {{-- Drawer Slide-over: Detail Rekonsiliasi Kas (Clean & Borderless) --}}
     @if($detailId && $detailSetoran)
         <div class="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="Detail Rekonsiliasi Kas">
-            <div class="fixed inset-0 bg-black/45 backdrop-blur-[2px] transition-opacity cursor-pointer" wire:click="tutupDetail"></div>
+            <div class="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity cursor-pointer" wire:click="tutupDetail"></div>
 
-            <div class="relative z-10 flex h-full w-full max-w-[480px] flex-col border-l border-[var(--color-admin-border)] bg-[var(--color-surface)] shadow-2xl transition-all">
+            <div class="relative z-10 flex h-full w-full max-w-[480px] flex-col bg-white dark:bg-zinc-900 shadow-2xl shadow-zinc-950/20 transition-all">
                 {{-- Header Drawer --}}
-                <div class="flex items-center justify-between border-b border-[var(--color-admin-border)] px-5 py-4">
+                <div class="flex items-center justify-between px-6 py-5 border-b border-zinc-100 dark:border-zinc-800/80">
                     <div>
-                        <div class="flex items-center gap-2">
-                            <h3 class="text-base font-semibold text-[var(--color-admin-text)]">Detail Rekonsiliasi Kas</h3>
+                        <div class="flex items-center gap-2.5">
+                            <h3 class="text-base font-bold text-zinc-900 dark:text-white">Detail Rekonsiliasi Kas</h3>
                             @php
                                 $mapStatus = [
                                     'pending' => 'Menunggu',
@@ -455,12 +486,12 @@
                             @endphp
                             <x-admin.status-chip :status="$mapStatus[$detailSetoran->status] ?? ucfirst($detailSetoran->status)" />
                         </div>
-                        <p class="text-xs text-[var(--color-admin-mute)] mt-0.5">
+                        <p class="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
                             Setoran Kantor #{{ $detailSetoran->id }} &middot; {{ $detailSetoran->tanggal_setor->translatedFormat('d F Y') }}
                         </p>
                     </div>
                     <button type="button" wire:click="tutupDetail"
-                        class="flex size-8 shrink-0 items-center justify-center rounded-[8px] text-[var(--color-admin-mute)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-admin-text)] cursor-pointer"
+                        class="flex size-8 shrink-0 items-center justify-center rounded-xl text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
                         aria-label="Tutup panel detail">
                         <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -469,34 +500,34 @@
                 </div>
 
                 {{-- Content Drawer --}}
-                <div class="flex-1 overflow-y-auto p-5 space-y-5">
+                <div class="flex-1 overflow-y-auto p-6 space-y-5">
                     {{-- Kolektor & Penerima --}}
-                    <div class="rounded-[12px] border border-[var(--color-admin-border)] bg-[var(--color-surface-2)] p-4 space-y-3">
+                    <div class="rounded-2xl bg-zinc-50/80 dark:bg-zinc-800/60 p-4 space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs text-[var(--color-admin-mute)]">Kolektor Penyetor</span>
-                            <span class="text-xs font-semibold text-[var(--color-admin-text)]">{{ $detailSetoran->kolektor->name ?? '-' }}</span>
+                            <span class="text-xs text-zinc-400">Kolektor Penyetor</span>
+                            <span class="text-xs font-bold text-zinc-900 dark:text-white">{{ $detailSetoran->kolektor->name ?? '-' }}</span>
                         </div>
-                        <div class="flex items-center justify-between border-t border-[var(--color-admin-border)] pt-2.5">
-                            <span class="text-xs text-[var(--color-admin-mute)]">Kontak Kolektor</span>
-                            <span class="text-xs text-[var(--color-admin-text)] font-mono">{{ $detailSetoran->kolektor->no_hp ?? '-' }}</span>
+                        <div class="flex items-center justify-between border-t border-zinc-200/50 dark:border-zinc-700/50 pt-2.5">
+                            <span class="text-xs text-zinc-400">Kontak Kolektor</span>
+                            <span class="text-xs font-mono text-zinc-700 dark:text-zinc-300">{{ $detailSetoran->kolektor->no_hp ?? '-' }}</span>
                         </div>
-                        <div class="flex items-center justify-between border-t border-[var(--color-admin-border)] pt-2.5">
-                            <span class="text-xs text-[var(--color-admin-mute)]">Diterima / Diverifikasi Oleh</span>
-                            <span class="text-xs font-medium text-[var(--color-admin-text)]">{{ $detailSetoran->diterimaOleh->name ?? 'Admin Kantor' }}</span>
+                        <div class="flex items-center justify-between border-t border-zinc-200/50 dark:border-zinc-700/50 pt-2.5">
+                            <span class="text-xs text-zinc-400">Diterima / Diverifikasi Oleh</span>
+                            <span class="text-xs font-semibold text-zinc-900 dark:text-white">{{ $detailSetoran->diterimaOleh->name ?? 'Admin Kantor' }}</span>
                         </div>
                     </div>
 
                     {{-- Ringkasan Finansial --}}
-                    <div class="rounded-[12px] border border-[var(--color-admin-border)] p-4 space-y-3">
-                        <h4 class="text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Ringkasan Kas</h4>
+                    <div class="rounded-2xl bg-zinc-50/80 dark:bg-zinc-800/60 p-4 space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Ringkasan Kas</h4>
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
-                                <span class="text-xs text-[var(--color-admin-mute)]">Total Seharusnya</span>
-                                <span class="font-semibold tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($detailSetoran->total_seharusnya, 0, ',', '.') }}</span>
+                                <span class="text-xs text-zinc-500 dark:text-zinc-400">Total Seharusnya</span>
+                                <span class="font-bold tabular-nums text-zinc-900 dark:text-white">Rp {{ number_format($detailSetoran->total_seharusnya, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-xs text-[var(--color-admin-mute)]">Total Diterima Fisik</span>
-                                <span class="font-semibold tabular-nums text-[var(--color-admin-text)]">
+                                <span class="text-xs text-zinc-500 dark:text-zinc-400">Total Diterima Fisik</span>
+                                <span class="font-bold tabular-nums text-zinc-900 dark:text-white">
                                     @if($detailSetoran->total_diterima !== null)
                                         Rp {{ number_format($detailSetoran->total_diterima, 0, ',', '.') }}
                                     @else
@@ -504,16 +535,16 @@
                                     @endif
                                 </span>
                             </div>
-                            <div class="flex justify-between border-t border-[var(--color-admin-border)] pt-2.5">
-                                <span class="text-xs font-medium text-[var(--color-admin-mute)]">Selisih Kas</span>
-                                <span class="font-semibold tabular-nums">
+                            <div class="flex justify-between border-t border-zinc-200/50 dark:border-zinc-700/50 pt-2.5">
+                                <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Selisih Kas</span>
+                                <span class="font-bold tabular-nums">
                                     @if($detailSetoran->selisih !== null)
                                         @if($detailSetoran->selisih > 0)
-                                            <span class="text-warning-deep">+Rp {{ number_format($detailSetoran->selisih, 0, ',', '.') }} (Lebih)</span>
+                                            <span class="text-amber-600 dark:text-amber-400">+Rp {{ number_format($detailSetoran->selisih, 0, ',', '.') }} (Lebih)</span>
                                         @elseif($detailSetoran->selisih < 0)
-                                            <span class="text-red-600 dark:text-red-400">Rp -{{ number_format(abs($detailSetoran->selisih), 0, ',', '.') }} (Kurang)</span>
+                                            <span class="text-rose-600 dark:text-rose-400">Rp -{{ number_format(abs($detailSetoran->selisih), 0, ',', '.') }} (Kurang)</span>
                                         @else
-                                            <span class="text-[var(--color-accent)] font-semibold">Rp 0 (Cocok)</span>
+                                            <span class="text-emerald-600 dark:text-emerald-400">Rp 0 (Cocok)</span>
                                         @endif
                                     @else
                                         -
@@ -521,8 +552,8 @@
                                 </span>
                             </div>
                             @if($detailSetoran->keterangan_selisih)
-                                <div class="rounded-[8px] bg-[var(--color-surface-2)] p-2.5 text-xs text-[var(--color-admin-text)] mt-2">
-                                    <span class="font-medium text-[var(--color-admin-mute)] block mb-0.5">Catatan / Keterangan:</span>
+                                <div class="rounded-xl bg-white dark:bg-zinc-900 p-3 text-xs text-zinc-800 dark:text-zinc-200 mt-2">
+                                    <span class="font-semibold text-zinc-400 block mb-0.5">Catatan / Keterangan:</span>
                                     {{ $detailSetoran->keterangan_selisih }}
                                 </div>
                             @endif
@@ -533,19 +564,19 @@
                     @if($detailSetoran->transaksiSetorans && $detailSetoran->transaksiSetorans->count() > 0)
                         <div class="space-y-2.5">
                             <div class="flex items-center justify-between">
-                                <h4 class="text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Rincian Setoran Nasabah</h4>
-                                <span class="text-xs text-[var(--color-admin-mute)]">{{ $detailSetoran->transaksiSetorans->count() }} transaksi</span>
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Rincian Setoran Nasabah</h4>
+                                <span class="text-xs font-medium text-zinc-400">{{ $detailSetoran->transaksiSetorans->count() }} transaksi</span>
                             </div>
-                            <div class="rounded-[12px] border border-[var(--color-admin-border)] divide-y divide-[var(--color-admin-border)] overflow-hidden">
+                            <div class="rounded-2xl bg-zinc-50/80 dark:bg-zinc-800/60 divide-y divide-zinc-200/50 dark:divide-zinc-700/50 overflow-hidden">
                                 @foreach($detailSetoran->transaksiSetorans as $trx)
-                                    <div class="p-3 text-xs flex items-center justify-between hover:bg-[var(--color-surface-2)] transition">
+                                    <div class="p-3.5 text-xs flex items-center justify-between hover:bg-zinc-100/60 dark:hover:bg-zinc-800/80 transition">
                                         <div>
-                                            <p class="font-semibold text-[var(--color-admin-text)]">{{ $trx->nasabah->name ?? 'Nasabah' }}</p>
-                                            <p class="text-[11px] text-[var(--color-admin-mute)]">{{ $trx->produk->nama ?? 'Tabungan' }} &middot; {{ $trx->tanggal_input_sistem ? $trx->tanggal_input_sistem->format('H:i') : '-' }}</p>
+                                            <p class="font-bold text-zinc-900 dark:text-white">{{ $trx->nasabah->name ?? 'Nasabah' }}</p>
+                                            <p class="text-[11px] text-zinc-400 mt-0.5">{{ $trx->produk->nama ?? 'Tabungan' }} &middot; {{ $trx->tanggal_input_sistem ? $trx->tanggal_input_sistem->format('H:i') : '-' }}</p>
                                         </div>
                                         <div class="text-right">
-                                            <p class="font-semibold tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($trx->nominal, 0, ',', '.') }}</p>
-                                            <span class="text-[10px] uppercase text-[var(--color-admin-mute)]">{{ $trx->sumber_input }}</span>
+                                            <p class="font-bold tabular-nums text-zinc-900 dark:text-white">Rp {{ number_format($trx->nominal, 0, ',', '.') }}</p>
+                                            <span class="text-[10px] uppercase font-semibold text-zinc-400">{{ $trx->sumber_input }}</span>
                                         </div>
                                     </div>
                                 @endforeach
@@ -555,9 +586,9 @@
                 </div>
 
                 {{-- Footer Drawer --}}
-                <div class="border-t border-[var(--color-admin-border)] p-4 flex justify-end">
+                <div class="border-t border-zinc-100 dark:border-zinc-800/80 p-5 flex justify-end">
                     <button type="button" wire:click="tutupDetail"
-                        class="h-[38px] w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-4 text-xs font-medium text-[var(--color-admin-text)] transition hover:bg-[var(--color-surface-2)] cursor-pointer">
+                        class="h-10 w-full rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition cursor-pointer">
                         Tutup
                     </button>
                 </div>
