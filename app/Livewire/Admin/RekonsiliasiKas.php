@@ -76,22 +76,62 @@ class RekonsiliasiKas extends Component
 
     public string $rejectAlasan = '';
 
-    public function mount(): void
+    public ?int $detailId = null;
+
+    public ?SetoranKolektorKantor $detailSetoran = null;
+
+    public function bukaDetail(int $id): void
     {
-        $this->kolektorList = User::where('role', 'kolektor')->where('status_akun', 'aktif')->get();
-        $this->loadPendingSubmissions();
+        $this->detailId = $id;
+        $this->detailSetoran = SetoranKolektorKantor::with([
+            'kolektor',
+            'diterimaOleh',
+            'transaksiSetorans.nasabah',
+            'transaksiSetorans.produk',
+        ])->find($id);
     }
 
-    public function bukaManualModal(): void
+    public function tutupDetail(): void
+    {
+        $this->detailId = null;
+        $this->detailSetoran = null;
+    }
+
+    public function getSelectedSubmissionProperty(): ?SetoranKolektorKantor
+    {
+        if (! $this->processingId) {
+            return null;
+        }
+
+        return SetoranKolektorKantor::with('kolektor')->find($this->processingId);
+    }
+
+    public function openInputManual(): void
     {
         $this->showManualModal = true;
     }
 
-    public function tutupManualModal(): void
+    public function bukaManualModal(): void
+    {
+        $this->openInputManual();
+    }
+
+    public function closeInputManual(): void
     {
         $this->showManualModal = false;
-        $this->reset(['kolektorId', 'totalDiterima', 'keterangan', 'showForm', 'totalSeharusnya']);
+        $this->reset(['kolektorId', 'totalDiterima', 'keterangan', 'showForm', 'totalSeharusnya', 'totalSetoranMasuk', 'totalPenarikanTunai']);
         $this->detailTransaksi = [];
+    }
+
+    public function tutupManualModal(): void
+    {
+        $this->closeInputManual();
+    }
+
+    public function mount(): void
+    {
+        $this->kolektorList = User::where('role', 'kolektor')->where('status_akun', 'aktif')->get();
+        $this->loadPendingSubmissions();
     }
 
     public function loadPendingSubmissions(): void

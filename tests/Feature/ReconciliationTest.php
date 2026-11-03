@@ -3,6 +3,7 @@
 use App\Livewire\Admin\RekonsiliasiKas;
 use App\Models\NasabahProfil;
 use App\Models\ProdukTabungan;
+use App\Models\SetoranKolektorKantor;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
 use Livewire\Livewire;
@@ -227,4 +228,31 @@ it('dapat membuka dan menutup modal input manual setoran kas', function () {
         ->assertSee('Input Manual Setoran Kas')
         ->call('tutupManualModal')
         ->assertSet('showManualModal', false);
+});
+
+it('dapat membuka dan menutup drawer detail rekonsiliasi kas', function () {
+    $admin = User::factory()->admin()->create();
+    $kolektor = User::factory()->kolektor()->create();
+    $setoran = SetoranKolektorKantor::create([
+        'kolektor_id' => $kolektor->id,
+        'tanggal_setor' => now()->toDateString(),
+        'total_seharusnya' => 200000,
+        'total_diterima' => 200000,
+        'selisih' => 0,
+        'status' => 'cocok',
+        'diterima_oleh' => $admin->id,
+    ]);
+
+    $this->actingAs($admin);
+
+    Livewire::test(RekonsiliasiKas::class)
+        ->assertSet('detailId', null)
+        ->call('bukaDetail', $setoran->id)
+        ->assertSet('detailId', $setoran->id)
+        ->assertSee('Detail Rekonsiliasi Kas')
+        ->assertSee($kolektor->name)
+        ->assertSee('Ringkasan Kas')
+        ->call('tutupDetail')
+        ->assertSet('detailId', null)
+        ->assertSet('detailSetoran', null);
 });
