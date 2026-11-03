@@ -45,7 +45,21 @@
                 <tbody class="divide-y divide-hairline/30">
                     @forelse($produk as $item)
                         <tr class="transition hover:bg-inset/30">
-                            <td class="px-5 py-3.5 text-xs font-semibold text-ink">{{ $item->nama }}</td>
+                            <td class="px-5 py-3.5">
+                                <div class="text-xs font-semibold text-ink">{{ $item->nama }}</div>
+                                @if($item->isPaket())
+                                    <div class="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-mute">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <span>Periode: {{ $item->periode_mulai ? $item->periode_mulai->format('d/m/Y') : '-' }} &ndash; {{ $item->periode_selesai ? $item->periode_selesai->format('d/m/Y') : '-' }}</span>
+                                        @if($item->tanggal_boleh_cair)
+                                            <span>&bull;</span>
+                                            <span class="font-medium text-ink">Cair: {{ $item->tanggal_boleh_cair->format('d/m/Y') }}</span>
+                                        @endif
+                                    </div>
+                                @endif
+                            </td>
                             <td class="px-5 py-3.5">
                                 <x-admin.status-chip
                                     :label="ucfirst($item->tipe)"
@@ -98,6 +112,14 @@
                         <div class="min-w-0">
                             <p class="text-xs font-semibold text-ink">{{ $item->nama }}</p>
                             <p class="text-[11px] text-mute">{{ ucfirst($item->tipe) }}</p>
+                            @if($item->isPaket())
+                                <p class="mt-1 flex items-center gap-1 text-[11px] text-mute">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="size-3 shrink-0 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span>{{ $item->periode_mulai ? $item->periode_mulai->format('d/m/Y') : '-' }} &ndash; {{ $item->periode_selesai ? $item->periode_selesai->format('d/m/Y') : '-' }}</span>
+                                </p>
+                            @endif
                         </div>
                         <x-admin.status-chip
                             :label="$item->status === 'aktif' ? 'Aktif' : 'Nonaktif'"
@@ -113,6 +135,12 @@
                             <span class="block text-mute">Harga/Hari</span>
                             <span class="tabular-nums font-semibold text-ink">{{ $item->harga_per_hari ? 'Rp ' . number_format($item->harga_per_hari, 0, ',', '.') : '-' }}</span>
                         </div>
+                        @if($item->isPaket() && $item->tanggal_boleh_cair)
+                            <div class="col-span-2 pt-1 border-t border-hairline/30 flex items-center justify-between">
+                                <span class="text-mute">Tanggal Boleh Cair</span>
+                                <span class="tabular-nums font-medium text-ink">{{ $item->tanggal_boleh_cair->format('d/m/Y') }}</span>
+                            </div>
+                        @endif
                     </div>
                     <div class="flex items-center justify-end gap-2 pt-1">
                         <button wire:click="edit({{ $item->id }})"
@@ -260,34 +288,62 @@
 
                                     {{-- Periode mulai --}}
                                     <div>
-                                        <label class="mb-1 block text-xs font-medium text-ink">Periode mulai</label>
+                                        <div class="mb-1 flex items-center justify-between">
+                                            <label class="block text-xs font-semibold text-ink">Periode mulai</label>
+                                            @if($periode_mulai)
+                                                <span class="rounded-md bg-primary-soft px-1.5 py-0.5 text-[11px] font-semibold text-on-primary-soft">
+                                                    {{ \Carbon\Carbon::parse($periode_mulai)->isoFormat('D MMM Y') }}
+                                                </span>
+                                            @endif
+                                        </div>
                                         <x-ui.tanggal wire:model.live="periode_mulai"
-                                            class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
+                                            class="h-10 w-full rounded-[10px] border border-hairline/80 bg-surface px-3 pr-9 text-xs font-semibold tabular-nums text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 shadow-xs" />
                                         @error('periode_mulai') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                     </div>
 
                                     {{-- Periode selesai --}}
                                     <div>
-                                        <label class="mb-1 block text-xs font-medium text-ink">Periode selesai</label>
+                                        <div class="mb-1 flex items-center justify-between">
+                                            <label class="block text-xs font-semibold text-ink">Periode selesai</label>
+                                            @if($periode_selesai)
+                                                <span class="rounded-md bg-primary-soft px-1.5 py-0.5 text-[11px] font-semibold text-on-primary-soft">
+                                                    {{ \Carbon\Carbon::parse($periode_selesai)->isoFormat('D MMM Y') }}
+                                                </span>
+                                            @endif
+                                        </div>
                                         <x-ui.tanggal wire:model.live="periode_selesai" :min="$periode_mulai"
-                                            class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
+                                            class="h-10 w-full rounded-[10px] border border-hairline/80 bg-surface px-3 pr-9 text-xs font-semibold tabular-nums text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 shadow-xs" />
                                         @error('periode_selesai') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                     </div>
 
                                     {{-- Tanggal boleh cair (jatuh tempo) --}}
                                     <div>
-                                        <label class="mb-1 block text-xs font-medium text-ink">Tanggal boleh cair (jatuh tempo)</label>
+                                        <div class="mb-1 flex items-center justify-between">
+                                            <label class="block text-xs font-semibold text-ink">Tanggal boleh cair (jatuh tempo)</label>
+                                            @if($tanggal_boleh_cair)
+                                                <span class="rounded-md bg-primary-soft px-1.5 py-0.5 text-[11px] font-semibold text-on-primary-soft">
+                                                    {{ \Carbon\Carbon::parse($tanggal_boleh_cair)->isoFormat('D MMM Y') }}
+                                                </span>
+                                            @endif
+                                        </div>
                                         <x-ui.tanggal wire:model="tanggal_boleh_cair"
-                                            class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
+                                            class="h-10 w-full rounded-[10px] border border-hairline/80 bg-surface px-3 pr-9 text-xs font-semibold tabular-nums text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 shadow-xs" />
                                         @error('tanggal_boleh_cair') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                     </div>
 
                                     {{-- Batas daftar hingga (opsional) --}}
                                     <div>
-                                        <label class="mb-1 block text-xs font-medium text-ink">Batas daftar hingga (opsional)</label>
+                                        <div class="mb-1 flex items-center justify-between">
+                                            <label class="block text-xs font-semibold text-ink">Batas daftar hingga (opsional)</label>
+                                            @if($batas_daftar_hingga)
+                                                <span class="rounded-md bg-primary-soft px-1.5 py-0.5 text-[11px] font-semibold text-on-primary-soft">
+                                                    {{ \Carbon\Carbon::parse($batas_daftar_hingga)->isoFormat('D MMM Y') }}
+                                                </span>
+                                            @endif
+                                        </div>
                                         <x-ui.tanggal wire:model="batas_daftar_hingga" :max="now()->addYears(1)->toDateString()"
                                             placeholder="Tanpa batas"
-                                            class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
+                                            class="h-10 w-full rounded-[10px] border border-hairline/80 bg-surface px-3 pr-9 text-xs font-semibold tabular-nums text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 shadow-xs" />
                                         @error('batas_daftar_hingga') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                     </div>
                                 </div>
@@ -378,7 +434,12 @@
                                 <div class="rounded-xl border border-hairline/60 bg-surface p-4 space-y-2">
                                     <div class="flex items-center justify-between py-1.5 text-xs border-b border-dashed border-hairline/60">
                                         <span class="text-mute">Durasi komitmen</span>
-                                        <b class="font-medium text-ink tabular-nums">{{ $ringkasHarga['totalHari'] ? $ringkasHarga['totalHari'].' hari' : '-' }}</b>
+                                        <b class="font-medium text-ink tabular-nums">
+                                            {{ $ringkasHarga['totalHari'] ? $ringkasHarga['totalHari'].' hari' : '-' }}
+                                            @if($periode_mulai && $periode_selesai)
+                                                <span class="text-[11px] font-normal text-mute">({{ \Carbon\Carbon::parse($periode_mulai)->isoFormat('D MMM Y') }} &ndash; {{ \Carbon\Carbon::parse($periode_selesai)->isoFormat('D MMM Y') }})</span>
+                                            @endif
+                                        </b>
                                     </div>
                                     <div class="flex items-center justify-between py-1.5 text-xs border-b border-dashed border-hairline/60">
                                         <span class="text-mute">Target tabungan nasabah</span>

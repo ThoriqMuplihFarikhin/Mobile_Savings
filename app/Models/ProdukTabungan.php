@@ -69,6 +69,10 @@ class ProdukTabungan extends Model
             return null;
         }
 
+        if ($this->tampilkan_harga_ke_nasabah) {
+            return $this->isi_paket;
+        }
+
         return array_map(fn (array $item): array => array_filter(
             $item,
             fn (string $kunci): bool => $kunci !== 'harga',

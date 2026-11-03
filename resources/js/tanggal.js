@@ -23,12 +23,18 @@ document.addEventListener('alpine:init', () => {
                 nilaiAwal = this.$wire[konfig.model] || '';
             }
             const altFormat = konfig.mode === 'bulan' ? 'F Y' : 'j F Y';
+            const altInputClasses = [
+                this.$el.className || '',
+                'flatpickr-alt-input',
+                'cursor-pointer',
+            ].filter(Boolean).join(' ');
 
             this.fp = flatpickr(this.$el, {
                 locale: Object.assign({}, bahasa, { rangeSeparator: ' s/d ' }),
                 disableMobile: true,
                 allowInput: true,
                 altInput: true,
+                altInputClass: altInputClasses,
                 altFormat: altFormat,
                 dateFormat: this.formatSimpanBawaan(),
                 mode: konfig.mode === 'rentang' ? 'range' : 'single',
