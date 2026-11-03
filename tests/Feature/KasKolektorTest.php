@@ -225,3 +225,20 @@ it('baris kolektor terkunci menampilkan badge Terkunci', function () {
     Livewire::test(KasKolektor::class)
         ->assertSee('Terkunci');
 });
+
+it('dapat membuka dan menutup drawer detail kas kolektor', function () {
+    ['admin' => $admin, 'kolektorA' => $a] = seedKasP34();
+
+    $this->actingAs($admin);
+
+    Livewire::test(KasKolektor::class)
+        ->assertSet('detailKolektorId', null)
+        ->call('bukaDetail', $a->id)
+        ->assertSet('detailKolektorId', $a->id)
+        ->assertSee('Detail Kas Kolektor')
+        ->assertSee($a->name)
+        ->assertSee('Kas di Tangan (Net)')
+        ->call('tutupDetail')
+        ->assertSet('detailKolektorId', null)
+        ->assertSet('detailKas', null);
+});

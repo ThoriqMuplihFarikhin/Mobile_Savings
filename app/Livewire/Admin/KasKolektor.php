@@ -5,10 +5,12 @@ namespace App\Livewire\Admin;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AdminSetting;
 use App\Models\SetoranKolektorKantor;
+use App\Models\TransaksiPenarikan;
 use App\Models\TransaksiSetoran;
 use App\Models\User;
 use App\Support\KasKolektorHitung;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -24,6 +26,53 @@ class KasKolektor extends Component
     public float $totalKas = 0.0;
 
     public int $jumlahLewatBatas = 0;
+
+    public ?int $detailKolektorId = null;
+
+    /** @var array{kolektor: User|null, baris: array<string, mixed>|null, setoran_list: Collection<int, TransaksiSetoran>, penarikan_list: Collection<int, TransaksiPenarikan>}|null */
+    public ?array $detailKas = null;
+
+    public function bukaDetail(int $kolektorId): void
+    {
+        $this->detailKolektorId = $kolektorId;
+        $baris = null;
+        foreach ($this->daftarKas as $b) {
+            if ($b['kolektor_id'] === $kolektorId) {
+                $baris = $b;
+                break;
+            }
+        }
+
+        $kolektor = User::find($kolektorId);
+        $setoranList = TransaksiSetoran::belumDisetor()
+            ->where('input_by', $kolektorId)
+            ->whereNull('setoran_kolektor_id')
+            ->with(['nasabah', 'produk'])
+            ->latest()
+            ->take(10)
+            ->get();
+
+        $penarikanList = TransaksiPenarikan::where('dibayar_oleh', $kolektorId)
+            ->where('mempengaruhi_kas', true)
+            ->whereNull('setoran_kolektor_id')
+            ->with(['nasabah', 'produk'])
+            ->latest()
+            ->take(10)
+            ->get();
+
+        $this->detailKas = [
+            'kolektor' => $kolektor,
+            'baris' => $baris,
+            'setoran_list' => $setoranList,
+            'penarikan_list' => $penarikanList,
+        ];
+    }
+
+    public function tutupDetail(): void
+    {
+        $this->detailKolektorId = null;
+        $this->detailKas = null;
+    }
 
     protected function requiredRole(): string
     {
