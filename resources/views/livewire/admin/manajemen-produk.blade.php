@@ -147,22 +147,22 @@
         </div>
     </div>
 
-    {{-- Drawer Slide-over: Tambah & Edit Produk (Sesuai drw(..., pfH(), 1) di prototipe HTML) --}}
+    {{-- Drawer Slide-over: Tambah & Edit Produk (Sesuai pfH() di prototipe HTML) --}}
     @if($showForm)
         <div class="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="{{ $editId ? 'Edit Produk Tabungan' : 'Tambah Produk Tabungan Baru' }}">
             <div class="fixed inset-0 bg-black/40 transition-opacity cursor-pointer" wire:click="toggleForm"></div>
 
             <div class="relative z-10 flex h-full w-full max-w-2xl flex-col border-l border-hairline/60 bg-surface shadow-2xl transition-all">
-                {{-- Header Drawer --}}
+                {{-- Header Drawer (.dh) --}}
                 <div class="flex items-center justify-between border-b border-hairline/40 px-6 py-4">
                     <div>
                         <div class="flex items-center gap-2">
                             <h3 class="text-base font-semibold text-ink">{{ $editId ? 'Edit Produk Tabungan' : 'Tambah Produk Tabungan Baru' }}</h3>
                             <span class="rounded-full px-2.5 py-0.5 text-[11px] font-semibold {{ $tipe === 'paket' ? 'border border-primary/20 bg-primary-soft text-on-primary-soft' : 'border border-hairline/60 bg-inset text-body' }}">
-                                {{ $tipe === 'paket' ? 'Paket' : 'Bebas' }}
+                                {{ $tipe === 'paket' ? 'Tabungan Paket' : 'Tabungan Bebas' }}
                             </span>
                         </div>
-                        <p class="text-xs text-mute mt-0.5">Atur skema tabungan, komitmen harian, dan barang sembako.</p>
+                        <p class="text-xs text-mute mt-0.5">Atur identitas, skema cicilan, sembako, dan analisis margin finansial.</p>
                     </div>
                     <button type="button" wire:click="toggleForm"
                         class="flex size-8 items-center justify-center rounded-full text-mute transition hover:bg-inset hover:text-ink focus:outline-none"
@@ -173,275 +173,234 @@
                     </button>
                 </div>
 
-                {{-- Body Drawer --}}
+                {{-- Body Drawer (.db) --}}
                 <form wire:submit="save" class="flex flex-col flex-1 overflow-hidden">
-                    <div class="flex-1 overflow-y-auto p-6 space-y-6">
-                        {{-- Seksi 1: Identitas Produk --}}
-                        <div class="rounded-xl border border-hairline/40 bg-inset/30 p-5">
-                            <h4 class="mb-3 text-xs font-semibold uppercase tracking-wider text-mute">1. Identitas Produk</h4>
+                    <div class="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+                        
+                        {{-- 1. IDENTITAS PRODUK (sec('1. Identitas produk')) --}}
+                        <div class="space-y-3">
+                            <h4 class="text-xs font-semibold uppercase tracking-wider text-mute">1. Identitas produk</h4>
 
-                            <div class="grid gap-4 sm:grid-cols-2">
-                                <div>
-                                    <label class="mb-1.5 block text-xs font-medium text-ink">Tipe Produk</label>
-                                    <select wire:model.live="tipe"
-                                        class="h-[38px] w-full rounded-xl border border-hairline/60 bg-surface px-3 text-xs font-medium text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20">
-                                        <option value="bebas">Tabungan Bebas (Fleksibel, Komisi %)</option>
-                                        <option value="paket">Tabungan Paket (Harian Tetap, Hasil Sembako/Uang)</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label class="mb-1.5 block text-xs font-medium text-ink">Nama Produk</label>
-                                    <input type="text" wire:model="nama"
-                                        class="h-[38px] w-full rounded-xl border border-hairline/60 bg-surface px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
-                                        placeholder="Contoh: Paket Lebaran A (Umi Uma)" />
-                                    @error('nama') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
-                                </div>
-
-                                @if($tipe === 'bebas')
-                                    <div>
-                                        <label class="mb-1.5 block text-xs font-medium text-ink">Komisi Penarikan (%)</label>
-                                        <input type="number" wire:model="persen_komisi" step="0.01"
-                                            class="h-[38px] w-full rounded-xl border border-hairline/60 bg-surface px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
-                                            placeholder="5.00" />
-                                        @error('persen_komisi') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
-                                    </div>
-                                @else
-                                    <div class="sm:col-span-2 rounded-xl border border-primary/20 bg-primary-soft p-3.5 text-xs text-on-primary-soft">
-                                        <span class="font-semibold">Aturan Tabungan Paket:</span> Nasabah menabung cicilan harian tetap. Penarikan dicairkan saat jatuh tempo dalam bentuk barang sembako (bebas potongan komisi / 0%).
-                                    </div>
-                                    @if($editId && $jumlahPesertaEdit > 0)
-                                        <div class="sm:col-span-2 rounded-xl border border-warning/20 bg-warning-soft p-3.5 text-xs text-warning-deep">
-                                            <span class="font-semibold">Perhatian:</span> Produk ini sudah diikuti {{ $jumlahPesertaEdit }} nasabah aktif. Mengubah harga per hari atau periode akan menghitung ulang jadwal dan tunggakan seluruh peserta.
-                                        </div>
-                                    @endif
-                                @endif
-
-                                <div>
-                                    <label class="mb-1.5 block text-xs font-medium text-ink">Minimal Setor (Rp)</label>
-                                    <input type="number" wire:model="minimal_setor"
-                                        class="h-[38px] w-full rounded-xl border border-hairline/60 bg-surface px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
-                                        placeholder="10000" />
-                                    @error('minimal_setor') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
-                                </div>
+                            {{-- Tipe produk --}}
+                            <div>
+                                <label class="mb-1 block text-xs font-medium text-ink">Tipe produk</label>
+                                <select wire:model.live="tipe"
+                                    class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs font-medium text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20">
+                                    <option value="paket">Tabungan Paket (harian tetap, hasil sembako/uang)</option>
+                                    <option value="bebas">Tabungan Bebas (fleksibel, komisi %)</option>
+                                </select>
                             </div>
+
+                            {{-- Nama produk --}}
+                            <div>
+                                <label class="mb-1 block text-xs font-medium text-ink">Nama produk</label>
+                                <input type="text" wire:model="nama"
+                                    class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                                    placeholder="Contoh: Paket Lebaran A" />
+                                @error('nama') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            </div>
+
+                            {{-- Komisi penarikan (%) - khusus Tabungan Bebas --}}
+                            @if($tipe === 'bebas')
+                                <div>
+                                    <label class="mb-1 block text-xs font-medium text-ink">Komisi penarikan (%) - khusus Tabungan Bebas</label>
+                                    <input type="number" wire:model="persen_komisi" step="0.01"
+                                        class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                                        placeholder="5.00" />
+                                    @error('persen_komisi') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                                </div>
+                            @endif
+
+                            {{-- Minimal Setor (Rp) --}}
+                            <div>
+                                <label class="mb-1 block text-xs font-medium text-ink">Minimal Setor (Rp)</label>
+                                <input type="number" wire:model="minimal_setor"
+                                    class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                                    placeholder="10000" />
+                                @error('minimal_setor') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            </div>
+
+                            @if($tipe === 'paket' && $editId && $jumlahPesertaEdit > 0)
+                                <div class="rounded-xl border border-warning/20 bg-warning-soft p-3 text-xs text-warning-deep">
+                                    <span class="font-semibold">Perhatian:</span> Produk ini sudah diikuti {{ $jumlahPesertaEdit }} nasabah aktif. Mengubah harga per hari atau periode akan menghitung ulang jadwal peserta.
+                                </div>
+                            @endif
                         </div>
 
-                        {{-- Seksi Khusus Paket --}}
+                        {{-- 2. SKEMA CICILAN & KALENDER PERIODE (sec('2. Skema cicilan & kalender periode')) --}}
                         @if($tipe === 'paket')
-                            {{-- Seksi 2: Skema Cicilan & Kalender --}}
-                            <div class="rounded-xl border border-hairline/40 bg-inset/30 p-5">
-                                <div class="mb-3 flex items-center justify-between">
-                                    <h4 class="text-xs font-semibold uppercase tracking-wider text-mute">2. Skema Cicilan &amp; Kalender Periode</h4>
+                            <div class="space-y-3 border-t border-hairline/40 pt-5">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-semibold uppercase tracking-wider text-mute">2. Skema cicilan &amp; kalender periode</h4>
                                     @if($ringkasHarga['totalHari'])
-                                        <span class="rounded-full border border-primary/20 bg-primary-soft px-2.5 py-0.5 text-xs font-semibold text-on-primary-soft">
-                                            Total Durasi: {{ $ringkasHarga['totalHari'] }} Hari
+                                        <span class="rounded-full border border-primary/20 bg-primary-soft px-2.5 py-0.5 text-[11px] font-semibold text-on-primary-soft">
+                                            Durasi: {{ $ringkasHarga['totalHari'] }} Hari
                                         </span>
                                     @endif
                                 </div>
 
-                                <div class="grid gap-4 sm:grid-cols-2">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {{-- Setoran per hari (Rp) --}}
                                     <div>
-                                        <label class="mb-1.5 block text-xs font-medium text-ink">Setoran Per Hari (Rp)</label>
+                                        <label class="mb-1 block text-xs font-medium text-ink">Setoran per hari (Rp)</label>
                                         <input type="number" wire:model.live="harga_per_hari"
-                                            class="h-[38px] w-full rounded-xl border border-hairline/60 bg-surface px-3 text-xs font-semibold tabular-nums text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
-                                            placeholder="Contoh: 5500" />
+                                            class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs font-semibold tabular-nums text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                                            placeholder="5500" />
                                         @error('harga_per_hari') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                     </div>
 
+                                    {{-- Toleransi tunggakan (hari) --}}
                                     <div>
-                                        <label class="mb-1.5 block text-xs font-medium text-ink">Toleransi Tunggakan (hari)</label>
+                                        <label class="mb-1 block text-xs font-medium text-ink">Toleransi tunggakan (hari)</label>
                                         <input type="number" wire:model="batas_toleransi"
-                                            class="h-[38px] w-full rounded-xl border border-hairline/60 bg-surface px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
-                                            placeholder="Contoh: 3 atau 7" />
+                                            class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                                            placeholder="3" />
                                         @error('batas_toleransi') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                     </div>
 
+                                    {{-- Periode mulai --}}
                                     <div>
-                                        <label class="mb-1.5 block text-xs font-medium text-ink">Periode Mulai</label>
+                                        <label class="mb-1 block text-xs font-medium text-ink">Periode mulai</label>
                                         <x-ui.tanggal wire:model.live="periode_mulai"
-                                            class="h-[38px] w-full rounded-xl border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
+                                            class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
                                         @error('periode_mulai') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                     </div>
 
+                                    {{-- Periode selesai --}}
                                     <div>
-                                        <label class="mb-1.5 block text-xs font-medium text-ink">Periode Selesai</label>
+                                        <label class="mb-1 block text-xs font-medium text-ink">Periode selesai</label>
                                         <x-ui.tanggal wire:model.live="periode_selesai" :min="$periode_mulai"
-                                            class="h-[38px] w-full rounded-xl border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
+                                            class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
                                         @error('periode_selesai') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                     </div>
 
+                                    {{-- Tanggal boleh cair (jatuh tempo) --}}
                                     <div>
-                                        <label class="mb-1.5 block text-xs font-medium text-ink">Tanggal Boleh Cair (Jatuh Tempo)</label>
+                                        <label class="mb-1 block text-xs font-medium text-ink">Tanggal boleh cair (jatuh tempo)</label>
                                         <x-ui.tanggal wire:model="tanggal_boleh_cair"
-                                            class="h-[38px] w-full rounded-xl border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
-                                        <p class="mt-1 text-[11px] text-mute">Biasanya saat Lebaran / setelah periode selesai.</p>
+                                            class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
                                         @error('tanggal_boleh_cair') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                     </div>
 
+                                    {{-- Batas daftar hingga (opsional) --}}
                                     <div>
-                                        <label class="mb-1.5 block text-xs font-medium text-ink">Batas Daftar Hingga (opsional)</label>
+                                        <label class="mb-1 block text-xs font-medium text-ink">Batas daftar hingga (opsional)</label>
                                         <x-ui.tanggal wire:model="batas_daftar_hingga" :max="now()->addYears(1)->toDateString()"
                                             placeholder="Tanpa batas"
-                                            class="h-[38px] w-full rounded-xl border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
-                                        <p class="mt-1 text-[11px] text-mute">Tenggat terakhir nasabah baru boleh ikut.</p>
+                                            class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20" />
                                         @error('batas_daftar_hingga') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                     </div>
+                                </div>
 
-                                    <div class="sm:col-span-2 flex flex-col gap-2.5 pt-2 border-t border-hairline/40">
-                                        <label class="flex items-center gap-2 text-xs font-medium text-ink cursor-pointer">
-                                            <input type="checkbox" wire:model="boleh_cair_saat_target" class="h-4 w-4 rounded border-hairline/60 text-primary focus:ring-primary" />
-                                            <span>Boleh cair lebih awal bila target tabungan sudah tercapai 100%</span>
-                                        </label>
-                                        <label class="flex items-center gap-2 text-xs font-medium text-ink cursor-pointer">
-                                            <input type="checkbox" wire:model="tampilkan_harga_ke_nasabah" class="h-4 w-4 rounded border-hairline/60 text-primary focus:ring-primary" />
-                                            <span>Tampilkan estimasi harga barang ke nasabah (opsional, bawaan: dirahasiakan)</span>
-                                        </label>
-                                    </div>
+                                {{-- Checkbox Opsi Tambahan --}}
+                                <div class="space-y-2 pt-2">
+                                    <label class="flex items-center gap-2.5 text-xs text-ink cursor-pointer">
+                                        <input type="checkbox" wire:model="boleh_cair_saat_target" class="size-4 rounded border-hairline/60 text-primary focus:ring-primary" />
+                                        <span>Boleh cair lebih awal bila target tabungan sudah tercapai 100%</span>
+                                    </label>
+                                    <label class="flex items-center gap-2.5 text-xs text-ink cursor-pointer">
+                                        <input type="checkbox" wire:model="tampilkan_harga_ke_nasabah" class="size-4 rounded border-hairline/60 text-primary focus:ring-primary" />
+                                        <span>Tampilkan estimasi harga barang ke nasabah (bawaan: dirahasiakan)</span>
+                                    </label>
                                 </div>
                             </div>
 
-                            {{-- Seksi 3: Hadiah Uang Tunai & Rincian Sembako --}}
-                            <div class="rounded-xl border border-hairline/40 bg-inset/30 p-5 space-y-4">
+                            {{-- 3. HADIAH UANG TUNAI & BARANG SEMBAKO (sec('3. Hadiah uang tunai & barang sembako')) --}}
+                            <div class="space-y-3 border-t border-hairline/40 pt-5">
+                                <h4 class="text-xs font-semibold uppercase tracking-wider text-mute">3. Hadiah uang tunai &amp; barang sembako</h4>
+
+                                {{-- Uang tunai saat pencairan (Rp) --}}
                                 <div>
-                                    <h4 class="text-xs font-semibold uppercase tracking-wider text-mute">3. Hadiah Uang Tunai &amp; Barang Sembako</h4>
-                                    <p class="text-xs text-mute mt-0.5">Sesuai dengan brosur fisik pengadaan paket lebaran.</p>
+                                    <label class="mb-1 block text-xs font-medium text-ink">Uang tunai saat pencairan (Rp)</label>
+                                    <input type="number" wire:model.live="uang_tunai"
+                                        class="h-10 w-full rounded-[10px] border border-hairline/60 bg-surface px-3 text-xs font-semibold tabular-nums text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                                        placeholder="500000" />
+                                    @error('uang_tunai') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
                                 </div>
 
-                                {{-- Uang Tunai Cashback --}}
-                                <div class="rounded-xl border border-hairline/40 bg-surface p-4">
-                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                        <div>
-                                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-ink">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                                Uang Tunai / Cashback Saku Lebaran (Opsional)
-                                            </span>
-                                            <p class="text-xs text-mute mt-0.5">Misal pada Paket A: nasabah selain dapat sembako juga mendapatkan uang tunai Rp 500.000 saat pencairan.</p>
-                                        </div>
-                                        <div class="w-full sm:w-56">
-                                            <div class="relative">
-                                                <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-mute">Rp</span>
-                                                <input type="number" wire:model.live="uang_tunai"
-                                                    class="h-[38px] w-full rounded-xl border border-hairline/60 bg-surface pl-9 pr-3 text-xs font-semibold tabular-nums text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
-                                                    placeholder="Contoh: 500000" />
+                                {{-- Repeater Daftar Barang Sembako Sesuai Prototipe HTML --}}
+                                <div class="space-y-2 pt-1">
+                                    <label class="block text-xs font-medium text-ink">Daftar barang sembako</label>
+                                    @foreach($isiPaketItems as $index => $item)
+                                        <div class="grid grid-cols-12 gap-2 items-center">
+                                            <div class="col-span-5">
+                                                <input type="text" wire:model="isiPaketItems.{{ $index }}.nama"
+                                                    class="h-9 w-full rounded-[8px] border border-hairline/60 bg-surface px-2.5 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                                                    placeholder="Nama barang" aria-label="Nama barang" />
                                             </div>
-                                            @error('uang_tunai') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                                            <div class="col-span-3">
+                                                <input type="text" wire:model="isiPaketItems.{{ $index }}.jumlah"
+                                                    class="h-9 w-full rounded-[8px] border border-hairline/60 bg-surface px-2.5 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                                                    placeholder="5 kg" aria-label="Takaran" />
+                                            </div>
+                                            <div class="col-span-3">
+                                                <input type="number" min="0" wire:model.live="isiPaketItems.{{ $index }}.harga"
+                                                    class="h-9 w-full rounded-[8px] border border-hairline/60 bg-surface px-2.5 text-xs tabular-nums text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                                                    placeholder="Harga modal" aria-label="Harga modal" />
+                                                @error('isiPaketItems.'.$index.'.harga') <p class="mt-1 text-[11px] text-danger">{{ $message }}</p> @enderror
+                                            </div>
+                                            <div class="col-span-1 flex items-center justify-end gap-1">
+                                                <button type="button" wire:click="naikkanItemPaket({{ $index }})"
+                                                    aria-label="Naikkan urutan"
+                                                    class="flex size-7 items-center justify-center rounded-[6px] border border-hairline/60 bg-surface text-mute transition hover:bg-surface-2 disabled:opacity-25"
+                                                    {{ $index === 0 ? 'disabled' : '' }}>
+                                                    &uarr;
+                                                </button>
+                                                <button type="button" wire:click="turunkanItemPaket({{ $index }})"
+                                                    aria-label="Turunkan urutan"
+                                                    class="flex size-7 items-center justify-center rounded-[6px] border border-hairline/60 bg-surface text-mute transition hover:bg-surface-2 disabled:opacity-25"
+                                                    {{ $index === count($isiPaketItems) - 1 ? 'disabled' : '' }}>
+                                                    &darr;
+                                                </button>
+                                                <button type="button" wire:click="hapusItemPaket({{ $index }})"
+                                                    title="Hapus barang"
+                                                    class="flex size-7 items-center justify-center rounded-[6px] border border-hairline/60 bg-surface text-danger transition hover:bg-danger-soft">
+                                                    &times;
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
+                                    @endforeach
 
-                                {{-- Repeater Isi Barang --}}
-                                <div class="space-y-3">
-                                    <div class="flex items-center justify-between">
-                                        <label class="text-xs font-semibold text-ink">Daftar Barang Sembako</label>
+                                    <div class="pt-1">
                                         <button type="button" wire:click="tambahItemPaket"
-                                            class="inline-flex items-center gap-1.5 rounded-xl border border-hairline/60 bg-surface px-3 py-1.5 text-xs font-semibold text-ink shadow-xs transition hover:bg-surface-2 active:scale-95">
+                                            class="inline-flex items-center gap-1.5 rounded-[10px] border border-hairline/60 bg-surface px-3 py-1.5 text-xs font-semibold text-ink shadow-xs transition hover:bg-surface-2 active:scale-95">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                                            Tambah Barang
+                                            Tambah barang
                                         </button>
                                     </div>
-
-                                    <div class="space-y-2">
-                                        <div class="hidden sm:grid sm:grid-cols-12 gap-2 px-1 text-[11px] font-semibold text-mute uppercase">
-                                            <div class="col-span-5">Nama Barang</div>
-                                            <div class="col-span-3">Takaran / Jumlah</div>
-                                            <div class="col-span-3">Estimasi Modal Beli (Rp)</div>
-                                            <div class="col-span-1 text-center">Aksi</div>
-                                        </div>
-
-                                        @foreach($isiPaketItems as $index => $item)
-                                            <div class="flex flex-col sm:grid sm:grid-cols-12 gap-2 rounded-xl border border-hairline/40 bg-surface p-2.5 sm:items-center">
-                                                <div class="sm:col-span-5">
-                                                    <input type="text" wire:model="isiPaketItems.{{ $index }}.nama"
-                                                        class="h-[34px] w-full rounded-lg border border-hairline/60 bg-surface px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
-                                                        placeholder="Nama barang (misal: Beras, Daging Sapi)" />
-                                                </div>
-                                                <div class="sm:col-span-3">
-                                                    <input type="text" wire:model="isiPaketItems.{{ $index }}.jumlah"
-                                                        class="h-[34px] w-full rounded-lg border border-hairline/60 bg-surface px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
-                                                        placeholder="Ukuran (misal: 5 kg, 2 Ltr, 1 btl)" />
-                                                </div>
-                                                <div class="sm:col-span-3">
-                                                    <input type="number" min="0" wire:model.live="isiPaketItems.{{ $index }}.harga"
-                                                        class="h-[34px] w-full rounded-lg border border-hairline/60 bg-surface px-3 text-xs tabular-nums text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
-                                                        placeholder="Harga modal (opsional)" />
-                                                    @error('isiPaketItems.'.$index.'.harga') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
-                                                </div>
-                                                <div class="sm:col-span-1 flex items-center justify-end sm:justify-center gap-1">
-                                                    <button type="button" wire:click="naikkanItemPaket({{ $index }})"
-                                                        aria-label="Naikkan urutan"
-                                                        class="flex h-8 w-7 items-center justify-center rounded-lg border border-hairline/60 bg-surface text-mute transition hover:bg-surface-2 disabled:opacity-30"
-                                                        {{ $index === 0 ? 'disabled' : '' }}>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" /></svg>
-                                                    </button>
-                                                    <button type="button" wire:click="turunkanItemPaket({{ $index }})"
-                                                        aria-label="Turunkan urutan"
-                                                        class="flex h-8 w-7 items-center justify-center rounded-lg border border-hairline/60 bg-surface text-mute transition hover:bg-surface-2 disabled:opacity-30"
-                                                        {{ $index === count($isiPaketItems) - 1 ? 'disabled' : '' }}>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
-                                                    </button>
-                                                    <button type="button" wire:click="hapusItemPaket({{ $index }})"
-                                                        title="Hapus baris"
-                                                        class="flex h-8 w-7 items-center justify-center rounded-lg border border-hairline/60 bg-surface text-danger transition hover:bg-danger-soft">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
                                 </div>
                             </div>
 
-                            {{-- Seksi 4: Ringkasan Analisis Finansial & Margin Laba Pengelola --}}
-                            <div class="rounded-xl border border-hairline/40 bg-inset/30 p-5">
-                                <div class="mb-3 flex items-center justify-between">
-                                    <h4 class="text-xs font-semibold uppercase tracking-wider text-mute">4. Analisis Finansial &amp; Margin Laba Pengelola</h4>
-                                    @if($ringkasHarga['melebihi'])
-                                        <span class="rounded-full border border-danger/30 bg-danger-soft px-3 py-1 text-xs font-semibold text-danger">
-                                            Peringatan: Modal Pengadaan Melebihi Target!
-                                        </span>
-                                    @elseif($ringkasHarga['target'] !== null && ($ringkasHarga['selisih'] ?? 0) >= 0)
-                                        <span class="rounded-full border border-primary/20 bg-primary-soft px-3 py-1 text-xs font-semibold text-on-primary-soft">
-                                            Margin Sehat &amp; Layak Dijalankan
-                                        </span>
-                                    @endif
-                                </div>
+                            {{-- 4. ANALISIS FINANSIAL & MARGIN (sec('4. Analisis finansial & margin')) Sesuai .kv di HTML --}}
+                            <div class="space-y-3 border-t border-hairline/40 pt-5">
+                                <h4 class="text-xs font-semibold uppercase tracking-wider text-mute">4. Analisis finansial &amp; margin</h4>
 
-                                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                                    <div class="rounded-xl bg-surface p-3.5 border border-hairline/60">
-                                        <span class="text-xs text-mute font-medium">Durasi Komitmen</span>
-                                        <p class="mt-1 text-base font-semibold tabular-nums text-ink">
-                                            {{ $ringkasHarga['totalHari'] ? $ringkasHarga['totalHari'].' Hari' : '-' }}
-                                        </p>
+                                <div class="rounded-xl border border-hairline/60 bg-surface p-4 space-y-2">
+                                    <div class="flex items-center justify-between py-1.5 text-xs border-b border-dashed border-hairline/60">
+                                        <span class="text-mute">Durasi komitmen</span>
+                                        <b class="font-medium text-ink tabular-nums">{{ $ringkasHarga['totalHari'] ? $ringkasHarga['totalHari'].' hari' : '-' }}</b>
                                     </div>
-
-                                    <div class="rounded-xl bg-surface p-3.5 border border-hairline/60">
-                                        <span class="text-xs text-mute font-medium">Target Tabungan Nasabah</span>
-                                        <p class="mt-1 text-base font-semibold tabular-nums text-ink">
-                                            {{ $ringkasHarga['target'] !== null ? 'Rp '.number_format($ringkasHarga['target'], 0, ',', '.') : '-' }}
-                                        </p>
+                                    <div class="flex items-center justify-between py-1.5 text-xs border-b border-dashed border-hairline/60">
+                                        <span class="text-mute">Target tabungan nasabah</span>
+                                        <b class="font-medium text-ink tabular-nums">{{ $ringkasHarga['target'] !== null ? 'Rp ' . number_format($ringkasHarga['target'], 0, ',', '.') : '-' }}</b>
                                     </div>
-
-                                    <div class="rounded-xl bg-surface p-3.5 border border-hairline/60">
-                                        <span class="text-xs text-mute font-medium">Total Modal Sembako + Uang</span>
-                                        <p class="mt-1 text-base font-semibold tabular-nums text-ink">
-                                            Rp {{ number_format($ringkasHarga['totalHarga'], 0, ',', '.') }}
-                                        </p>
+                                    <div class="flex items-center justify-between py-1.5 text-xs border-b border-dashed border-hairline/60">
+                                        <span class="text-mute">Total modal sembako + uang</span>
+                                        <b class="font-medium text-ink tabular-nums">Rp {{ number_format($ringkasHarga['totalHarga'], 0, ',', '.') }}</b>
                                     </div>
-
-                                    <div class="rounded-xl p-3.5 border {{ ($ringkasHarga['selisih'] ?? 0) < 0 ? 'bg-danger-soft border-danger/30 text-danger' : 'bg-primary-soft border-primary/20 text-on-primary-soft' }}">
-                                        <span class="text-xs font-medium opacity-80">Estimasi Margin / Laba Bersih</span>
-                                        <p class="mt-1 text-base font-semibold tabular-nums">
-                                            {{ $ringkasHarga['selisih'] !== null ? 'Rp '.number_format($ringkasHarga['selisih'], 0, ',', '.') : '-' }}
-                                        </p>
+                                    <div class="flex items-center justify-between pt-1.5 text-xs">
+                                        <span class="text-mute">Estimasi margin / laba bersih</span>
+                                        <b class="font-semibold tabular-nums {{ ($ringkasHarga['selisih'] ?? 0) >= 0 ? 'text-primary' : 'text-danger' }}">
+                                            {{ $ringkasHarga['selisih'] !== null ? 'Rp ' . number_format($ringkasHarga['selisih'], 0, ',', '.') : '-' }}
+                                        </b>
                                     </div>
                                 </div>
                             </div>
                         @endif
                     </div>
 
-                    {{-- Footer Drawer --}}
-                    <div class="border-t border-hairline/40 p-4 px-6 bg-surface flex items-center justify-end gap-3 shrink-0">
+                    {{-- Footer Drawer (.df) --}}
+                    <div class="flex items-center justify-end gap-2.5 border-t border-hairline/40 px-6 py-4 bg-surface shrink-0">
                         <button type="button" wire:click="toggleForm"
                             class="rounded-xl border border-hairline/60 bg-surface px-5 py-2.5 text-xs font-semibold text-ink shadow-xs transition hover:bg-surface-2 focus:outline-none">
                             Batal
