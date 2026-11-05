@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Actions\Pin\UbahPinAction;
 use App\Livewire\Actions\Logout;
 use App\Livewire\Concerns\AuthorizesRole;
 use App\Models\AdminSetting;
@@ -9,10 +10,14 @@ use App\Models\User;
 use App\Services\WhatsAppService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Features\SupportRedirects\Redirector;
+use Livewire\WithFileUploads;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\Process\Process;
 
@@ -20,6 +25,7 @@ use Symfony\Component\Process\Process;
 class Pengaturan extends Component
 {
     use AuthorizesRole;
+    use WithFileUploads;
 
     protected function requiredRole(): string
     {
@@ -66,6 +72,26 @@ class Pengaturan extends Component
     public ?string $backupTerakhir = null;
 
     public string $retensiLogBulan = '12';
+
+    // Tab 5: Akun Saya (Popups)
+    public bool $showModalProfil = false;
+
+    public string $profilNama = '';
+
+    public string $profilNoHp = '';
+
+    /** @var TemporaryUploadedFile|null */
+    public $profilFoto;
+
+    public bool $showModalPin = false;
+
+    public string $current_pin = '';
+
+    public string $pin = '';
+
+    public string $pin_confirmation = '';
+
+    public bool $showModalTema = false;
 
     public function mount(): void
     {
@@ -253,6 +279,98 @@ class Pengaturan extends Component
         AdminSetting::set('retensi_log_bulan', $this->retensiLogBulan);
 
         session()->flash('status', 'Retensi log berhasil disimpan.');
+    }
+
+    // Tab 5: Akun Saya (Popups)
+    public function bukaModalProfil(): void
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        $this->profilNama = $user->name;
+        $this->profilNoHp = $user->no_hp ?? '';
+        $this->profilFoto = null;
+        $this->resetValidation();
+        $this->showModalProfil = true;
+    }
+
+    public function tutupModalProfil(): void
+    {
+        $this->showModalProfil = false;
+        $this->profilFoto = null;
+        $this->resetValidation();
+    }
+
+    public function simpanProfil(): void
+    {
+        $validated = $this->validate([
+            'profilNama' => ['required', 'string', 'max:255'],
+            'profilFoto' => ['nullable', 'image', 'max:2048'],
+        ]);
+
+        /** @var User $user */
+        $user = Auth::user();
+        $user->update(['name' => $validated['profilNama']]);
+
+        if ($this->profilFoto !== null) {
+            $path = $this->profilFoto->store('profil', 'public');
+            $user->update(['foto_profil_path' => $path]);
+        }
+
+        $this->showModalProfil = false;
+        $this->profilFoto = null;
+        session()->flash('status', 'Profil berhasil diperbarui.');
+    }
+
+    public function bukaModalPin(): void
+    {
+        $this->reset('current_pin', 'pin', 'pin_confirmation');
+        $this->resetValidation();
+        $this->showModalPin = true;
+    }
+
+    public function tutupModalPin(): void
+    {
+        $this->reset('current_pin', 'pin', 'pin_confirmation');
+        $this->resetValidation();
+        $this->showModalPin = false;
+    }
+
+    public function simpanPin(): void
+    {
+        try {
+            $validated = $this->validate([
+                'current_pin' => ['required', 'string', 'digits:6'],
+                'pin' => ['required', 'string', 'digits:6', 'confirmed'],
+            ]);
+
+            /** @var User $user */
+            $user = Auth::user();
+
+            app(UbahPinAction::class)->execute(
+                $user,
+                $validated['current_pin'],
+                $validated['pin'],
+            );
+        } catch (ValidationException $e) {
+            $this->reset('current_pin', 'pin', 'pin_confirmation');
+
+            throw $e;
+        }
+
+        $this->reset('current_pin', 'pin', 'pin_confirmation');
+        $this->showModalPin = false;
+
+        session()->flash('status', 'PIN berhasil diperbarui.');
+    }
+
+    public function bukaModalTema(): void
+    {
+        $this->showModalTema = true;
+    }
+
+    public function tutupModalTema(): void
+    {
+        $this->showModalTema = false;
     }
 
     public function logout(): Redirector|RedirectResponse

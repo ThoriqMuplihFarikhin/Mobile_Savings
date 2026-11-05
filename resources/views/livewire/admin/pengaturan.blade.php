@@ -322,34 +322,176 @@
             </div>
 
             <div class="divide-y divide-hairline">
-                <a href="{{ route('admin.settings.profile') }}" wire:navigate
-                   class="flex items-center justify-between p-4 sm:px-5 transition hover:bg-surface-2 cursor-pointer">
+                <button type="button" wire:click="bukaModalProfil"
+                   class="flex w-full items-center justify-between p-4 sm:px-5 text-left transition hover:bg-surface-2 cursor-pointer">
                     <div class="min-w-0 flex-1">
                         <p class="text-xs font-semibold text-ink">Edit Profil Saya</p>
                         <span class="block text-[11px] text-mute mt-0.5">Ubah nama dan foto profil</span>
                     </div>
                     <flux:icon.chevron-right class="size-4 text-mute shrink-0" />
-                </a>
+                </button>
 
-                <a href="{{ route('admin.settings.security') }}" wire:navigate
-                   class="flex items-center justify-between p-4 sm:px-5 transition hover:bg-surface-2 cursor-pointer">
+                <button type="button" wire:click="bukaModalPin"
+                   class="flex w-full items-center justify-between p-4 sm:px-5 text-left transition hover:bg-surface-2 cursor-pointer">
                     <div class="min-w-0 flex-1">
                         <p class="text-xs font-semibold text-ink">Ganti PIN Saya</p>
                         <span class="block text-[11px] text-mute mt-0.5">Perbarui PIN keamanan akun</span>
                     </div>
                     <flux:icon.chevron-right class="size-4 text-mute shrink-0" />
-                </a>
+                </button>
 
-                <a href="{{ route('admin.settings.appearance') }}" wire:navigate
-                   class="flex items-center justify-between p-4 sm:px-5 transition hover:bg-surface-2 cursor-pointer">
+                <button type="button" wire:click="bukaModalTema"
+                   class="flex w-full items-center justify-between p-4 sm:px-5 text-left transition hover:bg-surface-2 cursor-pointer">
                     <div class="min-w-0 flex-1">
                         <p class="text-xs font-semibold text-ink">Tampilan (Terang/Gelap)</p>
                         <span class="block text-[11px] text-mute mt-0.5">Ubah tema tampilan aplikasi</span>
                     </div>
                     <flux:icon.chevron-right class="size-4 text-mute shrink-0" />
-                </a>
+                </button>
             </div>
         </div>
+    @endif
+
+    {{-- Modal Edit Profil Saya --}}
+    @if ($showModalProfil)
+        <x-admin.dialog
+            title="Edit Profil Saya"
+            message="Perbarui nama dan foto profil akun admin Anda."
+            confirm-text="Simpan"
+            cancel-text="Batal"
+            confirm-action="simpanProfil"
+            cancel-action="tutupModalProfil"
+        >
+            <form wire:submit.prevent="simpanProfil" class="space-y-3.5 text-left">
+                <div class="flex items-center gap-3.5 pb-2 border-b border-hairline/60">
+                    @if ($profilFoto)
+                        <img src="{{ $profilFoto->temporaryUrl() }}" alt="Preview Foto" class="size-14 rounded-full object-cover border border-hairline shrink-0">
+                    @elseif (auth()->user()->foto_profil_path)
+                        <img src="{{ asset('storage/'.auth()->user()->foto_profil_path) }}" alt="Foto Profil" class="size-14 rounded-full object-cover border border-hairline shrink-0">
+                    @else
+                        <div class="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary font-semibold text-base border border-primary/20">
+                            {{ auth()->user()->initials() }}
+                        </div>
+                    @endif
+                    <div>
+                        <label class="inline-flex items-center justify-center rounded-[8px] border border-hairline bg-surface px-3 py-1.5 text-xs font-medium text-ink hover:bg-surface-2 cursor-pointer transition">
+                            Ganti Foto
+                            <input type="file" wire:model="profilFoto" accept="image/*" class="hidden">
+                        </label>
+                        <p class="text-[11px] text-mute mt-1">Format JPG, PNG max 2MB</p>
+                        @error('profilFoto') <p class="text-xs text-danger mt-1">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-ink mb-1">Nama Lengkap</label>
+                    <input type="text" wire:model="profilNama" placeholder="Nama Admin"
+                        class="h-10 w-full rounded-[10px] border border-hairline bg-surface px-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                    @error('profilNama') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-ink mb-1">No. HP (Login)</label>
+                    <input type="text" value="{{ $profilNoHp }}" disabled readonly
+                        class="h-10 w-full rounded-[10px] border border-hairline bg-surface-2 px-3 text-xs text-mute cursor-not-allowed" />
+                    <p class="mt-1 text-[11px] text-mute">No. HP tidak dapat diubah karena digunakan untuk login.</p>
+                </div>
+            </form>
+        </x-admin.dialog>
+    @endif
+
+    {{-- Modal Ganti PIN Saya --}}
+    @if ($showModalPin)
+        <x-admin.dialog
+            title="Ganti PIN Saya"
+            message="Pastikan PIN Anda aman dan mudah diingat (6 digit angka)."
+            confirm-text="Simpan PIN"
+            cancel-text="Batal"
+            confirm-action="simpanPin"
+            cancel-action="tutupModalPin"
+        >
+            <form wire:submit.prevent="simpanPin" class="space-y-3.5 text-left">
+                <div>
+                    <label class="block text-xs font-medium text-ink mb-1">PIN Saat Ini</label>
+                    <input type="password" wire:model="current_pin" maxlength="6" inputmode="numeric" placeholder="••••••"
+                        class="h-10 w-full rounded-[10px] border border-hairline bg-surface px-3 text-xs text-ink placeholder:text-mute tracking-widest focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                    @error('current_pin') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-ink mb-1">PIN Baru (6 angka)</label>
+                    <input type="password" wire:model="pin" maxlength="6" inputmode="numeric" placeholder="••••••"
+                        class="h-10 w-full rounded-[10px] border border-hairline bg-surface px-3 text-xs text-ink placeholder:text-mute tracking-widest focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                    @error('pin') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-ink mb-1">Konfirmasi PIN Baru</label>
+                    <input type="password" wire:model="pin_confirmation" maxlength="6" inputmode="numeric" placeholder="••••••"
+                        class="h-10 w-full rounded-[10px] border border-hairline bg-surface px-3 text-xs text-ink placeholder:text-mute tracking-widest focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                    @error('pin_confirmation') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                </div>
+            </form>
+        </x-admin.dialog>
+    @endif
+
+    {{-- Modal Tampilan (Terang/Gelap) --}}
+    @if ($showModalTema)
+        <x-admin.dialog
+            title="Tampilan (Terang/Gelap)"
+            message="Pilih preferensi tema tampilan aplikasi."
+            confirm-text="Selesai"
+            cancel-text="Tutup"
+            confirm-action="tutupModalTema"
+            cancel-action="tutupModalTema"
+        >
+            <div x-data class="space-y-2.5 text-left">
+                <button type="button" @click="$flux.appearance = 'light'"
+                    class="flex w-full items-center justify-between rounded-[10px] border p-3 transition cursor-pointer"
+                    :class="$flux.appearance === 'light' ? 'border-primary bg-primary-soft/30 text-ink' : 'border-hairline bg-surface text-ink hover:bg-surface-2'">
+                    <div class="flex items-center gap-3">
+                        <flux:icon.sun class="size-4.5 text-warning-deep" />
+                        <div class="text-left">
+                            <p class="text-xs font-semibold">Mode Terang</p>
+                            <p class="text-[11px] text-mute">Tampilan bersih berlatar terang</p>
+                        </div>
+                    </div>
+                    <template x-if="$flux.appearance === 'light'">
+                        <flux:icon.check class="size-4 text-primary" />
+                    </template>
+                </button>
+
+                <button type="button" @click="$flux.appearance = 'dark'"
+                    class="flex w-full items-center justify-between rounded-[10px] border p-3 transition cursor-pointer"
+                    :class="$flux.appearance === 'dark' ? 'border-primary bg-primary-soft/30 text-ink' : 'border-hairline bg-surface text-ink hover:bg-surface-2'">
+                    <div class="flex items-center gap-3">
+                        <flux:icon.moon class="size-4.5 text-ink" />
+                        <div class="text-left">
+                            <p class="text-xs font-semibold">Mode Gelap</p>
+                            <p class="text-[11px] text-mute">Tampilan nyaman di mata saat minim cahaya</p>
+                        </div>
+                    </div>
+                    <template x-if="$flux.appearance === 'dark'">
+                        <flux:icon.check class="size-4 text-primary" />
+                    </template>
+                </button>
+
+                <button type="button" @click="$flux.appearance = 'system'"
+                    class="flex w-full items-center justify-between rounded-[10px] border p-3 transition cursor-pointer"
+                    :class="$flux.appearance === 'system' ? 'border-primary bg-primary-soft/30 text-ink' : 'border-hairline bg-surface text-ink hover:bg-surface-2'">
+                    <div class="flex items-center gap-3">
+                        <flux:icon.computer-desktop class="size-4.5 text-mute" />
+                        <div class="text-left">
+                            <p class="text-xs font-semibold">Ikuti Sistem</p>
+                            <p class="text-[11px] text-mute">Menyesuaikan dengan pengaturan sistem perangkat</p>
+                        </div>
+                    </div>
+                    <template x-if="$flux.appearance === 'system'">
+                        <flux:icon.check class="size-4 text-primary" />
+                    </template>
+                </button>
+            </div>
+        </x-admin.dialog>
     @endif
 
     <p class="mt-8 text-center text-xs text-mute">Tabungan Digital · versi alpha</p>
