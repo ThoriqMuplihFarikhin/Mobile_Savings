@@ -313,5 +313,78 @@ class DemoSeeder extends Seeder
                 LogAktivitas::create($logItem);
             }
         }
+
+        // Nasabah Bermasalah Demo sesuai prototipe UI
+        if (KepesertaanPaket::where('status_alert', 'perlu_review')->count() === 0) {
+            $demoBermasalah = [
+                [
+                    'nasabah_nama' => 'Bu Wati Lestari',
+                    'nasabah_hp' => '081211110006',
+                    'produk_nama' => 'Perabot Rumah',
+                    'harga_per_hari' => 30000,
+                    'tunggakan' => 6,
+                    'seharusnya' => 1800000,
+                    'aktual' => 1260000,
+                ],
+                [
+                    'nasabah_nama' => 'Bu Dewi Kartika',
+                    'nasabah_hp' => '081211110008',
+                    'produk_nama' => 'Qurban 2027',
+                    'harga_per_hari' => 20000,
+                    'tunggakan' => 9,
+                    'seharusnya' => 1980000,
+                    'aktual' => 780000,
+                ],
+                [
+                    'nasabah_nama' => 'Pak Hasan Basri',
+                    'nasabah_hp' => '081211110007',
+                    'produk_nama' => 'Sembako Lebaran',
+                    'harga_per_hari' => 10000,
+                    'tunggakan' => 4,
+                    'seharusnya' => 1200000,
+                    'aktual' => 960000,
+                ],
+            ];
+
+            foreach ($demoBermasalah as $item) {
+                $userNasabah = User::firstOrCreate(
+                    ['name' => $item['nasabah_nama']],
+                    [
+                        'no_hp' => $item['nasabah_hp'],
+                        'pin_hash' => Hash::make(self::PIN_DEMO),
+                        'role' => 'nasabah',
+                        'mode_akses' => 'digital',
+                        'status_akun' => 'aktif',
+                        'harus_ganti_pin' => false,
+                    ]
+                );
+
+                $produk = ProdukTabungan::firstOrCreate(
+                    ['nama' => $item['produk_nama']],
+                    [
+                        'tipe' => 'paket',
+                        'persen_komisi' => 0,
+                        'minimal_setor' => $item['harga_per_hari'],
+                        'harga_per_hari' => $item['harga_per_hari'],
+                        'batas_toleransi_tunggakan_hari' => 3,
+                        'status' => 'aktif',
+                    ]
+                );
+
+                KepesertaanPaket::create([
+                    'nasabah_id' => $userNasabah->id,
+                    'produk_id' => $produk->id,
+                    'tanggal_mulai_ikut' => now()->subDays(60)->toDateString(),
+                    'total_seharusnya_terkumpul' => $item['seharusnya'],
+                    'total_aktual_terkumpul' => $item['aktual'],
+                    'tunggakan' => $item['tunggakan'],
+                    'status_alert' => 'perlu_review',
+                    'komitmen_disetujui_pada' => now()->subDays(60),
+                    'komitmen_via' => 'mandiri',
+                    'komitmen_dicatat_oleh' => $userNasabah->id,
+                    'komitmen_teks' => IkutiPaketAction::teksKomitmen(),
+                ]);
+            }
+        }
     }
 }

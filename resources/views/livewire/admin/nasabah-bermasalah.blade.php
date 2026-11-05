@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div>
     <x-admin.page-header
         breadcrumb="Nasabah"
         title="Nasabah Bermasalah"
@@ -6,241 +6,223 @@
     />
 
     @if (session('success'))
-        <div class="flex items-center gap-2.5 rounded-[10px] border border-primary/20 bg-primary-soft px-4 py-3 text-sm text-on-primary-soft">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-            {{ session('success') }}
+        <div class="mb-4 flex items-center gap-2.5 rounded-[12px] border border-primary/30 bg-primary-soft px-4 py-3 text-xs font-semibold text-on-primary-soft">
+            <flux:icon.check-circle class="size-4 shrink-0" />
+            <span>{{ session('success') }}</span>
         </div>
     @endif
+
     @if (session('error'))
-        <div class="flex items-center gap-2.5 rounded-[10px] border border-danger/20 bg-danger-soft px-4 py-3 text-sm text-danger">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-            {{ session('error') }}
+        <div class="mb-4 flex items-center gap-2.5 rounded-[12px] border border-danger/30 bg-danger-soft px-4 py-3 text-xs font-semibold text-danger">
+            <flux:icon.exclamation-circle class="size-4 shrink-0" />
+            <span>{{ session('error') }}</span>
         </div>
     @endif
 
-    {{-- Toolbar --}}
-    <x-admin.toolbar>
-        <div class="relative flex-1">
-            <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-admin-mute)]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="7" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4-4" />
-            </svg>
-            <input type="text" wire:model.live="search" placeholder="Cari nama nasabah atau produk..."
-                class="h-[38px] w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] pl-10 pr-4 text-sm text-[var(--color-admin-text)] placeholder-[var(--color-admin-mute)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]" />
+    {{-- Kartu Utama Tabel --}}
+    <div class="rounded-[14px] border border-hairline bg-surface shadow-xs overflow-hidden">
+        {{-- Toolbar Pencarian (.tl .sr) --}}
+        <div class="p-3.5 sm:p-4 border-b border-hairline">
+            <div class="relative w-full sm:max-w-xs">
+                <flux:icon.magnifying-glass class="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-mute pointer-events-none" />
+                <input
+                    type="search"
+                    wire:model.live.debounce.300ms="search"
+                    placeholder="Cari nama nasabah atau produk..."
+                    class="h-9 w-full rounded-[10px] border border-hairline bg-surface pl-9 pr-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+            </div>
         </div>
-    </x-admin.toolbar>
 
-    {{-- Tabel Desktop --}}
-    <div class="hidden md:block overflow-hidden rounded-[14px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] shadow-xs">
+        {{-- Tabel Desktop (.tw) --}}
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
+            <table class="w-full text-left text-xs">
                 <thead>
-                    <tr class="border-b border-[var(--color-admin-border)] bg-[var(--color-surface-2)]">
-                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Nasabah</th>
-                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Produk</th>
-                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Tunggakan (hari)</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Seharusnya</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Aktual</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Status</th>
-                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Aksi</th>
+                    <tr class="border-b border-hairline bg-surface-2 text-mute text-[11px] font-semibold uppercase tracking-wider">
+                        <th class="px-4 py-3">NASABAH</th>
+                        <th class="px-4 py-3">PRODUK</th>
+                        <th class="px-4 py-3">TUNGGAKAN (HARI)</th>
+                        <th class="px-4 py-3">SEHARUSNYA</th>
+                        <th class="px-4 py-3">AKTUAL</th>
+                        <th class="px-4 py-3">STATUS</th>
+                        <th class="px-4 py-3 text-right">AKSI</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-[var(--color-admin-border)]">
+                <tbody class="divide-y divide-hairline">
                     @forelse($kepesertaan as $item)
-                        <tr class="transition hover:bg-[var(--color-surface-2)]">
-                            <td class="px-4 py-3">
-                                <div class="font-medium text-[var(--color-admin-text)]">{{ $item->nasabah->name ?? '-' }}</div>
-                                <div class="text-xs text-[var(--color-admin-mute)]">{{ $item->nasabah->no_hp ?? '— (offline)' }}</div>
+                        <tr class="transition hover:bg-surface-2/50">
+                            <td class="px-4 py-3.5 font-medium text-ink">
+                                {{ $item->nasabah->name ?? '-' }}
                             </td>
-                            <td class="px-4 py-3 text-[var(--color-admin-text)]">{{ $item->produk->nama ?? '-' }}</td>
-                            <td class="px-4 py-3 tabular-nums font-medium text-red-600 dark:text-red-400">{{ $item->tunggakan }} hari</td>
-                            <td class="px-4 py-3 text-right tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($item->total_seharusnya_terkumpul, 0, ',', '.') }}</td>
-                            <td class="px-4 py-3 text-right tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($item->total_aktual_terkumpul, 0, ',', '.') }}</td>
-                            <td class="px-4 py-3 text-center">
+                            <td class="px-4 py-3.5 text-body">
+                                {{ $item->produk->nama ?? '-' }}
+                            </td>
+                            <td class="px-4 py-3.5 tabular-nums text-body">
+                                {{ $item->tunggakan }}
+                            </td>
+                            <td class="px-4 py-3.5 tabular-nums text-body">
+                                Rp {{ number_format($item->total_seharusnya_terkumpul, 0, ',', '.') }}
+                            </td>
+                            <td class="px-4 py-3.5 tabular-nums text-body">
+                                Rp {{ number_format($item->total_aktual_terkumpul, 0, ',', '.') }}
+                            </td>
+                            <td class="px-4 py-3.5">
                                 <x-admin.status-chip status="Perlu Review" />
                             </td>
-                            <td class="px-4 py-3 text-right">
-                                <button type="button" wire:click="selectKepesertaan({{ $item->id }})"
-                                    class="inline-flex h-8 items-center rounded-[8px] bg-[var(--color-accent)] px-3 text-xs font-medium text-white transition hover:opacity-90">
-                                    Review
+                            <td class="px-4 py-3.5 text-right">
+                                <button
+                                    type="button"
+                                    wire:click="selectKepesertaan({{ $item->id }})"
+                                    class="inline-flex h-[32px] items-center justify-center rounded-[8px] bg-primary hover:bg-primary-hover px-4 text-xs font-semibold text-white shadow-xs transition active:scale-95 cursor-pointer"
+                                >
+                                    Tinjau
                                 </button>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="p-0">
-                                <x-admin.empty-state
-                                    title="Tidak ada nasabah bermasalah"
-                                    description="Semua kepesertaan paket nasabah berjalan lancar tanpa tunggakan review."
-                                />
+                            <td colspan="7" class="py-12 text-center text-xs text-mute">
+                                <div class="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-surface-2 text-mute">
+                                    <flux:icon.exclamation-triangle class="size-6" />
+                                </div>
+                                <p class="font-semibold text-ink">Tidak ada nasabah bermasalah.</p>
+                                <p class="mt-1 text-[11px] text-mute">Semua kepesertaan paket nasabah berjalan lancar tanpa tunggakan review.</p>
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        @if($kepesertaan->hasPages())
-            <div class="border-t border-[var(--color-admin-border)] px-4 py-3">
-                {{ $kepesertaan->links() }}
-            </div>
-        @endif
+
+        {{-- Footer (.ft) --}}
+        <div class="flex items-center justify-between border-t border-hairline px-4 py-3 text-xs text-mute">
+            <span>Menampilkan {{ $kepesertaan->count() }} dari {{ $kepesertaan->total() }} data</span>
+            <span>Halaman {{ $kepesertaan->currentPage() }} dari {{ max(1, $kepesertaan->lastPage()) }}</span>
+        </div>
     </div>
 
-    {{-- Fallback Kartu Mobile --}}
-    <div data-test="kartu-tabel" class="space-y-3 md:hidden">
-        @forelse($kepesertaan as $item)
-            <div class="rounded-[14px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] p-4 shadow-xs space-y-3">
-                <div class="flex items-start justify-between gap-2">
-                    <div>
-                        <div class="font-medium text-[var(--color-admin-text)]">{{ $item->nasabah->name ?? '-' }}</div>
-                        <div class="text-xs text-[var(--color-admin-mute)]">{{ $item->nasabah->no_hp ?? '— (offline)' }}</div>
-                    </div>
-                    <x-admin.status-chip status="Perlu Review" />
-                </div>
-                <div class="grid grid-cols-2 gap-2 text-xs border-t border-b border-[var(--color-admin-border)] py-2">
-                    <div>
-                        <span class="text-[var(--color-admin-mute)]">Produk:</span>
-                        <div class="font-medium text-[var(--color-admin-text)]">{{ $item->produk->nama ?? '-' }}</div>
-                    </div>
-                    <div>
-                        <span class="text-[var(--color-admin-mute)]">Tunggakan:</span>
-                        <div class="font-medium text-red-600 dark:text-red-400 tabular-nums">{{ $item->tunggakan }} hari</div>
-                    </div>
-                    <div>
-                        <span class="text-[var(--color-admin-mute)]">Seharusnya:</span>
-                        <div class="font-medium tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($item->total_seharusnya_terkumpul, 0, ',', '.') }}</div>
-                    </div>
-                    <div>
-                        <span class="text-[var(--color-admin-mute)]">Aktual:</span>
-                        <div class="font-medium tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($item->total_aktual_terkumpul, 0, ',', '.') }}</div>
-                    </div>
-                </div>
-                <div class="flex justify-end pt-1">
-                    <button type="button" wire:click="selectKepesertaan({{ $item->id }})"
-                        class="inline-flex h-8 items-center rounded-[8px] bg-[var(--color-accent)] px-3 text-xs font-medium text-white transition hover:opacity-90">
-                        Review
-                    </button>
-                </div>
-            </div>
-        @empty
-            <div class="rounded-[14px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] p-6">
-                <x-admin.empty-state
-                    title="Tidak ada nasabah bermasalah"
-                    description="Semua kepesertaan paket nasabah berjalan lancar tanpa tunggakan review."
-                />
-            </div>
-        @endforelse
-        @if($kepesertaan->hasPages())
-            <div class="pt-2">
-                {{ $kepesertaan->links() }}
-            </div>
-        @endif
-    </div>
-
-    {{-- Modal Review Kepesertaan --}}
+    {{-- Drawer Detail Kepesertaan Paket (Matching drw in HTML prototype) --}}
     @if($showDetail && $selectedKepesertaan)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modal-detail-kepesertaan-title">
-            <div wire:click="$set('showDetail', false)" class="fixed inset-0 bg-black/60 transition-opacity" aria-hidden="true"></div>
-            <div class="relative w-full max-w-lg rounded-[16px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] p-6 shadow-2xl">
-                <div class="flex items-center justify-between pb-3 border-b border-[var(--color-admin-border)]">
-                    <h3 id="modal-detail-kepesertaan-title" class="text-base font-semibold text-[var(--color-admin-text)]">Detail Kepesertaan Paket</h3>
+        <div class="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="drawer-kepesertaan-title">
+            <div class="fixed inset-0 bg-black/45 transition-opacity cursor-pointer" wire:click="$set('showDetail', false)"></div>
+
+            <div class="relative z-10 flex h-full w-full max-w-[560px] flex-col border-l border-hairline bg-surface shadow-2xl transition-all">
+                {{-- Header Drawer (.dh) --}}
+                <div class="flex items-center justify-between border-b border-hairline px-5 py-4 shrink-0 bg-surface">
+                    <h3 id="drawer-kepesertaan-title" class="text-base font-semibold text-ink">Detail Kepesertaan Paket</h3>
                     <button type="button" wire:click="$set('showDetail', false)"
-                        class="flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-admin-mute)] transition hover:bg-[var(--color-surface-2)] hover:text-[var(--color-admin-text)]"
-                        aria-label="Tutup modal">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        class="flex size-8 items-center justify-center rounded-[10px] border border-hairline bg-surface-2 text-mute transition hover:bg-hairline hover:text-ink active:scale-95 cursor-pointer"
+                        aria-label="Tutup panel">
+                        <flux:icon.x-mark class="size-4" />
                     </button>
                 </div>
 
-                <div class="mt-4 space-y-2.5 rounded-[12px] border border-[var(--color-admin-border)] bg-[var(--color-surface-2)] p-4 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-[var(--color-admin-mute)]">Nasabah</span>
-                        <span class="font-medium text-[var(--color-admin-text)]">{{ $selectedKepesertaan->nasabah->name ?? '-' }}</span>
+                {{-- Content Drawer (.db) --}}
+                <div class="flex-1 overflow-y-auto p-5 space-y-6 bg-surface">
+                    {{-- Section 1: Kepesertaan (.sc) --}}
+                    <div>
+                        <h4 class="text-xs font-semibold uppercase tracking-wider text-mute mb-3">Kepesertaan</h4>
+                        <div class="space-y-2 rounded-[12px] border border-hairline bg-surface-2/60 p-4 text-xs">
+                            <div class="flex items-center justify-between border-b border-hairline/60 pb-2">
+                                <span class="text-mute">Nasabah</span>
+                                <span class="font-semibold text-ink">{{ $selectedKepesertaan->nasabah->name ?? '-' }}</span>
+                            </div>
+                            <div class="flex items-center justify-between border-b border-hairline/60 pb-2">
+                                <span class="text-mute">Produk</span>
+                                <span class="font-medium text-ink">{{ $selectedKepesertaan->produk->nama ?? '-' }}</span>
+                            </div>
+                            <div class="flex items-center justify-between border-b border-hairline/60 pb-2">
+                                <span class="text-mute">Tanggal mulai</span>
+                                <span class="font-medium text-ink">{{ $selectedKepesertaan->tanggal_mulai_ikut ? $selectedKepesertaan->tanggal_mulai_ikut->translatedFormat('d M Y') : '-' }}</span>
+                            </div>
+                            <div class="flex items-center justify-between border-b border-hairline/60 pb-2">
+                                <span class="text-mute">Seharusnya terkumpul</span>
+                                <span class="font-semibold tabular-nums text-ink">Rp {{ number_format($selectedKepesertaan->total_seharusnya_terkumpul, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex items-center justify-between border-b border-hairline/60 pb-2">
+                                <span class="text-mute">Aktual terkumpul</span>
+                                <span class="font-semibold tabular-nums text-ink">Rp {{ number_format($selectedKepesertaan->total_aktual_terkumpul, 0, ',', '.') }}</span>
+                            </div>
+                            <div class="flex items-center justify-between pt-1">
+                                <span class="text-mute">Tunggakan</span>
+                                <span class="font-semibold tabular-nums text-danger">{{ $selectedKepesertaan->tunggakan }} hari</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-[var(--color-admin-mute)]">Produk</span>
-                        <span class="text-[var(--color-admin-text)]">{{ $selectedKepesertaan->produk->nama ?? '-' }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-[var(--color-admin-mute)]">Tanggal Mulai</span>
-                        <span class="text-[var(--color-admin-text)]">{{ $selectedKepesertaan->tanggal_mulai_ikut->translatedFormat('d M Y') }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-[var(--color-admin-mute)]">Seharusnya Terkumpul</span>
-                        <span class="tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($selectedKepesertaan->total_seharusnya_terkumpul, 0, ',', '.') }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-[var(--color-admin-mute)]">Aktual Terkumpul</span>
-                        <span class="tabular-nums text-[var(--color-admin-text)]">Rp {{ number_format($selectedKepesertaan->total_aktual_terkumpul, 0, ',', '.') }}</span>
-                    </div>
-                    <div class="flex justify-between border-t border-[var(--color-admin-border)] pt-2 font-medium">
-                        <span class="text-[var(--color-admin-mute)]">Tunggakan</span>
-                        <span class="tabular-nums text-red-600 dark:text-red-400">{{ $selectedKepesertaan->tunggakan }} hari</span>
+
+                    {{-- Section 2: Keputusan akhir (.sc) --}}
+                    <div>
+                        <h4 class="text-xs font-semibold uppercase tracking-wider text-mute mb-3">Keputusan Akhir</h4>
+                        <form wire:submit="updateKeputusan" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-medium text-ink mb-1.5">Keputusan</label>
+                                <select wire:model.live="keputusan_akhir"
+                                    class="h-10 w-full rounded-[10px] border border-hairline bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
+                                    <option value="">Pilih Keputusan</option>
+                                    <option value="lanjut">Lanjut (Tunda hingga maks. 90 hari)</option>
+                                    <option value="gagal_dikembalikan">Gagal - Dikembalikan</option>
+                                    <option value="gagal_dialihkan">Gagal - Dialihkan</option>
+                                </select>
+                                @error('keputusan_akhir') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            </div>
+
+                            @if($keputusan_akhir === 'lanjut')
+                                <div>
+                                    <label class="block text-xs font-medium text-ink mb-1.5">Tunda Hingga (maks. 90 hari)</label>
+                                    <x-ui.tanggal wire:model="ditunda_hingga" :min="now()->toDateString()"
+                                        class="h-10 w-full rounded-[10px] border border-hairline bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                                    @error('ditunda_hingga') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                                </div>
+                            @endif
+
+                            @if($keputusan_akhir === 'gagal_dialihkan')
+                                <div>
+                                    <label class="block text-xs font-medium text-ink mb-1.5">Produk Tujuan</label>
+                                    <select wire:model="produkTujuanId"
+                                        class="h-10 w-full rounded-[10px] border border-hairline bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
+                                        <option value="">Pilih Produk Tujuan</option>
+                                        @foreach($produkTujuan as $p)
+                                            <option value="{{ $p->id }}">{{ $p->nama }} ({{ $p->tipe }})</option>
+                                        @endforeach
+                                    </select>
+                                    @error('produkTujuanId') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                                </div>
+                            @endif
+
+                            @if($keputusan_akhir === 'gagal_dikembalikan')
+                                <div>
+                                    <label class="block text-xs font-medium text-ink mb-1.5">Metode Pengambilan</label>
+                                    <select wire:model="metode_pengambilan"
+                                        class="h-10 w-full rounded-[10px] border border-hairline bg-surface px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
+                                        <option value="">Pilih Metode Pengambilan</option>
+                                        <option value="ambil_sendiri">Ambil di Kantor</option>
+                                        <option value="diantar_kolektor">Diantar Kolektor</option>
+                                    </select>
+                                    @error('metode_pengambilan') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                                </div>
+                            @endif
+
+                            <div>
+                                <label class="block text-xs font-medium text-ink mb-1.5">Catatan Admin</label>
+                                <textarea wire:model="catatan_admin" rows="3"
+                                    class="w-full rounded-[10px] border border-hairline bg-surface p-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                    placeholder="Catatan admin..."></textarea>
+                                @error('catatan_admin') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+                            </div>
+
+                            <div class="flex justify-end gap-2.5 pt-3 border-t border-hairline">
+                                <button type="button" wire:click="$set('showDetail', false)"
+                                    class="h-[38px] rounded-[10px] border border-hairline bg-surface px-4 text-xs font-medium text-ink transition hover:bg-surface-2 cursor-pointer">
+                                    Batal
+                                </button>
+                                <button type="submit"
+                                    class="h-[38px] rounded-[10px] bg-primary hover:bg-primary-hover px-5 text-xs font-semibold text-white shadow-xs transition active:scale-95 cursor-pointer">
+                                    Simpan Keputusan
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-
-                <form wire:submit="updateKeputusan" class="mt-5 space-y-4">
-                    <div>
-                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Keputusan Akhir</label>
-                        <select wire:model="keputusan_akhir"
-                            class="h-[38px] w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-admin-text)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]">
-                            <option value="">Pilih Keputusan</option>
-                            <option value="lanjut">Lanjut</option>
-                            <option value="gagal_dikembalikan">Gagal - Dikembalikan</option>
-                            <option value="gagal_dialihkan">Gagal - Dialihkan</option>
-                        </select>
-                        @error('keputusan_akhir') <p class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                    </div>
-                    @if($keputusan_akhir === 'lanjut')
-                        <div>
-                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Tunda Hingga (maks. 90 hari)</label>
-                            <x-ui.tanggal wire:model="ditunda_hingga" :min="now()->toDateString()"
-                                class="h-[38px] w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-admin-text)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]" />
-                            @error('ditunda_hingga') <p class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                        </div>
-                    @endif
-                    @if($keputusan_akhir === 'gagal_dialihkan')
-                        <div>
-                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Produk Tujuan</label>
-                            <select wire:model="produkTujuanId"
-                                class="h-[38px] w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-admin-text)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]">
-                                <option value="">Pilih Produk</option>
-                                @foreach($produkTujuan as $p)
-                                    <option value="{{ $p->id }}">{{ $p->nama }} ({{ $p->tipe }})</option>
-                                @endforeach
-                            </select>
-                            @error('produkTujuanId') <p class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                        </div>
-                    @endif
-                    <div>
-                        <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Catatan Admin</label>
-                        <textarea wire:model="catatan_admin" rows="3"
-                            class="w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-admin-text)] placeholder-[var(--color-admin-mute)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
-                            placeholder="Catatan..."></textarea>
-                    </div>
-                    @if($keputusan_akhir === 'gagal_dikembalikan')
-                        <div>
-                            <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[var(--color-admin-mute)]">Metode Pengambilan</label>
-                            <select wire:model="metode_pengambilan"
-                                class="h-[38px] w-full rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-3 text-sm text-[var(--color-admin-text)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]">
-                                <option value="">Pilih Metode</option>
-                                <option value="ambil_sendiri">Ambil Sendiri</option>
-                                <option value="diantar_kolektor">Diantar Kolektor</option>
-                            </select>
-                            @error('metode_pengambilan') <p class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
-                        </div>
-                    @endif
-                    <div class="flex justify-end gap-3 pt-3 border-t border-[var(--color-admin-border)]">
-                        <button type="button" wire:click="$set('showDetail', false)"
-                            class="h-[38px] rounded-[10px] border border-[var(--color-admin-border)] bg-[var(--color-surface)] px-4 text-sm font-medium text-[var(--color-admin-text)] transition hover:bg-[var(--color-surface-2)]">
-                            Batal
-                        </button>
-                        <button type="submit"
-                            class="h-[38px] rounded-[10px] bg-[var(--color-accent)] px-4 text-sm font-medium text-white transition hover:opacity-90">
-                            Simpan Keputusan
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     @endif
