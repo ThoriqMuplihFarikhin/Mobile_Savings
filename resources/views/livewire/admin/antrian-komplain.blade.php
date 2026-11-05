@@ -1,68 +1,64 @@
-<div class="space-y-6">
+<div class="space-y-4">
     {{-- Header --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <p class="text-xs font-medium text-mute dark:text-zinc-400">Operasional</p>
-            <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-ink dark:text-white mt-0.5">Antrian Komplain</h1>
-            <p class="mt-1 text-xs sm:text-sm text-mute dark:text-zinc-400">Tinjau dan selesaikan komplain dari nasabah.</p>
-        </div>
-    </div>
+    <x-admin.page-header
+        breadcrumb="Operasional"
+        title="Antrian Komplain"
+        subtitle="Tinjau dan selesaikan komplain dari nasabah."
+    />
 
     {{-- Flash Messages --}}
     @if (session('success'))
-        <div class="flex items-center gap-2.5 rounded-2xl border border-hairline-warm bg-primary-soft p-3.5 text-xs font-semibold text-on-primary-soft shadow-xs dark:border-primary/40 dark:bg-primary-soft/30 dark:text-primary">
-            <flux:icon.check-circle class="size-4 shrink-0 text-primary" />
+        <div class="flex items-center gap-2.5 rounded-[10px] border border-primary/20 bg-primary-soft p-3 text-xs font-semibold text-on-primary-soft shadow-xs">
+            <svg class="size-4 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
             <span>{{ session('success') }}</span>
         </div>
     @endif
     @if (session('error'))
-        <div class="flex items-center gap-2.5 rounded-2xl border border-danger-soft bg-danger-soft p-3.5 text-xs font-semibold text-danger-deep shadow-xs dark:border-dark-danger-soft dark:bg-dark-danger-soft dark:text-dark-danger-text">
-            <flux:icon.exclamation-triangle class="size-4 shrink-0 text-danger dark:text-dark-danger-text" />
+        <div class="flex items-center gap-2.5 rounded-[10px] border border-danger/20 bg-danger-soft p-3 text-xs font-semibold text-danger shadow-xs">
+            <svg class="size-4 shrink-0 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+            </svg>
             <span>{{ session('error') }}</span>
         </div>
     @endif
 
     {{-- KPI Cards (3 Cards) --}}
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div class="rounded-2xl border border-hairline/80 bg-white p-5 shadow-xs dark:bg-surface">
-            <span class="text-xs text-mute dark:text-zinc-400 font-medium">Baru</span>
-            <div class="text-2xl font-bold text-ink dark:text-white mt-1.5 tabular-nums">
+        <div class="rounded-[14px] border border-hairline bg-surface p-3.5 shadow-xs">
+            <span class="text-xs text-mute font-normal block">Baru</span>
+            <b class="text-[1.4rem] font-bold text-warning-deep tracking-[-0.5px] tabular-nums mt-0.5 block">
                 {{ $ringkasanStatus['baru'] ?? 0 }}
-            </div>
+            </b>
             @if(($ringkasanStatus['baru'] ?? 0) > 0)
-                <span class="inline-block text-[11px] font-medium text-warning-deep dark:text-warning-deep mt-1">
-                    Perlu tindakan
-                </span>
+                <small class="text-[11px] text-mute block mt-0.5">Perlu tindakan</small>
             @endif
         </div>
 
-        <div class="rounded-2xl border border-hairline/80 bg-white p-5 shadow-xs dark:bg-surface">
-            <span class="text-xs text-mute dark:text-zinc-400 font-medium">Diproses</span>
-            <div class="text-2xl font-bold text-ink dark:text-white mt-1.5 tabular-nums">
+        <div class="rounded-[14px] border border-hairline bg-surface p-3.5 shadow-xs">
+            <span class="text-xs text-mute font-normal block">Diproses</span>
+            <b class="text-[1.4rem] font-bold text-ink tracking-[-0.5px] tabular-nums mt-0.5 block">
                 {{ $ringkasanStatus['diproses'] ?? 0 }}
-            </div>
+            </b>
         </div>
 
-        <div class="rounded-2xl border border-hairline/80 bg-white p-5 shadow-xs dark:bg-surface">
-            <span class="text-xs text-mute dark:text-zinc-400 font-medium">Selesai</span>
-            <div class="text-2xl font-bold text-ink dark:text-white mt-1.5 tabular-nums">
+        <div class="rounded-[14px] border border-hairline bg-surface p-3.5 shadow-xs">
+            <span class="text-xs text-mute font-normal block">Selesai</span>
+            <b class="text-[1.4rem] font-bold text-ink tracking-[-0.5px] tabular-nums mt-0.5 block">
                 {{ $ringkasanStatus['selesai'] ?? 0 }}
-            </div>
+            </b>
         </div>
     </div>
 
     {{-- Main Table Card Container --}}
-    <div class="rounded-2xl border border-hairline/80 bg-white shadow-xs dark:bg-surface overflow-hidden">
+    <div class="rounded-[14px] border border-hairline bg-surface shadow-xs overflow-hidden">
         {{-- Toolbar / Segmented Tabs --}}
-        <div class="p-4 border-b border-hairline/60">
-            <div class="inline-flex rounded-xl bg-surface-inset p-1 border border-hairline/60 dark:bg-zinc-800/60">
+        <div class="p-3 sm:px-3.5 border-b border-hairline flex items-center gap-2">
+            <div class="inline-flex gap-1 bg-surface-2 border border-hairline rounded-[10px] p-[3px]" role="group" aria-label="Status">
                 @foreach(['semua' => 'Semua', 'baru' => 'Baru', 'diproses' => 'Diproses', 'selesai' => 'Selesai'] as $val => $lbl)
                     <button type="button" wire:click="setStatusFilter('{{ $val }}')"
-                        @class([
-                            'px-4 py-2 min-h-11 rounded-lg text-xs font-semibold transition cursor-pointer text-center',
-                            'bg-white shadow-xs text-ink dark:bg-surface dark:text-zinc-100' => $statusFilter === $val,
-                            'text-mute hover:text-ink dark:text-zinc-400 dark:hover:text-zinc-200' => $statusFilter !== $val,
-                        ])>
+                        class="min-h-11 sm:min-h-0 h-7 px-3 rounded-[7px] text-xs transition cursor-pointer {{ $statusFilter === $val ? 'bg-surface text-ink font-semibold shadow-xs' : 'text-mute hover:text-ink font-medium' }}">
                         {{ $lbl }}
                     </button>
                 @endforeach
@@ -71,18 +67,18 @@
 
         {{-- Desktop Table (Must include exact string 'hidden md:table' for AntreanTabelKeKartuP74bTest) --}}
         <div class="overflow-x-auto">
-            <table class="hidden md:table w-full text-left text-sm">
+            <table class="hidden md:table w-full text-left text-sm border-collapse">
                 <thead>
-                    <tr class="border-b border-hairline/60 bg-surface-inset/40 text-[11px] font-semibold uppercase tracking-wider text-mute">
-                        <th class="px-5 py-3">TANGGAL</th>
-                        <th class="px-5 py-3">NASABAH</th>
-                        <th class="px-5 py-3">KATEGORI</th>
-                        <th class="px-5 py-3">DESKRIPSI</th>
-                        <th class="px-5 py-3">STATUS</th>
-                        <th class="px-5 py-3 text-right">AKSI</th>
+                    <tr class="bg-surface-2 text-xs uppercase tracking-[0.04em] text-mute font-medium border-b border-hairline">
+                        <th class="px-3.5 py-2.5 whitespace-nowrap">TANGGAL</th>
+                        <th class="px-3.5 py-2.5 whitespace-nowrap">NASABAH</th>
+                        <th class="px-3.5 py-2.5 whitespace-nowrap">KATEGORI</th>
+                        <th class="px-3.5 py-2.5 whitespace-nowrap">DESKRIPSI</th>
+                        <th class="px-3.5 py-2.5 whitespace-nowrap">STATUS</th>
+                        <th class="px-3.5 py-2.5 whitespace-nowrap text-right">AKSI</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-hairline/60">
+                <tbody class="divide-y divide-hairline">
                     @forelse($komplains as $item)
                         @php
                             $labelKategori = match($item->kategori) {
@@ -94,42 +90,42 @@
                                 default => ucfirst(str_replace('_', ' ', $item->kategori)),
                             };
                         @endphp
-                        <tr class="hover:bg-surface-inset/30 transition text-xs">
-                            <td class="whitespace-nowrap px-5 py-3.5 text-body tabular-nums">
+                        <tr class="hover:bg-surface-2 transition text-sm text-ink">
+                            <td class="px-3.5 py-3 whitespace-nowrap tabular-nums text-sm text-ink">
                                 {{ $item->tanggal_dibuat ? $item->tanggal_dibuat->translatedFormat('d M') : '-' }}
                             </td>
-                            <td class="whitespace-nowrap px-5 py-3.5 font-medium text-ink dark:text-white">
+                            <td class="px-3.5 py-3 whitespace-nowrap font-medium text-sm text-ink">
                                 {{ $item->nasabah?->name ?? '-' }}
                             </td>
-                            <td class="whitespace-nowrap px-5 py-3.5 text-ink dark:text-zinc-200">
+                            <td class="px-3.5 py-3 whitespace-nowrap text-sm text-ink">
                                 {{ $labelKategori }}
                             </td>
-                            <td class="max-w-[260px] truncate px-5 py-3.5 text-body">
+                            <td class="px-3.5 py-3 text-sm text-ink max-w-[280px] truncate">
                                 {{ $item->deskripsi }}
                             </td>
-                            <td class="whitespace-nowrap px-5 py-3.5">
+                            <td class="px-3.5 py-3 whitespace-nowrap">
                                 <x-admin.status-chip domain="komplain" :status="$item->status" />
                             </td>
-                            <td class="whitespace-nowrap px-5 py-3.5 text-right">
+                            <td class="px-3.5 py-3 whitespace-nowrap text-right">
                                 @if($item->status === 'baru')
                                     <div class="inline-flex items-center gap-1.5 justify-end">
                                         <button type="button" wire:click="proses({{ $item->id }})"
-                                            class="min-h-11 inline-flex items-center justify-center rounded-lg bg-primary hover:bg-primary-hover px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition active:scale-95 cursor-pointer">
+                                            class="h-8 px-3 rounded-[8px] bg-primary hover:bg-primary-hover text-xs font-semibold text-white shadow-xs transition active:scale-95 cursor-pointer">
                                             Proses
                                         </button>
                                         <button type="button" wire:click="showDetail({{ $item->id }})"
-                                            class="min-h-11 inline-flex items-center justify-center rounded-lg border border-hairline bg-surface text-ink hover:bg-surface-inset px-3.5 py-1.5 text-xs font-medium shadow-xs transition active:scale-95 cursor-pointer dark:bg-zinc-800 dark:text-zinc-200">
+                                            class="h-8 px-3 rounded-[8px] border border-hairline bg-surface text-ink hover:bg-surface-2 text-xs font-medium shadow-xs transition active:scale-95 cursor-pointer">
                                             Detail
                                         </button>
                                     </div>
                                 @elseif($item->status === 'diproses')
                                     <button type="button" wire:click="showDetail({{ $item->id }})"
-                                        class="min-h-11 inline-flex items-center justify-center rounded-lg bg-primary hover:bg-primary-hover px-4 py-1.5 text-xs font-semibold text-white shadow-xs transition active:scale-95 cursor-pointer">
+                                        class="h-8 px-3.5 rounded-[8px] bg-primary hover:bg-primary-hover text-xs font-semibold text-white shadow-xs transition active:scale-95 cursor-pointer">
                                         Selesaikan
                                     </button>
                                 @else
                                     <button type="button" wire:click="showDetail({{ $item->id }})"
-                                        class="min-h-11 inline-flex items-center justify-center rounded-lg border border-hairline bg-surface text-ink hover:bg-surface-inset px-3.5 py-1.5 text-xs font-medium shadow-xs transition active:scale-95 cursor-pointer dark:bg-zinc-800 dark:text-zinc-200">
+                                        class="h-8 px-3 rounded-[8px] border border-hairline bg-surface text-ink hover:bg-surface-2 text-xs font-medium shadow-xs transition active:scale-95 cursor-pointer">
                                         Detail
                                     </button>
                                 @endif
@@ -137,9 +133,9 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-5 py-12 text-center">
-                                <div class="text-sm font-semibold text-ink dark:text-white">Tidak ada komplain.</div>
-                                <div class="mt-1 text-xs text-mute dark:text-zinc-400">Belum ada komplain pada kategori status ini.</div>
+                            <td colspan="6" class="px-4 py-12 text-center text-mute text-xs">
+                                <p class="font-medium text-ink">Tidak ada komplain.</p>
+                                <p class="mt-1 text-mute">Belum ada komplain pada kategori status ini.</p>
                             </td>
                         </tr>
                     @endforelse
@@ -163,13 +159,13 @@
                 <div class="p-4 space-y-3">
                     <div class="flex items-start justify-between gap-2">
                         <div>
-                            <p class="text-sm font-semibold text-ink dark:text-white">{{ $item->nasabah?->name ?? '-' }}</p>
-                            <p class="text-xs text-mute dark:text-zinc-400 mt-0.5">{{ $item->tanggal_dibuat ? $item->tanggal_dibuat->translatedFormat('d M Y') : '-' }} &middot; {{ $labelKategori }}</p>
+                            <p class="text-sm font-semibold text-ink">{{ $item->nasabah?->name ?? '-' }}</p>
+                            <p class="text-xs text-mute mt-0.5">{{ $item->tanggal_dibuat ? $item->tanggal_dibuat->translatedFormat('d M Y') : '-' }} &middot; {{ $labelKategori }}</p>
                         </div>
                         <x-admin.status-chip domain="komplain" :status="$item->status" />
                     </div>
 
-                    <div class="p-3 rounded-xl bg-surface-inset text-xs text-body dark:bg-zinc-800/60 leading-relaxed">
+                    <div class="p-3 rounded-xl bg-surface-2 text-xs text-body leading-relaxed">
                         {{ $item->deskripsi }}
                     </div>
 
@@ -180,7 +176,7 @@
                                 Proses
                             </button>
                             <button type="button" wire:click="showDetail({{ $item->id }})"
-                                class="min-h-11 flex-1 inline-flex items-center justify-center rounded-lg border border-hairline bg-surface text-ink hover:bg-surface-inset px-3.5 py-2 text-xs font-medium shadow-xs transition active:scale-95 cursor-pointer dark:bg-zinc-800 dark:text-zinc-200">
+                                class="min-h-11 flex-1 inline-flex items-center justify-center rounded-lg border border-hairline bg-surface text-ink hover:bg-surface-2 px-3.5 py-2 text-xs font-medium shadow-xs transition active:scale-95 cursor-pointer">
                                 Detail
                             </button>
                         @elseif($item->status === 'diproses')
@@ -190,22 +186,22 @@
                             </button>
                         @else
                             <button type="button" wire:click="showDetail({{ $item->id }})"
-                                class="min-h-11 w-full inline-flex items-center justify-center rounded-lg border border-hairline bg-surface text-ink hover:bg-surface-inset px-3.5 py-2 text-xs font-medium shadow-xs transition active:scale-95 cursor-pointer dark:bg-zinc-800 dark:text-zinc-200">
+                                class="min-h-11 w-full inline-flex items-center justify-center rounded-lg border border-hairline bg-surface text-ink hover:bg-surface-2 px-3.5 py-2 text-xs font-medium shadow-xs transition active:scale-95 cursor-pointer">
                                 Detail
                             </button>
                         @endif
                     </div>
                 </div>
             @empty
-                <div class="p-8 text-center">
-                    <div class="text-sm font-semibold text-ink dark:text-white">Tidak ada komplain.</div>
-                    <div class="mt-1 text-xs text-mute dark:text-zinc-400">Belum ada komplain pada kategori status ini.</div>
+                <div class="p-8 text-center text-xs text-mute">
+                    <p class="font-medium text-ink">Tidak ada komplain.</p>
+                    <p class="mt-1 text-mute">Belum ada komplain pada kategori status ini.</p>
                 </div>
             @endforelse
         </div>
 
         {{-- Pagination & Footer --}}
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-t border-hairline/60 px-5 py-3 text-xs text-mute dark:text-zinc-400">
+        <div class="flex items-center justify-between border-t border-hairline px-4 py-2.5 text-xs text-mute bg-surface">
             <span>Menampilkan {{ $komplains->count() }} dari {{ $komplains->total() }} data</span>
             <div>
                 @if($komplains->hasPages())
@@ -222,81 +218,79 @@
         <div class="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="drawer-komplain-title">
             <div class="fixed inset-0 bg-black/45 transition-opacity cursor-pointer" wire:click="$set('tampilDetail', false)"></div>
 
-            <div class="relative z-10 flex h-full w-full max-w-[480px] flex-col border-l border-hairline bg-surface shadow-2xl transition-all">
-                {{-- Header Drawer --}}
+            <div class="relative z-10 flex h-full w-full max-w-[560px] flex-col border-l border-hairline bg-surface shadow-2xl transition-all">
+                {{-- Header Drawer (.dh) --}}
                 <div class="flex items-center justify-between border-b border-hairline px-5 py-4">
                     <div>
-                        <h3 id="drawer-komplain-title" class="text-base font-semibold text-ink dark:text-white">Detail Komplain</h3>
-                        <p class="text-xs text-mute dark:text-zinc-400 mt-0.5">
-                            {{ $selectedKomplain->nasabah?->name ?? '-' }} &middot; {{ $selectedKomplain->tanggal_dibuat?->translatedFormat('d M Y') }}
-                        </p>
+                        <h3 id="drawer-komplain-title" class="text-base font-semibold text-ink">Detail Komplain</h3>
                     </div>
                     <button type="button" wire:click="$set('tampilDetail', false)"
-                        class="flex h-8 w-8 items-center justify-center rounded-full text-mute transition hover:bg-surface-inset hover:text-ink cursor-pointer dark:hover:text-white"
+                        class="flex size-8 items-center justify-center rounded-lg border border-hairline bg-surface text-mute transition hover:bg-surface-2 hover:text-ink cursor-pointer"
                         aria-label="Tutup">
-                        <flux:icon.x-mark class="size-5" />
+                        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
                 </div>
 
-                {{-- Content Drawer --}}
-                <div class="flex-1 overflow-y-auto p-5 space-y-5">
-                    {{-- Section 1: Komplain (Matching sec('Komplain', kv(...)) in HTML) --}}
+                {{-- Content Drawer (.db) --}}
+                <div class="flex-1 overflow-y-auto p-5 space-y-4">
+                    {{-- Section: Komplain (.sc) --}}
                     <div>
-                        <h4 class="text-xs font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 mb-2">
+                        <h4 class="text-xs font-semibold uppercase tracking-wider text-mute mb-2">
                             Komplain
                         </h4>
-                        <div class="rounded-xl border border-hairline bg-surface p-4 text-xs space-y-2.5">
-                            <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
-                                <span class="text-mute dark:text-zinc-400">Nasabah</span>
-                                <b class="font-medium text-ink dark:text-white text-right">{{ $selectedKomplain->nasabah?->name ?? '-' }}</b>
+                        <div class="divide-y divide-dashed divide-hairline text-sm">
+                            <div class="flex items-center justify-between gap-3 py-2">
+                                <span class="text-mute">Nasabah</span>
+                                <b class="font-medium text-ink text-right">{{ $selectedKomplain->nasabah?->name ?? '-' }}</b>
                             </div>
-                            <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
-                                <span class="text-mute dark:text-zinc-400">Kategori</span>
-                                <b class="font-medium text-ink dark:text-white text-right">
+                            <div class="flex items-center justify-between gap-3 py-2">
+                                <span class="text-mute">Kategori</span>
+                                <b class="font-medium text-ink text-right">
                                     {{ ucfirst(str_replace('_', ' ', $selectedKomplain->kategori)) }}
                                 </b>
                             </div>
-                            <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
-                                <span class="text-mute dark:text-zinc-400">Tanggal</span>
-                                <b class="font-medium text-ink dark:text-white text-right">
+                            <div class="flex items-center justify-between gap-3 py-2">
+                                <span class="text-mute">Tanggal</span>
+                                <b class="font-medium text-ink text-right">
                                     {{ $selectedKomplain->tanggal_dibuat?->translatedFormat('d M Y H:i') ?? '-' }}
                                 </b>
                             </div>
-                            <div class="flex items-center justify-between gap-3 pt-0.5">
-                                <span class="text-mute dark:text-zinc-400">Status</span>
+                            <div class="flex items-center justify-between gap-3 py-2">
+                                <span class="text-mute">Status</span>
                                 <div>
                                     <x-admin.status-chip domain="komplain" :status="$selectedKomplain->status" />
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-3 p-3.5 rounded-xl border border-hairline bg-surface-inset text-xs text-body dark:bg-zinc-800/60 leading-relaxed">
-                            <p class="font-medium text-ink dark:text-white mb-1">Deskripsi Masalah:</p>
+                        <p class="mt-3 text-sm text-ink leading-relaxed">
                             {{ $selectedKomplain->deskripsi }}
-                        </div>
+                        </p>
                     </div>
 
-                    {{-- Section 2: Transaksi Terkait (Matching sec('Transaksi terkait', kv(...)) in HTML) --}}
+                    {{-- Section: Transaksi Terkait (.sc) --}}
                     @if($selectedKomplain->transaksiTerkait)
-                        <div>
-                            <h4 class="text-xs font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 mb-2">
+                        <div class="pt-3 border-t border-hairline">
+                            <h4 class="text-xs font-semibold uppercase tracking-wider text-mute mb-2">
                                 Transaksi Terkait
                             </h4>
-                            <div class="rounded-xl border border-hairline bg-surface p-4 text-xs space-y-2.5">
-                                <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
-                                    <span class="text-mute dark:text-zinc-400">Tanggal Transaksi</span>
-                                    <b class="font-medium text-ink dark:text-white text-right">
+                            <div class="divide-y divide-dashed divide-hairline text-sm">
+                                <div class="flex items-center justify-between gap-3 py-2">
+                                    <span class="text-mute">Tanggal Transaksi</span>
+                                    <b class="font-medium text-ink text-right">
                                         {{ $selectedKomplain->transaksiTerkait->tanggal_transaksi?->translatedFormat('d M Y') ?? '-' }}
                                     </b>
                                 </div>
-                                <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
-                                    <span class="text-mute dark:text-zinc-400">Produk</span>
-                                    <b class="font-medium text-ink dark:text-white text-right">
+                                <div class="flex items-center justify-between gap-3 py-2">
+                                    <span class="text-mute">Produk</span>
+                                    <b class="font-medium text-ink text-right">
                                         {{ $selectedKomplain->transaksiTerkait->produk?->nama ?? '-' }}
                                     </b>
                                 </div>
-                                <div class="flex items-center justify-between gap-3 pt-0.5">
-                                    <span class="text-mute dark:text-zinc-400">Nominal</span>
-                                    <b class="font-semibold text-primary dark:text-primary tabular-nums text-right">
+                                <div class="flex items-center justify-between gap-3 py-2">
+                                    <span class="text-mute">Nominal</span>
+                                    <b class="font-semibold text-ink tabular-nums text-right">
                                         Rp {{ number_format($selectedKomplain->transaksiTerkait->nominal, 0, ',', '.') }}
                                     </b>
                                 </div>
@@ -304,60 +298,54 @@
                         </div>
                     @endif
 
-                    {{-- Section 3: Penyelesaian (Matching sec('Penyelesaian', ...) in HTML) --}}
-                    <div>
-                        <h4 class="text-xs font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 mb-2">
-                            Penyelesaian
-                        </h4>
-                        @if($selectedKomplain->status !== 'selesai')
-                            <div class="space-y-3">
-                                <div>
-                                    <label for="catatan" class="block text-xs font-medium text-ink dark:text-zinc-200 mb-1.5">
-                                        Catatan Penyelesaian
-                                    </label>
-                                    <textarea id="catatan" wire:model="catatan" rows="3"
-                                        class="w-full rounded-xl border border-hairline bg-white px-3.5 py-2.5 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline dark:bg-surface dark:text-white"
-                                        placeholder="Jelaskan tindakan yang dilakukan..."></textarea>
-                                    @error('catatan')
-                                        <p class="mt-1 text-xs font-semibold text-danger">{{ $message }}</p>
-                                    @enderror
-                                </div>
+                    {{-- Section: Penyelesaian (.sc) --}}
+                    @if($selectedKomplain->status !== 'selesai')
+                        <div class="pt-3 border-t border-hairline space-y-3">
+                            <h4 class="text-xs font-semibold uppercase tracking-wider text-mute mb-1">
+                                Penyelesaian
+                            </h4>
+                            <div>
+                                <label for="catatan" class="block text-xs font-medium text-ink mb-1">
+                                    Catatan Penyelesaian
+                                </label>
+                                <textarea id="catatan" wire:model="catatan" rows="3"
+                                    class="w-full rounded-[10px] border border-hairline bg-surface p-3 text-xs text-ink placeholder:text-mute focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                    placeholder="Jelaskan tindakan yang dilakukan..."></textarea>
+                                @error('catatan')
+                                    <p class="mt-1 text-xs font-semibold text-danger">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div class="flex justify-end pt-1">
                                 <button type="button" wire:click="selesai({{ $selectedKomplain->id }})"
-                                    class="w-full min-h-11 inline-flex items-center justify-center rounded-lg bg-primary hover:bg-primary-hover px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition active:scale-95 cursor-pointer">
+                                    class="h-9 px-4 rounded-[10px] bg-primary hover:bg-primary-hover text-xs font-semibold text-white shadow-xs transition active:scale-95 cursor-pointer">
                                     Selesaikan
                                 </button>
                             </div>
-                        @else
-                            <div class="rounded-xl border border-hairline bg-surface p-4 text-xs space-y-2.5">
-                                <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
-                                    <span class="text-mute dark:text-zinc-400">Tanggal Selesai</span>
-                                    <b class="font-medium text-ink dark:text-white text-right">
+                        </div>
+                    @else
+                        <div class="pt-3 border-t border-hairline">
+                            <h4 class="text-xs font-semibold uppercase tracking-wider text-mute mb-2">
+                                Catatan Penyelesaian
+                            </h4>
+                            <div class="divide-y divide-dashed divide-hairline text-sm">
+                                <div class="flex items-center justify-between gap-3 py-2">
+                                    <span class="text-mute">Tanggal Selesai</span>
+                                    <b class="font-medium text-ink text-right">
                                         {{ $selectedKomplain->tanggal_selesai?->translatedFormat('d M Y H:i') ?? '-' }}
                                     </b>
                                 </div>
-                                <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
-                                    <span class="text-mute dark:text-zinc-400">Ditangani oleh</span>
-                                    <b class="font-medium text-ink dark:text-white text-right">
+                                <div class="flex items-center justify-between gap-3 py-2">
+                                    <span class="text-mute">Ditangani oleh</span>
+                                    <b class="font-medium text-ink text-right">
                                         {{ $selectedKomplain->ditanganiOleh?->name ?? 'Admin' }}
                                     </b>
                                 </div>
-                                <div class="pt-1">
-                                    <span class="text-mute dark:text-zinc-400 block mb-1">Catatan:</span>
-                                    <p class="p-2.5 rounded-lg bg-surface-inset text-body leading-relaxed">
-                                        {{ $selectedKomplain->catatan_penyelesaian ?? '-' }}
-                                    </p>
-                                </div>
                             </div>
-                        @endif
-                    </div>
-                </div>
-
-                {{-- Footer Drawer --}}
-                <div class="border-t border-hairline p-4 flex justify-end">
-                    <button type="button" wire:click="$set('tampilDetail', false)"
-                        class="min-h-11 h-9 w-full rounded-lg border border-hairline bg-surface text-xs font-medium text-ink hover:bg-surface-inset transition cursor-pointer shadow-xs dark:bg-zinc-800 dark:text-zinc-200">
-                        Tutup
-                    </button>
+                            <p class="mt-2.5 p-3 rounded-lg bg-surface-2 text-xs text-body leading-relaxed">
+                                {{ $selectedKomplain->catatan_penyelesaian ?? '-' }}
+                            </p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
