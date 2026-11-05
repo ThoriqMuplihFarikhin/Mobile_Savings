@@ -187,7 +187,7 @@
                         @endif
                     </td>
                     <td class="px-3.5 py-3 text-xs text-body tabular-nums">
-                        {{ $item->user?->no_hp ?? '-' }}
+                        {{ $item->user?->no_hp ?? '— (offline)' }}
                     </td>
                     <td class="px-3.5 py-3">
                         <x-admin.status-chip domain="mode_akses" :status="$isOffline ? 'offline' : 'digital'" :teks="$isOffline ? 'Offline' : 'Digital'" />
@@ -309,7 +309,7 @@
                     <div class="flex items-center justify-between gap-3">
                         <div class="min-w-0">
                             <p class="text-sm font-medium text-ink">{{ $item->nama }}</p>
-                            <p class="text-xs text-mute">{{ $item->user?->no_hp ?? '-' }}</p>
+                            <p class="text-xs text-mute">{{ $item->user?->no_hp ?? '— (offline)' }}</p>
                         </div>
                         <div class="flex items-center gap-1.5 shrink-0">
                             <x-admin.status-chip domain="mode_akses" :status="$isOffline ? 'offline' : 'digital'" :teks="$isOffline ? 'Offline' : 'Digital'" />
