@@ -23,7 +23,7 @@ class AntrianKomplain extends Component
         return 'admin';
     }
 
-    public string $statusFilter = 'baru';
+    public string $statusFilter = 'semua';
 
     public ?int $selectedId = null;
 
@@ -40,16 +40,19 @@ class AntrianKomplain extends Component
             return null;
         }
 
-        return Komplain::with(['nasabah', 'transaksiTerkait.produk'])
+        return Komplain::with(['nasabah', 'transaksiTerkait.produk', 'ditanganiOleh'])
             ->find($this->selectedId);
     }
 
     public function render(): View
     {
-        $komplains = Komplain::with('nasabah')
-            ->where('status', $this->statusFilter)
-            ->latest()
-            ->paginate(10);
+        $query = Komplain::with('nasabah');
+
+        if ($this->statusFilter !== 'semua' && in_array($this->statusFilter, ['baru', 'diproses', 'selesai'], true)) {
+            $query->where('status', $this->statusFilter);
+        }
+
+        $komplains = $query->latest('tanggal_dibuat')->paginate(10);
 
         $ringkasanStatus = [
             'baru' => Komplain::where('status', 'baru')->count(),
@@ -58,6 +61,14 @@ class AntrianKomplain extends Component
         ];
 
         return view('livewire.admin.antrian-komplain', compact('komplains', 'ringkasanStatus'));
+    }
+
+    public function setStatusFilter(string $status): void
+    {
+        if (in_array($status, ['semua', 'baru', 'diproses', 'selesai'], true)) {
+            $this->statusFilter = $status;
+            $this->resetPage();
+        }
     }
 
     public function showDetail(int $id): void
@@ -115,8 +126,14 @@ class AntrianKomplain extends Component
         session()->flash('success', 'Komplain ditandai sedang diproses!');
     }
 
-    public function selesai(int $id): void
+    public function selesai(?int $id = null): void
     {
+        $id = $id ?? $this->selectedId;
+
+        if (! $id) {
+            return;
+        }
+
         $this->validate(['catatan' => 'required|string|min:3']);
 
         try {
