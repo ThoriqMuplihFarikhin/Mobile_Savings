@@ -91,9 +91,9 @@ class ManajemenNasabah extends Component
     /** @var array<string, string> */
     protected $listeners = ['nasabahCreated' => '$refresh'];
 
-    public function mount(?int $detailId = null): void
+    public function mount(?int $detailId = null, ?int $detail_id = null): void
     {
-        $target = $detailId ?? (request()->filled('detail') ? (int) request('detail') : null);
+        $target = $detailId ?? $detail_id ?? (request()->filled('detail') ? (int) request('detail') : null);
         if ($target) {
             $this->bukaDetail($target);
         }
@@ -208,6 +208,20 @@ class ManajemenNasabah extends Component
     public function bukaDetail(int $id): void
     {
         $profil = NasabahProfil::find($id) ?? NasabahProfil::where('user_id', $id)->first();
+        if (! $profil) {
+            $user = User::find($id);
+            if ($user && $user->role === 'nasabah') {
+                $profil = NasabahProfil::firstOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'nama' => $user->name,
+                        'alamat' => '-',
+                        'didaftarkan_oleh' => auth()->id() ?? $user->id,
+                        'status_pendaftaran' => 'aktif',
+                    ]
+                );
+            }
+        }
         if ($profil) {
             $this->detailNasabahId = $profil->id;
             $this->periodeDetail = '30 Hari';

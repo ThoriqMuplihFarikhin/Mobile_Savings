@@ -571,6 +571,14 @@
                             <span class="text-mute">Kolektor</span>
                             <b class="font-medium text-ink">{{ $detailData['kolektor'] }}</b>
                         </div>
+                        @if($kp->status_serah_terima === 'sudah_diterima' && $kp->bukti_foto_url)
+                            <div class="flex items-center justify-between gap-3 py-2 border-t border-dashed border-hairline text-sm">
+                                <span class="text-mute">Bukti Serah Terima</span>
+                                <a href="{{ route('serah-terima.bukti', $kp) }}" target="_blank" class="text-xs font-semibold text-primary hover:underline">
+                                    Lihat Foto Bukti
+                                </a>
+                            </div>
+                        @endif
                     @empty
                         <div class="flex items-center justify-between gap-3 py-2 border-b border-dashed border-hairline text-sm">
                             <span class="text-mute">Paket Tabungan</span>
@@ -653,13 +661,6 @@
                         class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] bg-primary px-4 text-xs font-semibold text-white transition hover:bg-primary-hover active:scale-95 cursor-pointer shadow-xs"
                     >
                         Daftarkan ke Paket
-                    </button>
-                    <button
-                        type="button"
-                        wire:click="edit({{ $dp->id }})"
-                        class="min-h-11 h-[38px] inline-flex items-center justify-center rounded-[10px] border border-hairline bg-surface px-4 text-xs font-medium text-ink transition hover:bg-surface-2 cursor-pointer shadow-xs"
-                    >
-                        Edit Profil
                     </button>
                     <button
                         type="button"

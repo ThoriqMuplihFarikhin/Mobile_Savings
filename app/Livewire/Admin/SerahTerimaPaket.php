@@ -206,15 +206,30 @@ class SerahTerimaPaket extends Component
             $kepesertaan = $kepesertaan
                 ->filter(fn (KepesertaanPaket $item): bool => $item->statusPencairan()['boleh'])
                 ->values();
+        } elseif ($this->filter === 'belum') {
+            $kepesertaan = $kepesertaan
+                ->filter(fn (KepesertaanPaket $item): bool => ! $item->statusPencairan()['boleh'])
+                ->values();
+            foreach ($kepesertaan as $item) {
+                $item->hitungUlangKepesertaan(false);
+            }
         } else {
             foreach ($kepesertaan as $item) {
                 $item->hitungUlangKepesertaan(false);
             }
         }
 
+        $konfirmasiItem = null;
+        if ($this->konfirmasiId) {
+            $konfirmasiItem = KepesertaanPaket::with(['nasabah', 'produk'])->find($this->konfirmasiId);
+        }
+
         return view('livewire.admin.serah-terima-paket', [
             'kepesertaan' => $kepesertaan,
             'jumlahSiap' => $this->jumlahSiap(),
+            'jumlahBelum' => $this->jumlahBelum(),
+            'jumlahSudah' => $this->jumlahSudah(),
+            'konfirmasiItem' => $konfirmasiItem,
         ]);
     }
 
@@ -233,5 +248,35 @@ class SerahTerimaPaket extends Component
         return $query->get()
             ->filter(fn (KepesertaanPaket $item): bool => $item->statusPencairan()['boleh'])
             ->count();
+    }
+
+    private function jumlahBelum(): int
+    {
+        $query = KepesertaanPaket::query()->with('produk')
+            ->where('status_serah_terima', 'belum');
+
+        if (auth()->user()?->role === 'kolektor') {
+            $query->whereIn('nasabah_id', KolektorNasabah::where('kolektor_id', Auth::id())
+                ->where('status', 'aktif')
+                ->select('nasabah_id'));
+        }
+
+        return $query->get()
+            ->filter(fn (KepesertaanPaket $item): bool => ! $item->statusPencairan()['boleh'])
+            ->count();
+    }
+
+    private function jumlahSudah(): int
+    {
+        $query = KepesertaanPaket::query()
+            ->where('status_serah_terima', 'sudah_diterima');
+
+        if (auth()->user()?->role === 'kolektor') {
+            $query->whereIn('nasabah_id', KolektorNasabah::where('kolektor_id', Auth::id())
+                ->where('status', 'aktif')
+                ->select('nasabah_id'));
+        }
+
+        return $query->count();
     }
 }
