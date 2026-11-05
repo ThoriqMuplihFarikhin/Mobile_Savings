@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Actions\Paket\IkutiPaketAction;
 use App\Models\KepesertaanPaket;
 use App\Models\KolektorNasabah;
+use App\Models\LogAktivitas;
 use App\Models\ProdukTabungan;
 use App\Models\SaldoProduk;
 use App\Models\TransaksiPenarikan;
@@ -246,5 +247,71 @@ class DemoSeeder extends Seeder
         ]);
 
         $kepesertaan->hitungUlangKepesertaan();
+
+        // Log Aktivitas Demo sesuai prototipe UI
+        if (LogAktivitas::count() === 0) {
+            $kolektor = User::where('role', 'kolektor')->first() ?? $admin;
+
+            $logs = [
+                [
+                    'aksi' => 'setor',
+                    'user_id' => $kolektor->id,
+                    'entitas_terkait' => 'transaksi_setoran',
+                    'entitas_id' => 1,
+                    'detail' => ['keterangan' => 'Setoran Rp 20.000 untuk Bu Siti Aminah', 'nominal' => 20000],
+                    'ip_address' => '103.10.4.21',
+                    'timestamp' => now()->setDate(2026, 10, 20)->setTime(10, 24),
+                ],
+                [
+                    'aksi' => 'approve_penarikan',
+                    'user_id' => $admin->id,
+                    'entitas_terkait' => 'transaksi_penarikan',
+                    'entitas_id' => 1,
+                    'detail' => ['keterangan' => 'Menyetujui penarikan Rp 250.000 Pak Anton', 'nominal' => 250000],
+                    'ip_address' => '103.10.4.8',
+                    'timestamp' => now()->setDate(2026, 10, 20)->setTime(9, 58),
+                ],
+                [
+                    'aksi' => 'tarik',
+                    'user_id' => $kolektor->id,
+                    'entitas_terkait' => 'transaksi_penarikan',
+                    'entitas_id' => 2,
+                    'detail' => ['keterangan' => 'Penarikan offline Rp 150.000 Pak Joko', 'nominal' => 150000],
+                    'ip_address' => '103.10.4.21',
+                    'timestamp' => now()->setDate(2026, 10, 20)->setTime(9, 40),
+                ],
+                [
+                    'aksi' => 'rekon',
+                    'user_id' => $admin->id,
+                    'entitas_terkait' => 'setoran_kolektor_kantor',
+                    'entitas_id' => 1,
+                    'detail' => ['keterangan' => 'Setoran kas Pak Dedi diterima Rp 2.980.000', 'diterima' => 2980000],
+                    'ip_address' => '103.10.4.8',
+                    'timestamp' => now()->setDate(2026, 10, 19)->setTime(16, 20),
+                ],
+                [
+                    'aksi' => 'verifikasi_nasabah',
+                    'user_id' => $admin->id,
+                    'entitas_terkait' => 'nasabah_profil',
+                    'entitas_id' => 1,
+                    'detail' => ['keterangan' => 'Menyetujui pendaftaran Bu Lilis Suryani'],
+                    'ip_address' => '103.10.4.9',
+                    'timestamp' => now()->setDate(2026, 10, 19)->setTime(11, 30),
+                ],
+                [
+                    'aksi' => 'selesai_komplain',
+                    'user_id' => $admin->id,
+                    'entitas_terkait' => 'komplain',
+                    'entitas_id' => 1,
+                    'detail' => ['keterangan' => 'Memproses komplain Bu Rina Marlina'],
+                    'ip_address' => '103.10.4.8',
+                    'timestamp' => now()->setDate(2026, 10, 18)->setTime(14, 12),
+                ],
+            ];
+
+            foreach ($logs as $logItem) {
+                LogAktivitas::create($logItem);
+            }
+        }
     }
 }
