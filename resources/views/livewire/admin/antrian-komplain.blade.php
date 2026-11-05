@@ -218,7 +218,7 @@
     </div>
 
     {{-- Drawer Detail Komplain (Matching drw in HTML design) --}}
-    @if($tampilDetail && $selectedKomplain)
+    @if($tampilDetail && !empty($selectedKomplain))
         <div class="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="drawer-komplain-title">
             <div class="fixed inset-0 bg-black/45 transition-opacity cursor-pointer" wire:click="$set('tampilDetail', false)"></div>
 

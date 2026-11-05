@@ -60,7 +60,15 @@ class AntrianKomplain extends Component
             'selesai' => Komplain::where('status', 'selesai')->count(),
         ];
 
-        return view('livewire.admin.antrian-komplain', compact('komplains', 'ringkasanStatus'));
+        $selectedKomplain = $this->selectedId
+            ? Komplain::with(['nasabah', 'transaksiTerkait.produk', 'ditanganiOleh'])->find($this->selectedId)
+            : null;
+
+        return view('livewire.admin.antrian-komplain', [
+            'komplains' => $komplains,
+            'ringkasanStatus' => $ringkasanStatus,
+            'selectedKomplain' => $selectedKomplain,
+        ]);
     }
 
     public function setStatusFilter(string $status): void

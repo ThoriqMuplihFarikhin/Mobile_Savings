@@ -2,7 +2,7 @@
 
 @section('title', 'Halaman Tidak Ditemukan')
 @section('code', '404')
-@section('icon-bg', 'bg-inset text-mute dark:bg-zinc-800 dark:text-zinc-400')
+@section('icon-bg', 'bg-surface-inset text-mute dark:bg-zinc-800 dark:text-zinc-400')
 
 @section('icon')
     <svg class="size-10" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" aria-hidden="true">
@@ -16,11 +16,11 @@
 
 @section('actions')
     <a href="{{ url('/') }}"
-       class="flex w-full items-center justify-center rounded-full bg-primary py-2.5 text-xs font-semibold text-on-primary shadow-xs transition hover:bg-primary-hover active:scale-95">
+       class="min-h-11 flex w-full items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-primary-hover active:scale-95 cursor-pointer">
         Ke beranda
     </a>
     <button type="button" onclick="window.history.length > 1 ? window.history.back() : (window.location.href='{{ url('/') }}')"
-            class="flex w-full items-center justify-center rounded-full border border-hairline-strong bg-white py-2.5 text-xs font-semibold text-body transition hover:bg-inset active:scale-95 dark:border-hairline dark:bg-surface dark:text-zinc-200">
+            class="min-h-11 flex w-full items-center justify-center rounded-xl border border-hairline bg-surface px-4 py-2.5 text-xs font-semibold text-ink transition hover:bg-surface-inset active:scale-95 cursor-pointer dark:bg-zinc-800 dark:text-zinc-200">
         Kembali ke halaman sebelumnya
     </button>
 @endsection

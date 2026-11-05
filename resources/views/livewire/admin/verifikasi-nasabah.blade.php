@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div class="space-y-5">
     {{-- Header Halaman --}}
     <x-admin.page-header
         title="Verifikasi Nasabah Baru"
@@ -9,9 +9,9 @@
             <button
                 type="button"
                 wire:click="$refresh"
-                class="min-h-11 h-[38px] inline-flex items-center gap-1.5 rounded-[10px] border border-hairline bg-surface px-4 text-xs font-medium text-mute transition hover:bg-surface-2 hover:text-ink cursor-pointer"
+                class="min-h-11 h-[38px] inline-flex items-center gap-1.5 rounded-[10px] border border-hairline bg-surface px-4 text-xs font-medium text-ink transition hover:bg-surface-2 active:scale-95 cursor-pointer shadow-xs"
             >
-                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg class="size-3.5 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                 </svg>
                 Muat Ulang
@@ -41,7 +41,7 @@
     <div class="rounded-[14px] border border-hairline bg-surface shadow-xs overflow-hidden">
         {{-- Desktop Table --}}
         <div class="overflow-x-auto">
-            <table class="hidden md:table w-full text-left text-sm">
+            <table class="hidden md:table w-full text-left text-sm border-collapse">
                 <thead>
                     <tr class="bg-surface-2 text-xs uppercase tracking-[0.04em] text-mute font-medium border-b border-hairline">
                         <th class="px-4 py-2.5">Nama</th>
@@ -54,33 +54,51 @@
                 </thead>
                 <tbody class="divide-y divide-hairline">
                     @forelse($pending as $item)
+                        @php
+                            $isOffline = $item->user?->isOffline() || $item->user?->mode_akses === 'offline';
+                        @endphp
                         <tr class="hover:bg-surface-2 transition text-ink">
-                            <td class="whitespace-nowrap px-4 py-3 font-medium">{{ $item->nama }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-mute">{{ $item->user->no_hp ?? '— (offline)' }}</td>
-                            <td class="max-w-[200px] truncate px-4 py-3 text-mute">{{ $item->alamat }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-xs text-mute">
-                                @if ($item->tanggal_lahir)
-                                    <div>Lahir: {{ $item->tanggal_lahir->format('d/m/Y') }}</div>
-                                @endif
-                                <div>{{ $item->jenis_kelamin }} · {{ $item->pekerjaan ?? '-' }}</div>
+                            <td class="px-4 py-3">
+                                <div class="font-medium text-ink">{{ $item->nama }}</div>
+                                <div class="text-xs text-mute mt-0.5">
+                                    {{ $item->jenis_kelamin }} &middot; {{ $item->pekerjaan ?? '-' }}
+                                    @if($item->tanggal_lahir)
+                                        &middot; <span class="tabular-nums">Lahir: {{ $item->tanggal_lahir->format('d/m/Y') }}</span>
+                                    @endif
+                                </div>
                             </td>
-                            <td class="whitespace-nowrap px-4 py-3 text-mute">{{ $item->didaftarkanOleh->name ?? '-' }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 text-xs text-body tabular-nums">
+                                {{ $item->user?->no_hp ?? '— (offline)' }}
+                            </td>
+                            <td class="max-w-[220px] truncate px-4 py-3 text-xs text-mute">
+                                {{ $item->alamat }}
+                            </td>
+                            <td class="whitespace-nowrap px-4 py-3">
+                                <x-admin.status-chip
+                                    domain="mode_akses"
+                                    :status="$isOffline ? 'offline' : 'digital'"
+                                    :teks="$isOffline ? 'Offline' : 'Digital'"
+                                />
+                            </td>
+                            <td class="whitespace-nowrap px-4 py-3 text-xs text-body">
+                                {{ $item->didaftarkanOleh->name ?? '-' }}
+                            </td>
                             <td class="whitespace-nowrap px-4 py-3 text-right">
                                 <div class="flex items-center justify-end gap-1.5">
                                     <button
                                         type="button"
                                         wire:click="approve({{ $item->id }})"
-                                        class="min-h-11 h-8 inline-flex items-center gap-1 rounded-[8px] bg-accent px-3 text-xs font-semibold text-accent-foreground transition hover:opacity-90 cursor-pointer shadow-xs"
+                                        class="min-h-11 h-8 inline-flex items-center gap-1 rounded-[10px] bg-primary px-3 text-xs font-semibold text-white transition hover:bg-primary-hover active:scale-95 cursor-pointer shadow-xs"
                                     >
-                                        <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                                         </svg>
-                                        Setuju
+                                        Setujui
                                     </button>
                                     <button
                                         type="button"
                                         wire:click="reject({{ $item->id }})"
-                                        class="min-h-11 h-8 inline-flex items-center gap-1 rounded-[8px] bg-danger-soft px-3 text-xs font-semibold text-danger transition hover:opacity-90 cursor-pointer"
+                                        class="min-h-11 h-8 inline-flex items-center gap-1 rounded-[10px] bg-danger-soft px-3 text-xs font-semibold text-danger transition hover:bg-danger hover:text-white active:scale-95 cursor-pointer"
                                     >
                                         Tolak
                                     </button>
@@ -89,7 +107,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-12 text-center">
+                            <td colspan="6" class="p-0">
                                 <x-admin.empty-state
                                     title="Tidak ada nasabah yang perlu diverifikasi."
                                     description="Semua pendaftaran nasabah baru sudah diproses."
@@ -104,15 +122,20 @@
         {{-- Mobile Cards (< md) --}}
         <div data-test="kartu-tabel" class="divide-y divide-hairline md:hidden">
             @forelse($pending as $item)
+                @php
+                    $isOffline = $item->user?->isOffline() || $item->user?->mode_akses === 'offline';
+                @endphp
                 <div class="p-4 space-y-3">
                     <div class="flex items-start justify-between gap-2">
                         <div>
                             <p class="text-sm font-semibold text-ink">{{ $item->nama }}</p>
-                            <p class="text-xs text-mute">{{ $item->user->no_hp ?? '— (offline)' }}</p>
+                            <p class="text-xs text-mute mt-0.5">{{ $item->user?->no_hp ?? '— (offline)' }}</p>
                         </div>
-                        <span class="rounded-full bg-warning-soft px-2 py-0.5 text-xs font-semibold text-warning-deep">
-                            Menunggu
-                        </span>
+                        <x-admin.status-chip
+                            domain="mode_akses"
+                            :status="$isOffline ? 'offline' : 'digital'"
+                            :teks="$isOffline ? 'Offline' : 'Digital'"
+                        />
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 text-xs">
@@ -127,10 +150,10 @@
                         <div class="col-span-2">
                             <span class="text-mute block">Profil</span>
                             <span class="text-ink font-medium">
+                                {{ $item->jenis_kelamin }} &middot; {{ $item->pekerjaan ?? '-' }}
                                 @if ($item->tanggal_lahir)
-                                    Lahir: {{ $item->tanggal_lahir->format('d/m/Y') }} ·
+                                    &middot; Lahir: {{ $item->tanggal_lahir->format('d/m/Y') }}
                                 @endif
-                                {{ $item->jenis_kelamin }} · {{ $item->pekerjaan ?? '-' }}
                             </span>
                         </div>
                     </div>
@@ -139,24 +162,24 @@
                         <button
                             type="button"
                             wire:click="approve({{ $item->id }})"
-                            class="min-h-11 flex-1 h-9 inline-flex items-center justify-center gap-1 rounded-[10px] bg-accent px-3 text-xs font-semibold text-accent-foreground transition hover:opacity-90 cursor-pointer shadow-xs"
+                            class="min-h-11 flex-1 h-9 inline-flex items-center justify-center gap-1 rounded-[10px] bg-primary px-3 text-xs font-semibold text-white transition hover:bg-primary-hover active:scale-95 cursor-pointer shadow-xs"
                         >
-                            <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                             </svg>
-                            Setuju
+                            Setujui
                         </button>
                         <button
                             type="button"
                             wire:click="reject({{ $item->id }})"
-                            class="min-h-11 flex-1 h-9 inline-flex items-center justify-center gap-1 rounded-[10px] bg-danger-soft px-3 text-xs font-semibold text-danger transition hover:opacity-90 cursor-pointer"
+                            class="min-h-11 flex-1 h-9 inline-flex items-center justify-center gap-1 rounded-[10px] bg-danger-soft px-3 text-xs font-semibold text-danger transition hover:bg-danger hover:text-white active:scale-95 cursor-pointer"
                         >
                             Tolak
                         </button>
                     </div>
                 </div>
             @empty
-                <div class="p-8 text-center">
+                <div class="p-4">
                     <x-admin.empty-state
                         title="Tidak ada nasabah yang perlu diverifikasi."
                         description="Semua pendaftaran nasabah baru sudah diproses."
@@ -166,8 +189,13 @@
         </div>
 
         @if($pending->count() > 0)
-            <div class="flex items-center justify-between border-t border-hairline px-4 py-2.5 text-xs text-mute bg-surface-2">
-                <span>Menampilkan {{ $pending->count() }} data pendaftaran</span>
+            <div class="flex items-center justify-between border-t border-hairline px-4 py-2.5 text-xs text-mute bg-surface">
+                <span>Menampilkan {{ $pending->total() }} data pendaftaran</span>
+                @if($pending->hasPages())
+                    <div>{{ $pending->links() }}</div>
+                @else
+                    <span>Halaman 1 dari 1</span>
+                @endif
             </div>
         @endif
     </div>
