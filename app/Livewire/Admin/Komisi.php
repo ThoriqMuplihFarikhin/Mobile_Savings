@@ -18,7 +18,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-#[Layout('layouts.app')]
+#[Layout('layouts.admin')]
 class Komisi extends Component
 {
     use AuthorizesRole;
@@ -106,6 +106,11 @@ class Komisi extends Component
 
         return TransaksiPenarikan::query()
             ->whereIn('transaksi_penarikan.status', $status !== '' ? [$status] : ['approved', 'selesai'])
+            ->where(function ($q) {
+                $q->where('transaksi_penarikan.nominal_komisi', '>', 0)
+                    ->orWhere('transaksi_penarikan.persen_komisi_terpakai', '>', 0)
+                    ->orWhereHas('produk', fn ($p) => $p->where('persen_komisi', '>', 0));
+            })
             ->when($this->dariTanggal, fn ($q) => $q->whereDate("transaksi_penarikan.$dasar", '>=', $this->dariTanggal))
             ->when($this->sampaiTanggal, fn ($q) => $q->whereDate("transaksi_penarikan.$dasar", '<=', $this->sampaiTanggal))
             ->when($this->produkId, fn ($q) => $q->where('transaksi_penarikan.produk_id', $this->produkId))
@@ -249,7 +254,13 @@ class Komisi extends Component
             ->latest('waktu_approval')
             ->paginate(15);
 
-        $produkList = ProdukTabungan::where('status', 'aktif')->orderBy('nama')->get();
+        $produkList = ProdukTabungan::where('status', 'aktif')
+            ->where(function ($q) {
+                $q->where('persen_komisi', '>', 0)
+                    ->orWhereHas('transaksiPenarikans', fn ($tp) => $tp->where('nominal_komisi', '>', 0));
+            })
+            ->orderBy('nama')
+            ->get();
         $kolektorList = User::where('role', 'kolektor')->orderBy('name')->get();
 
         return view('livewire.admin.komisi', compact(
