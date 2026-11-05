@@ -6,6 +6,8 @@
     'label' => null,
     'wajib' => false,
     'nilai' => null,
+    'tanda' => null,
+    'tandaModel' => null,
 ])
 
 @php
@@ -30,6 +32,8 @@
         'live' => $hidup,
         'min' => $min,
         'max' => $max,
+        'tanda' => $tanda,
+        'tandaModel' => $tandaModel,
     ];
 @endphp
 

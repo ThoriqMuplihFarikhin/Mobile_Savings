@@ -8,6 +8,7 @@ document.addEventListener('alpine:init', () => {
         fp: null,
         flatpickr: null,
         tombolSiap: false,
+        legendaSiap: false,
 
         async mulai() {
             const [{ default: flatpickr }, { default: bahasa }] = await Promise.all([
@@ -41,8 +42,17 @@ document.addEventListener('alpine:init', () => {
                 minDate: konfig.min || undefined,
                 maxDate: konfig.max || undefined,
                 onChange: (tanggal) => this.kirim(tanggal),
-                onReady: () => this.pasangTombol(),
-                onOpen: () => this.pasangTombol(),
+                onReady: () => {
+                    this.pasangLegenda();
+                    this.pasangTombol();
+                },
+                onOpen: () => {
+                    this.pasangLegenda();
+                    this.pasangTombol();
+                },
+                onDayCreate: (dObj, dStr, fp, dayElem) => {
+                    this.pasangTandaHari(dayElem);
+                },
             });
 
             if (nilaiAwal) {
@@ -61,6 +71,15 @@ document.addEventListener('alpine:init', () => {
 
                     if ((nilai || '') !== (sekarang || '')) {
                         this.terima(nilai || '');
+                    }
+                });
+            }
+
+            if (konfig.tandaModel) {
+                this.$wire.$watch(konfig.tandaModel, (nilaiBaru) => {
+                    konfig.tanda = nilaiBaru || {};
+                    if (this.fp) {
+                        this.fp.redraw();
                     }
                 });
             }
@@ -160,6 +179,91 @@ document.addEventListener('alpine:init', () => {
             hapus.addEventListener('click', () => this.fp.clear(true));
 
             baris.append(hariIni, hapus);
+            this.fp.calendarContainer.appendChild(baris);
+        },
+
+        pasangTandaHari(dayElem) {
+            if (! konfig.tanda || ! dayElem || ! dayElem.dateObj) {
+                return;
+            }
+
+            const ymd = this.flatpickr.formatDate(dayElem.dateObj, 'Y-m-d');
+            const info = konfig.tanda[ymd];
+
+            if (! info) {
+                return;
+            }
+
+            const adaAbsen = Boolean(
+                (typeof info.absen === 'number' && info.absen > 0) ||
+                info.absen === true ||
+                info === 'absen' ||
+                (Array.isArray(info) && info.includes('absen'))
+            );
+
+            const adaIzin = Boolean(
+                (typeof info.izin === 'number' && info.izin > 0) ||
+                info.izin === true ||
+                info === 'izin' ||
+                (Array.isArray(info) && info.includes('izin'))
+            );
+
+            if (! adaAbsen && ! adaIzin) {
+                return;
+            }
+
+            dayElem.classList.add('has-tanda');
+
+            const wrap = document.createElement('span');
+            wrap.className = 'flatpickr-day-dots';
+
+            if (adaAbsen) {
+                const dot = document.createElement('span');
+                dot.className = 'flatpickr-day-dot dot-absen';
+                wrap.appendChild(dot);
+            }
+
+            if (adaIzin) {
+                const dot = document.createElement('span');
+                dot.className = 'flatpickr-day-dot dot-izin';
+                wrap.appendChild(dot);
+            }
+
+            dayElem.appendChild(wrap);
+
+            const ringkasan = [];
+            if (adaAbsen) {
+                const jml = typeof info.absen === 'number' && info.absen > 0 ? info.absen + ' ' : '';
+                ringkasan.push(jml + 'kolektor absen/hadir');
+            }
+            if (adaIzin) {
+                const jml = typeof info.izin === 'number' && info.izin > 0 ? info.izin + ' ' : '';
+                ringkasan.push(jml + 'kolektor izin/cuti');
+            }
+            if (ringkasan.length > 0) {
+                dayElem.setAttribute('title', ymd + ': ' + ringkasan.join(', '));
+            }
+        },
+
+        pasangLegenda() {
+            if (! konfig.tanda || this.legendaSiap || ! this.fp || ! this.fp.calendarContainer) {
+                return;
+            }
+
+            this.legendaSiap = true;
+
+            const baris = document.createElement('div');
+            baris.className = 'flatpickr-legenda-baris';
+
+            const itemAbsen = document.createElement('span');
+            itemAbsen.className = 'flatpickr-legenda-item';
+            itemAbsen.innerHTML = '<span class="flatpickr-day-dot dot-absen"></span> Hadir / Absen';
+
+            const itemIzin = document.createElement('span');
+            itemIzin.className = 'flatpickr-legenda-item';
+            itemIzin.innerHTML = '<span class="flatpickr-day-dot dot-izin"></span> Izin / Cuti';
+
+            baris.append(itemAbsen, itemIzin);
             this.fp.calendarContainer.appendChild(baris);
         },
 

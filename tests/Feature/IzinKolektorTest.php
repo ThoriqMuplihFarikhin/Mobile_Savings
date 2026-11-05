@@ -3,6 +3,7 @@
 use App\Livewire\Admin\MonitoringAbsensi;
 use App\Livewire\Kolektor\AjukanIzin;
 use App\Livewire\Kolektor\Pengaturan;
+use App\Models\AbsensiKolektor;
 use App\Models\IzinKolektor;
 use App\Models\User;
 use Livewire\Livewire;
@@ -195,4 +196,40 @@ it('halaman ajukan izin dapat diakses kolektor', function () {
         ->get(route('kolektor.izin.index'))
         ->assertOk()
         ->assertSee('Ajukan Izin');
+});
+
+it('monitoring absensi menyediakan data tanda kalender untuk tanggal absen dan izin', function () {
+    $admin = User::factory()->admin()->create();
+    $kolektor = User::factory()->kolektor()->create();
+
+    $tglAbsen = now()->subDays(2)->toDateString();
+    $tglIzinMulai = now()->subDays(1)->toDateString();
+    $tglIzinSelesai = now()->toDateString();
+
+    AbsensiKolektor::create([
+        'kolektor_id' => $kolektor->id,
+        'tanggal' => $tglAbsen,
+        'waktu_masuk' => now()->setTime(8, 0),
+        'latitude' => -6.2,
+        'longitude' => 106.8,
+    ]);
+
+    IzinKolektor::create([
+        'kolektor_id' => $kolektor->id,
+        'tanggal_mulai' => $tglIzinMulai,
+        'tanggal_selesai' => $tglIzinSelesai,
+        'alasan' => 'Izin keperluan keluarga',
+        'status' => 'disetujui',
+        'diproses_oleh' => $admin->id,
+    ]);
+
+    $this->actingAs($admin);
+
+    $test = Livewire::test(MonitoringAbsensi::class);
+    $viewData = $test->viewData('tandaKalender');
+
+    expect($viewData)->toBeArray()
+        ->and($viewData[$tglAbsen]['absen'])->toBe(1)
+        ->and($viewData[$tglIzinMulai]['izin'])->toBe(1)
+        ->and($viewData[$tglIzinSelesai]['izin'])->toBe(1);
 });

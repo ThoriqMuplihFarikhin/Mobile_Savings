@@ -110,6 +110,38 @@ class MonitoringAbsensi extends Component
             ? $absensi->get($this->selectedKolektorId)
             : null;
 
-        return view('livewire.admin.monitoring-absensi', compact('kolektors', 'absensi', 'tanggal', 'selectedAbsen', 'izinHariIni', 'izinPending'));
+        $tanggalAbsen = AbsensiKolektor::whereIn('kolektor_id', $kolektors->pluck('id'))
+            ->select('tanggal')
+            ->selectRaw('count(distinct kolektor_id) as total')
+            ->groupBy('tanggal')
+            ->get()
+            ->mapWithKeys(fn ($item) => [Carbon::parse($item->tanggal)->format('Y-m-d') => (int) $item->total])
+            ->toArray();
+
+        $tanggalIzin = [];
+        $semuaIzin = IzinKolektor::whereIn('kolektor_id', $kolektors->pluck('id'))
+            ->where('status', 'disetujui')
+            ->get(['tanggal_mulai', 'tanggal_selesai']);
+
+        foreach ($semuaIzin as $izin) {
+            $mulai = Carbon::parse($izin->tanggal_mulai);
+            $selesai = Carbon::parse($izin->tanggal_selesai);
+            while ($mulai->lte($selesai)) {
+                $key = $mulai->format('Y-m-d');
+                $tanggalIzin[$key] = ($tanggalIzin[$key] ?? 0) + 1;
+                $mulai->addDay();
+            }
+        }
+
+        $tandaKalender = [];
+        $semuaTanggal = array_unique(array_merge(array_keys($tanggalAbsen), array_keys($tanggalIzin)));
+        foreach ($semuaTanggal as $tgl) {
+            $tandaKalender[$tgl] = [
+                'absen' => $tanggalAbsen[$tgl] ?? 0,
+                'izin' => $tanggalIzin[$tgl] ?? 0,
+            ];
+        }
+
+        return view('livewire.admin.monitoring-absensi', compact('kolektors', 'absensi', 'tanggal', 'selectedAbsen', 'izinHariIni', 'izinPending', 'tandaKalender'));
     }
 }

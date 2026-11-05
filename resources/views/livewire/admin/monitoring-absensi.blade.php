@@ -5,9 +5,23 @@
         subtitle="Lihat kehadiran kolektor harian."
     >
         <x-slot:actions>
-            <div class="relative">
-                <x-ui.tanggal wire:model.live="tanggal"
-                    class="h-[38px] w-36 rounded-[10px] border border-hairline bg-white pr-9 pl-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface cursor-pointer" />
+            <div class="flex flex-col sm:items-end gap-1.5">
+                <div class="relative">
+                    <x-ui.tanggal wire:model.live="tanggal"
+                        :tanda="$tandaKalender"
+                        tandaModel="tandaKalender"
+                        class="h-[38px] w-36 rounded-[10px] border border-hairline bg-white pr-9 pl-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:bg-surface cursor-pointer" />
+                </div>
+                <div class="flex items-center gap-2.5 text-[11px] text-mute">
+                    <span class="inline-flex items-center gap-1 font-medium">
+                        <span class="size-2 rounded-full bg-primary inline-block"></span>
+                        <span>Absen</span>
+                    </span>
+                    <span class="inline-flex items-center gap-1 font-medium">
+                        <span class="size-2 rounded-full bg-warning-deep inline-block"></span>
+                        <span>Izin</span>
+                    </span>
+                </div>
             </div>
         </x-slot:actions>
     </x-admin.page-header>
