@@ -28,7 +28,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-#[Layout('layouts.app')]
+#[Layout('layouts.admin')]
 class Laporan extends Component
 {
     use AuthorizesRole;

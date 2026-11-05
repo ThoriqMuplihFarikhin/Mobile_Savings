@@ -21,7 +21,7 @@ use Livewire\WithFileUploads;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\Process\Process;
 
-#[Layout('layouts.app')]
+#[Layout('layouts.admin')]
 class Pengaturan extends Component
 {
     use AuthorizesRole;

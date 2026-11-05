@@ -10,7 +10,7 @@ use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
-#[Layout('layouts.app')]
+#[Layout('layouts.admin')]
 class Profile extends Component
 {
     use WithFileUploads;

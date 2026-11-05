@@ -22,7 +22,7 @@
     </div>
 
     {{-- Navigation --}}
-    <nav class="flex-1 overflow-y-auto px-3 py-2 space-y-1">
+    <nav class="flex-1 overflow-y-auto px-3 py-2 space-y-1 [scrollbar-width:thin] [scrollbar-color:var(--color-hairline)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-hairline [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-mute/40">
         @if(auth()->user()->isAdmin())
             @php
                 $antreanNav = \App\Support\AntreanPersetujuan::ringkas();
@@ -79,7 +79,7 @@
                 </svg>
                 <span>Approval Penarikan</span>
             </x-admin.nav-item>
-            <x-admin.nav-item href="{{ route('admin.tinjauan-penarikan-offline') }}" :active="request()->routeIs('admin.tinjauan-penarikan-offline')" :badge="$antreanNav['tinjauan']">
+            <x-admin.nav-item href="{{ route('admin.tinjauan-penarikan-offline') }}" :active="request()->routeIs('admin.tinjauan-penarikan-offline*')" :badge="$antreanNav['tinjauan']">
                 <svg class="size-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
                 </svg>
@@ -169,7 +169,7 @@
                 </svg>
                 <span>Log Aktivitas</span>
             </x-admin.nav-item>
-            <x-admin.nav-item href="{{ route('admin.pengaturan.index') }}" :active="request()->routeIs('admin.pengaturan.*')">
+            <x-admin.nav-item href="{{ route('admin.pengaturan.index') }}" :active="request()->routeIs('admin.pengaturan.*') || request()->routeIs('admin.settings.*')">
                 <svg class="size-[18px] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <circle cx="12" cy="12" r="3" /><path stroke-linecap="round" stroke-linejoin="round" d="M19 12a7 7 0 00-.1-1.2l2-1.5-2-3.5-2.3 1a7 7 0 00-2-1.2L14.3 3h-4l-.4 2.6a7 7 0 00-2 1.2l-2.3-1-2 3.5 2 1.5A7 7 0 005 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.5 2.3-1a7 7 0 002 1.2l.4 2.6h4l.4-2.6a7 7 0 002-1.2l2.3 1 2-3.5-2-1.5c.1-.4.1-.8.1-1.2z" />
                 </svg>

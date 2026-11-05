@@ -20,59 +20,93 @@
 
             <flux:sidebar.nav>
                 @if(auth()->user()->isAdmin())
-                    <flux:sidebar.group :heading="__('Admin')" class="grid">
+                    @php
+                        $antreanNav = \App\Support\AntreanPersetujuan::ringkas();
+                        $totalAntreanNav = array_sum($antreanNav);
+                    @endphp
+
+                    {{-- 1. Beranda --}}
+                    <flux:sidebar.group :heading="__('Beranda')" class="grid">
                         <flux:sidebar.item icon="house" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                             {{ __('Dashboard') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="users" href="/admin/nasabah" :current="request()->routeIs('admin.nasabah.*')" wire:navigate>
-                            {{ __('Nasabah') }}
+                        <flux:sidebar.item icon="inbox" :href="route('admin.persetujuan.index')" :current="request()->routeIs('admin.persetujuan.*')" :badge="$totalAntreanNav ?: null" wire:navigate>
+                            {{ __('Hub Persetujuan') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="user-plus" href="/admin/registrasi" :current="request()->routeIs('admin.registrasi.*')" wire:navigate>
+                    </flux:sidebar.group>
+
+                    {{-- 2. Nasabah --}}
+                    <flux:sidebar.group :heading="__('Nasabah')" class="grid">
+                        <flux:sidebar.item icon="users" :href="route('admin.nasabah.index')" :current="request()->routeIs('admin.nasabah.*')" wire:navigate>
+                            {{ __('Manajemen Nasabah') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="user-plus" :href="route('admin.registrasi.index')" :current="request()->routeIs('admin.registrasi.*')" wire:navigate>
                             {{ __('Registrasi Nasabah') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="package" href="/admin/produk" :current="request()->routeIs('admin.produk.*')" wire:navigate>
-                            {{ __('Produk') }}
+                        <flux:sidebar.item icon="check" :href="route('admin.verifikasi.index')" :current="request()->routeIs('admin.verifikasi.*')" :badge="$antreanNav['verifikasi'] ?: null" wire:navigate>
+                            {{ __('Verifikasi Nasabah') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="arrow-down-to-line" href="/admin/rekonsiliasi" :current="request()->routeIs('admin.rekonsiliasi.*')" wire:navigate>
-                            {{ __('Rekonsiliasi') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="wallet" href="/admin/kas-kolektor" :current="request()->routeIs('admin.kas-kolektor.*')" wire:navigate>
-                            {{ __('Kas Kolektor') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="arrow-up-from-line" href="/admin/penarikan" :current="request()->routeIs('admin.penarikan.*')" wire:navigate>
-                            {{ __('Penarikan') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="banknote" href="/admin/komisi" :current="request()->routeIs('admin.komisi.*')" wire:navigate>
-                            {{ __('Komisi') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="megaphone" href="/admin/komplain" :current="request()->routeIs('admin.komplain.*')" wire:navigate>
-                            {{ __('Komplain') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="file-text" href="/admin/laporan" :current="request()->routeIs('admin.laporan.*')" wire:navigate>
-                            {{ __('Laporan') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="clipboard-list" href="/admin/log" :current="request()->routeIs('admin.log.*')" wire:navigate>
-                            {{ __('Log Aktivitas') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="users" href="/admin/kolektor" :current="request()->routeIs('admin.kolektor.*')" wire:navigate>
-                            {{ __('Kelola Kolektor') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="circle-plus" href="/admin/setoran" :current="request()->routeIs('admin.setoran.*')" wire:navigate>
-                            {{ __('Catat Setoran') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="package" href="/serah-terima-paket" :current="request()->routeIs('serah-terima.*')" wire:navigate>
-                            {{ __('Serah Terima Paket') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="arrow-down-to-line" href="/admin/monitoring-setoran" :current="request()->routeIs('admin.monitoring-setoran.*')" wire:navigate>
-                            {{ __('Monitoring Setoran') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="clipboard" href="/admin/monitoring-absensi" :current="request()->routeIs('admin.monitoring-absensi.*')" wire:navigate>
-                            {{ __('Monitoring Absensi') }}
-                        </flux:sidebar.item>
-                        <flux:sidebar.item icon="megaphone" href="/admin/bermasalah" :current="request()->routeIs('admin.bermasalah.*')" wire:navigate>
+                        <flux:sidebar.item icon="exclamation-triangle" :href="route('admin.bermasalah.index')" :current="request()->routeIs('admin.bermasalah.*')" :badge="$antreanNav['bermasalah'] ?: null" wire:navigate>
                             {{ __('Nasabah Bermasalah') }}
                         </flux:sidebar.item>
-                        <flux:sidebar.item icon="settings" href="/admin/pengaturan" :current="request()->routeIs('admin.pengaturan.*')" wire:navigate>
+                    </flux:sidebar.group>
+
+                    {{-- 3. Keuangan --}}
+                    <flux:sidebar.group :heading="__('Keuangan')" class="grid">
+                        <flux:sidebar.item icon="banknotes" :href="route('admin.penarikan.index')" :current="request()->routeIs('admin.penarikan.*')" :badge="$antreanNav['penarikan'] ?: null" wire:navigate>
+                            {{ __('Approval Penarikan') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="shield-check" :href="route('admin.tinjauan-penarikan-offline')" :current="request()->routeIs('admin.tinjauan-penarikan-offline*')" :badge="$antreanNav['tinjauan'] ?: null" wire:navigate>
+                            {{ __('Tinjauan Penarikan Offline') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="scale" :href="route('admin.rekonsiliasi.index')" :current="request()->routeIs('admin.rekonsiliasi.*')" :badge="$antreanNav['setoran_kantor'] ?: null" wire:navigate>
+                            {{ __('Rekonsiliasi Kas') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="wallet" :href="route('admin.kas-kolektor.index')" :current="request()->routeIs('admin.kas-kolektor.*')" wire:navigate>
+                            {{ __('Kas di Tangan Kolektor') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="circle-stack" :href="route('admin.komisi.index')" :current="request()->routeIs('admin.komisi.*')" wire:navigate>
+                            {{ __('Komisi') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="cube" :href="route('admin.produk.index')" :current="request()->routeIs('admin.produk.*')" wire:navigate>
+                            {{ __('Produk Tabungan') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    {{-- 4. Operasional --}}
+                    <flux:sidebar.group :heading="__('Operasional')" class="grid">
+                        <flux:sidebar.item icon="users" :href="route('admin.kolektor.index')" :current="request()->routeIs('admin.kolektor.*')" wire:navigate>
+                            {{ __('Kelola Kolektor') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="arrows-right-left" :href="route('admin.handover.index')" :current="request()->routeIs('admin.handover.*')" wire:navigate>
+                            {{ __('Handover Kolektor') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="plus" :href="route('admin.setoran.create')" :current="request()->routeIs('admin.setoran.*')" wire:navigate>
+                            {{ __('Catat Setoran') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="eye" :href="route('admin.monitoring-setoran.index')" :current="request()->routeIs('admin.monitoring-setoran.*')" wire:navigate>
+                            {{ __('Monitoring Setoran') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="calendar" :href="route('admin.monitoring-absensi.index')" :current="request()->routeIs('admin.monitoring-absensi.*')" :badge="$antreanNav['izin'] ?: null" wire:navigate>
+                            {{ __('Monitoring Absensi') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="gift" :href="route('serah-terima.index')" :current="request()->routeIs('serah-terima.*')" wire:navigate>
+                            {{ __('Serah Terima Paket') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="chat-bubble-left-right" :href="route('admin.komplain.index')" :current="request()->routeIs('admin.komplain.*')" :badge="$antreanNav['komplain'] ?: null" wire:navigate>
+                            {{ __('Komplain') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+
+                    {{-- 5. Sistem --}}
+                    <flux:sidebar.group :heading="__('Sistem')" class="grid">
+                        <flux:sidebar.item icon="document-text" :href="route('admin.laporan.index')" :current="request()->routeIs('admin.laporan.*')" wire:navigate>
+                            {{ __('Laporan') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="queue-list" :href="route('admin.log.index')" :current="request()->routeIs('admin.log.*')" wire:navigate>
+                            {{ __('Log Aktivitas') }}
+                        </flux:sidebar.item>
+                        <flux:sidebar.item icon="cog-6-tooth" :href="route('admin.pengaturan.index')" :current="request()->routeIs('admin.pengaturan.*') || request()->routeIs('admin.settings.*')" wire:navigate>
                             {{ __('Pengaturan') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>

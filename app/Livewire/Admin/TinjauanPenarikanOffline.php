@@ -19,7 +19,7 @@ use Livewire\WithPagination;
  * diselesaikan langsung oleh kolektor wajib ditandai admin sebagai
  * `sesuai` atau `bermasalah`; penandaan ganda tidak boleh menimpa.
  */
-#[Layout('layouts.app')]
+#[Layout('layouts.admin')]
 class TinjauanPenarikanOffline extends Component
 {
     use AuthorizesRole;

@@ -19,7 +19,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-#[Layout('layouts.app')]
+#[Layout('layouts.admin')]
 class HandoverKolektor extends Component
 {
     use AuthorizesRole;

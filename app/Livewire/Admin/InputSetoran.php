@@ -15,7 +15,7 @@ use Illuminate\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.app')]
+#[Layout('layouts.admin')]
 class InputSetoran extends Component
 {
     use AuthorizesRole;

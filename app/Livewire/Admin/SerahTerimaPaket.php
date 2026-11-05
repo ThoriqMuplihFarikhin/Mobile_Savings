@@ -21,7 +21,7 @@ use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
-#[Layout('layouts.app')]
+#[Layout('layouts.admin')]
 class SerahTerimaPaket extends Component
 {
     use AuthorizesRoles;
