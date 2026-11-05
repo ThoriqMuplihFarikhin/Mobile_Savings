@@ -72,6 +72,48 @@ class Laporan extends Component
         $this->seksi = $seksi;
     }
 
+    public function setFilterPeriode(string $mode): void
+    {
+        if ($mode === 'hari_ini' || $mode === 'harian') {
+            $this->periode = 'harian';
+            $this->tanggal = now()->format('Y-m-d');
+        } elseif ($mode === '7_hari') {
+            $this->periode = 'rentang';
+            $this->dariTanggal = now()->subDays(6)->toDateString();
+            $this->sampaiTanggal = now()->toDateString();
+        } elseif ($mode === 'bulan_ini' || $mode === 'bulanan') {
+            $this->periode = 'bulanan';
+            $this->bulan = now()->format('Y-m');
+        } elseif ($mode === 'kustom' || $mode === 'rentang') {
+            $this->periode = 'rentang';
+        }
+    }
+
+    public function getLabelPeriodeProperty(): string
+    {
+        try {
+            if ($this->periode === 'bulanan') {
+                return Carbon::parse($this->bulan)->translatedFormat('F Y');
+            }
+
+            if ($this->periode === 'rentang') {
+                if ($this->dariTanggal === now()->subDays(6)->toDateString() && $this->sampaiTanggal === now()->toDateString()) {
+                    return '7 hari';
+                }
+
+                return Carbon::parse($this->dariTanggal)->translatedFormat('d M').' - '.Carbon::parse($this->sampaiTanggal)->translatedFormat('d M Y');
+            }
+
+            if ($this->tanggal === now()->toDateString()) {
+                return 'Hari ini';
+            }
+
+            return Carbon::parse($this->tanggal)->translatedFormat('d M Y');
+        } catch (\Throwable) {
+            return (string) ($this->bulan ?: $this->tanggal ?: '-');
+        }
+    }
+
     public function render(): View
     {
         $valid = $this->filterValid();

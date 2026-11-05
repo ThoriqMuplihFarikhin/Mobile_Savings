@@ -8,7 +8,27 @@
         }
     </style>
 
-    <x-admin.page-header breadcrumb="Sistem" title="Laporan Lengkap" subtitle="Rekapitulasi keuangan, kolektor, paket, dan kebutuhan barang." />
+    <x-admin.page-header breadcrumb="Sistem" title="Laporan Lengkap" subtitle="Rekapitulasi keuangan, kolektor, paket, dan kebutuhan barang.">
+        <x-slot:actions>
+            <div data-test="baris-aksi" class="flex flex-wrap items-center gap-2">
+                <button type="button" wire:click="exportCsv"
+                    class="inline-flex items-center gap-1.5 h-[38px] px-4 rounded-[10px] border border-hairline bg-surface text-xs font-semibold text-ink shadow-xs hover:bg-surface-2 transition active:scale-95 cursor-pointer">
+                    <flux:icon.arrow-down-tray class="size-4" />
+                    Ekspor CSV
+                </button>
+                <button type="button" x-on:click="window.print()"
+                    class="inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-[10px] border border-hairline bg-surface text-xs font-semibold text-ink shadow-xs hover:bg-surface-2 transition active:scale-95 cursor-pointer">
+                    <flux:icon.printer class="size-4" />
+                    Cetak
+                </button>
+                <a href="{{ route('admin.komisi.index') }}"
+                    class="inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-[10px] border border-hairline bg-surface text-xs font-semibold text-ink shadow-xs hover:bg-surface-2 transition active:scale-95 cursor-pointer">
+                    <flux:icon.currency-dollar class="size-4" />
+                    Laporan Komisi
+                </a>
+            </div>
+        </x-slot:actions>
+    </x-admin.page-header>
 
     @if (session('error'))
         <div class="mb-4 flex items-center gap-2.5 rounded-[12px] border border-danger/30 bg-danger-soft px-4 py-3 text-xs font-semibold text-danger">
@@ -17,72 +37,87 @@
         </div>
     @endif
 
-    <div class="mb-6 flex flex-wrap gap-1.5 p-1 rounded-[12px] border border-hairline-warm bg-surface-alt/70 dark:border-hairline/60 dark:bg-zinc-800/60 overflow-x-auto">
-        @foreach(['keuangan' => 'Keuangan', 'kolektor' => 'Per Kolektor', 'rekon' => 'Rekonsiliasi', 'umurkas' => 'Umur Kas', 'mutasi' => 'Mutasi', 'penarikan' => 'Penarikan', 'offline' => 'Penarikan Offline', 'tunggakan' => 'Tunggakan', 'serah' => 'Serah Terima', 'absensi' => 'Absensi', 'nasabah' => 'Nasabah', 'paket' => 'Per Paket', 'barang' => 'Kebutuhan Barang'] as $nilaiSeksi => $labelSeksi)
-            <button wire:click="pilihSeksi('{{ $nilaiSeksi }}')"
-                class="rounded-[9px] px-3.5 py-1.5 text-xs font-semibold transition active:scale-95 cursor-pointer {{ $seksi === $nilaiSeksi ? 'bg-white text-ink shadow-xs dark:bg-zinc-800 dark:text-zinc-100' : 'text-mute hover:text-ink dark:text-zinc-400 dark:hover:text-zinc-100' }}">
+    {{-- Filter Periode Card --}}
+    @if (in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan', 'offline', 'absensi'], true))
+        <div class="rounded-[14px] border border-hairline bg-surface p-3 sm:px-4 shadow-xs mb-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-3">
+                    <div data-test="baris-periode" class="flex flex-wrap items-center gap-1 rounded-[10px] border border-hairline bg-surface-2 p-[3px]" role="group" aria-label="Periode Laporan">
+                        <button type="button" wire:click="setFilterPeriode('hari_ini')"
+                            class="h-7 px-3 rounded-[7px] text-xs transition cursor-pointer {{ $periode === 'harian' ? 'bg-surface text-ink font-semibold shadow-xs' : 'text-mute hover:text-ink font-medium' }}">
+                            Hari ini
+                        </button>
+                        <button type="button" wire:click="setFilterPeriode('7_hari')"
+                            class="h-7 px-3 rounded-[7px] text-xs transition cursor-pointer {{ $periode === 'rentang' && $dariTanggal === now()->subDays(6)->toDateString() && $sampaiTanggal === now()->toDateString() ? 'bg-surface text-ink font-semibold shadow-xs' : 'text-mute hover:text-ink font-medium' }}">
+                            7 hari
+                        </button>
+                        <button type="button" wire:click="setFilterPeriode('bulan_ini')"
+                            class="h-7 px-3 rounded-[7px] text-xs transition cursor-pointer {{ $periode === 'bulanan' ? 'bg-surface text-ink font-semibold shadow-xs' : 'text-mute hover:text-ink font-medium' }}">
+                            Bulan ini
+                        </button>
+                        <button type="button" wire:click="setFilterPeriode('kustom')"
+                            class="h-7 px-3 rounded-[7px] text-xs transition cursor-pointer {{ $periode === 'rentang' && !($dariTanggal === now()->subDays(6)->toDateString() && $sampaiTanggal === now()->toDateString()) ? 'bg-surface text-ink font-semibold shadow-xs' : 'text-mute hover:text-ink font-medium' }}">
+                            Kustom
+                        </button>
+                    </div>
+
+                    @if($periode === 'rentang')
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-xs text-mute font-medium">Dari</span>
+                            <x-ui.tanggal wire:model.live="dariTanggal" :max="now()->toDateString()"
+                                class="h-[34px] rounded-[8px] border border-hairline bg-surface px-2.5 text-xs text-ink focus:border-primary focus:outline-none" />
+                            <span class="text-xs text-mute font-medium">Sampai</span>
+                            <x-ui.tanggal wire:model.live="sampaiTanggal" :min="$dariTanggal" :max="now()->toDateString()"
+                                class="h-[34px] rounded-[8px] border border-hairline bg-surface px-2.5 text-xs text-ink focus:border-primary focus:outline-none" />
+                        </div>
+                    @elseif($periode === 'harian')
+                        <x-ui.tanggal wire:model.live="tanggal" :max="now()->toDateString()"
+                            class="h-[34px] rounded-[8px] border border-hairline bg-surface px-2.5 text-xs text-ink focus:border-primary focus:outline-none" />
+                    @elseif($periode === 'bulanan')
+                        <x-ui.tanggal wire:model.live="bulan" mode="bulan" :max="now()->toDateString()"
+                            class="h-[34px] rounded-[8px] border border-hairline bg-surface px-2.5 text-xs text-ink focus:border-primary focus:outline-none" />
+                    @endif
+
+                    @if ($seksi === 'mutasi')
+                        <select wire:model.live="mutasiNasabahId"
+                            class="h-[34px] rounded-[8px] border border-hairline bg-surface px-2.5 text-xs text-ink focus:border-primary focus:outline-none">
+                            <option value="0">Pilih nasabah</option>
+                            @foreach ($mutasiNasabahList as $nasabah)
+                                <option value="{{ $nasabah['id'] }}">{{ $nasabah['nama'] }}</option>
+                            @endforeach
+                        </select>
+                    @endif
+                </div>
+
+                <span class="text-xs text-mute font-medium">
+                    Periode: {{ $this->labelPeriode }}
+                </span>
+            </div>
+        </div>
+    @endif
+
+    {{-- Horizontal Tabs Bar (.tabs) --}}
+    <div class="tabs flex gap-1 border-b border-hairline mb-4 overflow-x-auto" role="tablist">
+        @foreach([
+            'keuangan' => 'Ringkasan',
+            'kolektor' => 'Per Kolektor',
+            'rekon' => 'Rekonsiliasi',
+            'mutasi' => 'Mutasi Nasabah',
+            'offline' => 'Penarikan Offline',
+            'tunggakan' => 'Tunggakan & Paket Gagal',
+            'serah' => 'Serah Terima',
+            'absensi' => 'Absensi & Izin',
+            'barang' => 'Kebutuhan Barang',
+            'paket' => 'Per Paket',
+            'umurkas' => 'Umur Kas',
+            'penarikan' => 'Detail Penarikan',
+            'nasabah' => 'Daftar Nasabah',
+        ] as $nilaiSeksi => $labelSeksi)
+            <button type="button" wire:click="pilihSeksi('{{ $nilaiSeksi }}')"
+                class="px-3.5 py-2.5 text-sm whitespace-nowrap transition cursor-pointer border-b-2 font-medium {{ $seksi === $nilaiSeksi ? 'border-primary text-ink font-semibold' : 'border-transparent text-mute hover:text-ink' }}">
                 {{ $labelSeksi }}
             </button>
         @endforeach
-    </div>
-
-    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        @if (in_array($seksi, ['keuangan', 'kolektor', 'rekon', 'mutasi', 'penarikan', 'offline', 'absensi'], true))
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div data-test="baris-periode" class="flex flex-wrap gap-1 p-1 rounded-[10px] border border-hairline-warm bg-surface-alt/70 dark:border-hairline/60 dark:bg-zinc-800/60">
-                    @foreach(['harian' => 'Harian', 'bulanan' => 'Bulanan', 'rentang' => 'Rentang'] as $value => $label)
-                        <button wire:click="$set('periode', '{{ $value }}')"
-                            class="rounded-[8px] px-3 py-1 text-xs font-semibold transition active:scale-95 cursor-pointer {{ $periode === $value ? 'bg-white text-ink shadow-xs dark:bg-zinc-800 dark:text-zinc-100' : 'text-mute hover:text-ink dark:text-zinc-400 dark:hover:text-zinc-100' }}">
-                            {{ $label }}
-                        </button>
-                    @endforeach
-                </div>
-                @if($periode === 'rentang')
-                    <div class="flex flex-wrap items-center gap-2">
-                        <label class="text-xs font-medium text-mute dark:text-zinc-400">Dari</label>
-                        <x-ui.tanggal wire:model.live="dariTanggal" :max="now()->toDateString()"
-                            class="w-full h-[38px] rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
-                        <label class="text-xs font-medium text-mute dark:text-zinc-400">Sampai</label>
-                        <x-ui.tanggal wire:model.live="sampaiTanggal" :min="$dariTanggal" :max="now()->toDateString()"
-                            class="w-full h-[38px] rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
-                    </div>
-                @elseif($periode === 'harian')
-                    <x-ui.tanggal wire:model.live="tanggal" :max="now()->toDateString()"
-                        class="h-[38px] rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
-                @else
-                    <x-ui.tanggal wire:model.live="bulan" mode="bulan" :max="now()->toDateString()"
-                        class="h-[38px] rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100" />
-                @endif
-                @if ($seksi === 'mutasi')
-                    <select wire:model.live="mutasiNasabahId"
-                        class="h-[38px] rounded-[10px] border border-hairline-warm bg-white px-3 text-xs text-ink focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-hairline/60 dark:bg-zinc-800 dark:text-zinc-100">
-                        <option value="0">Pilih nasabah</option>
-                        @foreach ($mutasiNasabahList as $nasabah)
-                            <option value="{{ $nasabah['id'] }}">{{ $nasabah['nama'] }}</option>
-                        @endforeach
-                    </select>
-                @endif
-            </div>
-        @else
-            <div></div>
-        @endif
-        <div data-test="baris-aksi" class="flex flex-wrap gap-2">
-            <button wire:click="exportCsv"
-                class="inline-flex items-center gap-1.5 rounded-[10px] border border-hairline-strong bg-white px-3.5 h-[38px] text-xs font-semibold text-body hover:bg-inset transition active:scale-95 cursor-pointer dark:border-hairline dark:bg-surface dark:text-zinc-200">
-                <flux:icon.arrow-down-tray class="size-4" />
-                Export CSV
-            </button>
-            <button x-on:click="window.print()"
-                class="inline-flex items-center gap-1.5 rounded-[10px] border border-hairline-strong bg-white px-3.5 h-[38px] text-xs font-semibold text-body hover:bg-inset transition active:scale-95 cursor-pointer dark:border-hairline dark:bg-surface dark:text-zinc-200">
-                <flux:icon.printer class="size-4" />
-                Cetak
-            </button>
-            <a href="{{ route('admin.komisi.index') }}"
-                class="inline-flex items-center gap-1.5 rounded-[10px] border border-hairline-strong bg-white px-3.5 h-[38px] text-xs font-semibold text-body hover:bg-inset transition active:scale-95 cursor-pointer dark:border-hairline dark:bg-surface dark:text-zinc-200">
-                <flux:icon.currency-dollar class="size-4" />
-                Laporan Komisi
-            </a>
-        </div>
     </div>
 
     <div class="laporan-cetak">
@@ -114,48 +149,50 @@
             <h2 class="text-lg font-semibold text-ink">Laporan {{ $judulSeksi }} - {{ $judulPeriode }}</h2>
         </div>
 
-        <div class="mb-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg bg-inset px-4 py-2 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
-            <span class="font-medium">Nasabah Offline</span>
-            <span class="tabular-nums font-semibold">{{ $jumlahNasabahOffline }}</span>
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-[12px] border border-hairline bg-surface px-4 py-2.5 text-xs text-body shadow-xs">
+            <span class="font-medium text-mute">Nasabah Offline</span>
+            <span class="tabular-nums font-semibold text-ink">{{ $jumlahNasabahOffline }}</span>
         </div>
 
         @if($seksi === 'keuangan')
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
-                <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
+                <svg class="mt-0.5 h-4 w-4 shrink-0 text-mute" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
-                    <p class="font-medium text-ink">Definisi angka</p>
-                    <p class="mt-0.5">Total Setoran = jumlah setoran aktif (yang dibatalkan dikecualikan) berdasarkan tanggal transaksi. Total Penarikan = jumlah penarikan approved/selesai berdasarkan waktu approval. Total Komisi = jumlah komisi dari penarikan tersebut. Saldo Bersih = Total Setoran &minus; Total Penarikan &minus; Total Komisi. Pembulatan hanya terjadi di tampilan.</p>
+                    <p class="font-semibold text-ink">Definisi angka</p>
+                    <p class="mt-0.5 text-mute">Total Setoran = jumlah setoran aktif (yang dibatalkan dikecualikan) berdasarkan tanggal transaksi. Total Penarikan = jumlah penarikan approved/selesai berdasarkan waktu approval. Total Komisi = jumlah komisi dari penarikan tersebut. Saldo Bersih = Total Setoran &minus; Total Penarikan &minus; Total Komisi. Pembulatan hanya terjadi di tampilan.</p>
                 </div>
             </div>
-            <div class="mb-6 grid gap-4 sm:grid-cols-4">
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
-                    <p class="text-xs text-mute">Total Setoran</p>
-                    <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">Rp {{ number_format($totalSetoran, 0, ',', '.') }}</p>
-                    <p class="text-xs text-mute">{{ $jumlahTransaksiSetoran }} transaksi</p>
+            <div class="mb-6 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
+                    <p class="text-xs font-medium text-mute">Total Setoran</p>
+                    <p class="mt-2 tabular-nums text-2xl font-bold text-ink tracking-tight">Rp {{ number_format($totalSetoran, 0, ',', '.') }}</p>
+                    <p class="mt-1 text-xs text-mute">{{ $jumlahTransaksiSetoran }} transaksi</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
-                    <p class="text-xs text-mute">Total Penarikan</p>
-                    <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">Rp {{ number_format($totalPenarikan, 0, ',', '.') }}</p>
-                    <p class="text-xs text-mute">{{ $jumlahTransaksiPenarikan }} transaksi · {{ $jumlahOverrideRisiko }} override berisiko</p>
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
+                    <p class="text-xs font-medium text-mute">Total Penarikan</p>
+                    <p class="mt-2 tabular-nums text-2xl font-bold text-ink tracking-tight">Rp {{ number_format($totalPenarikan, 0, ',', '.') }}</p>
+                    <p class="mt-1 text-xs text-mute">{{ $jumlahTransaksiPenarikan }} transaksi · {{ $jumlahOverrideRisiko }} override berisiko</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
-                    <p class="text-xs text-mute">Total Komisi</p>
-                    <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">Rp {{ number_format($totalKomisi, 0, ',', '.') }}</p>
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
+                    <p class="text-xs font-medium text-mute">Total Komisi</p>
+                    <p class="mt-2 tabular-nums text-2xl font-bold text-ink tracking-tight">Rp {{ number_format($totalKomisi, 0, ',', '.') }}</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
-                    <p class="text-xs text-mute">Saldo Bersih</p>
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
+                    <p class="text-xs font-medium text-mute">Saldo Bersih</p>
                     @php $saldoBersih = $totalSetoran - $totalPenarikan - $totalKomisi; @endphp
-                    <p class="mt-1 tabular-nums text-2xl font-semibold {{ $saldoBersih >= 0 ? 'text-ink' : 'text-danger' }}">Rp {{ number_format($saldoBersih, 0, ',', '.') }}</p>
+                    <p class="mt-2 tabular-nums text-2xl font-bold tracking-tight {{ $saldoBersih >= 0 ? 'text-ink' : 'text-danger' }}">Rp {{ number_format($saldoBersih, 0, ',', '.') }}</p>
                 </div>
             </div>
 
             @if($periode === 'bulanan')
-                <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
-                    <h3 class="mb-4 text-sm font-semibold text-ink">Rekap Harian</h3>
+                <div class="rounded-[14px] border border-hairline bg-surface shadow-xs overflow-hidden">
+                    <div class="p-4 pb-3 sm:px-5 sm:pt-5 sm:pb-3">
+                        <h2 class="text-base font-semibold text-ink">Rekap Harian</h2>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="hidden md:table w-full text-left">
                             <thead>
-                                <tr class="border-b border-hairline">
+                                <tr class="border-b border-hairline bg-surface-2/50">
                                     <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute">Tanggal</th>
                                     <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Setoran</th>
                                     <th class="px-4 py-3 font-mono text-xs uppercase tracking-wider text-mute text-right">Penarikan</th>
@@ -164,10 +201,10 @@
                             <tbody class="divide-y divide-hairline">
                                 @for($d = 1; $d <= $days; $d++)
                                     @php $day = str_pad($d, 2, '0', STR_PAD_LEFT); @endphp
-                                    <tr class="transition hover:bg-inset">
-                                        <th class="px-4 py-3 text-sm text-body">{{ $day }}</td>
-                                        <th class="px-4 py-3 tabular-nums text-sm text-ink">{{ isset($dailySetoran[$day]) ? 'Rp ' . number_format($dailySetoran[$day], 0, ',', '.') : '-' }}</td>
-                                        <th class="px-4 py-3 tabular-nums text-sm text-ink">{{ isset($dailyPenarikan[$day]) ? 'Rp ' . number_format($dailyPenarikan[$day], 0, ',', '.') : '-' }}</td>
+                                    <tr class="transition hover:bg-surface-2/60">
+                                        <th class="px-4 py-3 text-sm text-body font-normal text-left">{{ $day }}</td>
+                                        <th class="px-4 py-3 tabular-nums text-right text-sm text-ink font-normal">{{ isset($dailySetoran[$day]) ? 'Rp ' . number_format($dailySetoran[$day], 0, ',', '.') : '-' }}</td>
+                                        <th class="px-4 py-3 tabular-nums text-right text-sm text-ink font-normal">{{ isset($dailyPenarikan[$day]) ? 'Rp ' . number_format($dailyPenarikan[$day], 0, ',', '.') : '-' }}</td>
                                     </tr>
                                 @endfor
                             </tbody>
@@ -198,14 +235,14 @@
                 </div>
             @endif
         @elseif($seksi === 'kolektor')
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-ink">Definisi angka</p>
                     <p class="mt-0.5">Total Setoran = setoran yang diinput kolektor pada periode. Penarikan Tunai Dibayar = jumlah penarikan tunai (nominal diterima) yang dibayarkan kolektor pada periode. Kas di Tangan = setoran belum disetor kantor &minus; penarikan tunai belum direkonsiliasi (rumus D13, posisi terkini bukan periode). Setor Kantor = total pengajuan setor ke kantor pada periode. Selisih Rekon = selisih rekon lebih/kurang pada periode.</p>
                 </div>
             </div>
-            <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Rekap Per Kolektor</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -278,14 +315,14 @@
                 </div>
             </div>
         @elseif($seksi === 'rekon')
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-ink">Definisi angka</p>
                     <p class="mt-0.5">Seharusnya = total seharusnya disetor kolektor. Diterima = total yang benar-benar diterima kantor. Selisih = Diterima &minus; Seharusnya (lebih = positif, kurang = negatif). Penerima = admin yang menerima/merekonsiliasi pengajuan. Seluruh status pengajuan (pending, cocok, lebih, kurang, dibatalkan) pada periode disertakan agar riwayat tetap terlacak.</p>
                 </div>
             </div>
-            <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Rekap Pengajuan Setor per Kolektor</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -360,7 +397,7 @@
                     @endif
                 </div>
             </div>
-            <div class="mt-6 rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mt-6 rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Detail Pengajuan</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -430,7 +467,7 @@
                 </div>
             </div>
         @elseif($seksi === 'umurkas')
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-ink">Definisi angka</p>
@@ -439,14 +476,14 @@
             </div>
             <div class="mb-6 grid gap-4 sm:grid-cols-3">
                 @foreach($umurKelompok as $kelompok => $ringkas)
-                    <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                    <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                         <p class="text-xs text-mute">{{ $kelompok }}</p>
                         <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">Rp {{ number_format($ringkas['kas'], 0, ',', '.') }}</p>
                         <p class="text-xs text-mute">{{ $ringkas['jumlah'] }} kolektor</p>
                     </div>
                 @endforeach
             </div>
-            <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Umur Kas Per Kolektor</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -548,7 +585,7 @@
                 </div>
             </div>
         @elseif($seksi === 'mutasi')
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-ink">Definisi angka</p>
@@ -556,24 +593,24 @@
                 </div>
             </div>
             <div class="mb-6 grid gap-4 sm:grid-cols-4">
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Saldo Awal</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">Rp {{ number_format($mutasiRingkas['saldoAwal'], 0, ',', '.') }}</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Total Setoran</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">Rp {{ number_format($mutasiRingkas['totalSetoran'], 0, ',', '.') }}</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Total Penarikan</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">Rp {{ number_format($mutasiRingkas['totalPenarikan'], 0, ',', '.') }}</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Saldo Akhir</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">Rp {{ number_format($mutasiRingkas['saldoAkhir'], 0, ',', '.') }}</p>
                 </div>
             </div>
-            <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Buku Tabungan</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -631,7 +668,7 @@
                 </div>
             </div>
         @elseif($seksi === 'penarikan')
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-ink">Definisi angka</p>
@@ -640,14 +677,14 @@
             </div>
             <div class="mb-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
                 @foreach($penarikanRekap as $ringkas)
-                    <div class="rounded-lg bg-inset p-4 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                    <div class="rounded-[14px] border border-hairline bg-surface p-4 shadow-xs">
                         <p class="text-xs text-mute">{{ $ringkas['label'] }}</p>
                         <p class="mt-1 tabular-nums text-2xl font-semibold {{ in_array($ringkas['status'], ['ditolak', 'dibatalkan'], true) ? 'text-danger' : 'text-ink' }}">{{ $ringkas['jumlah'] }}</p>
                         <p class="text-xs text-mute">Rp {{ number_format($ringkas['total'], 0, ',', '.') }}</p>
                     </div>
                 @endforeach
             </div>
-            <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Detail Penarikan</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -732,14 +769,14 @@
                 </div>
             </div>
         @elseif($seksi === 'offline')
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-ink">Definisi angka</p>
                     <p class="mt-0.5">Penarikan offline langsung = penarikan tunai yang diselesaikan kolektor tanpa PIN nasabah (verifikasi offline) dan menunggu tinjauan admin. Belum Ditinjau = baris yang hasil tinjauannya masih kosong. Persen Kas = total penarikan langsung kolektor &divide; total seluruh penarikan yang mempengaruhi kas milik kolektor tersebut pada periode ini.</p>
                 </div>
             </div>
-            <div class="mb-6 rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-6 rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Rekap Per Kolektor</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -806,7 +843,7 @@
                     @endforelse
                 </div>
             </div>
-            <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Detail Penarikan Offline</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -865,14 +902,14 @@
                 </div>
             </div>
         @elseif($seksi === 'tunggakan')
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-ink">Definisi angka</p>
                     <p class="mt-0.5">Tunggakan hari = hari berjalan &minus; hari terbayar (peserta aktif yang belum diserahkan). Tunggakan (Rp) = tunggakan hari &times; harga per hari. Status Alert: peringatan bila menunggak, perlu review bila melewati batas toleransi tanpa penundaan. Keputusan akhir kosong berarti masih berjalan. Posisi terkini, bukan periode.</p>
                 </div>
             </div>
-            <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Nasabah Menunggak</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -939,7 +976,7 @@
                 </div>
             </div>
         @elseif($seksi === 'serah')
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-ink">Definisi angka</p>
@@ -947,16 +984,16 @@
                 </div>
             </div>
             <div class="mb-6 grid gap-4 sm:grid-cols-2">
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Sudah Diterima</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">{{ collect($serahRows)->where('status_kunci', 'sudah_diterima')->count() }} paket</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Belum</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">{{ collect($serahRows)->where('status_kunci', 'belum')->count() }} paket</p>
                 </div>
             </div>
-            <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Detail Serah Terima</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -1035,7 +1072,7 @@
                 </div>
             </div>
         @elseif($seksi === 'absensi')
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-ink">Definisi angka</p>
@@ -1043,21 +1080,21 @@
                 </div>
             </div>
             <div class="mb-6 grid gap-4 sm:grid-cols-3">
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Hadir</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">{{ $absensiRekap['hadir'] }}</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Izin Disetujui</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">{{ $absensiRekap['izinDisetujui'] }}</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Izin Pending</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">{{ $absensiRekap['izinPending'] }}</p>
                 </div>
             </div>
 
-            <div class="mb-6 rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-6 rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Absensi Kolektor</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -1109,7 +1146,7 @@
                 </div>
             </div>
 
-            <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Izin Kolektor</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -1179,7 +1216,7 @@
                 </div>
             </div>
         @elseif($seksi === 'nasabah')
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-ink">Definisi angka</p>
@@ -1187,29 +1224,29 @@
                 </div>
             </div>
             <div class="mb-6 grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Aktif</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">{{ $nasabahRekap['aktif'] }}</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Pending Verifikasi</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">{{ $nasabahRekap['pending'] }}</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Ditolak</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">{{ $nasabahRekap['ditolak'] }}</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Digital</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">{{ $nasabahRekap['digital'] }}</p>
                 </div>
-                <div class="rounded-lg bg-inset p-5 shadow-[inset_0_0_0_1px_#e5e5e5]">
+                <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs">
                     <p class="text-xs text-mute">Offline</p>
                     <p class="mt-1 tabular-nums text-2xl font-semibold text-ink">{{ $nasabahRekap['offline'] }}</p>
                 </div>
             </div>
 
-            <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Daftar Nasabah</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -1270,14 +1307,14 @@
                 </div>
             </div>
         @elseif($seksi === 'paket')
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-ink">Definisi angka</p>
                     <p class="mt-0.5">Peserta Aktif = kepesertaan tanpa keputusan akhir dan belum diserahkan. Total Terkumpul = jumlah total aktual terkumpul seluruh peserta aktif. Total Tunggakan = jumlah tunggakan seluruh peserta aktif.</p>
                 </div>
             </div>
-            <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Rekap Per Paket</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
@@ -1332,14 +1369,14 @@
                 </div>
             </div>
         @else
-            <div class="mb-4 flex items-start gap-2 rounded-lg bg-inset px-4 py-3 text-sm text-body shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="mb-4 flex items-start gap-2.5 rounded-[12px] border border-hairline bg-surface-2 p-3 text-xs text-body">
                 <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <div>
                     <p class="font-medium text-ink">Definisi angka</p>
                     <p class="mt-0.5">Total Kebutuhan = Peserta Aktif x jumlah per orang (teks bebas pada isi paket). Estimasi Biaya = harga per item x Peserta Aktif, hanya untuk item yang punya harga (tanda - berarti tanpa harga). Angka harga hanya tersedia di laporan admin ini (keputusan D15).</p>
                 </div>
             </div>
-            <div class="rounded-lg bg-white p-6 shadow-[inset_0_0_0_1px_#e5e5e5]">
+            <div class="rounded-[14px] border border-hairline bg-surface p-4 sm:p-5 shadow-xs overflow-hidden">
                 <h3 class="mb-4 text-sm font-semibold text-ink">Kebutuhan Barang Pengadaan</h3>
                 <div class="overflow-x-auto">
                     <table class="hidden md:table w-full text-left">
