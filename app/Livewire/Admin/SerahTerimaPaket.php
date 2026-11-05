@@ -7,6 +7,7 @@ use App\Livewire\Concerns\AuthorizesRoles;
 use App\Livewire\Concerns\ValidatesKolektorNasabah;
 use App\Models\KepesertaanPaket;
 use App\Models\KolektorNasabah;
+use App\Models\LogAktivitas;
 use App\Support\JenisNotifikasi;
 use Carbon\Carbon;
 use DomainException;
@@ -42,6 +43,9 @@ class SerahTerimaPaket extends Component
     /** @var int|null */
     public $konfirmasiId = null;
 
+    /** @var int|null */
+    public $detailBuktiId = null;
+
     /**
      * @return array<int, string>
      */
@@ -60,12 +64,24 @@ class SerahTerimaPaket extends Component
         if (in_array($filter, ['siap', 'belum', 'sudah'], true)) {
             $this->filter = $filter;
             $this->konfirmasiId = null;
+            $this->detailBuktiId = null;
         }
+    }
+
+    public function bukaBukti(int $kepesertaanId): void
+    {
+        $this->detailBuktiId = $kepesertaanId;
+    }
+
+    public function tutupBukti(): void
+    {
+        $this->detailBuktiId = null;
     }
 
     public function bukaKonfirmasi(int $kepesertaanId): void
     {
         $this->konfirmasiId = $kepesertaanId;
+        $this->detailBuktiId = null;
         $this->diterimaOleh = '';
         $this->buktiFoto = null;
     }
@@ -224,12 +240,31 @@ class SerahTerimaPaket extends Component
             $konfirmasiItem = KepesertaanPaket::with(['nasabah', 'produk'])->find($this->konfirmasiId);
         }
 
+        $detailBuktiItem = null;
+        $diserahkanOleh = null;
+        if ($this->detailBuktiId) {
+            $detailBuktiItem = KepesertaanPaket::with(['nasabah', 'produk'])->find($this->detailBuktiId);
+            if ($detailBuktiItem) {
+                $log = LogAktivitas::where('aksi', 'serah_terima_paket')
+                    ->where('entitas_id', $detailBuktiItem->id)
+                    ->with('user')
+                    ->latest()
+                    ->first();
+                $diserahkanOleh = $log?->user?->name
+                    ?? ($detailBuktiItem->metode_pengambilan === 'diantar_kolektor'
+                        ? (KolektorNasabah::where('nasabah_id', $detailBuktiItem->nasabah_id)->where('status', 'aktif')->with('kolektor')->first()?->kolektor?->name ?? 'Kolektor')
+                        : 'Kantor Pusat');
+            }
+        }
+
         return view('livewire.admin.serah-terima-paket', [
             'kepesertaan' => $kepesertaan,
             'jumlahSiap' => $this->jumlahSiap(),
             'jumlahBelum' => $this->jumlahBelum(),
             'jumlahSudah' => $this->jumlahSudah(),
             'konfirmasiItem' => $konfirmasiItem,
+            'detailBuktiItem' => $detailBuktiItem,
+            'diserahkanOleh' => $diserahkanOleh,
         ]);
     }
 

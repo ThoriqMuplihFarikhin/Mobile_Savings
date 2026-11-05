@@ -98,14 +98,10 @@
                                     Serah terima
                                 </button>
                             @elseif($filter === 'sudah')
-                                @if($item->bukti_foto_url)
-                                    <a href="{{ route('serah-terima.bukti', $item) }}" target="_blank"
-                                        class="inline-flex items-center justify-center rounded-lg border border-hairline bg-surface text-ink hover:bg-surface-inset text-xs font-medium px-3.5 py-1.5 min-h-11 transition active:scale-95 cursor-pointer dark:bg-zinc-800 dark:text-zinc-200">
-                                        Lihat bukti
-                                    </a>
-                                @else
-                                    <span class="text-mute">-</span>
-                                @endif
+                                <button type="button" wire:click="bukaBukti({{ $item->id }})"
+                                    class="inline-flex items-center justify-center rounded-lg border border-hairline bg-surface text-ink hover:bg-surface-inset text-xs font-medium px-3.5 py-1.5 min-h-11 transition active:scale-95 cursor-pointer dark:bg-zinc-800 dark:text-zinc-200">
+                                    Lihat bukti
+                                </button>
                             @else
                                 <span class="text-mute">-</span>
                             @endif
@@ -159,11 +155,11 @@
                                 class="w-full inline-flex items-center justify-center rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-semibold px-4 py-2.5 min-h-11 shadow-xs transition active:scale-95 cursor-pointer">
                                 Serah terima
                             </button>
-                        @elseif($filter === 'sudah' && $item->bukti_foto_url)
-                            <a href="{{ route('serah-terima.bukti', $item) }}" target="_blank"
+                        @elseif($filter === 'sudah')
+                            <button type="button" wire:click="bukaBukti({{ $item->id }})"
                                 class="w-full inline-flex items-center justify-center rounded-lg border border-hairline bg-surface text-ink hover:bg-surface-inset text-xs font-medium px-4 py-2.5 min-h-11 transition active:scale-95 cursor-pointer dark:bg-zinc-800 dark:text-zinc-200">
                                 Lihat bukti
-                            </a>
+                            </button>
                         @endif
                     </div>
                 </div>
@@ -311,6 +307,114 @@
                         wire:loading.attr="disabled" wire:target="konfirmasi">
                         <flux:icon.check class="size-4" />
                         Konfirmasi serah terima
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Drawer Detail Bukti Serah Terima (Matching drw in HTML design) --}}
+    @if($detailBuktiId && $detailBuktiItem)
+        <div class="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="drawer-bukti-title">
+            <div class="fixed inset-0 bg-black/45 transition-opacity cursor-pointer" wire:click="tutupBukti"></div>
+
+            <div class="relative z-10 flex h-full w-full max-w-[480px] flex-col border-l border-hairline bg-surface shadow-2xl transition-all">
+                {{-- Header Drawer --}}
+                <div class="flex items-center justify-between border-b border-hairline px-5 py-4">
+                    <div>
+                        <h3 id="drawer-bukti-title" class="text-base font-semibold text-ink dark:text-white">Bukti Serah Terima</h3>
+                        <p class="text-xs text-mute dark:text-zinc-400 mt-0.5">
+                            {{ $detailBuktiItem->nasabah?->name ?? '-' }} &middot; {{ $detailBuktiItem->produk?->nama ?? '-' }}
+                        </p>
+                    </div>
+                    <button type="button" wire:click="tutupBukti"
+                        class="flex h-8 w-8 items-center justify-center rounded-full text-mute transition hover:bg-surface-inset hover:text-ink cursor-pointer dark:hover:text-white"
+                        aria-label="Tutup">
+                        <flux:icon.x-mark class="size-5" />
+                    </button>
+                </div>
+
+                {{-- Content Drawer --}}
+                <div class="flex-1 overflow-y-auto p-5 space-y-5">
+                    {{-- Section 1: Informasi Verifikasi & Penyerahan (Matching .sc & .kv in HTML) --}}
+                    <div>
+                        <h4 class="text-xs font-semibold uppercase tracking-wider text-mute dark:text-zinc-400 mb-2">
+                            Diverifikasi Fisik Paket
+                        </h4>
+                        <div class="rounded-xl border border-hairline bg-surface p-4 text-xs space-y-2.5">
+                            <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
+                                <span class="text-mute dark:text-zinc-400">Nasabah</span>
+                                <b class="font-medium text-ink dark:text-white text-right">{{ $detailBuktiItem->nasabah?->name ?? '-' }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
+                                <span class="text-mute dark:text-zinc-400">Produk</span>
+                                <b class="font-medium text-ink dark:text-white text-right">{{ $detailBuktiItem->produk?->nama ?? '-' }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
+                                <span class="text-mute dark:text-zinc-400">Diserahkan oleh</span>
+                                <b class="font-medium text-ink dark:text-white text-right">{{ $diserahkanOleh ?? '-' }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
+                                <span class="text-mute dark:text-zinc-400">Diterima oleh</span>
+                                <b class="font-medium text-ink dark:text-white text-right">{{ $detailBuktiItem->diterima_oleh ?? '-' }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
+                                <span class="text-mute dark:text-zinc-400">Waktu</span>
+                                <b class="font-medium text-ink dark:text-white text-right">
+                                    {{ $detailBuktiItem->tanggal_serah_terima?->translatedFormat('d M Y') ?? '-' }}
+                                </b>
+                            </div>
+                            <div class="flex items-center justify-between gap-3 border-b border-dashed border-hairline pb-2">
+                                <span class="text-mute dark:text-zinc-400">Metode</span>
+                                <b class="font-medium text-ink dark:text-white text-right">
+                                    {{ $detailBuktiItem->metode_pengambilan === 'diantar_kolektor' ? 'Diantar kolektor' : ($detailBuktiItem->metode_pengambilan === 'ambil_sendiri' ? 'Ambil di kantor' : 'Belum dipilih') }}
+                                </b>
+                            </div>
+                            <div class="flex items-center justify-between gap-3 pt-0.5">
+                                <span class="text-mute dark:text-zinc-400">Status</span>
+                                <div>
+                                    <x-admin.status-chip status="Selesai" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Section 2: Foto Bukti --}}
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-xs font-semibold uppercase tracking-wider text-mute dark:text-zinc-400">
+                                Foto Bukti
+                            </h4>
+                            @if($detailBuktiItem->bukti_foto_url)
+                                <a href="{{ route('serah-terima.bukti', $detailBuktiItem) }}" target="_blank"
+                                    class="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline cursor-pointer">
+                                    <span>Buka ukuran penuh</span>
+                                    <flux:icon.arrow-top-right-on-square class="size-3.5" />
+                                </a>
+                            @endif
+                        </div>
+                        <div class="rounded-2xl border border-hairline bg-surface-inset p-3 dark:bg-zinc-800/60">
+                            @if($detailBuktiItem->bukti_foto_url)
+                                <div class="overflow-hidden rounded-xl border border-hairline bg-surface dark:bg-surface flex items-center justify-center min-h-[220px]">
+                                    <img src="{{ route('serah-terima.bukti', $detailBuktiItem) }}"
+                                         alt="Foto Bukti {{ $detailBuktiItem->nasabah?->name ?? 'Nasabah' }}"
+                                         class="max-h-80 w-full object-contain" />
+                                </div>
+                            @else
+                                <div class="flex h-44 w-full flex-col items-center justify-center rounded-xl border border-dashed border-hairline bg-surface text-center p-4">
+                                    <flux:icon.photo class="size-8 text-mute mb-1.5" />
+                                    <p class="text-xs text-mute">Foto bukti tidak tersedia</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Footer Drawer --}}
+                <div class="border-t border-hairline p-4 flex justify-end">
+                    <button type="button" wire:click="tutupBukti"
+                        class="min-h-11 h-9 w-full rounded-lg border border-hairline bg-surface text-xs font-medium text-ink hover:bg-surface-inset transition cursor-pointer shadow-xs dark:bg-zinc-800 dark:text-zinc-200">
+                        Tutup
                     </button>
                 </div>
             </div>

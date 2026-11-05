@@ -253,3 +253,30 @@ it('kepesertaan yang sudah diterima keluar dari hitungan tunggakan dan daftar ak
     $this->actingAs($nasabah)->get('/dashboard')->assertOk()
         ->assertViewHas('kepesertaanAktif', fn ($aktif) => $aktif === null);
 });
+
+it('dapat membuka dan menutup drawer bukti serah terima dengan detail lengkap', function () {
+    Storage::fake('local');
+    [$nasabah, $kepesertaan] = p61Fixture(['lunas' => true, 'metode' => 'diantar_kolektor']);
+    $admin = User::factory()->admin()->create();
+
+    $path = 'serah-terima/bukti-drawer.jpg';
+    Storage::disk('local')->put($path, 'isi-gambar-bukti');
+    $kepesertaan->update([
+        'status_serah_terima' => 'sudah_diterima',
+        'diterima_oleh' => 'Siti Nurhaliza',
+        'tanggal_serah_terima' => now()->toDateString(),
+        'bukti_foto_url' => $path,
+    ]);
+
+    Livewire::actingAs($admin)
+        ->test(SerahTerimaPaket::class)
+        ->call('pilihFilter', 'sudah')
+        ->assertSee('Lihat bukti')
+        ->call('bukaBukti', $kepesertaan->id)
+        ->assertSee('Bukti Serah Terima')
+        ->assertSee('Diverifikasi Fisik Paket')
+        ->assertSee('Siti Nurhaliza')
+        ->assertSee(route('serah-terima.bukti', $kepesertaan))
+        ->call('tutupBukti')
+        ->assertDontSee('Diverifikasi Fisik Paket');
+});
