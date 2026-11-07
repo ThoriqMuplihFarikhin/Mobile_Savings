@@ -15,7 +15,7 @@
         @endif
 
         {{-- Chip peran portal (D19 butir 4) --}}
-        <div class="flex justify-end px-4 pt-2.5 pb-0.5">
+        <div class="hidden">
             <x-peran-chip />
         </div>
         <main class="flex-1 overflow-y-auto pb-[calc(96px_+_env(safe-area-inset-bottom))] px-4 pt-4">

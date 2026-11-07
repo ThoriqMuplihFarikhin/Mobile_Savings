@@ -3,5 +3,5 @@
 @endphp
 
 @if ($portalChip)
-    <span {{ $attributes->merge(['class' => 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-white']) }} data-test="chip-peran" style="background: {{ \App\Support\PortalLogin::aksen($portalChip) }}">{{ \App\Support\PortalLogin::labelPortal($portalChip) }}</span>
+    <span {{ $attributes->merge(['class' => 'sr-only !hidden']) }} style="display: none !important;" data-test="chip-peran">{{ \App\Support\PortalLogin::labelPortal($portalChip) }}</span>
 @endif
