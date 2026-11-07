@@ -494,5 +494,5 @@
         </x-admin.dialog>
     @endif
 
-    <p class="mt-8 text-center text-xs text-mute">Tabungan Digital · versi alpha</p>
+    <p class="mt-8 text-center text-xs text-mute">KawalDuit · versi alpha</p>
 </div>

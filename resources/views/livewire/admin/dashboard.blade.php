@@ -37,7 +37,7 @@
 
 <div class="space-y-4">
     {{-- Header Halaman --}}
-    <x-admin.page-header title="Dashboard" subtitle="Ringkasan operasional Tabungan Digital hari ini." />
+    <x-admin.page-header title="Dashboard" subtitle="Ringkasan operasional KawalDuit hari ini." />
 
     {{-- 9 KPI Cards --}}
     <x-admin.kpi-grid>

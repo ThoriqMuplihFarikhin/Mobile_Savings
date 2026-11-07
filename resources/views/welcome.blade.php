@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tabungan Digital - Sistem Kolektor Keliling Modern & Aman</title>
+    <title>KawalDuit - Sistem Kolektor Keliling Modern & Aman</title>
     @vite(['resources/css/app.css'])
     <style>
         body {
@@ -553,7 +553,7 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto mb-16">
                 <span class="rounded-full bg-brand-100 px-3.5 py-1 text-xs font-semibold text-brand-800 uppercase tracking-wide">Keunggulan Utama</span>
-                <h2 class="mt-3 text-3xl sm:text-4xl font-semibold text-ink tracking-tight">Mengapa Memilih Tabungan Digital?</h2>
+                <h2 class="mt-3 text-3xl sm:text-4xl font-semibold text-ink tracking-tight">Mengapa Memilih KawalDuit?</h2>
                 <p class="mt-3 text-base sm:text-lg text-body">Teknologi modern yang dirancang sederhana agar mudah dipakai oleh siapa saja.</p>
             </div>
 
@@ -774,9 +774,9 @@
                 <div class="space-y-4 md:col-span-2">
                     <div class="flex items-center gap-2">
                         <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-700 text-white font-semibold">
-                            T
+                            K
                         </div>
-                        <span class="text-xl font-semibold text-white tracking-tight">Tabungan Digital</span>
+                        <span class="text-xl font-semibold text-white tracking-tight">KawalDuit</span>
                     </div>
                     <p class="text-sm text-subtle max-w-sm leading-relaxed">
                         Platform manajemen tabungan keliling modern, amanah, dan terintegrasi untuk masyarakat Indonesia.
@@ -805,7 +805,7 @@
             </div>
 
             <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-mute gap-4">
-                <p>&copy; 2026 Tabungan Digital — Sistem Kolektor Keliling. Hak Cipta Dilindungi.</p>
+                <p>&copy; 2026 KawalDuit — Sistem Kolektor Keliling. Hak Cipta Dilindungi.</p>
                 <div class="flex gap-6">
                     <a href="#" class="hover:text-subtle transition">Kebijakan Privasi</a>
                     <a href="#" class="hover:text-subtle transition">Syarat &amp; Ketentuan</a>

@@ -28,7 +28,7 @@
 
 @if ($portalAdmin)
     {{-- Portal Admin: Pertahankan tampilan ringkas padat eksisting (IMPLEMENTASI_PLAN.md butir 6) --}}
-    <x-layouts::auth :title="'Login '.$labelPortal.' - Tabungan Digital'" :portal="$portal">
+    <x-layouts::auth :title="'Login '.$labelPortal.' - KawalDuit'" :portal="$portal">
         <div class="flex flex-col gap-6">
             <div class="flex w-full flex-col items-center text-center">
                 <a href="{{ route('home') }}" class="mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl text-white transition hover:opacity-90" style="background: {{ $aksenPortal }}">
@@ -36,7 +36,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </a>
-                <h1 class="text-2xl font-semibold tracking-tight text-ink">Tabungan Digital</h1>
+                <h1 class="text-2xl font-semibold tracking-tight text-ink">KawalDuit</h1>
                 <p class="mt-1 text-xs text-mute">Sistem Kolektor Keliling v1.0</p>
                 <span data-test="label-portal" class="mt-2 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium text-white" style="background: {{ $aksenPortal }}">Portal {{ $labelPortal }}</span>
             </div>
@@ -104,7 +104,7 @@
     </x-layouts::auth>
 @else
     {{-- Portal Nasabah & Kolektor: Desain Sesuai Acuan Mockup --}}
-    <x-layouts::auth.portal :title="'Login '.$labelPortal.' - Tabungan Digital'" :portal="$portal">
+    <x-layouts::auth.portal :title="'Login '.$labelPortal.' - KawalDuit'" :portal="$portal">
         <div x-data="loginFlow({
                 oldHp: '{{ old('no_hp') }}',
                 hasServerError: {{ $errors->any() ? 'true' : 'false' }},
@@ -372,7 +372,7 @@
                         @if ($portal === \App\Support\PortalLogin::KOLEKTOR)
                             <p>Akun kolektor didaftarkan oleh administrator sistem di kantor. Jika belum memiliki akun atau lupa PIN, hubungi bagian administrasi.</p>
                         @else
-                            <p>Pendaftaran nasabah baru dilakukan langsung oleh kolektor resmi Tabungan Digital saat kunjungan ke rumah atau pasar.</p>
+                            <p>Pendaftaran nasabah baru dilakukan langsung oleh kolektor resmi KawalDuit saat kunjungan ke rumah atau pasar.</p>
                             <p>Jika lupa nomor atau PIN tabungan Anda, silakan hubungi kolektor yang bertugas di wilayah Anda atau admin kantor.</p>
                         @endif
                     </div>

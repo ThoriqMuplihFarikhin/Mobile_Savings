@@ -11,11 +11,11 @@
     {{-- Brand --}}
     <div class="flex items-center gap-2.5 px-4 py-3.5 border-b border-hairline">
         <div class="flex size-[34px] items-center justify-center rounded-[10px] bg-primary text-white font-semibold text-sm shrink-0 shadow-xs">
-            TD
+            KD
         </div>
         <div class="min-w-0 flex-1">
             <span class="block text-sm font-semibold tracking-tight text-ink leading-tight truncate">
-                Tabungan Digital
+                KawalDuit
             </span>
         </div>
         <x-peran-chip class="shrink-0 text-[10px]" />

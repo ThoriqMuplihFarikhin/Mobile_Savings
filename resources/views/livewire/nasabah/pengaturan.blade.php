@@ -196,7 +196,7 @@
             }
         @endphp
         @if($waAdminClean)
-            <a href="https://wa.me/{{ $waAdminClean }}?text={{ urlencode('Halo Admin, saya nasabah Tabungan Digital ingin meminta bantuan.') }}"
+            <a href="https://wa.me/{{ $waAdminClean }}?text={{ urlencode('Halo Admin, saya nasabah KawalDuit ingin meminta bantuan.') }}"
                target="_blank" rel="noopener noreferrer"
                class="group flex min-h-14 items-center gap-3.5 px-4 py-3.5 transition hover:bg-surface-inset">
                 <x-ui.tile kategori="hijau" ukuran="40" aria-hidden="true">
@@ -239,5 +239,5 @@
         </button>
     </div>
 
-    <p class="mt-6 text-center text-xs text-mute">Tabungan Digital · versi alpha</p>
+    <p class="mt-6 text-center text-xs text-mute">KawalDuit · versi alpha</p>
 </div>

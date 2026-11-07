@@ -2,7 +2,7 @@
     {{-- Header Halaman --}}
     <x-admin.page-header
         title="Manajemen Nasabah"
-        subtitle="Kelola data nasabah tabungan digital."
+        subtitle="Kelola data nasabah KawalDuit."
     >
         <x-slot:actions>
             <button

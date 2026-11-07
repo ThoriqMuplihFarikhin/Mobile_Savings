@@ -186,7 +186,7 @@ class Pengaturan extends Component
         }
 
         $whatsapp = app(WhatsAppService::class);
-        $berhasil = $whatsapp->sendNotification($this->waTestNumber, 'Ini pesan uji coba dari sistem Tabungan Digital. Jika Anda menerima ini, integrasi WhatsApp berhasil!');
+        $berhasil = $whatsapp->sendNotification($this->waTestNumber, 'Ini pesan uji coba dari sistem KawalDuit. Jika Anda menerima ini, integrasi WhatsApp berhasil!');
 
         if ($berhasil) {
             session()->flash('success', 'Pesan uji coba berhasil dikirim! Cek WhatsApp nomor tersebut.');

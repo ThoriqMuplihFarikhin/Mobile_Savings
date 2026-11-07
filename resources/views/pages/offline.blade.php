@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Koneksi Terputus - Tabungan Digital</title>
+    <title>Koneksi Terputus - KawalDuit</title>
     <style>
         :root {
             --canvas: #f3f7f1;
@@ -159,8 +159,8 @@
 <body>
     <div class="container">
         <div class="brand">
-            <div class="brand-badge">TD</div>
-            <span class="brand-title">Tabungan Digital</span>
+            <div class="brand-badge">KD</div>
+            <span class="brand-title">KawalDuit</span>
         </div>
 
         <main class="card">
@@ -182,7 +182,7 @@
             </div>
         </main>
 
-        <p class="footer">Tabungan Digital · Layanan Tabungan Harian</p>
+        <p class="footer">KawalDuit · Layanan Tabungan Harian</p>
     </div>
 </body>
 </html>

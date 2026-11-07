@@ -2,7 +2,7 @@
     {{-- Header Halaman Tab Top-Level --}}
     <div>
         <h1 class="text-2xl font-semibold tracking-tight text-ink">Riwayat tabungan</h1>
-        <p class="mt-0.5 text-xs text-mute">Buku tabungan digital dan mutasi setoran Anda.</p>
+        <p class="mt-0.5 text-xs text-mute">Buku tabungan KawalDuit dan mutasi setoran Anda.</p>
     </div>
 
     {{-- Segmented Switcher Tab --}}

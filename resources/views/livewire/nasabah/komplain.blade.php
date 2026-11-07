@@ -39,7 +39,7 @@
                     <p class="text-xs text-mute truncate">Hubungi admin resmi melalui WhatsApp</p>
                 </div>
             </div>
-            <a href="https://wa.me/{{ $nomorWaClean }}?text={{ urlencode('Halo Admin, saya nasabah Tabungan Digital ingin meminta bantuan.') }}"
+            <a href="https://wa.me/{{ $nomorWaClean }}?text={{ urlencode('Halo Admin, saya nasabah KawalDuit ingin meminta bantuan.') }}"
                target="_blank" rel="noopener noreferrer"
                class="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-primary-soft px-3.5 text-xs font-semibold text-primary transition hover:bg-primary hover:text-white active:scale-95">
                 <span>Chat WA</span>

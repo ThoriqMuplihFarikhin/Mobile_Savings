@@ -26,7 +26,7 @@
                     <line x1="2" y1="10" x2="22" y2="10" />
                 </svg>
             </span>
-            <span class="text-sm sm:text-base font-bold tracking-tight text-gray-900">Tabungan Digital</span>
+            <span class="text-sm sm:text-base font-bold tracking-tight text-gray-900">KawalDuit</span>
         </a>
 
         <!-- Portal Label untuk Aksesibilitas & Tes -->

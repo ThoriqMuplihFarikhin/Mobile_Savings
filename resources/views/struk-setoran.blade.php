@@ -473,7 +473,7 @@
                         <line x1="2" y1="10" x2="22" y2="10"/>
                     </svg>
                 </span>
-                <span>Tabungan Digital</span>
+                <span>KawalDuit</span>
             </div>
             <button type="button" class="btn-close" onclick="tutupPopUp()" aria-label="Tutup" title="Tutup struk">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -589,7 +589,7 @@
             const teks = 'Struk Setoran No. {{ "SET-".str_pad((string) $setoran->id, 6, "0", STR_PAD_LEFT) }}\nNasabah: {{ $setoran->nasabah?->name ?? "-" }}\nNominal: Rp {{ number_format((float) $setoran->nominal, 0, ",", ".") }}\nTanggal: {{ \Illuminate\Support\Carbon::parse($setoran->tanggal_transaksi)->translatedFormat("d M Y") }}';
             if (navigator.share) {
                 navigator.share({
-                    title: 'Struk Setoran Tabungan Digital',
+                    title: 'Struk Setoran KawalDuit',
                     text: teks,
                     url: window.location.href
                 }).catch(() => {});

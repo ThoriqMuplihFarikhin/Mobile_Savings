@@ -54,7 +54,7 @@
 
             if (navigator.share) {
                 navigator.share({
-                    title: 'Struk Setoran Tabungan Digital',
+                    title: 'Struk Setoran KawalDuit',
                     text: teks,
                     url: this.struk.url || window.location.href
                 }).catch(() => {});
@@ -118,7 +118,7 @@
                         <line x1="2" y1="10" x2="22" y2="10"/>
                     </svg>
                 </span>
-                <span class="text-xs font-semibold uppercase tracking-wider text-ink dark:text-zinc-100">Tabungan Digital</span>
+                <span class="text-xs font-semibold uppercase tracking-wider text-ink dark:text-zinc-100">KawalDuit</span>
             </div>
             <button
                 type="button"

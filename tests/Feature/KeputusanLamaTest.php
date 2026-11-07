@@ -163,19 +163,19 @@ it('pengaturan ketiga portal menampilkan baris versi aplikasi', function () {
     $nasabah = User::factory()->nasabah()->create();
 
     expect(Livewire::actingAs($nasabah)->test(NasabahPengaturan::class)->html())
-        ->toContain('Tabungan Digital · versi alpha', false);
+        ->toContain('KawalDuit · versi alpha', false);
 
     $kolektor = User::factory()->kolektor()->create();
 
     expect(Livewire::actingAs($kolektor)->test(KolektorPengaturan::class)->html())
-        ->toContain('Tabungan Digital · versi alpha', false);
+        ->toContain('KawalDuit · versi alpha', false);
 
     $admin = User::factory()->admin()->create();
 
     $this->actingAs($admin)
         ->get('/admin/pengaturan')
         ->assertOk()
-        ->assertSee('Tabungan Digital · versi alpha');
+        ->assertSee('KawalDuit · versi alpha');
 });
 
 it('flash sesi berakhir memakai frasa D26 di kedua portal', function () {
