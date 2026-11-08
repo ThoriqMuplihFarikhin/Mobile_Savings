@@ -286,7 +286,9 @@ class InputSetoran extends Component
         $totalBelumDisetor = (float) KasKolektorHitung::kasDiTangan((int) Auth::id());
 
         $lastSetoran = $this->lastSetoranId
-            ? TransaksiSetoran::with(['nasabah', 'produk'])->find($this->lastSetoranId)
+            ? TransaksiSetoran::with(['nasabah', 'produk'])
+                ->where('input_by', Auth::id())
+                ->find($this->lastSetoranId)
             : null;
 
         return view('livewire.kolektor.input-setoran', compact('riwayatHariIni', 'totalBelumDisetor', 'lastSetoran'));

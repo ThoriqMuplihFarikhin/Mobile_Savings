@@ -237,13 +237,25 @@ class SerahTerimaPaket extends Component
 
         $konfirmasiItem = null;
         if ($this->konfirmasiId) {
-            $konfirmasiItem = KepesertaanPaket::with(['nasabah', 'produk'])->find($this->konfirmasiId);
+            $konfirmasiQuery = KepesertaanPaket::with(['nasabah', 'produk']);
+            if (auth()->user()?->role === 'kolektor') {
+                $konfirmasiQuery->whereIn('nasabah_id', KolektorNasabah::where('kolektor_id', Auth::id())
+                    ->where('status', 'aktif')
+                    ->select('nasabah_id'));
+            }
+            $konfirmasiItem = $konfirmasiQuery->find($this->konfirmasiId);
         }
 
         $detailBuktiItem = null;
         $diserahkanOleh = null;
         if ($this->detailBuktiId) {
-            $detailBuktiItem = KepesertaanPaket::with(['nasabah', 'produk'])->find($this->detailBuktiId);
+            $detailBuktiQuery = KepesertaanPaket::with(['nasabah', 'produk']);
+            if (auth()->user()?->role === 'kolektor') {
+                $detailBuktiQuery->whereIn('nasabah_id', KolektorNasabah::where('kolektor_id', Auth::id())
+                    ->where('status', 'aktif')
+                    ->select('nasabah_id'));
+            }
+            $detailBuktiItem = $detailBuktiQuery->find($this->detailBuktiId);
             if ($detailBuktiItem) {
                 $log = LogAktivitas::where('aksi', 'serah_terima_paket')
                     ->where('entitas_id', $detailBuktiItem->id)

@@ -46,7 +46,16 @@ class VerifikasiPenarikan extends Component
             ->paginate(10);
 
         $penarikanAktif = $this->penarikanId
-            ? TransaksiPenarikan::with(['nasabah', 'produk'])->find($this->penarikanId)
+            ? TransaksiPenarikan::with(['nasabah', 'produk'])
+                ->where('lokasi_pengambilan', 'rumah_kolektor')
+                ->where('status', 'approved')
+                ->whereIn('nasabah_id', function ($query) use ($kolektorId) {
+                    $query->select('nasabah_id')
+                        ->from('kolektor_nasabah')
+                        ->where('kolektor_id', $kolektorId)
+                        ->where('status', 'aktif');
+                })
+                ->find($this->penarikanId)
             : null;
 
         return view('livewire.kolektor.verifikasi-penarikan', compact('penarikan', 'penarikanAktif'));
@@ -54,6 +63,11 @@ class VerifikasiPenarikan extends Component
 
     public function bukaModal(int $id)
     {
+        $penarikan = TransaksiPenarikan::find($id);
+        if (! $penarikan || ! $this->isNasabahBinaan((int) $penarikan->nasabah_id)) {
+            abort(403);
+        }
+
         $this->penarikanId = $id;
         $this->pin = '';
         $this->showModal = true;
