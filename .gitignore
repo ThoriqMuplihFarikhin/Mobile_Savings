@@ -6,6 +6,12 @@
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/logs/*.log
+/storage/app/private/*
+!/storage/app/private/.gitignore
+/storage/app/public/*
+!/storage/app/public/.gitignore
+/database/database.sqlite
 /vendor
 .env
 .env.backup
@@ -17,6 +23,9 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 /auth.json
+.mcp.json
+opencode.json
+/.codex
 /.codebase-memory
 /.codegraph
 /.fleet

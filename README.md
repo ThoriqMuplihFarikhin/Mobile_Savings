@@ -28,6 +28,18 @@ Sebelum deploy, jalankan pemeriksaan kesiapan produksi (exit code ≠ 0 bila ada
 composer deploy:check
 ```
 
+### Ringkasan Checklist Rilis Produksi
+
+Sebelum dan saat rilis ke server produksi, jalankan langkah-langkah berikut secara berurutan:
+1. Bersihkan berkas pengembangan: `rm -f public/hot public/fonts-manifest.dev.json`
+2. Pasang dependensi produksi dan kompilasi aset frontend: `composer install --no-dev --optimize-autoloader && npm ci && npm run build`
+3. Jalankan migrasi basis data: `php artisan migrate --force`
+4. Buat tautan penyimpanan publik: `php artisan storage:link`
+5. Lakukan optimasi caching: `php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan event:cache`
+6. Pastikan cron scheduler berjalan tiap menit: `* * * * * cd /path/ke/proyek && php artisan schedule:run >> /dev/null 2>&1`
+7. Pastikan queue worker aktif sebagai daemon (mis. via Supervisor): `php artisan queue:work database --sleep=3 --tries=3`
+8. Verifikasi kesiapan akhir: `composer deploy:check` (atau `php artisan deploy:check`)
+
 Butirnya: `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL` ber-`https://`, `SESSION_SECURE_COOKIE=true`, driver DB `mysql`, `CACHE_STORE`/`QUEUE_CONNECTION` bukan `array`/`sync`, `public/hot` dan `public/fonts-manifest.dev.json` tidak ada, `public/build/manifest.json` ada, `APP_KEY` terisi, penjadwal terdaftar (`penarikan:kedaluwarsakan`, `jadwal:generate`, `paket:hitung-ulang`), `storage` dan `bootstrap/cache` dapat ditulis. Setelan `izinkan_kas_minus` dan `offline_penarikan_batas_langsung` dicatat sebagai info, bukan gagal.
 
 Setelah deploy, jalankan:

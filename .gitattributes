@@ -6,6 +6,18 @@
 *.md diff=markdown
 *.php diff=php
 
+# Berkas & folder yang tidak boleh masuk artefak rilis / deploy (git archive)
 CHANGELOG.md export-ignore
 README.md export-ignore
-.github/workflows/browser-tests.yml export-ignore
+AGENTS.md export-ignore
+CLAUDE.md export-ignore
+prd.md export-ignore
+.claude export-ignore
+.agents export-ignore
+.codex export-ignore
+.codebase-memory export-ignore
+.codegraph export-ignore
+.github export-ignore
+tests export-ignore
+docs export-ignore
+mobile export-ignore
