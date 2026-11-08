@@ -90,6 +90,11 @@ Proses daemon yang wajib berjalan di produksi:
 
 Catatan deploy:
 
+- **Panduan Deploy Server Lengkap** — lihat [`docs/deploy-server.md`](docs/deploy-server.md) untuk konfigurasi lengkap Ubuntu 22.04/24.04 LTS, Nginx SSL, Supervisor worker, cron, dan runbook rilis.
+- **Batas Ukuran Request (Upload)**:
+  - Nginx: `client_max_body_size 8M;` (sesuai batas unggah foto 2 MB dan bukti transaksi).
+  - PHP: `upload_max_filesize = 8M` dan `post_max_size = 10M` di `php.ini`.
+  - Bila request melebihi batas, Nginx mengembalikan respons HTTP 413 dan Livewire akan menampilkan galat generik tanpa pesan validasi yang jelas.
 - **Jangan deploy dari zip Windows** — kompresi zip merusak nama file ber-emoji (mis. `⚡security.blade.php` menjadi `#U26a1security.blade.php`) sehingga halaman Volt tidak ditemukan. Gunakan `git clone` di server atau `git archive` untuk membuat artefak.
 - **Jangan sertakan `bootstrap/cache/*.php`** dari mesin development — file cache config/routes/views lama akan bentrok dengan `config:cache`/`route:cache` di server.
 
