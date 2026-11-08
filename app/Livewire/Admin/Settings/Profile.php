@@ -31,7 +31,7 @@ class Profile extends Component
 
     public function updatedFotoBaru(): void
     {
-        $this->validate(['fotoBaru' => 'image|max:2048']);
+        $this->validate(['fotoBaru' => 'image|mimes:jpg,jpeg,png,webp|max:2048']);
 
         $foto = $this->fotoBaru;
 

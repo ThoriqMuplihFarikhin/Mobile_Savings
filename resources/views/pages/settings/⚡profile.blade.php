@@ -7,17 +7,25 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-new #[Title('Edit profil')] class extends Component {
+new #[Title('Edit profil')] class extends Component
+{
     use ProfileValidationRules;
     use WithFileUploads;
 
     public string $name = '';
+
     public string $no_hp = '';
+
     public string $alamat = '';
+
     public string $tanggalLahir = '';
+
     public string $jenisKelamin = 'laki-laki';
+
     public string $pekerjaan = '';
+
     public $fotoBaru;
+
     public $bannerBaru;
 
     public function mount(): void
@@ -37,7 +45,7 @@ new #[Title('Edit profil')] class extends Component {
 
     public function updatedFotoBaru(): void
     {
-        $this->validate(['fotoBaru' => 'image|max:2048']);
+        $this->validate(['fotoBaru' => 'image|mimes:jpg,jpeg,png,webp|max:2048']);
         $path = $this->fotoBaru->store('profil', 'public');
         Auth::user()->update(['foto_profil_path' => $path]);
         Flux::toast(variant: 'success', text: 'Foto profil berhasil diubah!');
@@ -45,7 +53,7 @@ new #[Title('Edit profil')] class extends Component {
 
     public function updatedBannerBaru(): void
     {
-        $this->validate(['bannerBaru' => 'image|max:3072']);
+        $this->validate(['bannerBaru' => 'image|mimes:jpg,jpeg,png,webp|max:3072']);
         $path = $this->bannerBaru->store('banner', 'public');
         Auth::user()->update(['banner_path' => $path]);
         Flux::toast(variant: 'success', text: 'Banner berhasil diubah!');

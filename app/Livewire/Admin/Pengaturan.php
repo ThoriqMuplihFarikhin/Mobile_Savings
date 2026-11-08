@@ -304,7 +304,7 @@ class Pengaturan extends Component
     {
         $validated = $this->validate([
             'profilNama' => ['required', 'string', 'max:255'],
-            'profilFoto' => ['nullable', 'image', 'max:2048'],
+            'profilFoto' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
         /** @var User $user */
