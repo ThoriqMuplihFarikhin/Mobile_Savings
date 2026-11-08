@@ -16,7 +16,30 @@ it('memiliki konfigurasi aman pada env example', function () {
         ->toContain('SESSION_ENCRYPT=true')
         ->toContain('SESSION_SECURE_COOKIE=false')
         ->toContain('APP_TIMEZONE=Asia/Jakarta')
-        ->toContain('DB_CONNECTION=mysql');
+        ->toContain('DB_CONNECTION=mysql')
+        ->toContain('WHATSAPP_PROVIDER=')
+        ->toContain('WHATSAPP_API_URL=')
+        ->toContain('WHATSAPP_API_TOKEN=')
+        ->toContain('SEED_ADMIN_PIN=');
+});
+
+it('memiliki berkas env production example dengan nilai produksi aman', function () {
+    expect(file_exists(base_path('.env.production.example')))->toBeTrue();
+
+    $prodEnv = file_get_contents(base_path('.env.production.example'));
+
+    expect($prodEnv)
+        ->toContain('APP_ENV=production')
+        ->toContain('APP_DEBUG=false')
+        ->toContain('SESSION_SECURE_COOKIE=true')
+        ->toContain('SESSION_ENCRYPT=true')
+        ->toContain('DB_CONNECTION=mysql')
+        ->toContain('QUEUE_CONNECTION=database')
+        ->toContain('CACHE_STORE=database')
+        ->toContain('WHATSAPP_PROVIDER=')
+        ->toContain('WHATSAPP_API_URL=')
+        ->toContain('WHATSAPP_API_TOKEN=')
+        ->toContain('SEED_ADMIN_PIN=');
 });
 
 it('seeder memakai pin admin dari env dan menandai wajib ganti pin', function () {
