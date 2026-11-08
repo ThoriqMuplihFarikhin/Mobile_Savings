@@ -22,6 +22,13 @@ if [ -z "$APP_DOMAIN" ]; then
     exit 1
 fi
 
+if [ -n "${ANDROID_KEYSTORE_BASE64:-}" ]; then
+    if [ -z "${ANDROID_KEYSTORE_PASSWORD:-}" ] || [ -z "${ANDROID_KEY_ALIAS:-}" ] || [ -z "${ANDROID_KEY_PASSWORD:-}" ]; then
+        echo "Error: ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, dan ANDROID_KEY_PASSWORD wajib diisi bila ANDROID_KEYSTORE_BASE64 disediakan." >&2
+        exit 1
+    fi
+fi
+
 baca_flavor() {
     node -p "require('$MOBILE/flavors.json')['$FLAVOR'].$1" || {
         echo "Flavor tidak dikenal: $FLAVOR" >&2
@@ -65,6 +72,17 @@ echo "==> Menambahkan proyek Android"
 npx cap add android
 
 MANIFEST="$BUILD/android/app/src/main/AndroidManifest.xml"
+echo "==> Memaksa android:allowBackup=\"false\" pada AndroidManifest.xml"
+if grep -q 'android:allowBackup="true"' "$MANIFEST"; then
+    sed -i 's/android:allowBackup="true"/android:allowBackup="false"/' "$MANIFEST"
+    echo "    android:allowBackup berhasil diubah menjadi false"
+elif grep -q 'android:allowBackup="false"' "$MANIFEST"; then
+    echo "    android:allowBackup sudah bernilai false"
+elif grep -q '<application' "$MANIFEST"; then
+    sed -i 's/<application/<application android:allowBackup="false"/' "$MANIFEST"
+    echo "    Atribut android:allowBackup=\"false\" berhasil ditambahkan ke <application>"
+fi
+
 echo "==> Memasang izin Android (INTERNET, kamera, lokasi)"
 for IZIN in \
     "android.permission.INTERNET" \
@@ -105,7 +123,7 @@ if [ -n "${ANDROID_KEYSTORE_BASE64:-}" ]; then
         --ks "$BUILD/upload-keystore.jks" \
         --ks-pass "pass:$ANDROID_KEYSTORE_PASSWORD" \
         --ks-key-alias "$ANDROID_KEY_ALIAS" \
-        --key-pass "pass:$ANDROID_KEYSTORE_PASSWORD" \
+        --key-pass "pass:$ANDROID_KEY_PASSWORD" \
         --out "$SIGNED" \
         "$UNSIGNED"
     rm -f "$BUILD/upload-keystore.jks"

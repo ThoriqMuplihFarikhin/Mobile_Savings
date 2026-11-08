@@ -74,5 +74,6 @@ Ganti `assets/<flavor>/icon.png` dan `assets/<flavor>/splash.png` (PNG persegi *
 ## Keamanan
 
 - **Jangan pernah commit keystore** — `*.jks`/`*.keystore` sudah masuk `.gitignore`. Simpan file asli di pengelola kata sandi; di CI cukup isi 4 secret (base64 + kata sandi + alias).
+- **Peringatan APK Debug** — APK debug (hasil build tanpa secret keystore) **DILARANG didistribusikan ke pengguna akhir**. APK debug tidak dioptimasi, mengizinkan debugging via USB/ADB, dan tidak memiliki tanda tangan sertifikat rilis resmi.
 - `mobile/build/` dan `mobile/node_modules/` juga di-gitignore.
 - Perangkat lunak dependensi: `npm audit` melaporkan 6 kerentanan bawaan (1 high, 5 critical) dari rantai dependensi build — jalankan `npm audit fix` hanya setelah persetujuan pemilik.
