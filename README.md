@@ -95,7 +95,7 @@ Catatan deploy:
   - Nginx: `client_max_body_size 8M;` (sesuai batas unggah foto 2 MB dan bukti transaksi).
   - PHP: `upload_max_filesize = 8M` dan `post_max_size = 10M` di `php.ini`.
   - Bila request melebihi batas, Nginx mengembalikan respons HTTP 413 dan Livewire akan menampilkan galat generik tanpa pesan validasi yang jelas.
-- **Jangan deploy dari zip Windows** — kompresi zip merusak nama file ber-emoji (mis. `⚡security.blade.php` menjadi `#U26a1security.blade.php`) sehingga halaman Volt tidak ditemukan. Gunakan `git clone` di server atau `git archive` untuk membuat artefak.
+- **Standarisasi Nama Berkas View Settings** — seluruh nama berkas di `resources/views/pages/settings/` telah distandarisasi tanpa simbol emoji (mis. `security.blade.php`, `profile.blade.php`, dll.) untuk mencegah korupsi karakter `#U26a1` saat diekstrak di Windows. Tetap disarankan deploy langsung menggunakan `git clone` atau `git archive`.
 - **Jangan sertakan `bootstrap/cache/*.php`** dari mesin development — file cache config/routes/views lama akan bentrok dengan `config:cache`/`route:cache` di server.
 
 ## Pengujian

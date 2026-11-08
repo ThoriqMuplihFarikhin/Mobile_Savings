@@ -31,6 +31,126 @@ parameters:
 			path: app/Helpers/ActivityLogger.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/StrukSetoranController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/StrukSetoranController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/StrukSetoranController.php
+
+		-
+			message: '#^Call to function is_array\(\) with ''''\|''0''\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Livewire/Admin/LogAktivitas.php
+
+		-
+			message: '#^Call to function is_scalar\(\) with \*NEVER\* will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Livewire/Admin/LogAktivitas.php
+
+		-
+			message: '#^Offset ''catatan'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Livewire/Admin/LogAktivitas.php
+
+		-
+			message: '#^Offset ''diterima'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Livewire/Admin/LogAktivitas.php
+
+		-
+			message: '#^Offset ''keterangan'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Livewire/Admin/LogAktivitas.php
+
+		-
+			message: '#^Offset ''kolektor_id'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Livewire/Admin/LogAktivitas.php
+
+		-
+			message: '#^Offset ''kolektor_nama'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Livewire/Admin/LogAktivitas.php
+
+		-
+			message: '#^Offset ''nama'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Livewire/Admin/LogAktivitas.php
+
+		-
+			message: '#^Offset ''nasabah_id'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 4
+			path: app/Livewire/Admin/LogAktivitas.php
+
+		-
+			message: '#^Offset ''nasabah_nama'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 4
+			path: app/Livewire/Admin/LogAktivitas.php
+
+		-
+			message: '#^Offset ''nominal'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 3
+			path: app/Livewire/Admin/LogAktivitas.php
+
+		-
+			message: '#^Offset ''pesan'' on \*NEVER\* in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Livewire/Admin/LogAktivitas.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Admin/ManajemenNasabah.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/Admin/ManajemenNasabah.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\AbsensiKolektor\:\:\$total\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Admin/MonitoringAbsensi.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/Admin/SerahTerimaPaket.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Livewire/Admin/SerahTerimaPaket.php
+
+		-
 			message: '#^Method App\\Livewire\\Kolektor\\Absen\:\:render\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -185,6 +305,12 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: app/Livewire/Kolektor/DaftarNasabah.php
+
+		-
+			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:getSelectedProdukProperty\(\) should return App\\Models\\ProdukTabungan\|null but returns App\\Models\\ProdukTabungan\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ProdukTabungan\>\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Livewire/Kolektor/InputSetoran.php
 
 		-
 			message: '#^Method App\\Livewire\\Kolektor\\InputSetoran\:\:hitungTunggakan\(\) has no return type specified\.$#'
@@ -653,6 +779,72 @@ parameters:
 			identifier: missingType.property
 			count: 1
 			path: app/Livewire/Kolektor/SetorKantor.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Kolektor/TransaksiHariIni.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/Kolektor/TransaksiHariIni.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\TransaksiPenarikan\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Livewire/Kolektor/TransaksiHariIni.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\TransaksiSetoran\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Livewire/Kolektor/TransaksiHariIni.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:sortByDesc\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Livewire/Kolektor/TransaksiHariIni.php
+
+		-
+			message: '#^Parameter \#1 \$source of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:concat\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Livewire/Kolektor/TransaksiHariIni.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\TransaksiPenarikan\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Livewire/Kolektor/TransaksiHariIni.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\TransaksiSetoran\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Livewire/Kolektor/TransaksiHariIni.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:values\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Livewire/Kolektor/TransaksiHariIni.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Livewire/Kolektor/TransaksiHariIni.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Livewire/Kolektor/TransaksiHariIni.php
 
 		-
 			message: '#^Method App\\Livewire\\Kolektor\\VerifikasiPenarikan\:\:bukaModal\(\) has no return type specified\.$#'
