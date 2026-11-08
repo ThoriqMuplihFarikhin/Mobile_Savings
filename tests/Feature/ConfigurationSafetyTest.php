@@ -90,6 +90,23 @@ it('mengizinkan sqlite sebagai koneksi database di luar produksi', function () {
     }
 });
 
+it('tidak memiliki berkas dengan nama rusak unicode atau tag #U di resources/views', function () {
+    $viewsPath = resource_path('views');
+    $invalidFiles = [];
+
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($viewsPath, RecursiveDirectoryIterator::SKIP_DOTS)
+    );
+
+    foreach ($iterator as $file) {
+        if (str_contains($file->getFilename(), '#U')) {
+            $invalidFiles[] = $file->getPathname();
+        }
+    }
+
+    expect($invalidFiles)->toBeEmpty();
+});
+
 beforeEach(function () {
     unset($_ENV['SEED_ADMIN_PIN'], $_SERVER['SEED_ADMIN_PIN']);
     putenv('SEED_ADMIN_PIN');
