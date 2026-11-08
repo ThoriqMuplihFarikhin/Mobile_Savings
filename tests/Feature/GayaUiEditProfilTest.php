@@ -3,7 +3,7 @@
 use App\Models\User;
 
 /**
- * Migrasi halaman edit profil (pages/settings/⚡profile, dipakai nasabah +
+ * Migrasi halaman edit profil (pages/settings/profile, dipakai nasabah +
  * kolektor) ke DESIGN.md:
  *
  * - §1/§5: tanpa gradien — banner kosong memakai latar datar `primary-deep`.
@@ -17,7 +17,7 @@ use App\Models\User;
  */
 function sumberEditProfil(): string
 {
-    return file_get_contents(dirname(__DIR__, 2).'/resources/views/pages/settings/⚡profile.blade.php');
+    return file_get_contents(dirname(__DIR__, 2).'/resources/views/pages/settings/profile.blade.php');
 }
 
 it('sumber halaman edit profil bebas gradien, hex mentah, dan zinc gelap', function () {

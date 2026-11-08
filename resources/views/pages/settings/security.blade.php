@@ -42,7 +42,7 @@ new #[Title('Security settings')] class extends Component {
 
     public function render()
     {
-        return view('pages.settings.⚡security')
+        return view('pages.settings.security')
             ->layout('layouts.mobile');
     }
 }; ?>

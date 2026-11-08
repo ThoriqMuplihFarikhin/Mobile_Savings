@@ -89,7 +89,7 @@ new #[Title('Edit profil')] class extends Component
 
     public function render()
     {
-        return view('pages.settings.⚡profile')
+        return view('pages.settings.profile')
             ->layout('layouts.mobile');
     }
 }; ?>

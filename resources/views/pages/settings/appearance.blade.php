@@ -6,7 +6,7 @@ use Livewire\Component;
 new #[Title('Appearance settings')] class extends Component {
     public function render()
     {
-        return view('pages.settings.⚡appearance')
+        return view('pages.settings.appearance')
             ->layout('layouts.mobile');
     }
 }; ?>
